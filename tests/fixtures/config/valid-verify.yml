@@ -1,0 +1,8 @@
+checks:
+  - name: run-tests
+    command: "npm test"
+    required: true
+  - name: lint-check
+    command: "npm run lint"
+    required: false
+    threshold: 0.9

@@ -1,0 +1,135 @@
+{
+  "spec": "ai-docs/mvp-000/plan.md",
+  "tasks": [
+    {
+      "id": "001",
+      "title": "Create the index document",
+      "file": "001-create-index.md",
+      "dependencies": [],
+      "status": "implemented",
+      "wave_id": 1
+    },
+    {
+      "id": "002",
+      "title": "Create the rule trigger",
+      "file": "002-create-rule-trigger.md",
+      "dependencies": [
+        "001"
+      ],
+      "status": "superseded",
+      "wave_id": 2,
+      "note": "Rule trigger removed — paths: frontmatter broken at user scope (GitHub #21858). Skill trigger is sole trigger."
+    },
+    {
+      "id": "003",
+      "title": "Create the skill trigger",
+      "file": "003-create-skill-trigger.md",
+      "dependencies": [
+        "001"
+      ],
+      "status": "implemented",
+      "wave_id": 2
+    },
+    {
+      "id": "004",
+      "title": "Create CLAUDE.md project router",
+      "file": "004-create-claude-md.md",
+      "dependencies": [
+        "001"
+      ],
+      "status": "implemented",
+      "wave_id": 2
+    },
+    {
+      "id": "005",
+      "title": "Create claude-md.md leaf",
+      "file": "005-create-leaf-claude-md.md",
+      "dependencies": [
+        "001"
+      ],
+      "status": "implemented",
+      "wave_id": 2
+    },
+    {
+      "id": "006",
+      "title": "Create rules.md leaf",
+      "file": "006-create-leaf-rules.md",
+      "dependencies": [
+        "001",
+        "002"
+      ],
+      "status": "implemented",
+      "wave_id": 2
+    },
+    {
+      "id": "007",
+      "title": "Create skills.md leaf",
+      "file": "007-create-leaf-skills.md",
+      "dependencies": [
+        "001"
+      ],
+      "status": "implemented",
+      "wave_id": 2
+    },
+    {
+      "id": "008",
+      "title": "Create hooks.md leaf",
+      "file": "008-create-leaf-hooks.md",
+      "dependencies": [
+        "001"
+      ],
+      "status": "implemented",
+      "wave_id": 2
+    },
+    {
+      "id": "009",
+      "title": "Create agents.md leaf",
+      "file": "009-create-leaf-agents.md",
+      "dependencies": [
+        "001"
+      ],
+      "status": "implemented",
+      "wave_id": 2
+    },
+    {
+      "id": "010",
+      "title": "Create referenced-docs.md leaf",
+      "file": "010-create-leaf-referenced-docs.md",
+      "dependencies": [
+        "001"
+      ],
+      "status": "implemented",
+      "wave_id": 2
+    },
+    {
+      "id": "011",
+      "title": "Create README.md",
+      "file": "011-create-readme.md",
+      "dependencies": [
+        "001"
+      ],
+      "status": "implemented",
+      "wave_id": 2
+    },
+    {
+      "id": "012",
+      "title": "Seed crystal validation",
+      "file": "012-seed-crystal-validation.md",
+      "dependencies": [
+        "001",
+        "002",
+        "003",
+        "004",
+        "005",
+        "006",
+        "007",
+        "008",
+        "009",
+        "010",
+        "011"
+      ],
+      "status": "implemented",
+      "wave_id": 3
+    }
+  ]
+}

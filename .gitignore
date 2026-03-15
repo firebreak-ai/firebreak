@@ -1,0 +1,15 @@
+# Project-local Claude settings and state
+.claude/settings.local.json
+.claude/automation/
+.claude/memory/
+
+# Test projects
+space-invaders/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
