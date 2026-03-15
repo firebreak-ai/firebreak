@@ -14,6 +14,10 @@ Spec ─► Review ─► Breakdown ─► Test Creation ─► Test Review ─�
 
 A core design principle is **context and persona isolation between agents**. When the same agent designs tests and writes the implementation, its tests tend to validate its own reasoning rather than the spec's intent. By using separate agents with independent context for test authoring, implementation, and review, correlated failures are structurally reduced. Each agent can only see what it needs, and no agent reviews its own work.
 
+**Many pipeline stages does not mean many user interactions.** The developer collaborates during spec authoring — that's where human judgment has the highest leverage. After that, the pipeline advances autonomously: council review runs without prompting, breakdown compiles and gates check automatically, test creation and implementation proceed through agent teams. The developer's next interaction is reviewing the results. The goal is rigorous code quality with minimal user friction — the pipeline does the work, not the developer.
+
+The current friction point is permissions prompts, which are being iteratively reduced through data-driven tuning of tool access allowlists. As the Dispatch pipeline matures toward full autonomy, the vision is an autonomous developer that works on approved specifications to completion around the clock — combining structured quality gates with hands-off execution.
+
 ## Status
 
 | Layer | Status | Description |
