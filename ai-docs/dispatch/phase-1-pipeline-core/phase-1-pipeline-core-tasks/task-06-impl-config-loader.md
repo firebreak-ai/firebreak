@@ -12,7 +12,7 @@ The config.yml schema documentation is part of this task because it documents th
 
 ## Instructions
 
-1. Create `home/.claude/hooks/sdl-workflow/config-loader.py`. Add shebang `#!/usr/bin/env python3` and module docstring.
+1. Create `home/dot-claude/hooks/sdl-workflow/config-loader.py`. Add shebang `#!/usr/bin/env python3` and module docstring.
 
 2. Define `DEFAULTS` as a dictionary constant:
    ```python
@@ -58,7 +58,7 @@ The config.yml schema documentation is part of this task because it documents th
 
 10. Guard with `if __name__ == "__main__": main()`.
 
-11. Create `home/.claude/docs/sdl-workflow/config-yml-schema.md` with the following content:
+11. Create `home/dot-claude/docs/sdl-workflow/config-yml-schema.md` with the following content:
 
     Document the config.yml schema. Structure:
     - `token_budget`: integer or null (null = no limit). Default: null.
@@ -68,7 +68,7 @@ The config.yml schema documentation is part of this task because it documents th
     - State the layering order: hardcoded defaults < project config.yml < spec YAML frontmatter.
     - Include one complete example config.yml.
 
-12. Create `home/.claude/docs/sdl-workflow/task-file-schema.md` documenting the task file format used by the breakdown and task reviewer:
+12. Create `home/dot-claude/docs/sdl-workflow/task-file-schema.md` documenting the task file format used by the breakdown and task reviewer:
 
     - Task files are Markdown with YAML frontmatter between `---` markers.
     - Required frontmatter fields for all tasks: `id` (string, task identifier), `type` (`test` or `implementation`), `wave` (integer, execution wave), `covers` (list of `AC-NN` strings), `completion_gate` (string, what proves this task is done).
@@ -79,9 +79,9 @@ The config.yml schema documentation is part of this task because it documents th
 
 ## Files to create/modify
 
-- `home/.claude/hooks/sdl-workflow/config-loader.py` (create)
-- `home/.claude/docs/sdl-workflow/config-yml-schema.md` (create)
-- `home/.claude/docs/sdl-workflow/task-file-schema.md` (create)
+- `home/dot-claude/hooks/sdl-workflow/config-loader.py` (create)
+- `home/dot-claude/docs/sdl-workflow/config-yml-schema.md` (create)
+- `home/dot-claude/docs/sdl-workflow/task-file-schema.md` (create)
 
 ## Test requirements
 

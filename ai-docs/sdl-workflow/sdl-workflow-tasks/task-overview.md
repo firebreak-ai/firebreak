@@ -64,16 +64,16 @@ No circular dependencies. All edges flow forward (Wave 1 → Wave 2 → Wave 3).
 
 | Task | Output file | Model |
 |------|------------|-------|
-| T-01 | `home/.claude/docs/sdl-workflow.md` | Haiku |
-| T-02 | `home/.claude/docs/sdl-workflow/feature-spec-guide.md` | Sonnet |
-| T-03 | `home/.claude/docs/sdl-workflow/review-perspectives.md` | Sonnet |
-| T-04 | `home/.claude/docs/sdl-workflow/threat-modeling.md` | Sonnet |
-| T-05 | `home/.claude/docs/sdl-workflow/task-compilation.md` | Sonnet |
-| T-06 | `home/.claude/docs/sdl-workflow/implementation-guide.md` | Sonnet |
-| T-07 | `home/.claude/hooks/sdl-workflow/spec-gate.sh` | Sonnet |
-| T-08 | `home/.claude/hooks/sdl-workflow/review-gate.sh` | Sonnet |
-| T-09 | `home/.claude/hooks/sdl-workflow/breakdown-gate.sh` | Sonnet |
-| T-10 | `home/.claude/hooks/sdl-workflow/task-completed.sh` + `home/.claude/settings.json` | Sonnet |
+| T-01 | `home/dot-claude/docs/sdl-workflow.md` | Haiku |
+| T-02 | `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md` | Sonnet |
+| T-03 | `home/dot-claude/docs/sdl-workflow/review-perspectives.md` | Sonnet |
+| T-04 | `home/dot-claude/docs/sdl-workflow/threat-modeling.md` | Sonnet |
+| T-05 | `home/dot-claude/docs/sdl-workflow/task-compilation.md` | Sonnet |
+| T-06 | `home/dot-claude/docs/sdl-workflow/implementation-guide.md` | Sonnet |
+| T-07 | `home/dot-claude/hooks/sdl-workflow/spec-gate.sh` | Sonnet |
+| T-08 | `home/dot-claude/hooks/sdl-workflow/review-gate.sh` | Sonnet |
+| T-09 | `home/dot-claude/hooks/sdl-workflow/breakdown-gate.sh` | Sonnet |
+| T-10 | `home/dot-claude/hooks/sdl-workflow/task-completed.sh` + `home/dot-claude/settings.json` | Sonnet |
 
 No file scope conflicts — all output files are distinct.
 
@@ -85,10 +85,10 @@ The `TaskCompleted` hook is configured in user-global settings (`~/.claude/setti
 
 | Task | Output file | Model | Dependencies |
 |------|------------|-------|-------------|
-| T-11 | `home/.claude/skills/spec/SKILL.md` | Sonnet | T-02, T-07 |
-| T-12 | `home/.claude/skills/spec-review/SKILL.md` | Sonnet | T-03, T-04, T-07, T-08 |
-| T-13 | `home/.claude/skills/breakdown/SKILL.md` | Sonnet | T-05, T-08, T-09 |
-| T-14 | `home/.claude/skills/implement/SKILL.md` | Sonnet | T-06, T-09, T-10 |
+| T-11 | `home/dot-claude/skills/spec/SKILL.md` | Sonnet | T-02, T-07 |
+| T-12 | `home/dot-claude/skills/spec-review/SKILL.md` | Sonnet | T-03, T-04, T-07, T-08 |
+| T-13 | `home/dot-claude/skills/breakdown/SKILL.md` | Sonnet | T-05, T-08, T-09 |
+| T-14 | `home/dot-claude/skills/implement/SKILL.md` | Sonnet | T-06, T-09, T-10 |
 
 ### Wave 3 — Validation (1 task)
 

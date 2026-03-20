@@ -23,7 +23,7 @@ A core design principle is **context and persona isolation between agents**. Whe
 Copy the context assets to your Claude Code configuration:
 
 ```bash
-cp -r home/.claude/* ~/.claude/
+cp -r home/dot-claude/* ~/.claude/
 ```
 
 ### Context Asset Authoring (works in any project)
@@ -137,23 +137,23 @@ This repo has extensive documentation across several layers. Here's where to fin
 
 | Stage | Guide | Gate script |
 |-------|-------|-------------|
-| Spec authoring | [home/.claude/docs/sdl-workflow/feature-spec-guide.md](home/.claude/docs/sdl-workflow/feature-spec-guide.md) | [spec-gate.sh](home/.claude/hooks/sdl-workflow/spec-gate.sh) |
-| Spec review | [home/.claude/docs/sdl-workflow/review-perspectives.md](home/.claude/docs/sdl-workflow/review-perspectives.md) | [review-gate.sh](home/.claude/hooks/sdl-workflow/review-gate.sh) |
-| Task breakdown | [home/.claude/docs/sdl-workflow/task-compilation.md](home/.claude/docs/sdl-workflow/task-compilation.md) | [breakdown-gate.sh](home/.claude/hooks/sdl-workflow/breakdown-gate.sh) |
-| Implementation | [home/.claude/docs/sdl-workflow/implementation-guide.md](home/.claude/docs/sdl-workflow/implementation-guide.md) | [task-completed.sh](home/.claude/hooks/sdl-workflow/task-completed.sh) |
-| Brownfield work | [home/.claude/docs/brownfield-breakdown.md](home/.claude/docs/brownfield-breakdown.md) | — |
-| Corrective workflow | [home/.claude/docs/sdl-workflow/corrective-workflow.md](home/.claude/docs/sdl-workflow/corrective-workflow.md) | — |
-| Test reviewer (agent) | [home/.claude/agents/test-reviewer.md](home/.claude/agents/test-reviewer.md) | [task-reviewer-gate.sh](home/.claude/hooks/sdl-workflow/task-reviewer-gate.sh) |
+| Spec authoring | [home/dot-claude/docs/sdl-workflow/feature-spec-guide.md](home/dot-claude/docs/sdl-workflow/feature-spec-guide.md) | [spec-gate.sh](home/dot-claude/hooks/sdl-workflow/spec-gate.sh) |
+| Spec review | [home/dot-claude/docs/sdl-workflow/review-perspectives.md](home/dot-claude/docs/sdl-workflow/review-perspectives.md) | [review-gate.sh](home/dot-claude/hooks/sdl-workflow/review-gate.sh) |
+| Task breakdown | [home/dot-claude/docs/sdl-workflow/task-compilation.md](home/dot-claude/docs/sdl-workflow/task-compilation.md) | [breakdown-gate.sh](home/dot-claude/hooks/sdl-workflow/breakdown-gate.sh) |
+| Implementation | [home/dot-claude/docs/sdl-workflow/implementation-guide.md](home/dot-claude/docs/sdl-workflow/implementation-guide.md) | [task-completed.sh](home/dot-claude/hooks/sdl-workflow/task-completed.sh) |
+| Brownfield work | [home/dot-claude/docs/brownfield-breakdown.md](home/dot-claude/docs/brownfield-breakdown.md) | — |
+| Corrective workflow | [home/dot-claude/docs/sdl-workflow/corrective-workflow.md](home/dot-claude/docs/sdl-workflow/corrective-workflow.md) | — |
+| Test reviewer (agent) | [home/dot-claude/agents/test-reviewer.md](home/dot-claude/agents/test-reviewer.md) | [task-reviewer-gate.sh](home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh) |
 
 ### Writing better context assets
 
 | Asset type | Guide |
 |------------|-------|
-| Overview and principles | [home/.claude/docs/context-assets.md](home/.claude/docs/context-assets.md) |
-| CLAUDE.md files | [home/.claude/docs/context-assets/claude-md.md](home/.claude/docs/context-assets/claude-md.md) |
-| Skills | [home/.claude/docs/context-assets/skills.md](home/.claude/docs/context-assets/skills.md) |
-| Hooks | [home/.claude/docs/context-assets/hooks.md](home/.claude/docs/context-assets/hooks.md) |
-| Agents | [home/.claude/docs/context-assets/agents.md](home/.claude/docs/context-assets/agents.md) |
+| Overview and principles | [home/dot-claude/docs/context-assets.md](home/dot-claude/docs/context-assets.md) |
+| CLAUDE.md files | [home/dot-claude/docs/context-assets/claude-md.md](home/dot-claude/docs/context-assets/claude-md.md) |
+| Skills | [home/dot-claude/docs/context-assets/skills.md](home/dot-claude/docs/context-assets/skills.md) |
+| Hooks | [home/dot-claude/docs/context-assets/hooks.md](home/dot-claude/docs/context-assets/hooks.md) |
+| Agents | [home/dot-claude/docs/context-assets/agents.md](home/dot-claude/docs/context-assets/agents.md) |
 
 ### Process artifacts (`ai-docs/`)
 

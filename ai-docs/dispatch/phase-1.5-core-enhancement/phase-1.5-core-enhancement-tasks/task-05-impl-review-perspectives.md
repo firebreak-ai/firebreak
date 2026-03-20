@@ -3,7 +3,7 @@ id: T-05
 type: implementation
 wave: 2
 covers: ["AC-04"]
-files_to_modify: ["../../home/.claude/docs/sdl-workflow/review-perspectives.md"]
+files_to_modify: ["../../home/dot-claude/docs/sdl-workflow/review-perspectives.md"]
 test_tasks: ["T-02"]
 completion_gate: "review-perspectives.md contains pattern consistency criterion with three verification points"
 ---
@@ -14,7 +14,7 @@ Adds a pattern consistency criterion to the council review perspectives for brow
 
 ## Context
 
-The current review perspectives at `home/.claude/docs/sdl-workflow/review-perspectives.md` defines SDL concerns and review prompt framings but has no criterion for checking whether proposed approaches follow existing codebase patterns. The rendering path split that caused 2 of 5 greenfield bugs was a design-level issue the council review could have caught.
+The current review perspectives at `home/dot-claude/docs/sdl-workflow/review-perspectives.md` defines SDL concerns and review prompt framings but has no criterion for checking whether proposed approaches follow existing codebase patterns. The rendering path split that caused 2 of 5 greenfield bugs was a design-level issue the council review could have caught.
 
 ## Instructions
 
@@ -27,7 +27,7 @@ The current review perspectives at `home/.claude/docs/sdl-workflow/review-perspe
 ## Files to create/modify
 
 Modify:
-- `home/.claude/docs/sdl-workflow/review-perspectives.md`
+- `home/dot-claude/docs/sdl-workflow/review-perspectives.md`
 
 ## Test requirements
 

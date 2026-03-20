@@ -109,8 +109,8 @@ After presenting the task overview:
 
 ## Instructions
 
-1. Create `home/.claude/docs/sdl-workflow/task-compilation.md`.
-2. Read `home/.claude/docs/context-assets.md` for authoring principles. Apply them.
+1. Create `home/dot-claude/docs/sdl-workflow/task-compilation.md`.
+2. Read `home/dot-claude/docs/context-assets.md` for authoring principles. Apply them.
 3. Write for the agent running Stage 3 — direct imperatives.
 4. Structure the doc:
 
@@ -129,7 +129,7 @@ After presenting the task overview:
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/docs/sdl-workflow/task-compilation.md`
+- **Create**: `home/dot-claude/docs/sdl-workflow/task-compilation.md`
 
 ## Acceptance Criteria
 

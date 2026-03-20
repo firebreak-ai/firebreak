@@ -4,9 +4,9 @@ Write a bash test script that validates the modified breakdown skill specifies s
 
 ## Context
 
-The `/breakdown` skill at `home/.claude/skills/breakdown/SKILL.md` is being modified to replace the current monolithic task compilation with sequential context-independent Agent Teams teammates: (1) the test task agent receives only the spec and produces test tasks, then (2) the implementation task agent receives the spec plus the test task output and produces implementation tasks. Both agents are invoked as separate Agent Teams teammates with independent context — the implementation agent receives test task files as artifacts, not the test task agent's reasoning.
+The `/breakdown` skill at `home/dot-claude/skills/breakdown/SKILL.md` is being modified to replace the current monolithic task compilation with sequential context-independent Agent Teams teammates: (1) the test task agent receives only the spec and produces test tasks, then (2) the implementation task agent receives the spec plus the test task output and produces implementation tasks. Both agents are invoked as separate Agent Teams teammates with independent context — the implementation agent receives test task files as artifacts, not the test task agent's reasoning.
 
-A new brownfield instruction doc at `home/.claude/docs/brownfield-breakdown.md` provides 5 codebase-awareness instructions loaded by the `/breakdown` skill when producing task files. These instructions ensure tasks reference existing code, follow established patterns, avoid new dependencies when equivalents exist, and search for existing equivalents before creating new abstractions.
+A new brownfield instruction doc at `home/dot-claude/docs/brownfield-breakdown.md` provides 5 codebase-awareness instructions loaded by the `/breakdown` skill when producing task files. These instructions ensure tasks reference existing code, follow established patterns, avoid new dependencies when equivalents exist, and search for existing equivalents before creating new abstractions.
 
 The test validates structural modifications to the skill file and existence/content of the brownfield doc. It does not test runtime behavior.
 
@@ -14,7 +14,7 @@ The test validates structural modifications to the skill file and existence/cont
 
 1. Create `tests/sdl-workflow/test-breakdown-integration.sh` as a bash test script. Use `set -uo pipefail`. Define a test counter and pass/fail tracking at the top. Each test prints `ok <n> - <description>` on pass or `not ok <n> - <description>` on fail (TAP format).
 
-2. Determine project root using `cd "$(dirname "$0")/../.." && pwd`. Define `SKILL_FILE` pointing to `home/.claude/skills/breakdown/SKILL.md` relative to project root. Define `BROWNFIELD_DOC` pointing to `home/.claude/docs/brownfield-breakdown.md` relative to project root.
+2. Determine project root using `cd "$(dirname "$0")/../.." && pwd`. Define `SKILL_FILE` pointing to `home/dot-claude/skills/breakdown/SKILL.md` relative to project root. Define `BROWNFIELD_DOC` pointing to `home/dot-claude/docs/brownfield-breakdown.md` relative to project root.
 
 3. Write test: skill file exists. Assert `$SKILL_FILE` exists and is a non-empty file.
 

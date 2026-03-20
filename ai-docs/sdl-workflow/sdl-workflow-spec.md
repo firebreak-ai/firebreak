@@ -147,7 +147,7 @@ During Stage 4 wave execution, where multiple teammates work in parallel, each t
 
 ### Artifacts are shared-purpose context assets
 
-Pipeline artifacts are not just documentation — they are **context assets consumed by agents in subsequent stages** and by humans for review, decision-making, and audit. The context asset authoring principles (`home/.claude/docs/context-assets.md`) apply to artifact generation, adapted for the dual audience.
+Pipeline artifacts are not just documentation — they are **context assets consumed by agents in subsequent stages** and by humans for review, decision-making, and audit. The context asset authoring principles (`home/dot-claude/docs/context-assets.md`) apply to artifact generation, adapted for the dual audience.
 
 **Authoring approach by artifact type**:
 
@@ -799,7 +799,7 @@ Failure attribution (AI judgment — evaluate for accuracy over time):
 
 ## Dependencies
 
-- Context asset authoring guidelines (`home/.claude/docs/context-assets.md`) — all assets must conform
+- Context asset authoring guidelines (`home/dot-claude/docs/context-assets.md`) — all assets must conform
 - Council research findings (`ai-docs/spec-workflow.md`) — architectural decisions informed by this research
 - Existing council agent system (`~/.claude/agents/council/`) — personas reused, not recreated
 - Existing skills ecosystem — new skills must coexist with installed skills without conflicts

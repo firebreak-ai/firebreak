@@ -30,7 +30,7 @@ Cold-start checks: test runner (package.json, Cargo.toml, go.mod, pytest.ini, py
 
 2. Define a setup function that creates a temporary directory to serve as a mock project root. Create subdirectory `.claude/automation/` within it. Register cleanup with `trap cleanup EXIT`.
 
-3. Define `LOADER` variable pointing to `home/.claude/hooks/sdl-workflow/config-loader.py` (relative to project root).
+3. Define `LOADER` variable pointing to `home/dot-claude/hooks/sdl-workflow/config-loader.py` (relative to project root).
 
 4. Create fixture files in `tests/fixtures/config/`:
    - `valid-config.yml`: YAML with `token_budget: 5000`, `max_concurrent_agents: 3`, `replan_cap: 5`.

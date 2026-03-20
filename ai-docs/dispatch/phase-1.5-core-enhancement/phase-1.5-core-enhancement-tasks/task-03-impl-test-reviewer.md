@@ -3,7 +3,7 @@ id: T-03
 type: implementation
 wave: 2
 covers: ["AC-01", "AC-02", "AC-06", "AC-11"]
-files_to_modify: ["../../home/.claude/agents/test-reviewer.md"]
+files_to_modify: ["../../home/dot-claude/agents/test-reviewer.md"]
 test_tasks: ["T-02"]
 completion_gate: "test-reviewer.md contains two-tier enforcement model with 5 criteria, override mechanism, corrective spec guidance, CP2 UV-step fidelity check, structured override output fields, and checkpoint applicability rules"
 ---
@@ -14,7 +14,7 @@ Updates the test reviewer agent definition with the two-tier enforcement model, 
 
 ## Context
 
-The current test reviewer at `home/.claude/agents/test-reviewer.md` has 5 checkpoints but no criteria for test-level adequacy, behavioral completeness, silent failure detection, integration seam coverage, or seam declaration completeness. Phase 1.5 adds a two-tier enforcement model: Tier 1 (silent failure detection, non-overridable) and Tier 2 (test-level adequacy, behavioral completeness, integration seam coverage, seam declaration completeness — overridable with structured rationale). The reviewer must also handle corrective specs where diagnostic tests already exist.
+The current test reviewer at `home/dot-claude/agents/test-reviewer.md` has 5 checkpoints but no criteria for test-level adequacy, behavioral completeness, silent failure detection, integration seam coverage, or seam declaration completeness. Phase 1.5 adds a two-tier enforcement model: Tier 1 (silent failure detection, non-overridable) and Tier 2 (test-level adequacy, behavioral completeness, integration seam coverage, seam declaration completeness — overridable with structured rationale). The reviewer must also handle corrective specs where diagnostic tests already exist.
 
 ## Instructions
 
@@ -41,7 +41,7 @@ The current test reviewer at `home/.claude/agents/test-reviewer.md` has 5 checkp
 ## Files to create/modify
 
 Modify:
-- `home/.claude/agents/test-reviewer.md`
+- `home/dot-claude/agents/test-reviewer.md`
 
 ## Test requirements
 

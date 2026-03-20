@@ -28,19 +28,19 @@
 
 ### Permissions Failure Pattern
 
-The dominant implementation finding: **subagents cannot edit files under `home/.claude/`**. The `bypassPermissions` agent mode does not override Claude Code's permission checks on this directory. Every task targeting `home/.claude/agents/`, `home/.claude/docs/`, or `home/.claude/hooks/` failed for the agent and was executed by the team lead.
+The dominant implementation finding: **subagents cannot edit files under `home/dot-claude/`**. The `bypassPermissions` agent mode does not override Claude Code's permission checks on this directory. Every task targeting `home/dot-claude/agents/`, `home/dot-claude/docs/`, or `home/dot-claude/hooks/` failed for the agent and was executed by the team lead.
 
 Tasks targeting `ai-docs/` and `tests/` paths succeeded as agents (T-01, T-02, T-10, T-11).
 
 | Path prefix | Agent attempts | Agent successes | Failure rate |
 |-------------|---------------|-----------------|-------------|
-| `home/.claude/` | 7 (including 2 retries for T-03) | 0 | 100% |
+| `home/dot-claude/` | 7 (including 2 retries for T-03) | 0 | 100% |
 | `ai-docs/` | 3 | 3 | 0% |
 | `tests/` | 2 | 2 | 0% |
 
 This is live empirical data for the permissions friction audit (T-10) and validates the spec's identification of permissions friction as a significant pipeline issue. The team lead compensated by executing the tasks directly — the implementation quality was unaffected, but the intended parallel agent execution model was not realized for most tasks.
 
-**Implication for the permissions mitigation phase**: The `home/.claude/` directory appears to be categorically restricted for subagents, regardless of the `bypassPermissions` flag. The mitigation is either: (a) allowlist rules that pre-approve specific edit patterns for that directory, (b) helper scripts that operate on the files and are themselves pre-approved, or (c) running context-asset-editing tasks in the main agent context rather than as subagents. Option (c) is what happened here by necessity.
+**Implication for the permissions mitigation phase**: The `home/dot-claude/` directory appears to be categorically restricted for subagents, regardless of the `bypassPermissions` flag. The mitigation is either: (a) allowlist rules that pre-approve specific edit patterns for that directory, (b) helper scripts that operate on the files and are themselves pre-approved, or (c) running context-asset-editing tasks in the main agent context rather than as subagents. Option (c) is what happened here by necessity.
 
 ## Upstream Traceability
 
@@ -52,7 +52,7 @@ This is live empirical data for the permissions friction audit (T-10) and valida
 
 No formal re-plans occurred. The only failures were permissions-related, not capability-related:
 
-- **Root cause**: Claude Code's permission system restricts subagent file operations on `home/.claude/` paths. The `bypassPermissions` mode on Agent invocations does not override this restriction.
+- **Root cause**: Claude Code's permission system restricts subagent file operations on `home/dot-claude/` paths. The `bypassPermissions` mode on Agent invocations does not override this restriction.
 - **Classification**: Environment constraint — not a spec gap, compilation gap, or implementation error.
 - **Impact**: Team lead executed 7 of 11 tasks directly. The work quality was identical — the team lead had full spec context and produced the same changes the agents specified. The cost was serialized execution rather than parallel execution.
 
@@ -66,11 +66,11 @@ No formal re-plans occurred. The only failures were permissions-related, not cap
 
 3. **Gate scripts caught structural issues deterministically.** The spec gate caught open-question formatting. The task reviewer gate caught AC-05a/b/c format and file path resolution. The breakdown gate caught T-02's unjustified file count. Every gate failure was actionable and resolved quickly.
 
-4. **The permissions audit generated live validation data.** T-10 predicted that `home/.claude/` paths would be the highest-friction source. The implementation phase immediately confirmed this with a 100% agent failure rate on those paths. The audit artifact now has both predicted and observed data.
+4. **The permissions audit generated live validation data.** T-10 predicted that `home/dot-claude/` paths would be the highest-friction source. The implementation phase immediately confirmed this with a 100% agent failure rate on those paths. The audit artifact now has both predicted and observed data.
 
 ### What needs improvement
 
-1. **Subagent permissions for context asset editing.** The pipeline's core deliverables (context assets in `home/.claude/`) are in a directory that subagents can't write to. This fundamentally blocks the parallel agent execution model for context-asset-editing features. This needs to be resolved before the next phase — either through allowlist rules, helper scripts, or a different execution model.
+1. **Subagent permissions for context asset editing.** The pipeline's core deliverables (context assets in `home/dot-claude/`) are in a directory that subagents can't write to. This fundamentally blocks the parallel agent execution model for context-asset-editing features. This needs to be resolved before the next phase — either through allowlist rules, helper scripts, or a different execution model.
 
 2. **Task.json path resolution in the gate script.** The gate derives `project_root` by going up 2 directories from the tasks directory. This breaks for features nested more than 2 levels deep (like `ai-docs/dispatch/phase-1.5-core-enhancement/`). The workaround (relative paths with `../../`) is fragile. The gate should either accept an explicit project root argument or use a more robust heuristic (search upward for a `.git` directory or a known marker file).
 

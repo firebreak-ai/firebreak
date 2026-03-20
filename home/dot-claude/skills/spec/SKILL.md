@@ -7,7 +7,7 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
-Read `home/.claude/docs/sdl-workflow/feature-spec-guide.md` for detailed guidance on section structure, scope recognition, iterative authoring, and the verification gate.
+Read `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md` for detailed guidance on section structure, scope recognition, iterative authoring, and the verification gate.
 
 ## Entry
 

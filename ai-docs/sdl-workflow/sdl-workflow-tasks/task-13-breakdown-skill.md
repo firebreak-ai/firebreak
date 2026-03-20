@@ -16,7 +16,7 @@ The `/breakdown` skill compiles a reviewed spec into individual task files that 
 
 3. **Fail fast**: Check Stage 2 gate before proceeding. Call: `"$HOME"/.claude/hooks/sdl-workflow/review-gate.sh <review-path> <perspectives> [threat-model-path]`. If fail, report what's missing and offer to run `/spec-review`.
 
-4. **Load guidance**: Read `home/.claude/docs/sdl-workflow/task-compilation.md` for compilation rules, sizing constraints, and task structure.
+4. **Load guidance**: Read `home/dot-claude/docs/sdl-workflow/task-compilation.md` for compilation rules, sizing constraints, and task structure.
 
 5. **Compile tasks**: Transform the spec into task files following the doc's guidance:
    - Separate test tasks from implementation tasks.
@@ -50,11 +50,11 @@ argument-hint: "[feature-name]"
 
 ## Instructions
 
-1. Create directory `home/.claude/skills/breakdown/` if it doesn't exist.
-2. Create `home/.claude/skills/breakdown/SKILL.md`.
+1. Create directory `home/dot-claude/skills/breakdown/` if it doesn't exist.
+2. Create `home/dot-claude/skills/breakdown/SKILL.md`.
 3. Read the created docs at:
-   - `home/.claude/docs/sdl-workflow/task-compilation.md` (primary doc)
-   - `home/.claude/docs/context-assets/skills.md` (skill authoring principles)
+   - `home/dot-claude/docs/sdl-workflow/task-compilation.md` (primary doc)
+   - `home/dot-claude/docs/context-assets/skills.md` (skill authoring principles)
 4. Write the skill with:
 
    **Frontmatter**: As specified above.
@@ -76,7 +76,7 @@ argument-hint: "[feature-name]"
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/skills/breakdown/SKILL.md`
+- **Create**: `home/dot-claude/skills/breakdown/SKILL.md`
 
 ## Acceptance Criteria
 

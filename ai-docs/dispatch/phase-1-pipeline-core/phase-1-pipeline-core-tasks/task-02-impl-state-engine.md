@@ -12,7 +12,7 @@ If the `STATE_DIR` environment variable is set, use it as the state directory in
 
 ## Instructions
 
-1. Create `home/.claude/hooks/sdl-workflow/state-engine.py`. Add a shebang `#!/usr/bin/env python3` and module docstring.
+1. Create `home/dot-claude/hooks/sdl-workflow/state-engine.py`. Add a shebang `#!/usr/bin/env python3` and module docstring.
 
 2. Define the complete transition table as a dictionary constant `VALID_TRANSITIONS`. Every state maps to a list of valid target states:
    - `QUEUED`: [`VALIDATING`]
@@ -82,7 +82,7 @@ If the `STATE_DIR` environment variable is set, use it as the state directory in
 
 ## Files to create/modify
 
-- `home/.claude/hooks/sdl-workflow/state-engine.py` (create)
+- `home/dot-claude/hooks/sdl-workflow/state-engine.py` (create)
 
 ## Test requirements
 

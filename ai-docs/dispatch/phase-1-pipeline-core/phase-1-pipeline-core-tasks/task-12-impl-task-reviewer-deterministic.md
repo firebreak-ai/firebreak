@@ -14,7 +14,7 @@ Exit conventions: 0 = pass (JSON to stdout), 2 = fail (errors to stderr listing 
 
 ## Instructions
 
-1. Create `home/.claude/hooks/sdl-workflow/task-reviewer-gate.sh`. Start with `#!/usr/bin/env bash` and `set -euo pipefail`.
+1. Create `home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh`. Start with `#!/usr/bin/env bash` and `set -euo pipefail`.
 
 2. Parse arguments: `SPEC="${1:-}"` and `TASKS_DIR="${2:-}"`. Validate both: spec file must exist, tasks dir must be a directory. Print usage and exit 2 if invalid. Require `python3` is available.
 
@@ -43,13 +43,13 @@ Exit conventions: 0 = pass (JSON to stdout), 2 = fail (errors to stderr listing 
 
 9. If no failures: print JSON to stdout: `{"gate":"task-reviewer","result":"pass","tasks":<count>,"acs_covered":<count>,"waves":<max-wave>}`. Exit 0.
 
-10. After producing the final JSON result (pass or fail), log the result to the audit log. Accept the spec name from the spec path argument (extract filename, strip extension). Call `audit-logger.py log <spec-name> gate_result '<json>'` where `<json>` is the same JSON emitted to stdout (on pass) or a `{"gate":"task-reviewer","result":"fail","errors":[...]}` summary (on fail). Locate `audit-logger.py` relative to the script at `home/.claude/hooks/sdl-workflow/audit-logger.py`. If the logger is not available (file not found), skip logging silently — do not fail the gate.
+10. After producing the final JSON result (pass or fail), log the result to the audit log. Accept the spec name from the spec path argument (extract filename, strip extension). Call `audit-logger.py log <spec-name> gate_result '<json>'` where `<json>` is the same JSON emitted to stdout (on pass) or a `{"gate":"task-reviewer","result":"fail","errors":[...]}` summary (on fail). Locate `audit-logger.py` relative to the script at `home/dot-claude/hooks/sdl-workflow/audit-logger.py`. If the logger is not available (file not found), skip logging silently — do not fail the gate.
 
 11. Make the script executable (add chmod comment at top).
 
 ## Files to create/modify
 
-- `home/.claude/hooks/sdl-workflow/task-reviewer-gate.sh` (create)
+- `home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh` (create)
 
 ## Test requirements
 

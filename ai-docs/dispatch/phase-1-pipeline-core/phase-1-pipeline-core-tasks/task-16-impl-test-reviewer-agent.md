@@ -4,19 +4,19 @@ Create the test reviewer agent definition file that specifies the agent's person
 
 ## Context
 
-The test reviewer is a Claude Code agent defined at `home/.claude/agents/test-reviewer.md`. It validates test quality at 5 pipeline checkpoints with pipeline-blocking authority. It operates under strict context isolation — each checkpoint invocation is an independent Agent Teams teammate with no memory of prior evaluations and no access to other agents' reasoning.
+The test reviewer is a Claude Code agent defined at `home/dot-claude/agents/test-reviewer.md`. It validates test quality at 5 pipeline checkpoints with pipeline-blocking authority. It operates under strict context isolation — each checkpoint invocation is an independent Agent Teams teammate with no memory of prior evaluations and no access to other agents' reasoning.
 
-Follow the agent definition patterns in `home/.claude/docs/context-assets/agents.md`: YAML frontmatter with required fields (`name`, `description`), Markdown body as system prompt. Follow context asset authoring principles from `home/.claude/docs/context-assets.md`: direct-address imperatives, start with the first instruction (no preamble), pass the necessity test, one verifiable constraint per instruction.
+Follow the agent definition patterns in `home/dot-claude/docs/context-assets/agents.md`: YAML frontmatter with required fields (`name`, `description`), Markdown body as system prompt. Follow context asset authoring principles from `home/dot-claude/docs/context-assets.md`: direct-address imperatives, start with the first instruction (no preamble), pass the necessity test, one verifiable constraint per instruction.
 
-The `home/.claude/agents/` directory does not exist yet and must be created.
+The `home/dot-claude/agents/` directory does not exist yet and must be created.
 
 The agent must also be invocable on-demand via `/test-review` outside the pipeline — include the skill reference or description wording that enables this.
 
 ## Instructions
 
-1. Create directory `home/.claude/agents/` if it does not exist.
+1. Create directory `home/dot-claude/agents/` if it does not exist.
 
-2. Create `home/.claude/agents/test-reviewer.md` with YAML frontmatter containing:
+2. Create `home/dot-claude/agents/test-reviewer.md` with YAML frontmatter containing:
    - `name: test-reviewer`
    - `description: "Validates test quality against spec requirements at pipeline checkpoints. Use when reviewing test strategy, test tasks, test code, or test integrity against a spec."` (this description enables both pipeline invocation and on-demand `/test-review` matching)
    - `tools: Read, Grep, Glob, Bash` (needs Bash for mutation testing checkpoint to run tests against mutated code; Read/Grep/Glob for artifact analysis)
@@ -104,7 +104,7 @@ The agent must also be invocable on-demand via `/test-review` outside the pipeli
 
 ## Files to create/modify
 
-- `home/.claude/agents/test-reviewer.md` (create)
+- `home/dot-claude/agents/test-reviewer.md` (create)
 
 ## Test requirements
 

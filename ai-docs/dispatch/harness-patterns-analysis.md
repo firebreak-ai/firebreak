@@ -224,7 +224,7 @@ Each scenario produces retrospectives that feed the self-improvement loop. Resul
 
 ## Bug-fix workflow pattern
 
-**Status**: First cycle complete — validated against the greenfield project with all issues resolved. The corrective workflow has been formalized in `home/.claude/docs/sdl-workflow/corrective-workflow.md`.
+**Status**: First cycle complete — validated against the greenfield project with all issues resolved. The corrective workflow has been formalized in `home/dot-claude/docs/sdl-workflow/corrective-workflow.md`.
 
 ### Origin
 

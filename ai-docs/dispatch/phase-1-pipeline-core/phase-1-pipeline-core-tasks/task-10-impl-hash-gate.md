@@ -12,7 +12,7 @@ Exit conventions: 0 = pass (JSON to stdout), 2 = fail (errors to stderr).
 
 ## Instructions
 
-1. Create `home/.claude/hooks/sdl-workflow/test-hash-gate.sh`. Start with `#!/usr/bin/env bash` and `set -uo pipefail`.
+1. Create `home/dot-claude/hooks/sdl-workflow/test-hash-gate.sh`. Start with `#!/usr/bin/env bash` and `set -uo pipefail`.
 
 2. Parse arguments: accept one positional argument `<feature-dir>`. Validate the directory exists. Print usage to stderr and exit 2 if missing or invalid.
 
@@ -39,11 +39,11 @@ Exit conventions: 0 = pass (JSON to stdout), 2 = fail (errors to stderr).
    - If any discrepancies: exit 2.
    - If all match: print `{"gate":"test-hash","result":"pass","action":"verified","files":<count>}` to stdout. Exit 0.
 
-9. After producing the final JSON result (pass or fail), log the result to the audit log. Derive the spec name from the feature directory name (basename of `$FEATURE_DIR`). Call `audit-logger.py log <spec-name> gate_result '<json>'` where `<json>` is the same JSON emitted to stdout. Locate `audit-logger.py` relative to the script at `home/.claude/hooks/sdl-workflow/audit-logger.py`. If the logger is not available (file not found), skip logging silently — do not fail the gate.
+9. After producing the final JSON result (pass or fail), log the result to the audit log. Derive the spec name from the feature directory name (basename of `$FEATURE_DIR`). Call `audit-logger.py log <spec-name> gate_result '<json>'` where `<json>` is the same JSON emitted to stdout. Locate `audit-logger.py` relative to the script at `home/dot-claude/hooks/sdl-workflow/audit-logger.py`. If the logger is not available (file not found), skip logging silently — do not fail the gate.
 
 10. Make the script executable: include a comment at the top reminding to `chmod +x`.
 
-10. Create `home/.claude/docs/sdl-workflow/verify-yml-schema.md`. Document the verify.yml check interface:
+10. Create `home/dot-claude/docs/sdl-workflow/verify-yml-schema.md`. Document the verify.yml check interface:
 
     - Start with the schema definition: each entry under `checks:` has fields `name` (string, check identifier), `command` (string, shell command to execute), `required` (boolean, true = pipeline-blocking failure, false = advisory/log only), `threshold` (optional numeric, check-specific).
     - Show the YAML structure:
@@ -57,15 +57,15 @@ Exit conventions: 0 = pass (JSON to stdout), 2 = fail (errors to stderr).
     - Include 3 example check entries:
       1. `test-execution`: `command: "npm test -- --reporter json"`, `required: true`
       2. `linter`: `command: "npm run lint -- --format json"`, `required: true`
-      3. `test-hash-immutability`: `command: "bash home/.claude/hooks/sdl-workflow/test-hash-gate.sh ai-docs/$FEATURE/"`, `required: true`
+      3. `test-hash-immutability`: `command: "bash home/dot-claude/hooks/sdl-workflow/test-hash-gate.sh ai-docs/$FEATURE/"`, `required: true`
     - Document the execution contract: the command runs in the project root, exit 0 = check passed, non-zero = check failed. Stdout should be JSON with at minimum `{"result": "pass"|"fail"}`. Stderr is captured for error reporting.
     - Document the `required` vs advisory distinction: required checks block pipeline advancement and set state to PARKED on failure; advisory checks log results but do not block.
     - Document threshold semantics: when present, the execution engine passes the threshold to the check command (mechanism TBD in Phase 2). Checks that support thresholds document their threshold interpretation.
 
 ## Files to create/modify
 
-- `home/.claude/hooks/sdl-workflow/test-hash-gate.sh` (create)
-- `home/.claude/docs/sdl-workflow/verify-yml-schema.md` (create)
+- `home/dot-claude/hooks/sdl-workflow/test-hash-gate.sh` (create)
+- `home/dot-claude/docs/sdl-workflow/verify-yml-schema.md` (create)
 
 ## Test requirements
 

@@ -4,15 +4,15 @@ Modify the existing `/spec-review` skill to add test strategy review via the tes
 
 ## Context
 
-The `/spec-review` skill at `home/.claude/skills/spec-review/SKILL.md` currently runs a council review, synthesizes findings, determines threat model need, runs the gate, and transitions. This task adds a test strategy review step between finding synthesis (after council review) and gate invocation. The test reviewer agent (checkpoint 1) validates the spec's testing strategy via an Agent Teams teammate invocation for context isolation.
+The `/spec-review` skill at `home/dot-claude/skills/spec-review/SKILL.md` currently runs a council review, synthesizes findings, determines threat model need, runs the gate, and transitions. This task adds a test strategy review step between finding synthesis (after council review) and gate invocation. The test reviewer agent (checkpoint 1) validates the spec's testing strategy via an Agent Teams teammate invocation for context isolation.
 
-The brownfield doc at `home/.claude/docs/brownfield-spec.md` provides 5 instructions for the `/spec` skill to load when writing technical approaches in existing codebases. These instructions ensure specs account for existing code patterns and avoid duplication or partial replacement.
+The brownfield doc at `home/dot-claude/docs/brownfield-spec.md` provides 5 instructions for the `/spec` skill to load when writing technical approaches in existing codebases. These instructions ensure specs account for existing code patterns and avoid duplication or partial replacement.
 
 All existing skill behavior must be preserved — council invocation, classification, finding synthesis, threat model determination, gate invocation, and transition logic remain unchanged. The test strategy review is inserted as a new step.
 
 ## Instructions
 
-1. Read `home/.claude/skills/spec-review/SKILL.md` to understand the current structure and section ordering.
+1. Read `home/dot-claude/skills/spec-review/SKILL.md` to understand the current structure and section ordering.
 
 2. Add a new section between "Finding synthesis" and "Threat model determination" with the heading `## Test strategy review`. Add the following content:
 
@@ -26,7 +26,7 @@ All existing skill behavior must be preserved — council invocation, classifica
 
 5. Verify no existing sections were removed or reordered. The council invocation, finding synthesis, threat model determination, gate invocation, and transition sections must remain verbatim except for any minimal adjustments needed to reference the test strategy review result in the overall pass/fail determination.
 
-6. Create `home/.claude/docs/brownfield-spec.md` with the following content (direct-address imperatives, no preamble, no introduction):
+6. Create `home/dot-claude/docs/brownfield-spec.md` with the following content (direct-address imperatives, no preamble, no introduction):
 
    Line 1: `Search the codebase for existing code that overlaps with the proposed feature before writing the technical approach.`
 
@@ -48,8 +48,8 @@ All existing skill behavior must be preserved — council invocation, classifica
 
 ## Files to create/modify
 
-- `home/.claude/skills/spec-review/SKILL.md` (modify)
-- `home/.claude/docs/brownfield-spec.md` (create)
+- `home/dot-claude/skills/spec-review/SKILL.md` (modify)
+- `home/dot-claude/docs/brownfield-spec.md` (create)
 
 ## Test requirements
 

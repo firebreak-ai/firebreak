@@ -3,7 +3,7 @@ id: T-06
 type: implementation
 wave: 2
 covers: ["AC-05"]
-files_to_modify: ["../../home/.claude/docs/sdl-workflow/task-compilation.md"]
+files_to_modify: ["../../home/dot-claude/docs/sdl-workflow/task-compilation.md"]
 test_tasks: ["T-02"]
 completion_gate: "task-compilation.md contains verified interface contracts section, orchestrator risk flagging with Sonnet routing, codebase-grounded compilation section with mismatch-resolution flow, and category field in task.json schema"
 ---
@@ -14,7 +14,7 @@ Updates the task compilation guide with verified interface contracts, codebase-g
 
 ## Context
 
-The current task compilation guide at `home/.claude/docs/sdl-workflow/task-compilation.md` specifies task file structure, sizing constraints, and the task manifest schema. It does not specify interface contracts between tasks, does not require the breakdown agent to read actual source files during compilation, and the task.json schema does not include a `category` field.
+The current task compilation guide at `home/dot-claude/docs/sdl-workflow/task-compilation.md` specifies task file structure, sizing constraints, and the task manifest schema. It does not specify interface contracts between tasks, does not require the breakdown agent to read actual source files during compilation, and the task.json schema does not include a `category` field.
 
 The greenfield test showed 4 of 5 bugs were contract-level mismatches: tasks made assumptions about conventions (import styles, key strings, wiring patterns) that didn't match the actual code. The fix is two-fold: (1) tasks must specify interface contracts explicitly, and (2) the breakdown agent must verify those contracts against actual code.
 
@@ -51,7 +51,7 @@ The greenfield test showed 4 of 5 bugs were contract-level mismatches: tasks mad
 ## Files to create/modify
 
 Modify:
-- `home/.claude/docs/sdl-workflow/task-compilation.md`
+- `home/dot-claude/docs/sdl-workflow/task-compilation.md`
 
 ## Test requirements
 

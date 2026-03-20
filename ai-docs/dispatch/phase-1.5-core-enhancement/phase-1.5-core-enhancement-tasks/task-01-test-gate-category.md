@@ -13,7 +13,7 @@ Creates test fixtures and test cases for the `category` field in the task review
 
 ## Context
 
-The task reviewer gate (`home/.claude/hooks/sdl-workflow/task-reviewer-gate.sh`) currently enforces that every AC must be covered by both a test task and an implementation task. Phase 1.5 adds a `category` field to the top level of `task.json` that relaxes this invariant for corrective and testing-infrastructure features. The gate currently does not read `task.json` at all — it parses YAML frontmatter from individual task .md files. The implementation task (T-08) will update the gate to also read `task.json` for the `category` field.
+The task reviewer gate (`home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh`) currently enforces that every AC must be covered by both a test task and an implementation task. Phase 1.5 adds a `category` field to the top level of `task.json` that relaxes this invariant for corrective and testing-infrastructure features. The gate currently does not read `task.json` at all — it parses YAML frontmatter from individual task .md files. The implementation task (T-08) will update the gate to also read `task.json` for the `category` field.
 
 ## Instructions
 

@@ -16,7 +16,7 @@ The `/implement` skill is the most complex skill in the pipeline. It manages an 
 
 3. **Fail fast**: Check Stage 3 gate. Call: `"$HOME"/.claude/hooks/sdl-workflow/breakdown-gate.sh <spec-path> <tasks-dir>`. If fail, report and offer to run `/breakdown`.
 
-4. **Load guidance**: Read `home/.claude/docs/sdl-workflow/implementation-guide.md` for wave execution protocol.
+4. **Load guidance**: Read `home/dot-claude/docs/sdl-workflow/implementation-guide.md` for wave execution protocol.
 
 5. **Team setup**:
    - Check for `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` flag.
@@ -63,11 +63,11 @@ argument-hint: "[feature-name]"
 
 ## Instructions
 
-1. Create directory `home/.claude/skills/implement/` if it doesn't exist.
-2. Create `home/.claude/skills/implement/SKILL.md`.
+1. Create directory `home/dot-claude/skills/implement/` if it doesn't exist.
+2. Create `home/dot-claude/skills/implement/SKILL.md`.
 3. Read the created docs at:
-   - `home/.claude/docs/sdl-workflow/implementation-guide.md` (primary doc)
-   - `home/.claude/docs/context-assets/skills.md` (skill authoring principles)
+   - `home/dot-claude/docs/sdl-workflow/implementation-guide.md` (primary doc)
+   - `home/dot-claude/docs/context-assets/skills.md` (skill authoring principles)
 4. Write the skill with:
 
    **Frontmatter**: As specified above.
@@ -89,7 +89,7 @@ argument-hint: "[feature-name]"
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/skills/implement/SKILL.md`
+- **Create**: `home/dot-claude/skills/implement/SKILL.md`
 
 ## Acceptance Criteria
 

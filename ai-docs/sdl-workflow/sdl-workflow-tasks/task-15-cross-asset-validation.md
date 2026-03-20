@@ -11,24 +11,24 @@ This task reviews all 14 assets produced by tasks T-01 through T-14 as an integr
 ### Assets to validate
 
 **Docs (6 files)**:
-- `home/.claude/docs/sdl-workflow.md` (index)
-- `home/.claude/docs/sdl-workflow/feature-spec-guide.md`
-- `home/.claude/docs/sdl-workflow/review-perspectives.md`
-- `home/.claude/docs/sdl-workflow/threat-modeling.md`
-- `home/.claude/docs/sdl-workflow/task-compilation.md`
-- `home/.claude/docs/sdl-workflow/implementation-guide.md`
+- `home/dot-claude/docs/sdl-workflow.md` (index)
+- `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md`
+- `home/dot-claude/docs/sdl-workflow/review-perspectives.md`
+- `home/dot-claude/docs/sdl-workflow/threat-modeling.md`
+- `home/dot-claude/docs/sdl-workflow/task-compilation.md`
+- `home/dot-claude/docs/sdl-workflow/implementation-guide.md`
 
 **Skills (4 files)**:
-- `home/.claude/skills/spec/SKILL.md`
-- `home/.claude/skills/spec-review/SKILL.md`
-- `home/.claude/skills/breakdown/SKILL.md`
-- `home/.claude/skills/implement/SKILL.md`
+- `home/dot-claude/skills/spec/SKILL.md`
+- `home/dot-claude/skills/spec-review/SKILL.md`
+- `home/dot-claude/skills/breakdown/SKILL.md`
+- `home/dot-claude/skills/implement/SKILL.md`
 
 **Scripts (4 files)**:
-- `home/.claude/hooks/sdl-workflow/spec-gate.sh`
-- `home/.claude/hooks/sdl-workflow/review-gate.sh`
-- `home/.claude/hooks/sdl-workflow/breakdown-gate.sh`
-- `home/.claude/hooks/sdl-workflow/task-completed.sh`
+- `home/dot-claude/hooks/sdl-workflow/spec-gate.sh`
+- `home/dot-claude/hooks/sdl-workflow/review-gate.sh`
+- `home/dot-claude/hooks/sdl-workflow/breakdown-gate.sh`
+- `home/dot-claude/hooks/sdl-workflow/task-completed.sh`
 
 ### Validation criteria
 
@@ -74,7 +74,7 @@ For each gate script:
 ## Instructions
 
 1. Read ALL 14 asset files listed above.
-2. Read the context asset authoring principles at `home/.claude/docs/context-assets.md`.
+2. Read the context asset authoring principles at `home/dot-claude/docs/context-assets.md`.
 3. Read the SDL workflow spec at `ai-docs/sdl-workflow/sdl-workflow-spec.md`.
 4. For each doc and skill: run through the authoring principles checklist (section 1). Note any violations with the specific file and line.
 5. Run cross-asset consistency checks (section 2). Verify paths, transitions, and descriptions.

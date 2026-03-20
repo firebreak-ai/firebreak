@@ -3,7 +3,7 @@ id: T-09
 type: implementation
 wave: 2
 covers: ["AC-10"]
-files_to_create: ["../../home/.claude/docs/sdl-workflow/corrective-workflow.md"]
+files_to_create: ["../../home/dot-claude/docs/sdl-workflow/corrective-workflow.md"]
 test_tasks: ["T-02"]
 completion_gate: "corrective-workflow.md exists with sections for full diagnostic mode, fast-track mode, escalation criteria, entry-point classification, and pipeline integration"
 ---
@@ -18,7 +18,7 @@ The greenfield bug-fix cycle validated a diagnostic workflow distinct from the s
 
 ## Instructions
 
-1. Create `home/.claude/docs/sdl-workflow/corrective-workflow.md` with these sections:
+1. Create `home/dot-claude/docs/sdl-workflow/corrective-workflow.md` with these sections:
 
 2. **Full diagnostic workflow** (new bug class, unknown root cause): 7 steps — write behavioral tests, run tests, root cause analysis by context-independent agents, spec the fix, review, breakdown and implement with `category: corrective`, retest (return to step 3 if failures remain).
 
@@ -33,7 +33,7 @@ The greenfield bug-fix cycle validated a diagnostic workflow distinct from the s
 ## Files to create/modify
 
 Create:
-- `home/.claude/docs/sdl-workflow/corrective-workflow.md`
+- `home/dot-claude/docs/sdl-workflow/corrective-workflow.md`
 
 ## Test requirements
 

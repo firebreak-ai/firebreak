@@ -18,21 +18,21 @@ The greenfield test revealed significant permissions friction during pipeline op
 
 ## Instructions
 
-1. Read `home/.claude/settings.json` and `home/.claude/settings.local.json` (if it exists) to identify current allowlist rules.
+1. Read `home/dot-claude/settings.json` and `home/dot-claude/settings.local.json` (if it exists) to identify current allowlist rules.
 
 2. For each pipeline stage, identify tool call patterns from the skill and agent definitions. Read these specific files:
 
-   **Skills** (in `home/.claude/skills/`):
+   **Skills** (in `home/dot-claude/skills/`):
    - `spec/SKILL.md` — `/spec` skill
    - `spec-review/SKILL.md` — `/spec-review` skill
    - `breakdown/SKILL.md` — `/breakdown` skill
    - `implement/SKILL.md` — `/implement` skill (if exists)
    - `council/SKILL.md` — `/council` skill
 
-   **Agents** (in `home/.claude/agents/`):
+   **Agents** (in `home/dot-claude/agents/`):
    - `test-reviewer.md` — test reviewer agent (invoked during review and breakdown)
 
-   **Hooks** (in `home/.claude/hooks/sdl-workflow/`):
+   **Hooks** (in `home/dot-claude/hooks/sdl-workflow/`):
    - `spec-gate.sh`, `review-gate.sh`, `breakdown-gate.sh`, `task-reviewer-gate.sh` — gate scripts invoked by skills
 
    For each file, identify Bash commands, file reads/writes, and other tool calls. Map each tool call pattern against the allowlist rules from step 1.

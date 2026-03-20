@@ -58,7 +58,7 @@ Exit conventions: 0 = pass (JSON to stdout), 2 = fail (errors to stderr).
 
 10. Create `tests/sdl-workflow/test-spec-validator.sh` as a bash test script. Use `set -uo pipefail`. Define test counter and pass/fail tracking. Each test prints TAP format: `ok <n> - <description>` or `not ok <n> - <description>`.
 
-11. Define `GATE` variable pointing to `home/.claude/hooks/sdl-workflow/spec-gate.sh` relative to project root. Define `FIXTURES` pointing to `tests/fixtures/specs/` relative to project root. Determine project root using `cd "$(dirname "$0")/../.." && pwd`.
+11. Define `GATE` variable pointing to `home/dot-claude/hooks/sdl-workflow/spec-gate.sh` relative to project root. Define `FIXTURES` pointing to `tests/fixtures/specs/` relative to project root. Determine project root using `cd "$(dirname "$0")/../.." && pwd`.
 
 12. Write test: valid feature spec passes. Run `$GATE "$FIXTURES/valid-spec.md"`. Assert exit 0. Assert stdout contains `"result":"pass"` and `"scope":"feature"`. Assert stderr is empty (no warnings).
 

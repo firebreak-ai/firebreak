@@ -36,7 +36,7 @@ To check: parse the spec file for AC-NN patterns in the acceptance criteria sect
 
 ### Script location
 
-`home/.claude/hooks/sdl-workflow/breakdown-gate.sh`
+`home/dot-claude/hooks/sdl-workflow/breakdown-gate.sh`
 
 ### Language consideration
 
@@ -46,7 +46,7 @@ Preferred approach: single bash script that embeds a Python heredoc for the comp
 
 ## Instructions
 
-1. Create `home/.claude/hooks/sdl-workflow/breakdown-gate.sh`.
+1. Create `home/dot-claude/hooks/sdl-workflow/breakdown-gate.sh`.
 2. Structure the script:
 
    a. **Argument parsing**: Validate spec path and tasks directory exist.
@@ -75,7 +75,7 @@ Preferred approach: single bash script that embeds a Python heredoc for the comp
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/hooks/sdl-workflow/breakdown-gate.sh`
+- **Create**: `home/dot-claude/hooks/sdl-workflow/breakdown-gate.sh`
 
 ## Acceptance Criteria
 

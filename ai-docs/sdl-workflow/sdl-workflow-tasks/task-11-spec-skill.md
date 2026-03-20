@@ -14,7 +14,7 @@ The `/spec` skill is invoked by the user (or recognized from natural language) t
    - If name provided: create artifact directory `ai-docs/<name>/` and start the spec file.
    - If omitted: ask the user for a name and brief description.
 
-2. **Load guidance**: Read `home/.claude/docs/sdl-workflow/feature-spec-guide.md` for detailed stage instructions. This doc tells the agent how to co-author the spec.
+2. **Load guidance**: Read `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md` for detailed stage instructions. This doc tells the agent how to co-author the spec.
 
 3. **Scope recognition**: Determine project-level vs. feature-level from the user's description. Project-level: produce overview + feature decomposition. Feature-level: produce feature spec.
 
@@ -56,11 +56,11 @@ argument-hint: "[feature-name]"
 
 ## Instructions
 
-1. Create directory `home/.claude/skills/spec/` if it doesn't exist.
-2. Create `home/.claude/skills/spec/SKILL.md`.
+1. Create directory `home/dot-claude/skills/spec/` if it doesn't exist.
+2. Create `home/dot-claude/skills/spec/SKILL.md`.
 3. Read the created docs at:
-   - `home/.claude/docs/sdl-workflow/feature-spec-guide.md` (the doc this skill routes to)
-   - `home/.claude/docs/context-assets/skills.md` (skill authoring principles)
+   - `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md` (the doc this skill routes to)
+   - `home/dot-claude/docs/context-assets/skills.md` (skill authoring principles)
 4. Write the skill with:
 
    **Frontmatter**: As specified above. Confirm against skill authoring principles.
@@ -81,7 +81,7 @@ argument-hint: "[feature-name]"
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/skills/spec/SKILL.md`
+- **Create**: `home/dot-claude/skills/spec/SKILL.md`
 
 ## Acceptance Criteria
 

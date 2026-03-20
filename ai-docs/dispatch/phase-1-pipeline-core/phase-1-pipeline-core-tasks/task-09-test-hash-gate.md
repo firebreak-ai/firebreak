@@ -23,7 +23,7 @@ Exit conventions: 0 = pass (JSON to stdout), 2 = fail (errors to stderr listing 
 
 3. Create `tests/sdl-workflow/test-hash-gate.sh` as a bash test script. Use `set -uo pipefail`. Define test counter and pass/fail tracking. TAP format output.
 
-4. Define `GATE` variable pointing to `home/.claude/hooks/sdl-workflow/test-hash-gate.sh` relative to project root. Determine project root using `cd "$(dirname "$0")/../.." && pwd`.
+4. Define `GATE` variable pointing to `home/dot-claude/hooks/sdl-workflow/test-hash-gate.sh` relative to project root. Determine project root using `cd "$(dirname "$0")/../.." && pwd`.
 
 5. Define a setup function that creates a temporary directory structure simulating `ai-docs/<feature>/`. Copy the sample test files from `tests/fixtures/hash-gate/sample-tests/` into a `tests/` subdirectory within the temp feature dir. Register cleanup with `trap cleanup EXIT`.
 

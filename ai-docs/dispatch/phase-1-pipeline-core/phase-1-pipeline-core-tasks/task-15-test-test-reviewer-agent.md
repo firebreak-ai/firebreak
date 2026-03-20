@@ -4,7 +4,7 @@ Write a bash test script that validates the test reviewer agent definition file 
 
 ## Context
 
-The test reviewer agent is a Claude Code agent definition at `home/.claude/agents/test-reviewer.md`. It uses YAML frontmatter and a Markdown body following the patterns in `home/.claude/docs/context-assets/agents.md`. The agent validates test quality at 5 pipeline checkpoints with pipeline-blocking authority. Each checkpoint must define: artifact set (what it receives), evaluation criteria, pass/fail conditions, and output format. The agent operates under context isolation — each invocation is independent with no access to other agents' reasoning.
+The test reviewer agent is a Claude Code agent definition at `home/dot-claude/agents/test-reviewer.md`. It uses YAML frontmatter and a Markdown body following the patterns in `home/dot-claude/docs/context-assets/agents.md`. The agent validates test quality at 5 pipeline checkpoints with pipeline-blocking authority. Each checkpoint must define: artifact set (what it receives), evaluation criteria, pass/fail conditions, and output format. The agent operates under context isolation — each invocation is independent with no access to other agents' reasoning.
 
 The 5 checkpoints are:
 1. Spec review (Stage 3) — receives spec + spec schema
@@ -19,7 +19,7 @@ The test validates structural completeness only. It does not evaluate whether th
 
 1. Create `tests/sdl-workflow/test-test-reviewer-agent.sh` as a bash test script. Use `set -uo pipefail`. Define a test counter and pass/fail tracking at the top. Each test prints `ok <n> - <description>` on pass or `not ok <n> - <description>` on fail (TAP format).
 
-2. Determine project root using `cd "$(dirname "$0")/../.." && pwd`. Define `AGENT_FILE` pointing to `home/.claude/agents/test-reviewer.md` relative to project root.
+2. Determine project root using `cd "$(dirname "$0")/../.." && pwd`. Define `AGENT_FILE` pointing to `home/dot-claude/agents/test-reviewer.md` relative to project root.
 
 3. Write test: agent file exists. Assert `$AGENT_FILE` exists and is a non-empty file.
 

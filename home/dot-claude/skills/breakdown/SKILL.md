@@ -6,7 +6,7 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
-Read `home/.claude/docs/sdl-workflow/task-compilation.md` before proceeding.
+Read `home/dot-claude/docs/sdl-workflow/task-compilation.md` before proceeding.
 
 If `$ARGUMENTS` is empty, ask for the feature name before continuing.
 
@@ -30,7 +30,7 @@ Read the `Perspectives:` metadata line from the first line of the review file an
 
 Invoke an Agent Teams teammate with independent context. The teammate receives only the spec file (`ai-docs/$FEATURE/$FEATURE-spec.md`). It does NOT receive the review document, threat model, or any other artifacts.
 
-Load brownfield instructions from `home/.claude/docs/brownfield-breakdown.md` and include them in the teammate's prompt.
+Load brownfield instructions from `home/dot-claude/docs/brownfield-breakdown.md` and include them in the teammate's prompt.
 
 The teammate produces test tasks from the spec's testing strategy and acceptance criteria. One task per AC or logical test group. Each test task specifies: files to create, test framework conventions to follow, AC identifiers covered, and a completion gate (tests compile and fail before implementation).
 
@@ -40,7 +40,7 @@ Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-tes
 
 Invoke a second Agent Teams teammate with independent context, after the test task agent completes. The teammate receives the spec file AND the test task files produced by the test task agent. It receives the test task files as artifacts — not the test task agent's reasoning or conversation.
 
-Load brownfield instructions from `home/.claude/docs/brownfield-breakdown.md` and include them in the teammate's prompt.
+Load brownfield instructions from `home/dot-claude/docs/brownfield-breakdown.md` and include them in the teammate's prompt.
 
 The teammate produces implementation tasks from the spec's technical approach and acceptance criteria. Each task specifies: files to create/modify (explicit paths), AC identifiers satisfied, references to specific test tasks as completion gates, and constraints (file scope, no test modification).
 
@@ -52,7 +52,7 @@ Include wave assignments in each task's frontmatter. Wave N+1 tasks may referenc
 
 ## Task manifest assembly
 
-After both agents complete, assemble `ai-docs/$FEATURE/$FEATURE-tasks/task.json` conforming to the task manifest schema in `home/.claude/docs/sdl-workflow/task-compilation.md`.
+After both agents complete, assemble `ai-docs/$FEATURE/$FEATURE-tasks/task.json` conforming to the task manifest schema in `home/dot-claude/docs/sdl-workflow/task-compilation.md`.
 
 For each task file produced by the agents, create a task entry with:
 - `id`: from the task file's frontmatter `id` field

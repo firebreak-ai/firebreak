@@ -39,7 +39,7 @@ Exit conventions: 0 = pass (JSON to stdout), 2 = fail (errors to stderr listing 
 
 10. Create fixture for files_to_modify with non-existent path: `tests/fixtures/tasks/bad-path/task-bad-path.md` — type: implementation, `files_to_modify: [src/nonexistent-file-that-does-not-exist.py]`, all other fields valid.
 
-11. Create `tests/sdl-workflow/test-task-reviewer.sh` as a bash test script. Use `set -uo pipefail`. TAP format. Define `GATE` pointing to `home/.claude/hooks/sdl-workflow/task-reviewer-gate.sh` relative to project root. Define `FIXTURES` pointing to `tests/fixtures/tasks/`.
+11. Create `tests/sdl-workflow/test-task-reviewer.sh` as a bash test script. Use `set -uo pipefail`. TAP format. Define `GATE` pointing to `home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh` relative to project root. Define `FIXTURES` pointing to `tests/fixtures/tasks/`.
 
 12. Write test: valid task set passes. Run `$GATE "$FIXTURES/valid-spec.md" "$FIXTURES/valid/"`. Assert exit 0. Assert stdout contains `"result":"pass"`.
 

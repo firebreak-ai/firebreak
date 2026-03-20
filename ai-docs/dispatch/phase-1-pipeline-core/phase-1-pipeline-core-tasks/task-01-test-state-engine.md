@@ -52,7 +52,7 @@ State JSON schema:
 
 2. Define a setup function that creates a temporary directory for `.claude/automation/state/`, sets `STATE_DIR` to that path, and exports it so `state-engine.py` uses it instead of the default location. Define a cleanup function registered with `trap cleanup EXIT` that removes the temporary directory.
 
-3. Define `ENGINE` variable pointing to `home/.claude/hooks/sdl-workflow/state-engine.py` (relative to project root). Each test invocation runs `python3 "$ENGINE" <args>` with the `STATE_DIR` environment variable set.
+3. Define `ENGINE` variable pointing to `home/dot-claude/hooks/sdl-workflow/state-engine.py` (relative to project root). Each test invocation runs `python3 "$ENGINE" <args>` with the `STATE_DIR` environment variable set.
 
 4. Write test: `create` produces valid JSON. Run `create test-spec`. Capture stdout. Assert exit code 0. Parse output with `python3 -c "import json,sys; d=json.load(sys.stdin); ..."` to verify: `spec_name` equals `test-spec`, `current_state` equals `QUEUED`, `stage_timestamps` has a `QUEUED` key with an ISO8601 value, `agent_ids` is an empty list, `error_history` is an empty list.
 

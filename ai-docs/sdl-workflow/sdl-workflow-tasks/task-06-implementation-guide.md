@@ -116,8 +116,8 @@ After final verification and retrospective:
 
 ## Instructions
 
-1. Create `home/.claude/docs/sdl-workflow/implementation-guide.md`.
-2. Read `home/.claude/docs/context-assets.md` for authoring principles. Apply them.
+1. Create `home/dot-claude/docs/sdl-workflow/implementation-guide.md`.
+2. Read `home/dot-claude/docs/context-assets.md` for authoring principles. Apply them.
 3. Write for the team lead agent running Stage 4 — direct imperatives.
 4. Structure the doc:
 
@@ -137,7 +137,7 @@ After final verification and retrospective:
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/docs/sdl-workflow/implementation-guide.md`
+- **Create**: `home/dot-claude/docs/sdl-workflow/implementation-guide.md`
 
 ## Acceptance Criteria
 

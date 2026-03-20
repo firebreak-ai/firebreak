@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-GATE="$PROJECT_ROOT/home/.claude/hooks/sdl-workflow/spec-gate.sh"
+GATE="$PROJECT_ROOT/home/dot-claude/hooks/sdl-workflow/spec-gate.sh"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/specs"
 
 ok() {

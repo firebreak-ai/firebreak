@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-AGENT_FILE="$PROJECT_ROOT/home/.claude/agents/test-reviewer.md"
+AGENT_FILE="$PROJECT_ROOT/home/dot-claude/agents/test-reviewer.md"
 
 ok() {
   TOTAL=$((TOTAL + 1))

@@ -14,7 +14,7 @@ AC format validation (`AC-NN`) and testing strategy AC traceability are new stru
 
 ## Instructions
 
-1. Read the current `home/.claude/hooks/sdl-workflow/spec-gate.sh` in full. Identify the existing validation flow: argument parsing, scope detection, section checks, open questions check, feature map check, pass/fail output.
+1. Read the current `home/dot-claude/hooks/sdl-workflow/spec-gate.sh` in full. Identify the existing validation flow: argument parsing, scope detection, section checks, open questions check, feature map check, pass/fail output.
 
 2. Add AC identifier format validation after the existing section checks (within the `if [[ "$SCOPE" == "feature" ]]` block). Extract the Acceptance criteria section body. Use grep or awk to find all AC identifiers. Verify each matches the pattern `AC-[0-9][0-9]` (exactly `AC-` followed by two digits). If any identifiers are found that don't match this pattern, add to `FAILS`. If no AC identifiers are found at all in the Acceptance criteria section, add "Acceptance criteria: no AC identifiers found" to `FAILS`.
 
@@ -36,7 +36,7 @@ AC format validation (`AC-NN`) and testing strategy AC traceability are new stru
 
 7. Modify the final JSON output line to include the injection warning count. Change from `printf '{"gate":"spec","scope":"%s","result":"pass"}\n'` to include `"injection_warnings":<N>`. If injection detection is not run (structural failure), the warning count is omitted.
 
-9. After producing the final JSON result (pass or fail), log the result to the audit log. Determine the spec name from the filename (strip path and extension). Call `audit-logger.py log <spec-name> gate_result '<json>'` where `<json>` is the same JSON emitted to stdout (on pass) or a `{"gate":"spec","result":"fail","errors":[...]}` summary (on fail). Locate `audit-logger.py` relative to the script at `home/.claude/hooks/sdl-workflow/audit-logger.py`. If the logger is not available (file not found), skip logging silently — do not fail the gate.
+9. After producing the final JSON result (pass or fail), log the result to the audit log. Determine the spec name from the filename (strip path and extension). Call `audit-logger.py log <spec-name> gate_result '<json>'` where `<json>` is the same JSON emitted to stdout (on pass) or a `{"gate":"spec","result":"fail","errors":[...]}` summary (on fail). Locate `audit-logger.py` relative to the script at `home/dot-claude/hooks/sdl-workflow/audit-logger.py`. If the logger is not available (file not found), skip logging silently — do not fail the gate.
 
 10. Verify backward compatibility: the existing valid-spec fixture and overview-spec fixture from task-07 must still pass with exit 0 and no warnings. The existing argument parsing, scope detection, and section validation logic must not change behavior.
 
@@ -44,7 +44,7 @@ AC format validation (`AC-NN`) and testing strategy AC traceability are new stru
 
 ## Files to create/modify
 
-- `home/.claude/hooks/sdl-workflow/spec-gate.sh` (modify)
+- `home/dot-claude/hooks/sdl-workflow/spec-gate.sh` (modify)
 
 ## Test requirements
 

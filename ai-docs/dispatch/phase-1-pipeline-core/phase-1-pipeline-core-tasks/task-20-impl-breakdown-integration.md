@@ -4,17 +4,17 @@ Modify the existing `/breakdown` skill to implement sequential context-independe
 
 ## Context
 
-The `/breakdown` skill at `home/.claude/skills/breakdown/SKILL.md` currently compiles tasks in a single pass following `task-compilation.md`. This task replaces the monolithic compilation with two sequential Agent Teams teammates: a test task agent (receives only the spec, produces test tasks) and an implementation task agent (receives spec plus test task files, produces implementation tasks). Both run as separate Agent Teams teammates with independent context windows. After both complete, the task overview is assembled and the task reviewer gate (deterministic + test reviewer checkpoint 2) runs before the existing breakdown gate.
+The `/breakdown` skill at `home/dot-claude/skills/breakdown/SKILL.md` currently compiles tasks in a single pass following `task-compilation.md`. This task replaces the monolithic compilation with two sequential Agent Teams teammates: a test task agent (receives only the spec, produces test tasks) and an implementation task agent (receives spec plus test task files, produces implementation tasks). Both run as separate Agent Teams teammates with independent context windows. After both complete, the task overview is assembled and the task reviewer gate (deterministic + test reviewer checkpoint 2) runs before the existing breakdown gate.
 
-The brownfield doc at `home/.claude/docs/brownfield-breakdown.md` provides 5 instructions for both agents to load when producing task files in existing codebases.
+The brownfield doc at `home/dot-claude/docs/brownfield-breakdown.md` provides 5 instructions for both agents to load when producing task files in existing codebases.
 
 All existing behavior around input validation, review gate check, and stage transitions must be preserved. The core change is how tasks are produced (two agents instead of one pass) and the addition of task reviewer + test reviewer invocations before the breakdown gate.
 
 ## Instructions
 
-1. Read `home/.claude/skills/breakdown/SKILL.md` to understand the current structure.
+1. Read `home/dot-claude/skills/breakdown/SKILL.md` to understand the current structure.
 
-2. Read `home/.claude/docs/sdl-workflow/task-compilation.md` to understand the current task compilation rules that the two agents must follow.
+2. Read `home/dot-claude/docs/sdl-workflow/task-compilation.md` to understand the current task compilation rules that the two agents must follow.
 
 3. Preserve the existing frontmatter, argument handling, input location, input verification, and Stage 2 gate invocation (lines 1 through the review gate check). These remain unchanged.
 
@@ -23,7 +23,7 @@ All existing behavior around input validation, review gate check, and stage tran
 5. Add a section `## Test task agent` with these instructions:
    - Invoke an Agent Teams teammate with independent context.
    - The teammate receives only the spec file (`ai-docs/$FEATURE/$FEATURE-spec.md`). It does NOT receive the review document, threat model, or any other artifacts.
-   - Load brownfield instructions from `home/.claude/docs/brownfield-breakdown.md` and include them in the teammate's prompt.
+   - Load brownfield instructions from `home/dot-claude/docs/brownfield-breakdown.md` and include them in the teammate's prompt.
    - The teammate produces test tasks from the spec's testing strategy and acceptance criteria. One task per AC or logical test group.
    - Each test task specifies: files to create, test framework conventions to follow, AC identifiers covered, and a completion gate (tests compile and fail before implementation).
    - Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-test-<behavior>.md`.
@@ -32,7 +32,7 @@ All existing behavior around input validation, review gate check, and stage tran
 6. Add a section `## Implementation task agent` with these instructions:
    - Invoke a second Agent Teams teammate with independent context, after the test task agent completes.
    - The teammate receives the spec file AND the test task files produced by the test task agent. It receives the test task files as artifacts — not the test task agent's reasoning or conversation.
-   - Load brownfield instructions from `home/.claude/docs/brownfield-breakdown.md` and include them in the teammate's prompt.
+   - Load brownfield instructions from `home/dot-claude/docs/brownfield-breakdown.md` and include them in the teammate's prompt.
    - The teammate produces implementation tasks from the spec's technical approach and acceptance criteria. Each task specifies: files to create/modify (explicit paths), AC identifiers satisfied, references to specific test tasks as completion gates, and constraints (file scope, no test modification).
    - Each implementation task references specific test task IDs. The completion gate for each implementation task is: the referenced tests pass.
    - Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-impl-<behavior>.md`.
@@ -53,7 +53,7 @@ All existing behavior around input validation, review gate check, and stage tran
 
 11. Preserve the existing context compaction and `/implement` invocation at the end.
 
-12. Create `home/.claude/docs/brownfield-breakdown.md` with the following content (direct-address imperatives, no preamble, no heading):
+12. Create `home/dot-claude/docs/brownfield-breakdown.md` with the following content (direct-address imperatives, no preamble, no heading):
 
     Paragraph 1: `Search the codebase for related functionality before producing task files. Map each task to specific existing files where possible.`
 
@@ -76,8 +76,8 @@ All existing behavior around input validation, review gate check, and stage tran
 
 ## Files to create/modify
 
-- `home/.claude/skills/breakdown/SKILL.md` (modify)
-- `home/.claude/docs/brownfield-breakdown.md` (create)
+- `home/dot-claude/skills/breakdown/SKILL.md` (modify)
+- `home/dot-claude/docs/brownfield-breakdown.md` (create)
 
 ## Test requirements
 

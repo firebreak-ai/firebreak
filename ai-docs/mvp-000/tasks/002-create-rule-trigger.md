@@ -4,7 +4,7 @@
 
 **Reason**: `paths:` frontmatter in `~/.claude/rules/` is silently ignored (GitHub #21858). The rule loaded unconditionally for every session, adding noise without providing path-scoped activation. Path resolution is project-root-relative, so it cannot match `~/.claude/` files even if fixed. The skill trigger (task 003) provides the correct activation via description matching.
 
-**Action taken**: Deleted `home/.claude/rules/context-asset-authoring.md`. Updated `rules.md` leaf with scope warning about `paths:` unreliability at user scope.
+**Action taken**: Deleted `home/dot-claude/rules/context-asset-authoring.md`. Updated `rules.md` leaf with scope warning about `paths:` unreliability at user scope.
 
 ---
 

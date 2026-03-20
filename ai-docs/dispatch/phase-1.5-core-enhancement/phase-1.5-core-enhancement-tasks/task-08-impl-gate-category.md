@@ -3,7 +3,7 @@ id: T-08
 type: implementation
 wave: 2
 covers: ["AC-08"]
-files_to_modify: ["../../home/.claude/hooks/sdl-workflow/task-reviewer-gate.sh"]
+files_to_modify: ["../../home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh"]
 test_tasks: ["T-01"]
 completion_gate: "All tests in test-task-reviewer.sh pass, including the 6 new category test cases"
 ---
@@ -14,7 +14,7 @@ Updates the task reviewer gate script to read the `category` field from `task.js
 
 ## Context
 
-The gate script at `home/.claude/hooks/sdl-workflow/task-reviewer-gate.sh` currently parses YAML frontmatter from individual task .md files. It enforces that every AC must be covered by both a test task and an implementation task. It does NOT currently read `task.json`. The `task.json` manifest lives in the same task directory the gate receives as input.
+The gate script at `home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh` currently parses YAML frontmatter from individual task .md files. It enforces that every AC must be covered by both a test task and an implementation task. It does NOT currently read `task.json`. The `task.json` manifest lives in the same task directory the gate receives as input.
 
 The change: the gate also reads `task.json` from the task directory to extract the `category` field. Based on category, the AC-coverage invariant is relaxed.
 
@@ -36,7 +36,7 @@ The gate script contains a Python block (approximately lines 26-187) that perfor
 ## Files to create/modify
 
 Modify:
-- `home/.claude/hooks/sdl-workflow/task-reviewer-gate.sh`
+- `home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh`
 
 ## Test requirements
 

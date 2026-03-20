@@ -6,7 +6,7 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
-Read `home/.claude/docs/sdl-workflow/review-perspectives.md` before proceeding — it defines classification signals, SDL concerns, invocation modes, and review document structure.
+Read `home/dot-claude/docs/sdl-workflow/review-perspectives.md` before proceeding — it defines classification signals, SDL concerns, invocation modes, and review document structure.
 
 ## Argument
 
@@ -57,7 +57,7 @@ Summarize the feature's security-relevant characteristics: data touched, trust b
 
 Ask the user: "Does this feature need a threat model?" Record the decision and rationale in the review document regardless of the answer.
 
-- **If yes**: Read `home/.claude/docs/sdl-workflow/threat-modeling.md`. Guide creation of `ai-docs/<feature-name>/<feature-name>-threat-model.md`.
+- **If yes**: Read `home/dot-claude/docs/sdl-workflow/threat-modeling.md`. Guide creation of `ai-docs/<feature-name>/<feature-name>-threat-model.md`.
 - **If no**: Record decision and rationale (e.g., "No new trust boundaries, no data handling changes"). Security findings from the Security agent still appear in the review.
 
 ## Gate invocation

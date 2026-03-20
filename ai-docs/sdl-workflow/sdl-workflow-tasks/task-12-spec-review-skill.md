@@ -16,7 +16,7 @@ The `/spec-review` skill orchestrates the review of a completed spec through SDL
 
 3. **Fail fast**: Check Stage 1 gate before proceeding. Call: `"$HOME"/.claude/hooks/sdl-workflow/spec-gate.sh <spec-path>`. If the gate fails, report what's missing and offer to run `/spec <feature-name>` to fix it. Do not proceed to review with a structurally incomplete spec.
 
-4. **Load guidance**: Read `home/.claude/docs/sdl-workflow/review-perspectives.md` for detailed review instructions.
+4. **Load guidance**: Read `home/dot-claude/docs/sdl-workflow/review-perspectives.md` for detailed review instructions.
 
 5. **Council classification**: Analyze the spec and project context. Select which council agents to invoke and in what mode (solo/discussion/full). Present the classification with rationale. Proceed unless the user intervenes to adjust.
 
@@ -25,7 +25,7 @@ The `/spec-review` skill orchestrates the review of a completed spec through SDL
 7. **Synthesize findings**: Consolidate council feedback into `ai-docs/<feature-name>/<feature-name>-review.md`. Organize by SDL concern, not by agent. Tag each finding with severity (blocking/important/informational).
 
 8. **Threat model determination**: Present security summary. Ask the user: "Does this feature need a threat model?" Record decision in review doc.
-   - If yes: read `home/.claude/docs/sdl-workflow/threat-modeling.md` and guide threat model creation. Output: `ai-docs/<feature-name>/<feature-name>-threat-model.md`.
+   - If yes: read `home/dot-claude/docs/sdl-workflow/threat-modeling.md` and guide threat model creation. Output: `ai-docs/<feature-name>/<feature-name>-threat-model.md`.
    - If no: record skip with rationale in review doc.
 
 9. **Gate invocation**: Call: `"$HOME"/.claude/hooks/sdl-workflow/review-gate.sh <review-path> <perspectives> [threat-model-path]`.
@@ -50,12 +50,12 @@ argument-hint: "[feature-name]"
 
 ## Instructions
 
-1. Create directory `home/.claude/skills/spec-review/` if it doesn't exist.
-2. Create `home/.claude/skills/spec-review/SKILL.md`.
+1. Create directory `home/dot-claude/skills/spec-review/` if it doesn't exist.
+2. Create `home/dot-claude/skills/spec-review/SKILL.md`.
 3. Read the created docs at:
-   - `home/.claude/docs/sdl-workflow/review-perspectives.md` (primary doc)
-   - `home/.claude/docs/sdl-workflow/threat-modeling.md` (conditional doc)
-   - `home/.claude/docs/context-assets/skills.md` (skill authoring principles)
+   - `home/dot-claude/docs/sdl-workflow/review-perspectives.md` (primary doc)
+   - `home/dot-claude/docs/sdl-workflow/threat-modeling.md` (conditional doc)
+   - `home/dot-claude/docs/context-assets/skills.md` (skill authoring principles)
 4. Write the skill with:
 
    **Frontmatter**: As specified above.
@@ -79,7 +79,7 @@ argument-hint: "[feature-name]"
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/skills/spec-review/SKILL.md`
+- **Create**: `home/dot-claude/skills/spec-review/SKILL.md`
 
 ## Acceptance Criteria
 

@@ -44,11 +44,11 @@ The `/spec-review` skill calls this script during the transition check. The scri
 
 ### Script location
 
-`home/.claude/hooks/sdl-workflow/review-gate.sh`
+`home/dot-claude/hooks/sdl-workflow/review-gate.sh`
 
 ## Instructions
 
-1. Create `home/.claude/hooks/sdl-workflow/review-gate.sh`.
+1. Create `home/dot-claude/hooks/sdl-workflow/review-gate.sh`.
 2. Use bash with standard Unix tools.
 3. Implement checks:
 
@@ -65,7 +65,7 @@ The `/spec-review` skill calls this script during the transition check. The scri
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/hooks/sdl-workflow/review-gate.sh`
+- **Create**: `home/dot-claude/hooks/sdl-workflow/review-gate.sh`
 
 ## Acceptance Criteria
 

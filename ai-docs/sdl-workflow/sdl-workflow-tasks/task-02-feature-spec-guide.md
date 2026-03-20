@@ -95,8 +95,8 @@ For project-level: after overview and feature decomposition are agreed, ask "Whi
 
 ## Instructions
 
-1. Create `home/.claude/docs/sdl-workflow/feature-spec-guide.md`.
-2. Read `home/.claude/docs/context-assets.md` for authoring principles. Apply them.
+1. Create `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md`.
+2. Read `home/dot-claude/docs/context-assets.md` for authoring principles. Apply them.
 3. The doc's audience is an agent running Stage 1. Write direct imperatives. Start with the first instruction.
 4. Structure the doc with these sections:
 
@@ -114,7 +114,7 @@ For project-level: after overview and feature decomposition are agreed, ask "Whi
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/docs/sdl-workflow/feature-spec-guide.md`
+- **Create**: `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md`
 
 ## Acceptance Criteria
 

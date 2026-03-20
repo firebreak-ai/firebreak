@@ -3,7 +3,7 @@ id: T-04
 type: implementation
 wave: 2
 covers: ["AC-03"]
-files_to_modify: ["../../home/.claude/docs/sdl-workflow/feature-spec-guide.md"]
+files_to_modify: ["../../home/dot-claude/docs/sdl-workflow/feature-spec-guide.md"]
 test_tasks: ["T-02"]
 completion_gate: "feature-spec-guide.md contains user verification steps subsection, integration seam declaration subsection, and runtime value precision guidance"
 ---
@@ -14,7 +14,7 @@ Updates the feature spec guide with three new required subsections: user verific
 
 ## Context
 
-The current spec template at `home/.claude/docs/sdl-workflow/feature-spec-guide.md` has 9 required sections but no user verification steps, no integration seam declarations, and no guidance on runtime value precision. The greenfield test showed that without UV steps, specs produced only unit tests (no e2e). Without seam declarations, integration boundaries went untested. Without runtime precision, specs used conceptual shorthand that caused key-code bugs.
+The current spec template at `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md` has 9 required sections but no user verification steps, no integration seam declarations, and no guidance on runtime value precision. The greenfield test showed that without UV steps, specs produced only unit tests (no e2e). Without seam declarations, integration boundaries went untested. Without runtime precision, specs used conceptual shorthand that caused key-code bugs.
 
 The existing testing strategy section (section 5) has three subsections: "New tests needed", "Existing tests impacted", "Test infrastructure changes." The UV steps subsection goes after these.
 
@@ -35,7 +35,7 @@ The existing testing strategy section (section 5) has three subsections: "New te
 ## Files to create/modify
 
 Modify:
-- `home/.claude/docs/sdl-workflow/feature-spec-guide.md`
+- `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md`
 
 ## Test requirements
 

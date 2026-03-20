@@ -24,7 +24,7 @@ The harness patterns analysis at `ai-docs/dispatch/harness-patterns-analysis.md`
    - Recommendation 4 (Verify before you build) → "Implemented in Phase 1.5: inter-wave baseline-snapshot regression check in implementation-guide.md"
    - Recommendation 5 (Premature completion) → "Implemented in Phase 1.5: Tier 2 behavioral completeness 'show your work' requirement in test-reviewer.md"
 
-2. In the "Bug-fix workflow pattern" section, add a note that the corrective workflow has been formalized in `home/.claude/docs/sdl-workflow/corrective-workflow.md`.
+2. In the "Bug-fix workflow pattern" section, add a note that the corrective workflow has been formalized in `home/dot-claude/docs/sdl-workflow/corrective-workflow.md`.
 
 3. In the "Improvement findings from this cycle" subsection, add status notes for each finding that Phase 1.5 addresses: test reviewer criteria, e2e coverage depth, ceremony level matching, gate flexibility.
 

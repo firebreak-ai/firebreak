@@ -6,7 +6,7 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
-Read `home/.claude/docs/sdl-workflow/implementation-guide.md` for the complete wave execution protocol, verification rules, re-plan protocol, checkpoint format, and retrospective structure. Follow that doc at every step below.
+Read `home/dot-claude/docs/sdl-workflow/implementation-guide.md` for the complete wave execution protocol, verification rules, re-plan protocol, checkpoint format, and retrospective structure. Follow that doc at every step below.
 
 ## Input
 
@@ -19,7 +19,7 @@ Set `FEATURE=$ARGUMENTS`. Paths used throughout:
 - Review log: `ai-docs/$FEATURE/$FEATURE-review.md`
 - Retrospective: `ai-docs/$FEATURE/$FEATURE-retrospective.md`
 
-Read `task.json`. Verify it exists and is valid JSON conforming to the task manifest schema in `home/.claude/docs/sdl-workflow/task-compilation.md`. If missing or malformed, stop and tell the user what is absent.
+Read `task.json`. Verify it exists and is valid JSON conforming to the task manifest schema in `home/dot-claude/docs/sdl-workflow/task-compilation.md`. If missing or malformed, stop and tell the user what is absent.
 
 ## Stage 3 Gate
 

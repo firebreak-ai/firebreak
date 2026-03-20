@@ -12,7 +12,7 @@ If the `LOG_DIR` environment variable is set, use it instead of `.claude/automat
 
 ## Instructions
 
-1. Create `home/.claude/hooks/sdl-workflow/audit-logger.py`. Add shebang `#!/usr/bin/env python3` and module docstring.
+1. Create `home/dot-claude/hooks/sdl-workflow/audit-logger.py`. Add shebang `#!/usr/bin/env python3` and module docstring.
 
 2. Implement `get_log_dir()`: return `os.environ.get("LOG_DIR", ".claude/automation/logs")`.
 
@@ -43,7 +43,7 @@ If the `LOG_DIR` environment variable is set, use it instead of `.claude/automat
 
 ## Files to create/modify
 
-- `home/.claude/hooks/sdl-workflow/audit-logger.py` (create)
+- `home/dot-claude/hooks/sdl-workflow/audit-logger.py` (create)
 
 ## Test requirements
 

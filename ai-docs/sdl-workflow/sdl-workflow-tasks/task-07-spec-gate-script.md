@@ -53,11 +53,11 @@ The script must determine whether it's validating a feature-level spec or a proj
 
 ### Script location
 
-`home/.claude/hooks/sdl-workflow/spec-gate.sh`
+`home/dot-claude/hooks/sdl-workflow/spec-gate.sh`
 
 ## Instructions
 
-1. Create `home/.claude/hooks/sdl-workflow/spec-gate.sh`.
+1. Create `home/dot-claude/hooks/sdl-workflow/spec-gate.sh`.
 2. Use bash. The script should be portable (no exotic dependencies beyond standard Unix tools: grep, sed, awk).
 3. Make the script executable (`chmod +x` equivalent — include a note in the file header or document this for the installer).
 4. Implement these checks in order:
@@ -75,7 +75,7 @@ The script must determine whether it's validating a feature-level spec or a proj
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/hooks/sdl-workflow/spec-gate.sh`
+- **Create**: `home/dot-claude/hooks/sdl-workflow/spec-gate.sh`
 
 ## Acceptance Criteria
 

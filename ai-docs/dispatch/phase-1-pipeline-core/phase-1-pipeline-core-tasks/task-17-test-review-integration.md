@@ -4,9 +4,9 @@ Write a bash test script that validates the modified spec-review skill reference
 
 ## Context
 
-The `/spec-review` skill at `home/.claude/skills/spec-review/SKILL.md` is being modified to add a test strategy review step. After the council review produces findings and before the gate invocation, the skill must invoke the test reviewer agent (checkpoint 1) as an Agent Teams teammate for context isolation. The test reviewer receives the spec and spec schema, evaluates the testing strategy, and its pass/fail result is incorporated into the review document.
+The `/spec-review` skill at `home/dot-claude/skills/spec-review/SKILL.md` is being modified to add a test strategy review step. After the council review produces findings and before the gate invocation, the skill must invoke the test reviewer agent (checkpoint 1) as an Agent Teams teammate for context isolation. The test reviewer receives the spec and spec schema, evaluates the testing strategy, and its pass/fail result is incorporated into the review document.
 
-A new brownfield instruction doc at `home/.claude/docs/brownfield-spec.md` provides 5 codebase-awareness instructions loaded by the `/spec` skill when writing the technical approach. These instructions come from the spec's brownfield intercepts section and address: searching for overlapping code, identifying established patterns, distinguishing new from extended code, requiring removal of replaced functionality, and preferring extension over duplication.
+A new brownfield instruction doc at `home/dot-claude/docs/brownfield-spec.md` provides 5 codebase-awareness instructions loaded by the `/spec` skill when writing the technical approach. These instructions come from the spec's brownfield intercepts section and address: searching for overlapping code, identifying established patterns, distinguishing new from extended code, requiring removal of replaced functionality, and preferring extension over duplication.
 
 The test validates that the skill file was modified correctly and that the brownfield doc exists with the required content. It does not test runtime behavior of the skill invocation.
 
@@ -14,7 +14,7 @@ The test validates that the skill file was modified correctly and that the brown
 
 1. Create `tests/sdl-workflow/test-review-integration.sh` as a bash test script. Use `set -uo pipefail`. Define a test counter and pass/fail tracking at the top. Each test prints `ok <n> - <description>` on pass or `not ok <n> - <description>` on fail (TAP format).
 
-2. Determine project root using `cd "$(dirname "$0")/../.." && pwd`. Define `SKILL_FILE` pointing to `home/.claude/skills/spec-review/SKILL.md` relative to project root. Define `BROWNFIELD_DOC` pointing to `home/.claude/docs/brownfield-spec.md` relative to project root.
+2. Determine project root using `cd "$(dirname "$0")/../.." && pwd`. Define `SKILL_FILE` pointing to `home/dot-claude/skills/spec-review/SKILL.md` relative to project root. Define `BROWNFIELD_DOC` pointing to `home/dot-claude/docs/brownfield-spec.md` relative to project root.
 
 3. Write test: skill file exists. Assert `$SKILL_FILE` exists and is a non-empty file.
 

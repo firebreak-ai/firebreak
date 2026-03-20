@@ -5,7 +5,7 @@ PASS=0
 FAIL=0
 TOTAL=0
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-LOGGER="$PROJECT_ROOT/home/.claude/hooks/sdl-workflow/audit-logger.py"
+LOGGER="$PROJECT_ROOT/home/dot-claude/hooks/sdl-workflow/audit-logger.py"
 
 TMPDIR_BASE="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR_BASE"' EXIT

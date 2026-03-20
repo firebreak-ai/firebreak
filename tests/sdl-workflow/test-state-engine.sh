@@ -25,7 +25,7 @@ trap 'rm -rf "$TMPDIR_STATE"' EXIT
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-ENGINE="$PROJECT_ROOT/home/.claude/hooks/sdl-workflow/state-engine.py"
+ENGINE="$PROJECT_ROOT/home/dot-claude/hooks/sdl-workflow/state-engine.py"
 
 echo "TAP version 13"
 echo "1..15"

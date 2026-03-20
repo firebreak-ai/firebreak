@@ -33,8 +33,8 @@ Artifact structure for reference (the index should mention but not elaborate):
 
 ## Instructions
 
-1. Create `home/.claude/docs/sdl-workflow/` directory if it doesn't exist.
-2. Create `home/.claude/docs/sdl-workflow.md` with this structure:
+1. Create `home/dot-claude/docs/sdl-workflow/` directory if it doesn't exist.
+2. Create `home/dot-claude/docs/sdl-workflow.md` with this structure:
 
 **Opening (first 3 lines)**: State the pipeline model (4-stage: Spec → Review → Breakdown → Implement) and the external feedback rule. These are the highest-attention lines.
 
@@ -47,11 +47,11 @@ Artifact structure for reference (the index should mention but not elaborate):
 **`## Artifact Layout`**: Two bullet points showing feature-level and project-level directory patterns under `ai-docs/`. Include the `.gitignore` rule for threat models: `*threat-model*`.
 
 3. Target length: 50-80 lines. This routes; the leaves instruct.
-4. Read `home/.claude/docs/context-assets.md` for authoring principles. Follow them.
+4. Read `home/dot-claude/docs/context-assets.md` for authoring principles. Follow them.
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/docs/sdl-workflow.md`
+- **Create**: `home/dot-claude/docs/sdl-workflow.md`
 
 ## Acceptance Criteria
 

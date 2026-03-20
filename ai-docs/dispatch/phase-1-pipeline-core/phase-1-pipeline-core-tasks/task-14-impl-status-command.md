@@ -12,7 +12,7 @@ The command must produce grep-friendly output with labeled fields — not raw JS
 
 ## Instructions
 
-1. Create `home/.claude/hooks/sdl-workflow/dispatch-status.sh`. Start with `#!/usr/bin/env bash` and `set -uo pipefail`.
+1. Create `home/dot-claude/hooks/sdl-workflow/dispatch-status.sh`. Start with `#!/usr/bin/env bash` and `set -uo pipefail`.
 
 2. Parse arguments: accept one positional argument `<spec-name>`. Print usage to stderr and exit 2 if missing.
 
@@ -54,13 +54,13 @@ The command must produce grep-friendly output with labeled fields — not raw JS
 
 9. The Python block exits 0. The bash script exits 0 after Python completes successfully.
 
-10. After displaying status output, log the status query to the audit log. Call `audit-logger.py log <spec-name> status_query '{"queried_state":"<current_state>"}'`. Locate `audit-logger.py` relative to the script at `home/.claude/hooks/sdl-workflow/audit-logger.py`. If the logger is not available (file not found), skip logging silently.
+10. After displaying status output, log the status query to the audit log. Call `audit-logger.py log <spec-name> status_query '{"queried_state":"<current_state>"}'`. Locate `audit-logger.py` relative to the script at `home/dot-claude/hooks/sdl-workflow/audit-logger.py`. If the logger is not available (file not found), skip logging silently.
 
 11. Make the script executable (add chmod comment at top).
 
 ## Files to create/modify
 
-- `home/.claude/hooks/sdl-workflow/dispatch-status.sh` (create)
+- `home/dot-claude/hooks/sdl-workflow/dispatch-status.sh` (create)
 
 ## Test requirements
 

@@ -57,8 +57,8 @@ Naming convention (deterministic, for `.gitignore`):
 
 ## Instructions
 
-1. Create `home/.claude/docs/sdl-workflow/threat-modeling.md`.
-2. Read `home/.claude/docs/context-assets.md` for authoring principles. Apply them.
+1. Create `home/dot-claude/docs/sdl-workflow/threat-modeling.md`.
+2. Read `home/dot-claude/docs/context-assets.md` for authoring principles. Apply them.
 3. Write for the agent performing threat modeling — direct imperatives.
 4. Structure the doc:
 
@@ -73,7 +73,7 @@ Naming convention (deterministic, for `.gitignore`):
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/docs/sdl-workflow/threat-modeling.md`
+- **Create**: `home/dot-claude/docs/sdl-workflow/threat-modeling.md`
 
 ## Acceptance Criteria
 

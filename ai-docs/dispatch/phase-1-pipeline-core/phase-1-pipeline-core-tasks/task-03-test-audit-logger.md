@@ -21,7 +21,7 @@ Log line format:
 
 2. Define a setup function that creates a temporary directory for `.claude/automation/logs/`, sets `LOG_DIR` to that path, and exports it. Register cleanup with `trap cleanup EXIT`.
 
-3. Define `LOGGER` variable pointing to `home/.claude/hooks/sdl-workflow/audit-logger.py` (relative to project root).
+3. Define `LOGGER` variable pointing to `home/dot-claude/hooks/sdl-workflow/audit-logger.py` (relative to project root).
 
 4. Write test: single log event produces valid JSON line. Run `log test-spec state_change '{"from": "QUEUED", "to": "VALIDATING"}'`. Assert exit 0. Read the log file at `$LOG_DIR/test-spec.log`. Assert file has exactly 1 line. Parse the line as JSON and verify: `timestamp` matches ISO8601 regex, `spec` equals `test-spec`, `event_type` equals `state_change`, `data.from` equals `QUEUED`, `data.to` equals `VALIDATING`.
 

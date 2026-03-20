@@ -44,7 +44,7 @@ The `task_description` field contains the path to the task file (by convention s
 
 ### Script location
 
-`home/.claude/hooks/sdl-workflow/task-completed.sh`
+`home/dot-claude/hooks/sdl-workflow/task-completed.sh`
 
 ### Hook scoping: context check
 
@@ -60,7 +60,7 @@ This hook is configured in user-global settings (`~/.claude/settings.json`) and 
 
 ### Hook configuration
 
-This task also creates/updates `home/.claude/settings.json` with the `TaskCompleted` hook entry:
+This task also creates/updates `home/dot-claude/settings.json` with the `TaskCompleted` hook entry:
 
 ```json
 {
@@ -79,11 +79,11 @@ This task also creates/updates `home/.claude/settings.json` with the `TaskComple
 }
 ```
 
-If `home/.claude/settings.json` already exists, use `jq` to merge the hooks entry: deep-merge the new `TaskCompleted` entry into the existing `hooks` object, preserving all other top-level keys and existing hook entries. If `jq` is not available, warn and provide manual instructions. If the file doesn't exist, create it with just the hooks entry.
+If `home/dot-claude/settings.json` already exists, use `jq` to merge the hooks entry: deep-merge the new `TaskCompleted` entry into the existing `hooks` object, preserving all other top-level keys and existing hook entries. If `jq` is not available, warn and provide manual instructions. If the file doesn't exist, create it with just the hooks entry.
 
 ## Instructions
 
-1. Create `home/.claude/hooks/sdl-workflow/task-completed.sh`.
+1. Create `home/dot-claude/hooks/sdl-workflow/task-completed.sh`.
 2. Use bash. Keep it portable.
 3. Structure:
 
@@ -101,8 +101,8 @@ If `home/.claude/settings.json` already exists, use `jq` to merge the hooks entr
 
 ## Files to Create/Modify
 
-- **Create**: `home/.claude/hooks/sdl-workflow/task-completed.sh`
-- **Create or merge**: `home/.claude/settings.json` (add `TaskCompleted` hook entry)
+- **Create**: `home/dot-claude/hooks/sdl-workflow/task-completed.sh`
+- **Create or merge**: `home/dot-claude/settings.json` (add `TaskCompleted` hook entry)
 
 ## Acceptance Criteria
 

@@ -35,7 +35,7 @@ The command exits 0 on success (state file found and formatted), exit 1 when no 
 
 6. Create `tests/sdl-workflow/test-status-command.sh` as a bash test script. Use `set -uo pipefail`. TAP format output.
 
-7. Define `CMD` pointing to `home/.claude/hooks/sdl-workflow/dispatch-status.sh` relative to project root. Define a setup function that creates a temporary `.claude/automation/state/` directory and copies fixture state files into it. Export `STATE_DIR` so the status command uses the temp directory. Register cleanup with `trap`.
+7. Define `CMD` pointing to `home/dot-claude/hooks/sdl-workflow/dispatch-status.sh` relative to project root. Define a setup function that creates a temporary `.claude/automation/state/` directory and copies fixture state files into it. Export `STATE_DIR` so the status command uses the temp directory. Register cleanup with `trap`.
 
 8. Write test: queued spec displays status. Copy `queued-spec.json` to temp state dir as `my-feature.json`. Run `$CMD my-feature`. Assert exit 0. Assert stdout contains "my-feature" (the spec name). Assert stdout contains "QUEUED". Assert stdout contains "2026-03-14" (timestamp substring).
 

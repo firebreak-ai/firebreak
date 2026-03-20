@@ -3,7 +3,7 @@ id: T-07
 type: implementation
 wave: 2
 covers: ["AC-07", "AC-09"]
-files_to_modify: ["../../home/.claude/docs/sdl-workflow/implementation-guide.md"]
+files_to_modify: ["../../home/dot-claude/docs/sdl-workflow/implementation-guide.md"]
 test_tasks: ["T-02"]
 completion_gate: "implementation-guide.md contains per-task readiness check section (4 items with test-task skip and contract-staleness check), inter-wave baseline-snapshot regression check section (capture, check, final verification), and explicit sequencing statement"
 ---
@@ -14,7 +14,7 @@ Updates the implementation guide with per-task readiness checks, inter-wave base
 
 ## Context
 
-The current implementation guide at `home/.claude/docs/sdl-workflow/implementation-guide.md` has per-wave verification that runs the test suite, but no per-task readiness check and no baseline-snapshot model for regression detection. The greenfield test showed that agents can proceed on wrong assumptions about prior-wave outputs, and the corrective workflow needs a regression model that automatically excludes expected-failing diagnostic tests.
+The current implementation guide at `home/dot-claude/docs/sdl-workflow/implementation-guide.md` has per-wave verification that runs the test suite, but no per-task readiness check and no baseline-snapshot model for regression detection. The greenfield test showed that agents can proceed on wrong assumptions about prior-wave outputs, and the corrective workflow needs a regression model that automatically excludes expected-failing diagnostic tests.
 
 ## Instructions
 
@@ -37,7 +37,7 @@ The current implementation guide at `home/.claude/docs/sdl-workflow/implementati
 ## Files to create/modify
 
 Modify:
-- `home/.claude/docs/sdl-workflow/implementation-guide.md`
+- `home/dot-claude/docs/sdl-workflow/implementation-guide.md`
 
 ## Test requirements
 

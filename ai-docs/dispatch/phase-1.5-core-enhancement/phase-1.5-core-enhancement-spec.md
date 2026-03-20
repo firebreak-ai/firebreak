@@ -80,7 +80,7 @@ All changes are to existing context assets — markdown instruction files, agent
 
 ### 4a. Test reviewer agent enhancement
 
-Modify `home/.claude/agents/test-reviewer.md` to add four evaluation criteria organized in a two-tier enforcement model. The tiers reflect a core design principle: mechanical checks that can be evaluated deterministically should never be overridable; judgment checks should require the reviewer to show its work and allow documented override.
+Modify `home/dot-claude/agents/test-reviewer.md` to add four evaluation criteria organized in a two-tier enforcement model. The tiers reflect a core design principle: mechanical checks that can be evaluated deterministically should never be overridable; judgment checks should require the reviewer to show its work and allow documented override.
 
 #### Tier 1 — Mechanical checks (non-overridable)
 
@@ -131,7 +131,7 @@ At CP4-5 (integrity, mutation): Unchanged.
 
 ### 4b. Spec template enhancement
 
-Modify `home/.claude/docs/sdl-workflow/feature-spec-guide.md` to add two required subsections:
+Modify `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md` to add two required subsections:
 
 #### User verification steps (new subsection in testing strategy)
 
@@ -167,7 +167,7 @@ Conventions that cross module boundaries should be documented once in the spec (
 
 ### 4c. Council review pattern consistency
 
-Modify `home/.claude/docs/sdl-workflow/review-perspectives.md` to add a pattern consistency criterion for brownfield and integration work.
+Modify `home/dot-claude/docs/sdl-workflow/review-perspectives.md` to add a pattern consistency criterion for brownfield and integration work.
 
 When the spec's technical approach describes integrating with or extending existing modules, the council should verify:
 
@@ -177,7 +177,7 @@ When the spec's technical approach describes integrating with or extending exist
 
 ### 4d. Breakdown skill enhancement
 
-Modify `home/.claude/docs/sdl-workflow/task-compilation.md` to add verified interface contracts and codebase-grounded compilation.
+Modify `home/dot-claude/docs/sdl-workflow/task-compilation.md` to add verified interface contracts and codebase-grounded compilation.
 
 #### Verified interface contracts
 
@@ -198,7 +198,7 @@ This expands the breakdown agent's context window (reading 10-20 source files in
 
 #### Implementation readiness check
 
-Add to `home/.claude/docs/sdl-workflow/implementation-guide.md`: before writing code, each implementation agent performs a lightweight readiness check covering only what couldn't be verified at breakdown time:
+Add to `home/dot-claude/docs/sdl-workflow/implementation-guide.md`: before writing code, each implementation agent performs a lightweight readiness check covering only what couldn't be verified at breakdown time:
 
 1. **Prior-wave files exist**: Every file referenced in the task's interface contracts that was created by a prior wave (not pre-existing) is present.
 2. **Tests compile**: For implementation tasks, the paired test task's tests compile (they should fail, but they should compile). Test tasks skip this check — they are creating the tests, not consuming them.
@@ -215,7 +215,7 @@ What the readiness check does NOT include (already verified at breakdown):
 
 ### 4e. Inter-wave regression check
 
-Modify `home/.claude/docs/sdl-workflow/implementation-guide.md` to add a mandatory inter-wave verification step using a baseline-snapshot model.
+Modify `home/dot-claude/docs/sdl-workflow/implementation-guide.md` to add a mandatory inter-wave verification step using a baseline-snapshot model.
 
 #### The principle
 
@@ -241,7 +241,7 @@ After the last wave, run the full test suite — all tests, not just the baselin
 
 ### 4f. Task reviewer gate enhancement
 
-Modify `home/.claude/hooks/sdl-workflow/task-reviewer-gate.sh` to support a `category` field.
+Modify `home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh` to support a `category` field.
 
 **Current gate architecture**: The gate script receives a task directory and spec path. It parses YAML frontmatter from individual `task-NN-*.md` files — it does not currently read `task.json`. The `task.json` manifest is produced by `/breakdown` and lives in the same directory, but the gate script does not consume it.
 
@@ -279,7 +279,7 @@ The audit produces a prioritized list of prompt sources and candidates for the h
 
 ### 4h. Corrective workflow documentation
 
-Create `home/.claude/docs/sdl-workflow/corrective-workflow.md` formalizing the diagnostic workflow that emerged from the greenfield bug-fix cycle. The rationale and retrospective evidence are in the Problem section above; this section defines the workflow to implement.
+Create `home/dot-claude/docs/sdl-workflow/corrective-workflow.md` formalizing the diagnostic workflow that emerged from the greenfield bug-fix cycle. The rationale and retrospective evidence are in the Problem section above; this section defines the workflow to implement.
 
 #### Full diagnostic workflow (new bug class, unknown root cause)
 
@@ -373,16 +373,16 @@ New test fixtures needed for the corrective and testing-infrastructure task cate
 
 ### Project documents to update
 
-- `home/.claude/docs/sdl-workflow/feature-spec-guide.md` — add user verification steps subsection (action→outcome format, 3-8 steps), integration seam declaration subsection (checklist format), and runtime value precision guidance to the spec template.
-- `home/.claude/docs/sdl-workflow/review-perspectives.md` — add pattern consistency criterion for brownfield and integration work (verify proposed approach follows existing patterns, integration points exist, conventions are flagged for breakdown discovery).
-- `home/.claude/docs/sdl-workflow/task-compilation.md` — add verified interface contracts, codebase-grounded compilation requirements, orchestrator risk flagging, and `category` field to task.json schema.
-- `home/.claude/docs/sdl-workflow/implementation-guide.md` — add inter-wave baseline-snapshot regression check and per-task lightweight readiness check (prior-wave files exist, tests compile, build succeeds).
-- `home/.claude/agents/test-reviewer.md` — add two-tier enforcement model with four evaluation criteria, override mechanism, and checkpoint applicability rules. Add Tier 2 guidance for corrective specs where diagnostic tests already exist.
+- `home/dot-claude/docs/sdl-workflow/feature-spec-guide.md` — add user verification steps subsection (action→outcome format, 3-8 steps), integration seam declaration subsection (checklist format), and runtime value precision guidance to the spec template.
+- `home/dot-claude/docs/sdl-workflow/review-perspectives.md` — add pattern consistency criterion for brownfield and integration work (verify proposed approach follows existing patterns, integration points exist, conventions are flagged for breakdown discovery).
+- `home/dot-claude/docs/sdl-workflow/task-compilation.md` — add verified interface contracts, codebase-grounded compilation requirements, orchestrator risk flagging, and `category` field to task.json schema.
+- `home/dot-claude/docs/sdl-workflow/implementation-guide.md` — add inter-wave baseline-snapshot regression check and per-task lightweight readiness check (prior-wave files exist, tests compile, build succeeds).
+- `home/dot-claude/agents/test-reviewer.md` — add two-tier enforcement model with four evaluation criteria, override mechanism, and checkpoint applicability rules. Add Tier 2 guidance for corrective specs where diagnostic tests already exist.
 - `ai-docs/dispatch/harness-patterns-analysis.md` — update to reference phase 1.5 as the implementation of findings.
 
 ### New documentation to create
 
-- `home/.claude/docs/sdl-workflow/corrective-workflow.md` — full diagnostic workflow, fast-track mode, escalation criteria, and differences from the standard spec-driven flow.
+- `home/dot-claude/docs/sdl-workflow/corrective-workflow.md` — full diagnostic workflow, fast-track mode, escalation criteria, and differences from the standard spec-driven flow.
 
 ## Acceptance criteria
 
@@ -411,4 +411,4 @@ New test fixtures needed for the corrective and testing-infrastructure task cate
 
 - Completed greenfield test retrospectives (available — project retrospective and all feature retrospectives written)
 - Harness patterns analysis document (available — updated with complete findings)
-- Existing SDL workflow context assets (available — skills, agents, hooks, docs in `home/.claude/`)
+- Existing SDL workflow context assets (available — skills, agents, hooks, docs in `home/dot-claude/`)

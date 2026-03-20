@@ -32,7 +32,7 @@ checks:
     required: true
 
   - name: test-hash-immutability
-    command: "bash home/.claude/hooks/sdl-workflow/test-hash-gate.sh ai-docs/$FEATURE/"
+    command: "bash home/dot-claude/hooks/sdl-workflow/test-hash-gate.sh ai-docs/$FEATURE/"
     required: true
 ```
 

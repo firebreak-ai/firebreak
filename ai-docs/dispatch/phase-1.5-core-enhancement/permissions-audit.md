@@ -2,8 +2,8 @@
 
 ## Source material
 
-- `home/.claude/settings.json` — current hook configuration
-- `home/.claude/settings.local.json` — does not exist
+- `home/dot-claude/settings.json` — current hook configuration
+- `home/dot-claude/settings.local.json` — does not exist
 - Skills: `/spec`, `/spec-review`, `/breakdown`, `/implement`
 - Agent: `test-reviewer`
 - Hooks: `spec-gate.sh`, `review-gate.sh`, `breakdown-gate.sh`, `task-reviewer-gate.sh`, `task-completed.sh`
@@ -46,12 +46,12 @@ Reason codes used in the final column:
 | Tool | Command / Path | Covered by allowlist rule | If no — why not |
 |------|---------------|--------------------------|-----------------|
 | Read | `ai-docs/<feature>/<feature>-spec.md` | No | NO-ALLOWLIST |
-| Read | `home/.claude/docs/sdl-workflow/review-perspectives.md` | No | NO-ALLOWLIST |
+| Read | `home/dot-claude/docs/sdl-workflow/review-perspectives.md` | No | NO-ALLOWLIST |
 | Bash | `"$HOME"/.claude/hooks/sdl-workflow/spec-gate.sh ai-docs/<feature>/<feature>-spec.md` (prior-stage gate) | No | NO-ALLOWLIST; SHELL-GLOB |
 | Write | `ai-docs/<feature>/<feature>-review.md` | No | NO-ALLOWLIST |
 | Bash | `"$HOME"/.claude/hooks/sdl-workflow/review-gate.sh <review> <perspectives> [<threat-model>]` | No | NO-ALLOWLIST; SHELL-GLOB |
 | Agent (task) | `test-reviewer` invoked as Agent Teams teammate (checkpoint 1) | No | NO-ALLOWLIST (agent spawning requires permission) |
-| Read | `home/.claude/docs/sdl-workflow/threat-modeling.md` (conditional) | No | NO-ALLOWLIST |
+| Read | `home/dot-claude/docs/sdl-workflow/threat-modeling.md` (conditional) | No | NO-ALLOWLIST |
 | Write | `ai-docs/<feature>/<feature>-threat-model.md` (conditional) | No | NO-ALLOWLIST |
 
 ### Stage 2 gate — `review-gate.sh`
@@ -67,8 +67,8 @@ Reason codes used in the final column:
 | Read | `ai-docs/$FEATURE/$FEATURE-spec.md` | No | NO-ALLOWLIST |
 | Read | `ai-docs/$FEATURE/$FEATURE-review.md` | No | NO-ALLOWLIST |
 | Read | `ai-docs/$FEATURE/$FEATURE-threat-model.md` (optional) | No | NO-ALLOWLIST |
-| Read | `home/.claude/docs/sdl-workflow/task-compilation.md` | No | NO-ALLOWLIST |
-| Read | `home/.claude/docs/brownfield-breakdown.md` | No | NO-ALLOWLIST |
+| Read | `home/dot-claude/docs/sdl-workflow/task-compilation.md` | No | NO-ALLOWLIST |
+| Read | `home/dot-claude/docs/brownfield-breakdown.md` | No | NO-ALLOWLIST |
 | Bash | `"$HOME"/.claude/hooks/sdl-workflow/review-gate.sh ...` (prior-stage gate) | No | NO-ALLOWLIST; SHELL-GLOB |
 | Agent (task) | Test task agent spawned as Agent Teams teammate | No | NO-ALLOWLIST |
 | Agent (task) | Implementation task agent spawned as Agent Teams teammate | No | NO-ALLOWLIST |
@@ -99,8 +99,8 @@ Reason codes used in the final column:
 | Tool | Command / Path | Covered by allowlist rule | If no — why not |
 |------|---------------|--------------------------|-----------------|
 | Read | `ai-docs/$FEATURE/$FEATURE-tasks/task.json` | No | NO-ALLOWLIST |
-| Read | `home/.claude/docs/sdl-workflow/implementation-guide.md` | No | NO-ALLOWLIST |
-| Read | `home/.claude/docs/sdl-workflow/task-compilation.md` | No | NO-ALLOWLIST |
+| Read | `home/dot-claude/docs/sdl-workflow/implementation-guide.md` | No | NO-ALLOWLIST |
+| Read | `home/dot-claude/docs/sdl-workflow/task-compilation.md` | No | NO-ALLOWLIST |
 | Bash | `"$HOME"/.claude/hooks/sdl-workflow/breakdown-gate.sh ...` (stage 3 gate re-run) | No | NO-ALLOWLIST; SHELL-GLOB |
 | Bash | `cat ~/.claude/settings.json` (TeamCompleted hook presence check) | No | NO-ALLOWLIST |
 | Edit | `ai-docs/$FEATURE/$FEATURE-tasks/task.json` (status updates per task, per wave) | No | NO-ALLOWLIST; fires N times where N = task count |
@@ -141,7 +141,7 @@ Ranked by expected prompt count per full pipeline run (spec through retrospectiv
 
 7. **Per-wave verification Bash calls (implement)** — Test runner and lint runner are invoked once per wave. At 2 waves: 4 Bash calls. The exact command is determined at runtime (SHELL-EVAL), so these cannot be covered by a static allowlist rule.
 
-8. **Doc reads (spec-review, breakdown, implement)** — Each stage reads one or two doc files from `home/.claude/docs/sdl-workflow/`. These are Read calls; 4–5 per run.
+8. **Doc reads (spec-review, breakdown, implement)** — Each stage reads one or two doc files from `home/dot-claude/docs/sdl-workflow/`. These are Read calls; 4–5 per run.
 
 ---
 
