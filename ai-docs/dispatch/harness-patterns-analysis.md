@@ -356,3 +356,43 @@ A context-independent agent that reviews completed changes and PRs before final 
 This extends the advisory code review already present in Dispatch's Stage 9 verification. The design question is whether this agent should be advisory (output attached to PR for human review) or gate-blocking (PR cannot merge without passing review). The advisory model is safer initially — it generates quality signal data without risking false-positive blocks. If the review agent's findings consistently align with human-discovered issues over time, its authority can be elevated.
 
 Both agents follow the established pattern: context-independent, separate persona, no shared reasoning with the agents whose work they evaluate. The troubleshooter evaluates existing code to find problems; the code reviewer evaluates new code to prevent problems. Together with the test reviewer, they form a three-agent quality layer — each operating independently, each seeing only what it needs.
+
+## Context asset organization: shared vs skill-specific
+
+**Finding from Phase 1.6 spec review**: Anthropic's skills guide recommends a `references/` subdirectory within each skill for skill-specific documentation, while Firebreak's existing skills place all reference docs in the shared `docs/sdl-workflow/` directory regardless of whether they are shared or skill-specific.
+
+**Resolution for Phase 1.6**: Adopt both patterns, each where appropriate. Documents referenced by multiple skills and agents (AI failure mode checklist, code review methodology guide) live in `docs/sdl-workflow/`. Documents specific to a single skill's internal routing (path-specific instructions) live in the skill's `references/` directory. This follows Anthropic's recommended skill structure while preserving the shared `docs/` convention for cross-cutting resources.
+
+**Deferred**: Existing skills (`/spec`, `/spec-review`, `/breakdown`, `/implement`) should be audited in a future phase to determine which of their reference docs are truly shared vs skill-specific, and realigned to match this pattern.
+
+## Agent observability: token tracking and context health
+
+**Finding from Phase 1.6 spec review**: The code review retrospective needs to assess whether review agents experienced context degradation during large-scope reviews. Investigation revealed significant observability gaps.
+
+**What's observable from within a Claude Code session:**
+- Structured output from agents (sightings, findings, rejections) — the orchestrator sees all of this
+- Round counts, sighting-per-round trends, rejection rates — derivable from agent output
+- Whether hard caps were reached — orchestrator controls the loop
+- SubagentStart and SubagentStop hook events — can instrument agent lifecycle
+
+**What's NOT observable:**
+- Per-agent or per-subagent token consumption — open feature request ([Issue #22625](https://github.com/anthropics/claude-code/issues/22625))
+- Context window utilization percentage within a subagent
+- Whether an agent's internal context degraded during a long session
+- Real-time visibility into what a running subagent is doing
+
+**Agent SDK capabilities (API-level, not Claude Code interactive):**
+- `modelUsage` in result messages provides per-model token counts and cost
+- Useful when running multiple models (e.g., Haiku for subagents, Opus for main agent)
+- Not exposed to the orchestrating agent in Claude Code interactive sessions
+
+**Third-party options:**
+- Bifrost (open source AI gateway) provides per-request observability by routing traffic through a compatible Anthropic API endpoint
+- Various community monitoring tools exist but require external instrumentation
+
+**Implication**: Context health assessment in pipeline retrospectives must rely on behavioral proxies (output quality trends, rejection rates, round counts) rather than direct token/context measurements. If per-subagent token tracking becomes available (Issue #22625), retrospective metrics should be updated to use direct measurements.
+
+Sources:
+- [Manage costs — Claude Code Docs](https://code.claude.com/docs/en/costs)
+- [Issue #22625 — Per-Subagent Token Usage Tracking](https://github.com/anthropics/claude-code/issues/22625)
+- [Agent SDK Cost Tracking](https://platform.claude.com/docs/en/agent-sdk/cost-tracking)
