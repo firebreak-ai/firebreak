@@ -31,6 +31,8 @@ When compiling a specification into tasks → `/breakdown` skill loads `sdl-work
 
 When implementing tasks from a breakdown → `/implement` skill loads `sdl-workflow/implementation-guide.md`
 
+When reviewing code or running post-implementation review → `/code-review` skill loads `sdl-workflow/code-review-guide.md`
+
 ## Stage Transitions
 
 At the end of each stage, follow this protocol: Write all artifacts to disk. Summarize the completed stage (one paragraph: what was delivered, what's ready for the next stage). Compact context by reading from the written artifacts instead of regenerating state. Invoke the next skill with the feature name to initialize the next stage. For mid-pipeline entry, validate the prior stage's structural gate before proceeding.

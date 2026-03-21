@@ -5,11 +5,11 @@
 Most teams try to fix this with post-implementation gates: tests, linting, code review. Firebreak takes a different approach: **front-load human judgment into structured artifacts before agents write any code**, then constrain agents to implement against well-defined criteria with deterministic verification gates. Prevention is less costly than repair.
 
 ```
-Spec ─► Review ─► Breakdown ─► Test Creation ─► Test Review ─► Implementation ─► Verification ─► PR
-         ▲                          ▲                ▲                                  ▲
-     council +               context-independent   pipeline-         deterministic checks +
-     agentic review          test-writing agents   blocking          mutation testing +
-                                                   gate              test immutability
+Spec ─► Review ─► Breakdown ─► Test Creation ─► Test Review ─► Implementation ─► Verification ─► Code Review ─► PR
+         ▲                          ▲                ▲                                  ▲              ▲
+     council +               context-independent   pipeline-         deterministic checks +    adversarial
+     agentic review          test-writing agents   blocking          mutation testing +        Detector/Challenger
+                                                   gate              test immutability         verification loop
 ```
 
 A core design principle is **context and persona isolation between agents**. When the same agent designs tests and writes the implementation, its tests tend to validate its own reasoning rather than the spec's intent. By using separate agents with independent context for test authoring, implementation, and review, correlated failures are structurally reduced. Each agent can only see what it needs, and no agent reviews its own work.
@@ -53,6 +53,7 @@ Four slash commands, each advancing through a verification gate before the next 
 | `/spec-review` | Run council review (architect, security, guardian, advocate, analyst perspectives) | Review findings with pass/fail determination |
 | `/breakdown` | Compile the reviewed spec into sized, wave-assigned implementation tasks | Individual task files and a task manifest |
 | `/implement` | Execute tasks with parallel agent teams, wave-based sequencing, and per-wave verification | Implemented code with passing tests |
+| `/code-review` | Review existing code or post-implementation output using adversarial Detector/Challenger agents | Verified findings and optional remediation spec |
 
 You can invoke these directly with the slash commands, or use natural language — talking about designing a new feature, fixing a bug, writing a specification, reviewing a spec, breaking down tasks, or implementing a change will trigger the appropriate skill automatically.
 
@@ -86,7 +87,7 @@ The agent starts with the lightweight router, follows a reference when a topic i
 
 ### 2. SDL Workflow: Spec-Driven Development Lifecycle
 
-A 4-stage interactive pipeline: **Spec → Review → Breakdown → Implement**. Each stage has a dedicated skill, deterministic verification gates (shell scripts), and structured artifact output.
+A 5-stage interactive pipeline: **Spec → Review → Breakdown → Implement → Code Review**. Each stage has a dedicated skill, deterministic verification gates (shell scripts), and structured artifact output. Code review is available as both a standalone skill (`/code-review`) and a post-implementation pipeline stage.
 
 Key design decisions, informed by [research](research.md):
 - **Deterministic gates over AI self-review** — verification value comes from tests, linters, and schema checks, not from an AI re-reading its own output

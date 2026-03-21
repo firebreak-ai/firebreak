@@ -284,3 +284,13 @@ Each phase spec classifies its tests by tier. Phase specs do not list Tier 2 beh
 **OQ-8: Permissions management for headless execution.** Several SDL workflow steps (especially council review, which spawns multiple agents that read files, grep, and run bash) trigger interactive permission prompts. These prompts cannot be answered in headless mode, blocking the pipeline. Options: (a) run the dispatcher with `--dangerously-skip-permissions` and compensate with hooks and container isolation (Trail of Bits pattern), (b) configure allowlists in `.claude/settings.json` that pre-approve the specific tools and paths the SDL workflow uses, (c) restructure the SDL skills and their working directories so their operations fall within already-permitted scopes, (d) some combination. The goal is to eliminate interactive prompts for known-safe workflow operations without broadly disabling the permission system. This may require updates to existing context assets (skills, agents) and the directories they read/write. Note: like OQ-4, this gates full automation. Human-triggered stage transitions bypass this problem entirely.
 
 **~~OQ-9~~ Resolved: Spec complexity vs. pipeline effort.** Single tier. The spec template and pipeline stages are fixed — they are the quality intervention, not overhead. Each stage naturally scales its effort to match the spec's complexity: council uses quick mode (3 agents) for focused fixes, breakdown produces one task instead of many, test review validates fewer tests, implementation uses a single agent. A simple fix uses the same 9-section spec template with shorter content per section. The stages don't change; the time spent at each stage does. This matches how good engineers work — they don't skip review for small changes, they spend less time on review.
+
+## Implementation Phases
+
+The Dispatch pipeline is being implemented in phases:
+
+**Phase 1** establishes the pipeline core — spec validation, review integration, breakdown, task review, test creation, test code review, implementation, and verification stages with deterministic and agentic gates.
+
+**Phase 1.5** enhances core capabilities — test quality validation with dedicated test reviewer agent, integration seam coverage improvements, and corrective workflow for remediation of failing specs and broken tasks.
+
+**Phase 1.6** (code review and remediation) adds `/code-review` — adversarial code review with Detector/Challenger agents producing verified findings and optional remediation specs.

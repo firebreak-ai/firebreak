@@ -9,11 +9,16 @@
       "type": "test",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-03", "AC-04", "AC-08", "AC-12"],
+      "covers": [
+        "AC-03",
+        "AC-04",
+        "AC-08",
+        "AC-12"
+      ],
       "model": "Haiku",
-      "model_rationale": "Single-file bash test script with clear structural assertions — no architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "model_rationale": "Single-file bash test script with clear structural assertions \u2014 no architectural judgment",
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-code-review-structural.sh with 24 TAP tests. 22 fail (target files not yet created), 2 pass (negative tool-exclusion checks on non-existent files). Script runs cleanly.",
       "note": null
     },
     {
@@ -22,12 +27,16 @@
       "file": "task-02-test-skill-structure.md",
       "type": "test",
       "wave_id": 3,
-      "dependencies": ["T-01"],
-      "covers": ["AC-07"],
+      "dependencies": [
+        "T-01"
+      ],
+      "covers": [
+        "AC-07"
+      ],
       "model": "Haiku",
-      "model_rationale": "Single-file bash test script with clear structural assertions — no architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "model_rationale": "Single-file bash test script with clear structural assertions \u2014 no architectural judgment",
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-code-review-skill.sh with 16 TAP tests. 14 fail (skill files not yet created), 2 pass (negative checks). Script runs cleanly.",
       "note": null
     },
     {
@@ -36,12 +45,23 @@
       "file": "task-03-test-integration-e2e.md",
       "type": "test",
       "wave_id": 5,
-      "dependencies": ["T-02"],
-      "covers": ["AC-01", "AC-02", "AC-05", "AC-06", "AC-09", "AC-10", "AC-11", "AC-13"],
+      "dependencies": [
+        "T-02"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-05",
+        "AC-06",
+        "AC-09",
+        "AC-10",
+        "AC-11",
+        "AC-13"
+      ],
       "model": "Sonnet",
       "model_rationale": "Creates test fixtures and multi-file integration tests requiring cross-file consistency understanding",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created 6 test fixture files + integration test script (20 tests). Initial run: 19/20 pass \u2014 test 7 caught real gap: Challenger agent body missing S-NN ID format reference. Fixed by adding S-NN notation to Challenger verification protocol. All 20 tests now pass.",
       "note": null
     },
     {
@@ -50,12 +70,16 @@
       "file": "task-04-impl-ai-failure-modes-checklist.md",
       "type": "implementation",
       "wave_id": 2,
-      "dependencies": ["T-01"],
-      "covers": ["AC-06"],
+      "dependencies": [
+        "T-01"
+      ],
+      "covers": [
+        "AC-06"
+      ],
       "model": "Haiku",
-      "model_rationale": "Single markdown file with enumerated content — no design decisions",
-      "status": "not_started",
-      "summary": null,
+      "model_rationale": "Single markdown file with enumerated content \u2014 no design decisions",
+      "status": "complete",
+      "summary": "Created home/dot-claude/docs/sdl-workflow/ai-failure-modes.md with 10 numbered failure mode entries, detection heuristics, and key pattern keywords. Tests 22-24 pass.",
       "note": null
     },
     {
@@ -64,12 +88,18 @@
       "file": "task-05-impl-code-review-guide.md",
       "type": "implementation",
       "wave_id": 2,
-      "dependencies": ["T-01"],
-      "covers": ["AC-03", "AC-04", "AC-12"],
+      "dependencies": [
+        "T-01"
+      ],
+      "covers": [
+        "AC-03",
+        "AC-04",
+        "AC-12"
+      ],
       "model": "Haiku",
-      "model_rationale": "Single markdown file with structured content following spec-defined schemas — no design decisions",
-      "status": "not_started",
-      "summary": null,
+      "model_rationale": "Single markdown file with structured content following spec-defined schemas \u2014 no design decisions",
+      "status": "complete",
+      "summary": "Created home/dot-claude/docs/sdl-workflow/code-review-guide.md with behavioral comparison methodology, sighting/finding format schemas, 4 category values, orchestration protocol, source of truth handling, and 6 retrospective fields. Tests 15-21 pass.",
       "note": null
     },
     {
@@ -78,12 +108,20 @@
       "file": "task-06-impl-agent-definitions.md",
       "type": "implementation",
       "wave_id": 3,
-      "dependencies": ["T-01", "T-04", "T-05"],
-      "covers": ["AC-04", "AC-08", "AC-13"],
+      "dependencies": [
+        "T-01",
+        "T-04",
+        "T-05"
+      ],
+      "covers": [
+        "AC-04",
+        "AC-08",
+        "AC-13"
+      ],
       "model": "Haiku",
-      "model_rationale": "Two small markdown files following an existing agent definition pattern — no design decisions",
-      "status": "not_started",
-      "summary": null,
+      "model_rationale": "Two small markdown files following an existing agent definition pattern \u2014 no design decisions",
+      "status": "complete",
+      "summary": "Created code-review-detector.md and code-review-challenger.md agent definitions. First attempt failed (wrote to ~/.claude/ instead of project path). Retry with explicit path correction succeeded. All 24 structural tests pass.",
       "note": null
     },
     {
@@ -92,12 +130,26 @@
       "file": "task-07-impl-skill-files.md",
       "type": "implementation",
       "wave_id": 4,
-      "dependencies": ["T-02", "T-04", "T-05", "T-06"],
-      "covers": ["AC-01", "AC-02", "AC-05", "AC-06", "AC-07", "AC-09", "AC-10", "AC-11"],
+      "dependencies": [
+        "T-02",
+        "T-04",
+        "T-05",
+        "T-06"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-05",
+        "AC-06",
+        "AC-07",
+        "AC-09",
+        "AC-10",
+        "AC-11"
+      ],
       "model": "Sonnet",
       "model_rationale": "Three files with cross-references requiring architectural coherence between skill routing, agent spawning, and methodology injection",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created SKILL.md + existing-code-review.md + post-impl-review.md. Skill routes between conversational and post-impl paths, references agents by name, loads shared docs. All 16 skill structure tests pass.",
       "note": null
     },
     {
@@ -106,12 +158,16 @@
       "file": "task-08-impl-implement-skill-update.md",
       "type": "implementation",
       "wave_id": 4,
-      "dependencies": ["T-02"],
-      "covers": ["AC-07"],
+      "dependencies": [
+        "T-02"
+      ],
+      "covers": [
+        "AC-07"
+      ],
       "model": "Haiku",
-      "model_rationale": "Single-line addition to an existing file at a specified location — no design decisions",
-      "status": "not_started",
-      "summary": null,
+      "model_rationale": "Single-line addition to an existing file at a specified location \u2014 no design decisions",
+      "status": "complete",
+      "summary": "Added stage-transition prompt to implement SKILL.md asking user if they want a code review. Tests 17-18 pass.",
       "note": null
     },
     {
@@ -120,12 +176,16 @@
       "file": "task-09-impl-documentation-updates.md",
       "type": "implementation",
       "wave_id": 6,
-      "dependencies": ["T-03", "T-07", "T-08"],
+      "dependencies": [
+        "T-03",
+        "T-07",
+        "T-08"
+      ],
       "covers": [],
       "model": "Haiku",
-      "model_rationale": "Trivial line additions to three existing files at specified locations — no design decisions",
-      "status": "not_started",
-      "summary": null,
+      "model_rationale": "Trivial line additions to three existing files at specified locations \u2014 no design decisions",
+      "status": "complete",
+      "summary": "Updated README.md (commands table, pipeline diagram, how-it-works), sdl-workflow.md (stage entry), dispatch-overview.md (phase listing). All 181 tests pass.",
       "note": null
     }
   ]

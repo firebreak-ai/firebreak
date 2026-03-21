@@ -94,4 +94,4 @@ Write `ai-docs/$FEATURE/$FEATURE-retrospective.md`. Include the factual data, up
 
 ## Team Shutdown
 
-Shut down all teammates. Clean up the team. Report: "All tasks complete and verified. Retrospective captured at `ai-docs/$FEATURE/$FEATURE-retrospective.md`. Implementation is ready for your review."
+Shut down all teammates. Clean up the team. After final verification passes, ask the user: "Would you like to review the implementation with /code-review?" Follow the existing stage-transition pattern — summarize what was verified and offer the next stage. Report: "All tasks complete and verified. Retrospective captured at `ai-docs/$FEATURE/$FEATURE-retrospective.md`. Implementation is ready for your review."
