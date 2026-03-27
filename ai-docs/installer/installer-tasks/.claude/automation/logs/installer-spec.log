@@ -1,0 +1,1 @@
+{"timestamp": "2026-03-27T00:39:24.635079+00:00", "spec": "installer-spec", "event_type": "gate_result", "data": {"gate": "task-reviewer", "result": "pass"}}

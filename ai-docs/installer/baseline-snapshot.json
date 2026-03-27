@@ -1,0 +1,1 @@
+{"baseline_tests":[],"captured_at":"2026-03-26T17:48:34-07:00","note":"No installer tests exist yet. Existing sdl-workflow tests are not run as part of installer verification — they have separate infrastructure dependencies."}
