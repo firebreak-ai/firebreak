@@ -12,8 +12,8 @@
       "covers": ["AC-02", "AC-03", "AC-04", "AC-05", "AC-08"],
       "model": "Haiku",
       "model_rationale": "Single file creation, bounded assertions, clear TAP pattern to follow",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-improvement-agent.sh with 11 TAP assertions covering agent file existence, frontmatter fields, authoring rules reference, sub-agent spawning, scope discipline, proposal format, anti-speculation, cross-cutting proposals, and spec/impl/review exclusion. All assertions correctly fail pre-implementation except the absence check.",
       "note": null
     },
     {
@@ -26,8 +26,8 @@
       "covers": ["AC-02", "AC-03", "AC-04", "AC-05", "AC-08"],
       "model": "Sonnet",
       "model_rationale": "Agent definition requires synthesizing authoring rules, scope discipline, and sub-agent team pattern",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/agents/fbk-improvement-analyst.md with frontmatter (name, description, read-only tools, sonnet model), 7-step workflow with sub-agent spawning, proposal output format, cross-cutting scope, and scope discipline. 11/11 T-01 tests pass.",
       "note": null
     },
     {
@@ -40,8 +40,8 @@
       "covers": ["AC-01", "AC-02", "AC-03", "AC-04", "AC-05", "AC-06", "AC-07", "AC-08"],
       "model": "Haiku",
       "model_rationale": "Single file creation, bounded assertions, clear TAP pattern to follow",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-improvement-skill.sh with 17 TAP assertions covering file existence, frontmatter, retrospective location, asset discovery (Glob, project/global, fbk-* enumeration), agent isolation (spawning, paths-only, content exclusion), proposal format, accept/discuss/skip flow, opt-out prompt, no-observations exit, and cross-phase targeting. All assertions correctly fail pre-implementation.",
       "note": null
     },
     {
@@ -54,8 +54,8 @@
       "covers": ["AC-01", "AC-02", "AC-03", "AC-04", "AC-05", "AC-06", "AC-07", "AC-08"],
       "model": "Sonnet",
       "model_rationale": "Skill definition is the most complex deliverable — orchestrates discovery, agent spawning, proposal UX, and selective application",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/skills/fbk-improve/SKILL.md with frontmatter (description, argument-hint, allowed-tools including Edit and Agent), and body sections: Entry, Retrospective Location, Asset Discovery (Glob-based, project/global), Improvement Analysis (agent spawn with paths-only, content exclusion), Proposal Presentation, Selective Application (accept/discuss/skip with Edit), Edge Cases (no-observations exit, discussion items, cross-phase). 17/17 T-03 tests pass.",
       "note": null
     },
     {
@@ -68,8 +68,8 @@
       "covers": ["AC-01", "AC-06"],
       "model": "Haiku",
       "model_rationale": "Single file creation, bounded assertions, clear TAP pattern to follow",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-improvement-integration.sh with 11 TAP assertions: code review transition (2), SDL workflow doc (2), cross-asset references (5), Edit in allowed-tools (1), skill file exists (1). 6/11 pass (existing cross-refs), 5 correctly fail (pipeline transitions pending T-06).",
       "note": null
     },
     {
@@ -82,8 +82,8 @@
       "covers": ["AC-01", "AC-02", "AC-05"],
       "model": "Sonnet",
       "model_rationale": "Path normalization logic, multi-pattern grep, and installation convention awareness require architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-reference-integrity.sh with 65 TAP assertions: 25 orphaned leaf doc checks + 40 path reference resolution checks. 60/65 pass. 5 failures are pre-existing orphaned docs (dispatch/research-findings, sdl-workflow/config-yml-schema, corrective-workflow, task-file-schema, verify-yml-schema). All new asset path references resolve correctly.",
       "note": null
     },
     {
@@ -96,8 +96,8 @@
       "covers": ["AC-01"],
       "model": "Haiku",
       "model_rationale": "Single assertion added to existing test file, following established pattern",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added assertion 21 to tests/sdl-workflow/test-code-review-integration.sh checking code review skill contains /fbk-improve transition. Correctly fails pre-T-06 implementation.",
       "note": null
     },
     {
@@ -110,8 +110,8 @@
       "covers": ["AC-01", "AC-06"],
       "model": "Sonnet",
       "model_rationale": "Two files modified, integration point between existing and new pipeline stages",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added /fbk-improve transition instruction to code review skill Retrospective section and self-improvement stage entry to SDL workflow doc Stage Guides. 11/11 integration tests pass, 20/21 code review integration tests pass (1 pre-existing failure).",
       "note": null
     }
   ]

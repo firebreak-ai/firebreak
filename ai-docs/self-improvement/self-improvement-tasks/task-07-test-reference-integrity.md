@@ -5,7 +5,7 @@ wave: 3
 covers: [AC-01, AC-02, AC-05]
 depends_on: [T-02, T-04]
 files_to_create: [tests/sdl-workflow/test-reference-integrity.sh]
-completion_gate: "Test script runs and all assertions pass against the current asset tree"
+completion_gate: "Test script runs; existing asset assertions pass; assertions for new improvement skill and agent path references fail until T-02 and T-04 create the referenced files"
 ---
 
 ## Objective

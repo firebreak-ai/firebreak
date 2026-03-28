@@ -31,6 +31,7 @@ Existing agent structural tests follow the TAP format pattern established in `te
    - Body contains instruction about sub-agent spawning for per-asset analysis
    - Body contains scope discipline section restricting the agent to read-only analysis and proposal output
    - Body contains proposal output format specification (target, change type, diff, observation, necessity)
+   - Body contains instruction prohibiting speculative improvements disconnected from retrospective observations
    - Body contains instruction about cross-cutting proposals (proposals can target any Firebreak asset regardless of which phase the observation originated from)
    - Body does NOT contain references to receiving spec, implementation, or review conversation content
 5. Add TAP summary and exit with non-zero if any test fails.

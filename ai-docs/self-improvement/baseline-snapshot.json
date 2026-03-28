@@ -1,0 +1,18 @@
+{
+  "captured_at": "2026-03-27",
+  "test_files": {
+    "tests/sdl-workflow/test-audit-logger.sh": {"total": 8, "pass": 8, "fail": 0},
+    "tests/sdl-workflow/test-breakdown-integration.sh": {"total": 19, "pass": 19, "fail": 0},
+    "tests/sdl-workflow/test-code-review-integration.sh": {"total": 20, "pass": 19, "fail": 1},
+    "tests/sdl-workflow/test-code-review-skill.sh": {"total": 16, "pass": 16, "fail": 0},
+    "tests/sdl-workflow/test-code-review-structural.sh": {"total": 24, "pass": 23, "fail": 1},
+    "tests/sdl-workflow/test-config-loader.sh": {"total": 10, "pass": 10, "fail": 0},
+    "tests/sdl-workflow/test-hash-gate.sh": {"total": 7, "pass": 7, "fail": 0},
+    "tests/sdl-workflow/test-review-integration.sh": {"total": 14, "pass": 14, "fail": 0},
+    "tests/sdl-workflow/test-spec-validator.sh": {"total": 10, "pass": 10, "fail": 0},
+    "tests/sdl-workflow/test-state-engine.sh": {"total": 15, "pass": 15, "fail": 0},
+    "tests/sdl-workflow/test-status-command.sh": {"total": 7, "pass": 7, "fail": 0},
+    "tests/sdl-workflow/test-task-reviewer.sh": {"total": 15, "pass": 13, "fail": 2},
+    "tests/sdl-workflow/test-test-reviewer-agent.sh": {"total": 16, "pass": 16, "fail": 0}
+  }
+}

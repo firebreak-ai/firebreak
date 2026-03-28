@@ -212,6 +212,13 @@ else
   not_ok "finding format consistency between guide and agents" "detector missing 'S-' or challenger missing 'F-'"
 fi
 
+# Test 21: Skill includes /fbk-improve transition instruction (AC-01 automatic invocation seam)
+if grep -qE '/fbk-improve|fbk-improve' "$SKILL_FILE"; then
+  ok "skill includes /fbk-improve transition instruction"
+else
+  not_ok "skill includes /fbk-improve transition instruction" "skill missing /fbk-improve or fbk-improve reference"
+fi
+
 # --- Summary ---
 echo ""
 echo "# $PASS/$TOTAL tests passed"

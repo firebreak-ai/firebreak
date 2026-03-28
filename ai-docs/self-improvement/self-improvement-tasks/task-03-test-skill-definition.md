@@ -54,7 +54,7 @@ Follow the TAP test pattern from `tests/sdl-workflow/test-code-review-integratio
    - Body contains instruction for no-actionable-observations exit message
 
    **Cross-cutting (AC-08):**
-   - Body does NOT restrict proposals to same-phase assets (or explicitly permits cross-phase)
+   - Body contains instruction permitting proposals to target any Firebreak asset regardless of pipeline phase
 
 4. Add TAP summary and exit with non-zero if any test fails.
 

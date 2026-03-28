@@ -16,6 +16,8 @@ Adds an assertion to the existing code review integration test validating that t
 
 `tests/sdl-workflow/test-code-review-integration.sh` validates structural integrity of the code review skill and its referenced assets. The self-improvement feature adds a transition instruction to the code review skill's Retrospective section. This task adds the assertion that validates the transition exists.
 
+This assertion duplicates coverage in T-05's integration test (`test-improvement-integration.sh`). The duplication is intentional: T-05 validates the self-improvement feature's cross-asset integration as a group, while this assertion keeps the code review skill's own regression suite complete. If someone later removes the transition without running improvement-specific tests, this catches it.
+
 The spec's "Existing tests impacted" section identifies this change. Follow the existing assertion pattern in the test file.
 
 ## Instructions

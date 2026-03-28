@@ -59,3 +59,5 @@ When multiple specs exist for the reviewed code, compare them for consistency. S
 ## Retrospective
 
 After the review completes, produce a retrospective following the fields defined in `code-review-guide.md`.
+
+After the retrospective is written to disk, invoke `/fbk-improve <feature-name>` to analyze the retrospective for pipeline improvement opportunities.
