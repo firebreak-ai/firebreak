@@ -34,7 +34,7 @@ Load brownfield instructions from `.claude/fbk-docs/fbk-brownfield-breakdown.md`
 
 The teammate produces test tasks from the spec's testing strategy and acceptance criteria. One task per AC or logical test group. Each test task specifies: files to create, test framework conventions to follow, AC identifiers covered, and a completion gate (tests compile and fail before implementation).
 
-Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-test-<behavior>.md`. Task files use Markdown with YAML frontmatter containing: `id`, `type: test`, `wave`, `covers` (AC identifiers), `files_to_create`, `completion_gate`. Markdown body contains implementation instructions.
+Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-test-<behavior>.md`. Task files use the frontmatter schema and body sections defined in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`.
 
 ## Implementation task agent
 
@@ -46,16 +46,16 @@ The teammate produces implementation tasks from the spec's technical approach an
 
 Each implementation task references specific test task IDs. The completion gate for each implementation task is: the referenced tests pass.
 
-Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-impl-<behavior>.md`. Task files use Markdown with YAML frontmatter containing: `id`, `type: implementation`, `wave`, `covers` (AC identifiers), `files_to_create`, `files_to_modify`, `test_tasks` (references to test task IDs), `completion_gate`. Markdown body contains implementation instructions.
+Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-impl-<behavior>.md`. Task files use the frontmatter schema and body sections defined in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`.
 
-Include wave assignments in each task's frontmatter. Wave N+1 tasks may reference files or behaviors produced by Wave N.
+Wave N+1 tasks may reference files or behaviors produced by Wave N.
 
 ## Task manifest assembly
 
 After both agents complete, assemble `ai-docs/$FEATURE/$FEATURE-tasks/task.json` conforming to the task manifest schema in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`.
 
 For each task file produced by the agents, create a task entry with:
-- `id`: from the task file's frontmatter `id` field
+- `id`: from the task file's frontmatter `id` field (matching `task-NN` format)
 - `title`: one-line description of what the task produces
 - `file`: the task file's filename
 - `type`: from the task file's frontmatter `type` field
@@ -72,9 +72,9 @@ Set the top-level `spec` field to `"ai-docs/$FEATURE/$FEATURE-spec.md"`.
 
 ## Task review
 
-Run the task reviewer's deterministic layer: `.claude/hooks/fbk-sdl-workflow/task-reviewer-gate.sh "ai-docs/$FEATURE/$FEATURE-spec.md" "ai-docs/$FEATURE/$FEATURE-tasks"`. If it fails, report each failure and return to the test task agent step with specific feedback.
+Run the task reviewer's deterministic layer: `.claude/hooks/fbk-sdl-workflow/task-reviewer-gate.sh "ai-docs/$FEATURE/$FEATURE-spec.md" "ai-docs/$FEATURE/$FEATURE-tasks"`. If it fails, report each failure. Return to the test task agent step with specific feedback.
 
-Invoke the test reviewer agent (`test-reviewer`) as an Agent Teams teammate with checkpoint 2 context. Pass the spec file and the task files as artifacts. If it fails, add its findings to the feedback and return to the test task agent step.
+Invoke the test reviewer agent (`test-reviewer`) as an Agent Teams teammate with checkpoint 2 context. Pass the spec file and the task files as artifacts. If it fails, add the test reviewer's findings to the feedback. Return to the test task agent step.
 
 If both pass, proceed to the existing breakdown gate.
 

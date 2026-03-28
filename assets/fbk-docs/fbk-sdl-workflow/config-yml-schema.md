@@ -4,7 +4,7 @@ Place `config.yml` at `.claude/automation/config.yml` in the project root.
 
 - `token_budget`: integer or null. Maximum token budget for the pipeline run. Default: null (no limit).
 - `max_concurrent_agents`: integer. Maximum agents running simultaneously. Default: 1.
-- `replan_cap`: integer. Maximum replan attempts per task before parking. Default: 2.
+- `escalation_cap`: integer. Maximum escalation attempts per task before parking. Default: 2.
 - `model`: string or object. As string: default model for all pipeline stages. As object: `default` key for the baseline model, plus per-stage keys overriding specific stages. Default: `"sonnet"`.
 
 ## Layering order
@@ -22,7 +22,7 @@ Each layer overrides the previous for any key it defines.
 ```yaml
 token_budget: 10000
 max_concurrent_agents: 3
-replan_cap: 4
+escalation_cap: 4
 model:
   default: sonnet
   reviewing: opus

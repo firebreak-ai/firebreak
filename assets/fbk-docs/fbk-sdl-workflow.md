@@ -13,7 +13,9 @@ Use a 4-stage pipeline for complex features: Spec → Review → Breakdown → I
 | 1: Feature Spec | Human-driven, no hard cap | User drives iteration frequency |
 | 2: Spec Review | 1 thorough review + 1 revision if blocking findings | Escalate if blocking findings persist |
 | 3: Task Breakdown | 2 compilation attempts | Escalate if compilation fails twice |
-| 4: Implementation | 2 re-plans per task, then escalate | Escalate to user if re-plan limit reached |
+| 4: Implementation | 2 task escalations per task, then escalate to user | Escalate to user if escalation limit reached |
+
+A **task escalation** is a task rewrite assigned to a different teammate after in-session resolution fails. **In-session retries** — TaskCompleted hook rejections resolved by the teammate without escalation — are not task escalations. Track both metrics separately in the retrospective.
 
 **Stage transitions are human-approved, agent-facilitated**. Agent runs the gate, reports results, offers the next stage. Write artifacts to disk, summarize the completed stage, compact context, then invoke the next skill.
 
@@ -27,11 +29,17 @@ When performing a specification review → `/spec-review` skill loads `fbk-sdl-w
 
 When creating a threat model during spec review → Load on demand: `fbk-sdl-workflow/threat-modeling.md`
 
+When creating or modifying `.claude/automation/config.yml` → `fbk-sdl-workflow/config-yml-schema.md`
+
+When creating or modifying `.claude/automation/verify.yml` → `fbk-sdl-workflow/verify-yml-schema.md`
+
 When compiling a specification into tasks → `/breakdown` skill loads `fbk-sdl-workflow/task-compilation.md`
 
 When implementing tasks from a breakdown → `/implement` skill loads `fbk-sdl-workflow/implementation-guide.md`
 
 When reviewing code or running post-implementation review → `/code-review` skill loads `fbk-sdl-workflow/code-review-guide.md`
+
+When following a corrective or diagnostic workflow → `fbk-sdl-workflow/corrective-workflow.md`
 
 When analyzing retrospectives for pipeline improvement → `/fbk-improve` skill spawns the improvement analyst agent
 
@@ -41,6 +49,6 @@ At the end of each stage, follow this protocol: Write all artifacts to disk. Sum
 
 ## Artifact Layout
 
-**Feature-level directory**: `ai-docs/<feature-name>/` contains the spec, review, optional threat model, and tasks subdirectory. Add `*threat-model*` to `.gitignore`.
+**Feature-level directory**: `ai-docs/<feature-name>/` contains the spec, review, optional threat model, and tasks subdirectory. Add `*threat-model*` to `.gitignore` before writing the threat model file.
 
 **Project-level directory**: `ai-docs/<project-name>/` contains a project overview, then feature subdirectories, each following the feature-level structure.

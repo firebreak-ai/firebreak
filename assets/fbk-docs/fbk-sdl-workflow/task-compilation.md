@@ -33,6 +33,12 @@ File count is the sharpest predictor of agent success. Target these constraints 
 
 If a task exceeds these constraints, split it. If splitting creates artificial boundaries (e.g., a schema migration necessarily touching 4 files), document the justification in the task file.
 
+### Interface Change Splits
+
+When a task changes an interface (function signature, constructor, API contract), split the definition change from caller migration. The definition task modifies the interface. Caller migration tasks update call sites in batches of 4-5 files or 80 lines, whichever is reached first. Apply this split when 5 or more callers must change.
+
+Migration batches that modify the same file must be assigned to sequential waves. Each migration test task verifies only that its batch's callers use the new interface — do not assert absence of the old interface until the final verification gate.
+
 ## Task File Structure
 
 Each `task-NN-<description>.md` is the complete instruction set for one implementation agent. Include these 8 sections in order:
@@ -71,6 +77,55 @@ State `Haiku` or `Sonnet`. One word. See Model Routing section for the decision 
 
 **8. Wave**
 State the wave number. Example: `Wave 2`. Determines when this task executes relative to others.
+
+### Task File Frontmatter
+
+Task files use YAML frontmatter between `---` markers.
+
+**Required fields (all tasks):**
+
+- `id`: string. Task identifier matching `task-NN` format (e.g., `task-01`).
+- `type`: `test` or `implementation`.
+- `wave`: integer. Execution wave number.
+- `covers`: list of `AC-NN` strings. Acceptance criteria this task satisfies.
+- `completion_gate`: string. What proves this task is done.
+
+At least one of `files_to_create` (list of paths) or `files_to_modify` (list of paths) must be present and non-empty.
+
+**Additional fields for implementation tasks:**
+
+- `test_tasks`: list of task ID strings referencing test tasks this implementation depends on.
+
+### Frontmatter Examples
+
+**Test task:**
+
+```yaml
+---
+id: task-01
+type: test
+wave: 1
+covers: [AC-01]
+files_to_create:
+  - tests/feature/test-alpha.sh
+completion_gate: "tests compile and fail before implementation"
+---
+```
+
+**Implementation task:**
+
+```yaml
+---
+id: task-02
+type: implementation
+wave: 1
+covers: [AC-01]
+files_to_create:
+  - src/alpha.py
+test_tasks: [task-01]
+completion_gate: "task-01 tests pass"
+---
+```
 
 A task file does NOT contain:
 
@@ -121,12 +176,12 @@ Name paired tasks consistently: `task-NN-test-<behavior>.md` and `task-MM-impl-<
   "category": "feature | corrective | testing-infrastructure",
   "tasks": [
     {
-      "id": "T-NN",
+      "id": "task-NN",
       "title": "Human-readable task title",
       "file": "task-NN-<description>.md",
       "type": "test | implementation",
       "wave_id": 1,
-      "dependencies": ["T-MM", "T-PP"],
+      "dependencies": ["task-MM", "task-PP"],
       "covers": ["AC-01"],
       "model": "Haiku | Sonnet | Opus",
       "model_rationale": "Brief rationale for model choice",
@@ -145,7 +200,7 @@ Name paired tasks consistently: `task-NN-test-<behavior>.md` and `task-MM-impl-<
 | `spec` | yes | Path to the spec this task set implements |
 | `category` | no | Feature category: `feature` (default), `corrective`, or `testing-infrastructure`. Controls which gate invariants apply. Absent = `feature`. |
 | `tasks` | yes | Array of task entries |
-| `id` | yes | Task identifier matching `T-NN` format |
+| `id` | yes | Task identifier matching `task-NN` format |
 | `title` | yes | One-line description of what the task produces |
 | `file` | yes | Filename of the task's `.md` file in the same directory |
 | `type` | yes | `test` or `implementation` |
@@ -165,9 +220,9 @@ Name paired tasks consistently: `task-NN-test-<behavior>.md` and `task-MM-impl-<
 | `not_started` | Initial state after breakdown | `/breakdown` |
 | `in_progress` | Agent is actively working on this task | `/implement` on assignment |
 | `complete` | Task verified done | `/implement` after verification |
-| `tests_fail` | Implementation done but tests don't pass | `/implement` (triggers re-plan) |
-| `parked` | Needs human intervention (re-plan cap exhausted) | `/implement` on escalation |
-| `superseded` | Task no longer needed | Human or re-plan |
+| `tests_fail` | Implementation done but tests don't pass | `/implement` (triggers escalation) |
+| `parked` | Needs human intervention (escalation cap exhausted) | `/implement` on escalation |
+| `superseded` | Task no longer needed | Human or escalation |
 
 ### Invariants
 

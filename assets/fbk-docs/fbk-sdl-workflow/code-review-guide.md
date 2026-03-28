@@ -70,6 +70,10 @@ The detection-verification loop operates iteratively across up to 5 rounds:
 
 Only verified findings surface to the user. Rejected sightings and the internal sighting data are not user-facing.
 
+**Post-output steps**: After the loop terminates:
+1. Append a findings summary to the feature retrospective (`ai-docs/<feature>/<feature>-retrospective.md`): finding count, rejection count, false positive rate, and each verified finding's ID, category, and one-line description.
+2. If a retrospective exists, offer: "Would you like to run `/fbk-improve` to analyze this retrospective for workflow improvements?"
+
 ## Source of Truth Handling
 
 **Spec available**: Use the spec's acceptance criteria (ACs) and user-visible (UV) steps as the primary comparison target. These define the intended behavior against which the code is measured.
@@ -87,4 +91,4 @@ Each code review run produces a retrospective capturing these fields:
 - **Scope assessment**: code scope reviewed (files, modules, lines of code) relative to context usage (tokens, cache efficiency)
 - **Context health**: round count, sightings-per-round trend, rejection rate per round, whether the hard cap (5 rounds) was reached
 - **Tool usage**: which project-native tools (grep, file navigation, test runners) were available and used vs. grep/glob fallback
-- **Finding quality**: false positive rate (findings the user dismissed), false negative signals (issues the user identified that the Detector missed)
+- **Finding quality**: false positive rate (findings the user dismissed), false negative signals (issues the user identified that the Detector missed), breakdown by origin (introduced vs. pre-existing)

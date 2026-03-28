@@ -9,6 +9,8 @@ argument-hint: "[feature-name]"
 
 Read `.claude/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md` for detailed guidance on section structure, scope recognition, iterative authoring, and the verification gate.
 
+When the user describes corrective work (bug reports, failing tests, fix intent), read `.claude/fbk-docs/fbk-sdl-workflow/corrective-workflow.md` for diagnostic and fast-track workflows.
+
 ## Entry
 
 If `$ARGUMENTS` is set, use it as the feature name. Otherwise, ask the user for a name and brief description before proceeding.

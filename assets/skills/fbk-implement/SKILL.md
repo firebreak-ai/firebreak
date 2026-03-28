@@ -6,7 +6,7 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
-Read `.claude/fbk-docs/fbk-sdl-workflow/implementation-guide.md` for the complete wave execution protocol, verification rules, re-plan protocol, checkpoint format, and retrospective structure. Follow that doc at every step below.
+Read `.claude/fbk-docs/fbk-sdl-workflow/implementation-guide.md` for the complete wave execution protocol, verification rules, escalation protocol, checkpoint format, and retrospective structure. Follow that doc at every step below.
 
 ## Input
 
@@ -58,26 +58,26 @@ Read that file as your sole context and execute it.
 
 Wait for all test-task native tasks to reach completed status. Set each completed task's `status` to `complete` in `task.json` and record the teammate's work summary in the `summary` field.
 
-**Step 2 — Test compilation check**: Verify new tests exist and compile. Tests are expected to fail (no implementation yet) — a compile failure is the problem, not a test failure. If tests do not compile, treat as task failure and invoke the re-plan protocol before proceeding.
+**Step 2 — Test compilation check**: Verify new tests exist and compile. Tests are expected to fail (no implementation yet) — a compile failure is the problem, not a test failure. If tests do not compile, treat as task failure and invoke the escalation protocol before proceeding.
 
 **Step 3 — Implementation tasks**: Create native tasks for this wave's implementation tasks (tasks with matching `wave_id` and `type: "implementation"`). Set each task's `status` to `in_progress` in `task.json`. Use the same format — full task file path in the description, matching the task's assigned model. Wait for all to complete. Set each completed task's `status` to `complete` and record the `summary`.
 
-**Step 4 — Per-wave verification**: Run the checks specified in the implementation guide (full test suite, lint, no merge conflicts). If any check fails, invoke the re-plan protocol. Do not advance to the next wave until the current wave passes.
+**Step 4 — Per-wave verification**: Run the checks specified in the implementation guide (full test suite, lint, no merge conflicts). If any check fails, invoke the escalation protocol. Do not advance to the next wave until the current wave passes.
 
 **Step 5 — Wave checkpoint**: Summarize the wave, report test results, and offer a commit. Follow the checkpoint format in the implementation guide.
 
 **Step 6 — Final wave only**: After the checkpoint, proceed to final verification.
 
-## Re-Plan Protocol
+## Escalation Protocol
 
-When a task fails and the teammate cannot resolve it in-session, follow the re-plan protocol in the implementation guide:
+When a task fails and the teammate cannot resolve it in-session, follow the escalation protocol in the implementation guide:
 
 1. Collect a structured error report.
 2. Set the task's `status` to `tests_fail` in `task.json` and write the failure details to `summary`.
 3. Append a failure summary to `ai-docs/$FEATURE/$FEATURE-review.md`.
 4. Revise the task file in place.
 5. Assign the revised task to an idle teammate or spawn a replacement. Set `status` back to `in_progress`. The failing teammate does not retry.
-6. Cap: 2 re-plan attempts per task. After 2 failures, set `status` to `parked` with a `note`, escalate to the user, and halt the wave.
+6. Cap: 2 escalation attempts per task. After 2 failures, set `status` to `parked` with a `note`, escalate to the user, and halt the wave.
 
 ## Final Verification
 

@@ -20,13 +20,13 @@ For each wave:
 
 **Step 1 — Test tasks**: Create native tasks for the wave's test tasks. Each task description includes the path to its task file. Teammates claim and execute.
 
-**Step 2 — Test compilation check**: When all test tasks complete, verify that the new tests exist and compile. Tests are expected to fail at this point — the implementation does not exist yet. If tests do not compile, treat as a task failure and invoke the re-plan protocol.
+**Step 2 — Test compilation check**: When all test tasks complete, verify that the new tests exist and compile. Tests are expected to fail at this point — the implementation does not exist yet. If tests do not compile, treat as a task failure and invoke the escalation protocol.
 
 **Step 3 — Implementation tasks**: Create native tasks for the wave's implementation tasks. Teammates claim and execute.
 
 **Step 4 — Per-wave verification**: Run after all implementation tasks complete. See "Per-Wave Verification" below.
 
-**Step 5 — On failure**: Invoke the re-plan protocol. Do not advance to the next wave until the current wave passes verification.
+**Step 5 — On failure**: Invoke the escalation protocol. Do not advance to the next wave until the current wave passes verification.
 
 **Step 6 — Wave checkpoint**: Summarize the wave and offer a commit. See "Wave Checkpoint" below.
 
@@ -40,9 +40,9 @@ Update `task.json` after every status change. Status transitions:
 
 1. **Assignment**: Set `status` to `in_progress` when assigning a task to a teammate.
 2. **Completion**: Set `status` to `complete` and write the teammate's work summary to `summary` when the task passes verification.
-3. **Test failure**: Set `status` to `tests_fail` when an implementation task's tests don't pass. Invoke the re-plan protocol.
-4. **Escalation**: Set `status` to `parked` with a `note` explaining the failure when the re-plan cap is exhausted.
-5. **Superseded**: Set `status` to `superseded` with a `note` when a re-plan replaces the task or the user removes it from scope.
+3. **Test failure**: Set `status` to `tests_fail` when an implementation task's tests don't pass. Invoke the escalation protocol.
+4. **Escalation**: Set `status` to `parked` with a `note` explaining the failure when the escalation cap is exhausted.
+5. **Superseded**: Set `status` to `superseded` with a `note` when an escalation replaces the task or the user removes it from scope.
 
 The team lead writes `task.json` after each update — teammates do not modify it directly. The teammate reports its work summary to the team lead, who records it.
 
@@ -54,7 +54,7 @@ When `task.json` contains tasks with `status` other than `not_started`:
 
 1. **`complete` tasks**: Skip. Read their `summary` fields for context on what was already built.
 2. **`in_progress` tasks**: Partial implementation exists. Evaluate the current state of the files in the task's scope before reassigning. The teammate must be informed that prior work exists to avoid duplication.
-3. **`tests_fail` tasks**: Prior implementation failed verification. Treat as a re-plan candidate — read the `summary` and verification output before reassigning.
+3. **`tests_fail` tasks**: Prior implementation failed verification. Treat as an escalation candidate — read the `summary` and verification output before reassigning.
 4. **`parked` tasks**: Awaiting human input. Do not resume without user confirmation.
 5. **`superseded` tasks**: Skip.
 
@@ -118,7 +118,9 @@ For SDL tasks, the hook validates:
 
 Exit code 2 (reject with feedback) on any failure. This prevents task completion and returns the failure output to the teammate as feedback.
 
-**Escalation from hook rejections to re-plan**: Hook rejections prompt the teammate to retry in-session using the failure output as feedback. In-session retries do not count toward the 2-attempt re-plan cap. When the teammate goes idle or messages you without resolving the failure, initiate the re-plan protocol.
+**Escalation from hook rejections**: Hook rejections prompt the teammate to retry in-session using the failure output as feedback. In-session retries do not count toward the 2-attempt escalation cap. When the teammate messages you without resolving the failure, initiate the escalation protocol.
+
+**Unresponsive teammate detection**: If a teammate has not reported progress or completed the task within 10 minutes of assignment, send a status check. Retry the status check every 2 minutes, up to 3 attempts. If no response after 3 status checks, treat the teammate as unresponsive: set `status` to `tests_fail`, record the timeout in `summary`, and assign the task to a different teammate. This counts as one escalation attempt toward the 2-attempt cap.
 
 ---
 
@@ -137,9 +139,11 @@ The TaskCompleted hook catches test and lint failures per-task. Per-wave verific
 
 ## Wave Checkpoint
 
+Teammates do not commit. All commits are controlled by the team lead at wave checkpoints.
+
 After per-wave verification passes:
 
-1. **Summary**: What this wave accomplished — tasks completed, what was implemented, any re-plans and their reasons.
+1. **Summary**: What this wave accomplished — tasks completed, what was implemented, any escalations and their reasons.
 2. **Test results**: Which tests pass, including new/updated tests and the full existing suite.
 3. **Commit offer**: Ask "Would you like to commit before continuing to the next wave?" Draft a commit message from the wave summary if the user accepts.
 
@@ -147,7 +151,7 @@ Apply this checkpoint to every wave, including the final one.
 
 ---
 
-## Re-Plan Protocol
+## Escalation Protocol
 
 Initiate when a task fails and the teammate cannot resolve it in-session.
 
@@ -156,7 +160,7 @@ Initiate when a task fails and the teammate cannot resolve it in-session.
 3. Append a failure summary to `ai-docs/<feature-name>/<feature-name>-review.md`: task ID, attempt number, what was attempted, what went wrong, and the verification output.
 4. Revise the task file in place. The original is preserved in git history.
 5. Assign the revised task to an idle teammate or spawn a replacement. Set `status` back to `in_progress`. The failing teammate does not retry — you have the external signal (test/lint output) to make a meaningful revision.
-6. Cap: 2 re-plan attempts per task. After 2 failures, set `status` to `parked` with a `note` and escalate to the user.
+6. Cap: 2 escalation attempts per task. After 2 failures, set `status` to `parked`. Include in the `note`: task ID, attempt count, and last verification output.
 
 ---
 
@@ -183,7 +187,8 @@ Write `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verif
 
 **Factual data** (no AI judgment):
 
-- Per-task: pass/fail, re-plan count, re-plan reasons, model used.
+- Per-task: pass/fail, escalation count, escalation reasons, model used.
+- In-session retry count: TaskCompleted hook rejections resolved by the teammate without escalation, per task.
 - Task sizing accuracy: actual files modified vs. declared scope.
 - Model routing accuracy: Haiku tasks that succeeded vs. required escalation.
 - Verification gate pass rates.
@@ -197,7 +202,7 @@ Write `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verif
 
 **Failure attribution** (AI judgment):
 
-- For each re-planned task: classify root cause as one of:
+- For each escalated task: classify root cause as one of:
   - **Spec gap** — the spec was underspecified or ambiguous.
   - **Compilation gap** — the task instructions missed something the spec covered.
   - **Implementation error** — the task instructions were correct but the agent failed to follow them.

@@ -27,7 +27,7 @@ When the production path that produces the side effect is not callable from the 
 
 When the behavior under test lives inside a function that cannot be imported in the test environment (a framework lifecycle method, a monolithic function mixing multiple concerns, a browser-only code path), flag it as a blocker: "This behavior is not testable through a direct function call. The production code needs to be restructured to expose this behavior as an importable function."
 
-Report the blocker to the orchestrator or user to trigger a replan that adds an extraction task.
+Report the blocker to the orchestrator or user to trigger an escalation that adds an extraction task.
 
 ## E2e tests
 

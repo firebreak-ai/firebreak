@@ -12,7 +12,7 @@ import yaml
 DEFAULTS = {
     "token_budget": None,
     "max_concurrent_agents": 1,
-    "replan_cap": 2,
+    "escalation_cap": 2,
     "model": "sonnet",
 }
 

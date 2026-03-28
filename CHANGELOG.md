@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.1] — 2026-03-28
+
+### Changed
+- **Rename "re-plan" to "task escalation"** across all pipeline assets. Clearer terminology: "zero escalations" no longer implies "zero friction."
+- Define two-tier friction model in Pipeline Principles: **task escalations** (team lead rewrites and reassigns) vs. **in-session retries** (hook rejections self-corrected by teammate).
+- Align task ID format from `T-NN` to `task-NN`, matching the `task-NN-<description>.md` filename convention.
+- Merge task file frontmatter schema into `task-compilation.md`; breakdown skill references compilation guide instead of inlining field lists.
+- Split compound instructions in breakdown skill failure handling.
+
+### Added
+- **Unresponsive agent timeout**: 10-minute initial wait, then 3 status checks at 2-minute intervals before declaring teammate unresponsive.
+- **Interface change split rule** in task compilation: split definition changes from caller migration at 5+ callers, with sequential wave constraints for same-file batches.
+- **Commit control policy**: teammates do not commit; all commits controlled by team lead at wave checkpoints.
+- **Escalation payload**: parked tasks must include task ID, attempt count, and last verification output in the `note` field.
+- **In-session retry count** as a retrospective metric alongside escalation count.
+- **Post-output steps** in code review orchestration: auto-append findings to retrospective, offer `/fbk-improve` transition.
+- **Origin breakdown** in code review finding quality retrospective field.
+- **Routing entries** for previously orphaned docs: `config-yml-schema.md`, `verify-yml-schema.md`, `corrective-workflow.md`.
+- Corrective workflow reference wired from `/spec` skill on corrective intent detection.
+- `.gitignore` ordering constraint: write entry before threat model file.
+
+### Removed
+- `task-file-schema.md` standalone doc (content merged into `task-compilation.md`).
+- "Goes idle" as an escalation trigger (replaced by timeout mechanism).
+
 ## [0.3.0] — 2026-03-27
 
 ### Added
