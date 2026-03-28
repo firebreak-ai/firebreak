@@ -1,4 +1,4 @@
-For context asset authoring principles, read `home/dot-claude/docs/context-assets.md`.
+For context asset authoring principles, read `assets/fbk-docs/fbk-context-assets.md`.
 
 Apply the Necessity Test to every instruction: **"If removed, is the agent more likely to make a mistake?"**
 

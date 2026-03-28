@@ -75,6 +75,13 @@ Beta updated both test files' helpers to handle the ---MANIFEST--- output separa
 
 - **Root cause**: Expected seam mismatch. The test tasks (wave 2) and the implementation task (wave 3) were compiled independently. The separator format was specified in T-07's task file but not in T-02/T-03's task files since they were compiled first.
 
+### Spec deviation: missing download path
+
+The spec (AC-01, line 38) requires `curl -fsSL ... | bash` to work as a standalone one-liner — the script downloads the source tree from GitHub when run outside a local clone. The implementation only supports clone-and-run: `SOURCE_DIR` resolves to a relative path from the script's location within the repo (`$SCRIPT_DIR/../home/dot-claude`). There is no fetch/download step when the source tree is absent.
+
+- **Root cause**: The spec describes two install paths ("bundled in the script for curl|bash, or in the local clone") but the task breakdown compiled only the local-clone path. Neither the test tasks nor the implementation task included a download step. The code review did not catch the omission because the test mocks provide a local `--source` directory, which bypasses the missing download logic entirely.
+- **Impact**: The installer cannot be used via `curl | bash` as documented. Users must clone the full repo first.
+
 ## Deliverables
 
 - `installer/install.sh` — bash 3.2+ installer script (install, upgrade, uninstall, dry-run)

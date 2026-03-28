@@ -6,6 +6,10 @@
 # Test projects
 space-invaders/
 
+# temp
+tmp/
+README-original.md
+
 # OS artifacts
 .DS_Store
 Thumbs.db

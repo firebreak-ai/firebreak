@@ -1,8 +1,119 @@
 # Firebreak
 
-**AI coding agents produce worse code than humans.** AI-generated PRs contain 1.7x more issues and 1.57x more security vulnerabilities than human-written PRs. AI-assisted development correlates with doubled code churn, ~8x growth in duplicated code blocks, and a 60% collapse in refactoring activity. The most dangerous failure mode — code that runs but produces wrong results — is increasing.
+**Firebreak improves the reliability and maintainability of AI-generated code.** It's a research-backed framework for Claude Code that closes the gap between code that works and code you'd want to maintain.
 
-Most teams try to fix this with post-implementation gates: tests, linting, code review. Firebreak takes a different approach: **front-load human judgment into structured artifacts before agents write any code**, then constrain agents to implement against well-defined criteria with deterministic verification gates. Prevention is less costly than repair.
+You talk to it like a person — "We need to add rate limiting to the API. Let's spec it out." You co-author the spec, the system handles review, breakdown, and implementation autonomously, and you review the results. Human judgment goes where it has the highest leverage (spec authoring); everything after that runs as a pipeline with verification at every stage.
+
+Core design decisions trace to [published research](research.md) — see [what problems this solves](#what-problems-does-this-solve) and the [full research basis, reasoning, and process](ai-docs/).
+
+Firebreak is a research base and a reference implementation. Use the pipeline, or just take the techniques that solve your problems.
+
+## Quick Start
+
+**Requirements:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code), python3, jq, PyYAML.
+
+```bash
+# Install globally (default: ~/.claude/)
+curl -fsSL https://raw.githubusercontent.com/firebreak-ai/firebreak/main/installer/install.sh | bash
+
+# Install to a specific project
+curl -fsSL https://raw.githubusercontent.com/firebreak-ai/firebreak/main/installer/install.sh | bash -s -- --target ./my-project/.claude
+
+# Preview what will be installed without changing anything
+curl -fsSL https://raw.githubusercontent.com/firebreak-ai/firebreak/main/installer/install.sh | bash -s -- --dry-run
+```
+
+Then open any project with Claude Code and start talking:
+
+```
+"I need to add a notification system to the app. Let's design it and spec it out."
+```
+
+Firebreak picks up the intent and walks you through spec authoring. You describe what you want, it asks clarifying questions, and together you produce a structured spec. From there, the pipeline takes over.
+
+### Improve your context assets (any project)
+
+Context assets are anything the agent loads — CLAUDE.md files, skills, hooks, agents. Even without the full pipeline, Firebreak includes guidelines for writing these that produce measurably better agent behavior. Works in any project immediately.
+
+```
+"Help me write a CLAUDE.md for this project"
+"Create a skill for running our deploy process"
+"Review my agent definition — is it following best practices?"
+```
+
+### Try the software development lifecycle (SDL) workflow
+
+```
+"I need to add rate limiting to the API. Let's spec it out."
+"There's a bug where sessions expire silently. Let's investigate and plan a fix."
+"Let's review the auth module — I think there are quality issues from the last round of AI changes."
+"Assemble the council — I want to discuss whether we should use WebSockets or SSE for real-time updates."
+```
+
+You co-author the spec, the system handles review, breakdown, and implementation autonomously, and you review the results. The council convenes 6 independent agents (architect, builder, guardian, security, analyst, advocate) that discuss the problem, challenge each other, and produce consensus recommendations.
+
+### Slash commands
+
+| Command | What it does |
+|---------|-------------|
+| `/spec` | Co-author a specification with acceptance criteria and testing strategy |
+| `/spec-review` | Run council review (architect, security, guardian, advocate, analyst) |
+| `/breakdown` | Compile the reviewed spec into sized, wave-assigned tasks |
+| `/implement` | Execute tasks with parallel agent teams and per-wave verification |
+| `/council` | Assemble 6 independent agents to discuss a problem and reach consensus |
+| `/code-review` | Adversarial Detector/Challenger review of existing code |
+| `/context-asset-authoring` | Guidance for writing effective context assets |
+
+Natural language works too — talking about designing features, fixing bugs, or reviewing code triggers the appropriate skill automatically.
+
+## Techniques you can use independently
+
+Each of these works on its own, in any project, without the full pipeline.
+
+- **[Progressive disclosure](assets/fbk-docs/fbk-context-assets.md)** — organize context so agents load only what they need, preventing the performance degradation that comes from irrelevant instructions
+- **[Adversarial code review](assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md)** — a Detector/Challenger loop where sightings require evidence to become findings, catching semantic issues invisible to CI
+- **[Council review](assets/fbk-docs/fbk-sdl-workflow/review-perspectives.md)** — independent perspectives (architect, security, guardian, advocate, analyst) that challenge the user and each other, countering agent sycophancy
+- **[Context-independent agents](assets/agents/)** — test writers, implementers, and reviewers never share reasoning, preventing agents from confirming their own work ([arXiv:2410.21136](https://arxiv.org/abs/2410.21136))
+- **[Test-first with AI bias mitigations](assets/fbk-docs/fbk-sdl-workflow/implementation-guide.md)** — a [dedicated test reviewer](assets/agents/fbk-test-reviewer.md) gates quality before implementation, and SHA-256 hash verification ensures implementation agents cannot weaken tests
+- **[Failure mode taxonomy](ai-docs/dispatch/failure-modes.md)** — 39 catalogued ways AI code fails, from 25+ empirical sources, usable as a reference regardless of pipeline
+- **[Structured retrospectives](ai-docs/dispatch/harness-patterns-analysis.md)** — classified failure data (spec gap, compilation gap, implementation error) after every run, enabling the pipeline to [improve itself](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md)
+- **[Context asset authoring guidelines](assets/fbk-docs/fbk-context-assets.md)** — [empirical research](research.md) on instruction density, positive framing, and compression applied to writing skills, agents, and CLAUDE.md files
+
+## What problems does this solve?
+
+AI-generated code ships with [1.7x more issues and 1.5–2x more security vulnerabilities](https://www.coderabbit.ai/blog/state-of-ai-vs-human-code-generation-report) than human-written code (CodeRabbit, 2025), with doubled code churn, [~8x growth in duplicated blocks, and a 60% collapse in refactoring activity](https://www.gitclear.com/ai_assistant_code_quality_2025_research) (GitClear, 2024–2025). Existing pipelines address behavioral correctness — agents follow specs and produce code that works — but leave reliability and maintainability gaps:
+
+| Gap | How Firebreak addresses it | Evidence | Deep dive |
+|-----------|-------------|---------------|-----------|
+| **Context overload degrades output** — irrelevant instructions hurt performance even when the window has room; models collapse past ~150 constraints | Three-tier context hierarchy (router/index/leaf) where agents load only what they need. Authoring framework applies the Necessity Test to every instruction. | [IFScale](https://arxiv.org/abs/2507.11538) 2025 (20 models), [Context Rot](https://research.trychroma.com/context-rot) (Chroma, 2025) | [Context assets](assets/fbk-docs/fbk-context-assets.md), [research](research.md) |
+| **CI can't catch semantic quality issues** — tests that pass vacuously, missing deep-copies, dead code guards with incomplete scope | Adversarial Detector/Challenger review at project scope. Detector uses behavioral comparison against specs or failure checklist; Challenger demands evidence before promoting findings. | 14 verified findings in brownfield validation — all invisible to CI | [Code review guide](assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md), [Detector](assets/agents/fbk-code-review-detector.md), [Challenger](assets/agents/fbk-code-review-challenger.md) |
+| **No systematic model of how AI code fails** — teams address symptoms individually rather than mapping the failure space | 39 failure modes across 6 categories from 25+ empirical sources (ICSE, MAST, OWASP, Microsoft AI Red Team), each mapped to pipeline stages with coverage matrix and gap analysis | Grounded in published research, not experience | [Failure modes](ai-docs/dispatch/failure-modes.md) |
+| **Pipelines don't learn from their own mistakes** — the same failure patterns repeat across runs | Built-in retrospectives with structured failure attribution. Every problem classified as spec gap, compilation gap, or implementation error. Human-mediated correction loop works today; the data structure supports future automated self-correction. | Re-plans and wave failures dropped to zero by Phase 2 of the brownfield test | [Harness analysis](ai-docs/dispatch/harness-patterns-analysis.md), [brownfield validation](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md) |
+| **Correlated failures between test and implementation agents** — LLMs derive test assertions from implementation behavior rather than spec intent, producing tests that freeze actual behavior as "correct" regardless of whether it matches requirements | Test writers, implementers, and reviewers never share context. No agent reviews its own work. Context isolation prevents the agent's understanding of its own implementation from contaminating test expectations. | [arXiv:2410.21136](https://arxiv.org/abs/2410.21136) | [Research](research.md) |
+| **Design decisions built on intuition don't generalize** — experience-driven frameworks over-fit to the author's projects | Every structural decision cites published studies with methodology and sample sizes. Research, reasoning, and process published alongside the tools. | Full citations with confidence levels and open questions | [Research](research.md), [`ai-docs/`](ai-docs/) |
+
+## Results
+
+Tested through a greenfield project (13 features, ~80 tasks, 137 tests), a brownfield feature addition (19 tasks, 43 new tests), and an ongoing large-scale brownfield remediation. Results are from the author's projects and have not been independently replicated.
+
+**Greenfield — the self-improvement loop in action:**
+
+The first full run produced a working application across 13 features with zero formal re-plans. But the retrospective revealed that "zero re-plans" masked 5 team-lead interventions and 3 corrective feature cycles — the metric was hiding real problems. The application passed all 137 tests but [didn't work correctly for a real user](ai-docs/dispatch/harness-patterns-analysis.md). Root cause: every e2e test was a smoke test (verifies no crashes) rather than a behavior test (verifies the application works). All bugs existed at integration seams between correctly-implemented modules — exactly where unit tests mock across boundaries.
+
+**Corrective actions:** The pipeline was revised to require [user verification steps](ai-docs/dispatch/phase-1.5-core-enhancement/phase-1.5-core-enhancement-spec.md) in every spec (action → observable outcome), enforce integration seam declarations, and add a [two-tier test reviewer](assets/agents/fbk-test-reviewer.md) that actively fails on missing behavioral coverage and silent-failure assertions. The greenfield had zero e2e tests; the brownfield tracked interventions as a first-class metric — the measurement the greenfield retrospective revealed was missing.
+
+**Brownfield feature addition (verification):** The next test — 19 tasks, 43 new tests on a different codebase — completed with zero corrective cycles and zero team-lead interventions. The feature worked on first human test. The spec produced 8 e2e tests from the start, catching 2 integration bugs during implementation that unit tests would have missed. Council review caught 22 findings before code was written. The test reviewer caught 8 defects across 2 checkpoints. Structured failure data in, specific pipeline corrections out, measurably better results next run. See the [full comparison](ai-docs/dispatch/harness-patterns-analysis.md).
+
+**Brownfield remediation (in progress — 4 of 8 phases complete):**
+- 110 pre-decomposed tasks (1-2 file scope each), 98.2% first-attempt pass rate, zero escalations to larger models — the cheapest model tier handled every task assigned to it
+- 4 team-lead interventions where the decomposition itself failed — the more interesting signal, and the [dominant remaining failure mode](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md)
+- 26 blocking spec review findings caught across 3 phases, including one that forced a complete architecture rewrite before code was written
+- 14 verified code review findings (Detector/Challenger) — all invisible to CI. For example, a thread-safe config wrapper returned collection fields by reference without deep-copying; the Detector identified the behavioral mismatch, the Challenger [verified it against the call graph](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/phase-0-security-retrospective.md). Other findings included vacuously-passing tests, incomplete guards, and dead code paths that appeared covered but weren't
+- Remediation exposed [7 false-passing tests](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/phase-1-test-infrastructure-retrospective.md) hidden by wrong mock wiring — a deprecated mock function was set but never called by production code, so tests exercised the mock's generic responses instead of actual behavior. Assertions were loose enough to accept either. CI reported green; the codebase's apparent test health was worse than its actual test health
+
+See [full greenfield/brownfield analysis](ai-docs/dispatch/harness-patterns-analysis.md) and [preliminary brownfield validation](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md).
+
+## How it works
 
 ```
 Spec ─► Review ─► Breakdown ─► Test Creation ─► Test Review ─► Implementation ─► Verification ─► Code Review ─► PR
@@ -12,215 +123,63 @@ Spec ─► Review ─► Breakdown ─► Test Creation ─► Test Review ─�
                                                    gate              test immutability         verification loop
 ```
 
-A core design principle is **context and persona isolation between agents**. When the same agent designs tests and writes the implementation, its tests tend to validate its own reasoning rather than the spec's intent. By using separate agents with independent context for test authoring, implementation, and review, correlated failures are structurally reduced. Each agent can only see what it needs, and no agent reviews its own work.
+**Context assets** use a three-tier hierarchy (router/index/leaf) to prevent context pollution — the agent starts with a lightweight router (CLAUDE.md), follows references when a topic is relevant, and loads only the specific leaf it needs. Most context never enters the window. The [authoring framework](assets/fbk-docs/fbk-context-assets.md) applies empirical research on instruction density and compression to every asset.
 
-**You talk to it like a person.** The developer interacts in natural language — sentences, questions, half-formed ideas — the same way you'd message a junior engineer on Slack. "We need to add auth to the API. Let's think about what that looks like." "That approach seems over-engineered, can we simplify?" "I also want to note that the tests need to cover the admin flow." The system progressively refines this natural conversation into highly specific artifacts: the spec compiles intent into structured sections, the breakdown compiles the spec into precise task instructions, and the implementation agents execute against those instructions. But the developer's interface stays conversational throughout — you're co-authoring, not writing prompts.
+**The SDL pipeline** runs five stages — Spec, Review, Breakdown, Implement, Code Review — with [deterministic verification gates](assets/hooks/fbk-sdl-workflow/) at each transition. Implementation uses wave-based parallel execution with capped retry loops. Test writers, implementers, and reviewers are context-independent agents that never share reasoning. Test files are locked by SHA-256 hash after the test reviewer approves them, preventing implementation agents from weakening tests to pass.
 
-**Many pipeline stages does not mean many user interactions.** The developer collaborates during spec authoring — that's where human judgment has the highest leverage. After that, the pipeline advances autonomously: council review runs without prompting, breakdown compiles and gates check automatically, test creation and implementation proceed through agent teams. The developer's next interaction is reviewing the results. The goal is rigorous code quality with minimal user friction — the pipeline does the work, not the developer.
+**Retrospectives** classify every pipeline failure as a spec gap, compilation gap, or implementation error. This structured failure data drives the next revision of the pipeline itself — Firebreak was built using its own SDL workflow, and each iteration addresses the gaps the previous one revealed. See the [harness analysis](ai-docs/dispatch/harness-patterns-analysis.md) for the full bootstrapping narrative.
 
-## Quick Start
-
-Copy the context assets to your Claude Code configuration:
-
-```bash
-cp -r home/dot-claude/* ~/.claude/
-```
-
-### Context Asset Authoring (works in any project)
-
-Even without the SDL workflow, Firebreak includes a research-based prompt engineering framework for writing better context assets — CLAUDE.md files, agent definitions, skills, hooks, and rules. It applies findings from empirical research on instruction density, context pollution, and progressive disclosure to help you write context assets that produce measurably better agent behavior.
-
-Invoke it with `/context-asset-authoring`, or just start talking about creating or improving context assets — "help me write a CLAUDE.md", "create a new skill", "improve my agent definition." The skill loads detailed, research-backed guidelines automatically.
-
-### SDL Workflow
-
-The spec-driven development lifecycle applies to any code change where correctness and maintainability matter — new features, bug fixes, refactoring. A bug fix is a spec with a root cause analysis, a test plan review asking "were the tests wrong or missing?", and a constrained implementation. The stages are the same; the scope at each stage is smaller.
-
-**The pipeline is scope-agnostic.** It prescribes process quality (spec must pass gate, tests must be adequate, implementation must pass verification) but is silent on scope and cadence. You choose the granularity — the pipeline ensures quality regardless:
-
-| Project shape | How specs are scoped | Example |
-|---|---|---|
-| Small greenfield | One project overview → sequential feature specs, each a few tasks | A browser game: 10 features, ~80 tasks total |
-| Sprint-sized work | Each feature spec fits a sprint. Multiple specs per sprint if they're small. | A new API endpoint: 1 spec, 5-8 tasks |
-| Mechanical bugfix | Fast-track — skip the pipeline entirely for known-pattern fixes | Same rendering bug in a different file: 15 minutes |
-| Large brownfield | Feature specs scoped to vertical slices of a broader roadmap. Each spec references existing code and tests. | Adding auth to a multi-service platform: each service gets its own spec |
-
-Four slash commands, each advancing through a verification gate before the next stage can begin:
-
-| Command | What it does | What it produces |
-|---------|-------------|-----------------|
-| `/spec` | Co-author a specification with structured sections, acceptance criteria, and a testing strategy | A spec document in `ai-docs/` |
-| `/spec-review` | Run council review (architect, security, guardian, advocate, analyst perspectives) | Review findings with pass/fail determination |
-| `/breakdown` | Compile the reviewed spec into sized, wave-assigned implementation tasks | Individual task files and a task manifest |
-| `/implement` | Execute tasks with parallel agent teams, wave-based sequencing, and per-wave verification | Implemented code with passing tests |
-| `/code-review` | Review existing code or post-implementation output using adversarial Detector/Challenger agents | Verified findings and optional remediation spec |
-
-You can invoke these directly with the slash commands, or use natural language — talking about designing a new feature, fixing a bug, writing a specification, reviewing a spec, breaking down tasks, or implementing a change will trigger the appropriate skill automatically.
-
-If you find that a natural language phrase you expected to trigger a skill didn't, [please report it](https://github.com/teknoll/firebreak/issues) — we're actively tuning trigger coverage based on how different users talk to Claude Code.
-
-## How It Works
-
-The project has three layers, each built using the one before it. The authoring framework produced the SDL workflow. The SDL workflow produced Dispatch's first phase. As Dispatch matures, future phases will be implemented using the updated pipeline — the process bootstraps itself up the complexity ladder.
-
-| Layer | Status | Description |
-|-------|--------|-------------|
-| Context Asset Framework | **Working** | Authoring guidelines, progressive disclosure, skills, hooks, docs |
-| SDL Workflow | **Working** | `/spec`, `/spec-review`, `/breakdown`, `/implement` with deterministic gates |
-| Dispatch Pipeline | **In testing** | Phase 1 (pipeline core) complete. Phase 1.5 (test quality, integration seam coverage, corrective workflow) implemented and brownfield-validated. |
-
-### 1. Context Asset Authoring Framework
-
-Guidelines that teach agents how to write well-structured context assets, following their own principles — progressive disclosure, minimal instruction density, and separation of concerns.
-
-**The problem:** Developers put all instructions into a single monolithic file. Research shows this hurts agent performance. Irrelevant instructions degrade output quality even when the context window has plenty of room — a phenomenon called **context pollution**. Every instruction competes for the model's attention, so unnecessary ones actively interfere with the instructions that matter.
-
-Instead of loading everything upfront, context is structured as a three-tier hierarchy where agents load only what they need:
-
-| Tier | Role | Loaded |
-|------|------|--------|
-| **Router** (CLAUDE.md) | Lists topics with file references. No detailed instructions. | Always (auto-loaded) |
-| **Index** (.claude/docs/topic.md) | Maps tasks/conditions to leaf file paths. Includes principles that apply across subtopics. | On demand, when the topic is relevant |
-| **Leaf** (.claude/docs/topic/subtopic.md) | Detailed, self-contained instructions for one concern. | On demand, when the specific subtopic is needed |
-
-The agent starts with the lightweight router, follows a reference when a topic is relevant, then loads only the specific leaf it needs. Most context never enters the window at all.
-
-### 2. SDL Workflow: Spec-Driven Development Lifecycle
-
-A 5-stage interactive pipeline: **Spec → Review → Breakdown → Implement → Code Review**. Each stage has a dedicated skill, deterministic verification gates (shell scripts), and structured artifact output. Code review is available as both a standalone skill (`/code-review`) and a post-implementation pipeline stage.
-
-Key design decisions, informed by [research](research.md):
-- **Deterministic gates over AI self-review** — verification value comes from tests, linters, and schema checks, not from an AI re-reading its own output
-- **External feedback at every iteration** — human judgment, test results, lint output, or council agents with distinct perspectives
-- **Wave-based parallel implementation** — tasks decomposed into dependency waves, executed by agent teams with per-wave verification
-- **Capped retry loops** — 2 re-plans per task, then escalate to human
-
-### 3. Dispatch: Autonomous Pipeline Orchestration
-
-The next evolution — an autonomous pipeline that drives specs from queue to PR without human intervention at intermediate stages. The developer's last judgment call is spec review; after that, the pipeline handles breakdown, test creation, test review, implementation, verification, and PR creation autonomously.
-
-Dispatch extends the SDL workflow with:
-- **10-stage pipeline** with deterministic and agentic gates at every transition
-- **Context-independent test reviewer** — a dedicated agent that validates test quality against spec requirements at five pipeline checkpoints, with no access to the implementing agents' reasoning. Early testing confirmed this is the single most productive quality checkpoint in the pipeline.
-- **Container isolation** — each implementation agent runs in an ephemeral Docker container with bubblewrap sandboxing
-- **Context-independent agents** — test writers and implementers never share reasoning, reducing correlated failures
-- **Test file immutability** — SHA-256 hash verification prevents implementation agents from weakening tests
-- **Structured retrospectives** — each feature produces a retrospective with per-task results, upstream traceability, and failure attribution, enabling iterative improvement of pipeline skills and agent instructions
-
-See [ai-docs/dispatch/dispatch-overview.md](ai-docs/dispatch/dispatch-overview.md) for the full design.
-
-## Results
-
-The SDL workflow has been tested through a complete greenfield project (13 features, ~80 tasks, 137 tests) and a subsequent brownfield feature addition (19 tasks, 43 new tests).
-
-- **Features work on first human test.** The developer collaborates on the spec, the pipeline implements autonomously, and the result works. Zero corrective cycles, zero rounds of "go back and fix that." Compared to typical AI-assisted development — where comparable features require 2-5 rounds of human-guided iteration — the pipeline required zero.
-- **Spec and review iterations prevent implementation problems.** The council review produced 22 findings on the brownfield feature, every one resolved before any code was written — including interface mismatches that would have caused broken rendering and an unspecified behavior that would have required post-implementation redesign. The review actively improves the design, not just validates it.
-- **The test reviewer is the most productive quality checkpoint.** It caught 8 defects across 2 checkpoints in the brownfield feature alone — trivially-true assertions, conditionally skipped tests, inaccurate remediation steps. Each forced concrete improvements to the testing strategy before implementation began.
-- **Implementation agents get it right on the first try.** Zero formal re-plans across ~80 greenfield tasks. 100% success rate on the cheapest model tier for simple tasks. Existing codebase conventions followed automatically in brownfield work. The upstream gates constrain tasks enough that agents succeed without iteration.
-- **What the pipeline eliminates vs what remains.** *Absent*: hallucinated APIs, architectural incoherence, feature drift, test theater masking broken functionality. *Remaining*: copy-paste duplication, hardcoded magic numbers, dead code — the same cleanup-level issues you'd find in a human's first-pass PR, addressable in a single review pass.
-
-See [ai-docs/dispatch/harness-patterns-analysis.md](ai-docs/dispatch/harness-patterns-analysis.md) for the full analysis including per-phase retrospectives and failure attribution data.
-
-## Documentation Guide
-
-This repo has extensive documentation across several layers. Here's where to find what you're looking for.
+## Documentation
 
 ### Understanding the approach
 
-| Topic | Where to look |
-|-------|---------------|
-| Why this exists — the problem with AI-generated code | This README (top) |
-| Research basis — empirical findings on context, instructions, and agent behavior | [research.md](research.md) |
-| Spec-driven development patterns — council research session on industry approaches | [ai-docs/spec-workflow.md](ai-docs/spec-workflow.md) |
-| Anthropic's harness patterns — comparison with their engineering findings | [ai-docs/dispatch/harness-patterns-analysis.md](ai-docs/dispatch/harness-patterns-analysis.md) |
+| Topic | Document |
+|-------|----------|
+| Research basis — context, instructions, agent behavior | [research.md](research.md) |
+| AI failure taxonomy — 39 modes, 25+ sources | [failure-modes.md](ai-docs/dispatch/failure-modes.md) |
+| Harness patterns and retrospective analysis | [harness-patterns-analysis.md](ai-docs/dispatch/harness-patterns-analysis.md) |
+| Brownfield remediation test results | [brownfield validation](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md) |
 
-### How the pipeline works (reference docs)
+### Pipeline reference
 
-| Stage | Guide | Gate script |
-|-------|-------|-------------|
-| Spec authoring | [home/dot-claude/docs/sdl-workflow/feature-spec-guide.md](home/dot-claude/docs/sdl-workflow/feature-spec-guide.md) | [spec-gate.sh](home/dot-claude/hooks/sdl-workflow/spec-gate.sh) |
-| Spec review | [home/dot-claude/docs/sdl-workflow/review-perspectives.md](home/dot-claude/docs/sdl-workflow/review-perspectives.md) | [review-gate.sh](home/dot-claude/hooks/sdl-workflow/review-gate.sh) |
-| Task breakdown | [home/dot-claude/docs/sdl-workflow/task-compilation.md](home/dot-claude/docs/sdl-workflow/task-compilation.md) | [breakdown-gate.sh](home/dot-claude/hooks/sdl-workflow/breakdown-gate.sh) |
-| Implementation | [home/dot-claude/docs/sdl-workflow/implementation-guide.md](home/dot-claude/docs/sdl-workflow/implementation-guide.md) | [task-completed.sh](home/dot-claude/hooks/sdl-workflow/task-completed.sh) |
-| Brownfield work | [home/dot-claude/docs/brownfield-breakdown.md](home/dot-claude/docs/brownfield-breakdown.md) | — |
-| Corrective workflow | [home/dot-claude/docs/sdl-workflow/corrective-workflow.md](home/dot-claude/docs/sdl-workflow/corrective-workflow.md) | — |
-| Test reviewer (agent) | [home/dot-claude/agents/test-reviewer.md](home/dot-claude/agents/test-reviewer.md) | [task-reviewer-gate.sh](home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh) |
+| Stage | Guide | Gate |
+|-------|-------|------|
+| Spec authoring | [feature-spec-guide.md](assets/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md) | [spec-gate.sh](assets/hooks/fbk-sdl-workflow/spec-gate.sh) |
+| Spec review | [review-perspectives.md](assets/fbk-docs/fbk-sdl-workflow/review-perspectives.md) | [review-gate.sh](assets/hooks/fbk-sdl-workflow/review-gate.sh) |
+| Task breakdown | [task-compilation.md](assets/fbk-docs/fbk-sdl-workflow/task-compilation.md) | [breakdown-gate.sh](assets/hooks/fbk-sdl-workflow/breakdown-gate.sh) |
+| Implementation | [implementation-guide.md](assets/fbk-docs/fbk-sdl-workflow/implementation-guide.md) | [task-completed.sh](assets/hooks/fbk-sdl-workflow/task-completed.sh) |
+| Code review | [code-review-guide.md](assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md) | — |
+| AI failure modes | [ai-failure-modes.md](assets/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md) | — |
+| Brownfield work | [brownfield-breakdown.md](assets/fbk-docs/fbk-brownfield-breakdown.md) | — |
 
-### Writing better context assets
+### Context asset authoring
 
 | Asset type | Guide |
 |------------|-------|
-| Overview and principles | [home/dot-claude/docs/context-assets.md](home/dot-claude/docs/context-assets.md) |
-| CLAUDE.md files | [home/dot-claude/docs/context-assets/claude-md.md](home/dot-claude/docs/context-assets/claude-md.md) |
-| Skills | [home/dot-claude/docs/context-assets/skills.md](home/dot-claude/docs/context-assets/skills.md) |
-| Hooks | [home/dot-claude/docs/context-assets/hooks.md](home/dot-claude/docs/context-assets/hooks.md) |
-| Agents | [home/dot-claude/docs/context-assets/agents.md](home/dot-claude/docs/context-assets/agents.md) |
+| Overview and principles | [context-assets.md](assets/fbk-docs/fbk-context-assets.md) |
+| CLAUDE.md files | [claude-md.md](assets/fbk-docs/fbk-context-assets/claude-md.md) |
+| Skills | [skills.md](assets/fbk-docs/fbk-context-assets/skills.md) |
+| Hooks | [hooks.md](assets/fbk-docs/fbk-context-assets/hooks.md) |
+| Agents | [agents.md](assets/fbk-docs/fbk-context-assets/agents.md) |
 
-### Process artifacts (`ai-docs/`)
+### Process artifacts
 
-The `ai-docs/` directory is a working artifact, not just documentation. The pipeline's skills read and write to `ai-docs/<feature-name>/` — each feature gets a subfolder containing its spec, review, task breakdown, and retrospective. Browse `ai-docs/` to see what's been built, what's in progress, and what's planned.
+The [`ai-docs/`](ai-docs/) directory is a working artifact — the pipeline reads and writes to it. Each feature gets a subfolder with its spec, review, task breakdown, and retrospective. Firebreak is built using its own pipeline; `ai-docs/` is the audit trail.
 
-| Directory | What happened there |
-|-----------|-------------------|
-| `ai-docs/mvp-000/` | The "seed crystal" — bootstrapping the context asset authoring guidelines |
-| `ai-docs/sdl-workflow/` | The SDL workflow specifying and building itself |
-| `ai-docs/dispatch/` | Dispatch pipeline design: overview, phase specs, research analysis, retrospectives |
+## Security
 
-**Dogfooding.** Firebreak is built using its own pipeline. The context asset framework produced the SDL workflow skills. The SDL workflow produced the Dispatch pipeline specs. Phase 1.5 improvements were themselves specified, reviewed, and broken down through the process they improved. The `ai-docs/` directory is the audit trail of this self-application. Where the pipeline can validate its own artifacts deterministically (gate scripts, schema checks, test suites), it does. Where it can't — agent instruction quality, prompt effectiveness, spec completeness — structured retrospectives after each feature capture what worked, what failed, and why, feeding improvements back into the skills and guides for the next run.
+**What runs on your machine:** The TaskCompleted hook runs your project's test suite and linter automatically after each implementation task. It auto-detects the test runner (npm test, cargo test, pytest, etc.) and executes it. Gate scripts (spec-gate, review-gate, breakdown-gate) parse markdown and JSON to validate structure — they do not execute code from those files. The spec-gate includes prompt injection detection for control characters, zero-width Unicode, and embedded override patterns.
 
-## Insights and Next Steps
+**What does NOT happen:** No hook or gate script makes network calls. No telemetry, analytics, or data collection. No system file modifications — all writes are scoped to the project's `ai-docs/` directory and `.claude/automation/`. No permission escalation or bypass-permissions settings.
 
-Two rounds of testing (greenfield + brownfield) have produced a set of insights about where AI coding quality comes from and where it breaks down. These inform the next iteration of the pipeline.
-
-### What we've learned
-
-**Behavioral correctness and code quality are separate dimensions.** The pipeline now reliably produces code that works — zero corrective cycles in Phase 1.5, feature worked on first human test. But a post-implementation code review found 14 issues in code that passed all 172 tests. Passing tests validate behavior. They don't validate maintainability, duplication, or test integrity. Both dimensions need explicit quality interventions.
-
-**Most code quality issues trace to task instructions, not agent capability.** When a task instruction says "simulate the drop logic," the agent faithfully simulates it — producing a test that re-implements production code inline. When a task carries a spec value as a literal number, the agent puts that literal in the code. The agent did what it was told. The fix is upstream: better instructions produce better code without requiring smarter agents.
-
-**Task isolation prevents coordination failures but also prevents coordination benefits.** The file-scope constraint (one file per task per wave) eliminates merge conflicts. But when multiple tasks modify the same file across waves, each task independently implements similar patterns — producing copy-paste duplication. The later task has no visibility into what the earlier task added. This is a fundamental tension in the pipeline's design.
-
-**The orchestrator file is always the highest-risk file.** Across both phases, every integration bug occurred in the orchestrator — the file that wires all modules together. Entity files, system files, and rendering files had zero issues. The orchestrator is where ordering matters, where concurrent events interact, and where duplication accumulates. It needs different handling than leaf-node files.
-
-**Every existing reviewer already has the context to catch most code quality issues — they just aren't looking for them.** The spec reviewer reads the full spec and can flag values that will become magic numbers if carried as bare literals. The task reviewer reads all task files and can detect when multiple tasks describe the same logic block — the duplication signal is visible at the instruction level before any code exists. The test reviewer reads the spec and all test tasks and can detect when a test instruction describes the system's internal logic instead of its observable interface. Most of the code quality issues found in post-implementation review were detectable at the artifacts each upstream reviewer already reads.
-
-### What we're exploring next
-
-The pipeline's philosophy is defense in depth — each layer catches what previous layers missed. The upstream improvements reduce the volume of issues downstream reviewers see, but no layer makes the next one unnecessary.
-
-**Failure mode awareness across existing reviewers.** Rather than concentrating failure mode detection in a single new stage, each existing reviewer gains a checklist of known failure mode patterns detectable from the artifacts it already reads:
-
-- *Spec review*: Values that will cross file boundaries expressed as bare literals instead of named concepts. Behavioral descriptions that conflate how the system works with what to observe. Missing edge cases around concurrent events in stateful systems.
-- *Task review*: Multiple tasks describing the same logic block (duplication visible at the instruction level). Implementation tasks carrying spec values as inline numbers instead of constant assignments. Later-wave tasks modifying a file without instructions to check for existing patterns from prior waves.
-- *Test review*: Test instructions that describe the system's internal logic rather than its observable interface (exercising a code path vs reproducing it). Assertions that compute expected values using the same formula as production code. OR-condition assertions where one branch is trivially true. Test names that don't match what the assertion verifies.
-
-These are framed at the archetype level — the patterns that produce the failure modes, not the specific instances we observed. Each needs careful calibration to avoid over-tuning toward individual sightings.
-
-**Post-implementation code review stage.** The last line of defense for issues that only surface from reading implemented code — the same role code review plays on human development teams. Council agents (Architect + Guardian) reviewing against an AI failure mode checklist, positioned between final verification and commit. Upstream improvements reduce its workload; they don't eliminate its purpose. A code reviewer that consistently finds nothing is evidence the upstream layers are working, not evidence the reviewer is unnecessary.
-
-**Lint integration.** Language-specific but high-value for catching dead code, unused variables, and style violations automatically. Exploring convention-based discovery (detect the project's existing lint setup) or CLAUDE.md-declared lint commands. Design constraint: lint failures should be feedback to the agent (retry with output), not a hard block.
-
-See [ai-docs/dispatch/harness-patterns-analysis.md](ai-docs/dispatch/harness-patterns-analysis.md) for the detailed retrospective data behind these insights.
-
-## Research Basis
-
-The design is grounded in empirical research on how LLMs handle instructions and context:
-
-- **Context pollution is measurable.** LLM-generated context files reduce task success by 0.5-2% while increasing costs 20-23%. Even a single irrelevant distractor degrades performance (AGENTbench, 2025; Chroma Context Rot, 2025).
-- **Compression helps.** Vercel found that 40KB of context compressed to 8KB with zero accuracy loss. Longer inputs independently degrade performance even with perfect retrieval (EMNLP Findings, 2025).
-- **Progressive disclosure is the recommended approach.** Anthropic's own guidance advocates progressive context discovery over upfront loading (Codified Context, 2026).
-- **Scoped, relevant context helps.** Focused context files improved efficiency by ~28.6% for small, targeted tasks (AGENTbench, 2025).
-- **Structured artifacts constrain agent behavior.** Independent research from Anthropic confirms that structured external state and constrained interfaces are the most effective interventions for long-running agent quality ([Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents), 2025).
-
-See [research.md](research.md) for the full analysis with citations and methodology.
-
+**Known limitation — agent scope enforcement:** During the brownfield remediation test, agents spawned for analysis tasks [implemented entire phases without authorization](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md), modifying 13 production files. The root cause is a framework-level gap in Claude Code: the permission model controls which tools an agent can use, but not what intent those tools serve. Firebreak mitigates this by restricting analysis agents to read-only tool sets. The incident and root-cause analysis are documented in the [brownfield validation retrospectives](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md).
 
 ## Feedback
 
-This project is under active development and testing. If you try it out, find issues, or have ideas:
+This project is under active development. If you try it out, find issues, or have ideas:
 
-- [Open an issue](https://github.com/teknoll/firebreak/issues) with bug reports, feature suggestions, or questions
-- If you run the SDL workflow on your own project, I'd like to hear how it went — what worked, what didn't, and where the friction was
+- [Open an issue](https://github.com/firebreak-ai/firebreak/issues) with bug reports, feature suggestions, or questions
+- If you run the SDL workflow on your own project, I'd like to hear how it went
 
 ## License
 
