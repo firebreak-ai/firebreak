@@ -9,3 +9,5 @@ Check every context asset for:
 - Compound instructions — each instruction covers one verifiable constraint
 
 Review heuristic: **"Is this sentence written for the agent, or for a human browsing the repo?"**
+
+Update `CHANGELOG.md` when preparing tagged releases. Follow [keepachangelog.com](https://keepachangelog.com/) format: group changes under Added, Changed, Deprecated, Removed, Fixed, Security.
