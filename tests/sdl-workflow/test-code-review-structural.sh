@@ -7,10 +7,10 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-DETECTOR="$PROJECT_ROOT/home/dot-claude/agents/code-review-detector.md"
-CHALLENGER="$PROJECT_ROOT/home/dot-claude/agents/code-review-challenger.md"
-GUIDE="$PROJECT_ROOT/home/dot-claude/docs/sdl-workflow/code-review-guide.md"
-CHECKLIST="$PROJECT_ROOT/home/dot-claude/docs/sdl-workflow/ai-failure-modes.md"
+DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
+CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
+GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
+CHECKLIST="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md"
 
 ok() {
   TOTAL=$((TOTAL + 1))

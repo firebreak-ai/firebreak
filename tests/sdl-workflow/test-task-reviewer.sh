@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-GATE="$PROJECT_ROOT/home/dot-claude/hooks/sdl-workflow/task-reviewer-gate.sh"
+GATE="$PROJECT_ROOT/assets/hooks/fbk-sdl-workflow/task-reviewer-gate.sh"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/tasks"
 
 ok() {

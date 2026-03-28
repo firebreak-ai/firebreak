@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-LOADER="$PROJECT_ROOT/home/dot-claude/hooks/sdl-workflow/config-loader.py"
+LOADER="$PROJECT_ROOT/assets/hooks/fbk-sdl-workflow/config-loader.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/config"
 
 TMPDIR_BASE="$(mktemp -d)"

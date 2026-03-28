@@ -7,8 +7,8 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-SKILL_FILE="$PROJECT_ROOT/home/dot-claude/skills/breakdown/SKILL.md"
-BROWNFIELD_DOC="$PROJECT_ROOT/home/dot-claude/docs/brownfield-breakdown.md"
+SKILL_FILE="$PROJECT_ROOT/assets/skills/fbk-breakdown/SKILL.md"
+BROWNFIELD_DOC="$PROJECT_ROOT/assets/fbk-docs/fbk-brownfield-breakdown.md"
 
 ok() {
   TOTAL=$((TOTAL + 1))

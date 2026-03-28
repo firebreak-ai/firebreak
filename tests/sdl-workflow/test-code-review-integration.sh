@@ -8,13 +8,13 @@ TOTAL=0
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-SKILL_FILE="$PROJECT_ROOT/home/dot-claude/skills/code-review/SKILL.md"
-EXISTING_REF="$PROJECT_ROOT/home/dot-claude/skills/code-review/references/existing-code-review.md"
-POSTIMPL_REF="$PROJECT_ROOT/home/dot-claude/skills/code-review/references/post-impl-review.md"
-DETECTOR="$PROJECT_ROOT/home/dot-claude/agents/code-review-detector.md"
-CHALLENGER="$PROJECT_ROOT/home/dot-claude/agents/code-review-challenger.md"
-GUIDE="$PROJECT_ROOT/home/dot-claude/docs/sdl-workflow/code-review-guide.md"
-CHECKLIST="$PROJECT_ROOT/home/dot-claude/docs/sdl-workflow/ai-failure-modes.md"
+SKILL_FILE="$PROJECT_ROOT/assets/skills/fbk-code-review/SKILL.md"
+EXISTING_REF="$PROJECT_ROOT/assets/skills/fbk-code-review/references/existing-code-review.md"
+POSTIMPL_REF="$PROJECT_ROOT/assets/skills/fbk-code-review/references/post-impl-review.md"
+DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
+CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
+GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
+CHECKLIST="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md"
 FIXTURE_DIR="$PROJECT_ROOT/tests/fixtures/code-review"
 
 ok() {

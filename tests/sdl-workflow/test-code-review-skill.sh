@@ -8,10 +8,10 @@ TOTAL=0
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-SKILL_FILE="$PROJECT_ROOT/home/dot-claude/skills/code-review/SKILL.md"
-EXISTING_REF="$PROJECT_ROOT/home/dot-claude/skills/code-review/references/existing-code-review.md"
-POSTIMPL_REF="$PROJECT_ROOT/home/dot-claude/skills/code-review/references/post-impl-review.md"
-IMPLEMENT_SKILL="$PROJECT_ROOT/home/dot-claude/skills/implement/SKILL.md"
+SKILL_FILE="$PROJECT_ROOT/assets/skills/fbk-code-review/SKILL.md"
+EXISTING_REF="$PROJECT_ROOT/assets/skills/fbk-code-review/references/existing-code-review.md"
+POSTIMPL_REF="$PROJECT_ROOT/assets/skills/fbk-code-review/references/post-impl-review.md"
+IMPLEMENT_SKILL="$PROJECT_ROOT/assets/skills/fbk-implement/SKILL.md"
 
 ok() {
   TOTAL=$((TOTAL + 1))

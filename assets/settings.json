@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/fbk-sdl-workflow/task-completed.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

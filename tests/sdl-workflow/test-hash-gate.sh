@@ -21,7 +21,7 @@ not_ok() {
 # Setup
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-GATE="$PROJECT_ROOT/home/dot-claude/hooks/sdl-workflow/test-hash-gate.sh"
+GATE="$PROJECT_ROOT/assets/hooks/fbk-sdl-workflow/test-hash-gate.sh"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/hash-gate/sample-tests"
 
 TMPDIR_TEST="$(mktemp -d)"
