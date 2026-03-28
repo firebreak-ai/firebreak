@@ -28,18 +28,18 @@ setup_mock_source() {
   local src
   src=$(mktemp -d)
   TMPDIRS+=("$src")
-  mkdir -p "$src/home/dot-claude/skills/fbk-spec"
-  mkdir -p "$src/home/dot-claude/agents"
-  mkdir -p "$src/home/dot-claude/hooks/fbk-sdl-workflow"
-  mkdir -p "$src/home/dot-claude/docs/fbk-sdl-workflow"
-  echo "mock spec prompt" > "$src/home/dot-claude/skills/fbk-spec/prompt.md"
-  echo "mock agent" > "$src/home/dot-claude/agents/fbk-code-review-detector.md"
-  printf '#!/usr/bin/env bash\necho done' > "$src/home/dot-claude/hooks/fbk-sdl-workflow/task-completed.sh"
-  echo "mock doc" > "$src/home/dot-claude/docs/fbk-sdl-workflow/guide.md"
+  mkdir -p "$src/assets/skills/fbk-spec"
+  mkdir -p "$src/assets/agents"
+  mkdir -p "$src/assets/hooks/fbk-sdl-workflow"
+  mkdir -p "$src/assets/fbk-docs/fbk-sdl-workflow"
+  echo "mock spec prompt" > "$src/assets/skills/fbk-spec/prompt.md"
+  echo "mock agent" > "$src/assets/agents/fbk-code-review-detector.md"
+  printf '#!/usr/bin/env bash\necho done' > "$src/assets/hooks/fbk-sdl-workflow/task-completed.sh"
+  echo "mock doc" > "$src/assets/fbk-docs/fbk-sdl-workflow/guide.md"
   echo '{"hooks":{"TaskCompleted":[{"hooks":[{"type":"command","command":"\"$HOME\"/.claude/hooks/fbk-sdl-workflow/task-completed.sh"}]}]},"env":{"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS":"1"}}' \
-    > "$src/home/dot-claude/settings.json"
-  echo "should not be installed" > "$src/home/dot-claude/CLAUDE.md"
-  echo "$src/home/dot-claude"
+    > "$src/assets/settings.json"
+  echo "should not be installed" > "$src/assets/CLAUDE.md"
+  echo "$src/assets"
 }
 
 setup_target() {

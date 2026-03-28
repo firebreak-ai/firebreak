@@ -29,17 +29,17 @@ setup_mock_source() {
   MOCK_DIR=$(mktemp -d)
   TEMP_DIRS+=("$MOCK_DIR")
 
-  mkdir -p "$MOCK_DIR/home/dot-claude/skills/fbk-spec"
-  mkdir -p "$MOCK_DIR/home/dot-claude/agents"
-  mkdir -p "$MOCK_DIR/home/dot-claude/hooks/fbk-sdl-workflow"
-  mkdir -p "$MOCK_DIR/home/dot-claude/docs/fbk-sdl-workflow"
+  mkdir -p "$MOCK_DIR/assets/skills/fbk-spec"
+  mkdir -p "$MOCK_DIR/assets/agents"
+  mkdir -p "$MOCK_DIR/assets/hooks/fbk-sdl-workflow"
+  mkdir -p "$MOCK_DIR/assets/fbk-docs/fbk-sdl-workflow"
 
-  echo "mock spec prompt" > "$MOCK_DIR/home/dot-claude/skills/fbk-spec/prompt.md"
-  echo "mock agent" > "$MOCK_DIR/home/dot-claude/agents/fbk-code-review-detector.md"
-  echo -e "#!/usr/bin/env bash\necho done" > "$MOCK_DIR/home/dot-claude/hooks/fbk-sdl-workflow/task-completed.sh"
-  echo "mock doc" > "$MOCK_DIR/home/dot-claude/docs/fbk-sdl-workflow/guide.md"
+  echo "mock spec prompt" > "$MOCK_DIR/assets/skills/fbk-spec/prompt.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-code-review-detector.md"
+  echo -e "#!/usr/bin/env bash\necho done" > "$MOCK_DIR/assets/hooks/fbk-sdl-workflow/task-completed.sh"
+  echo "mock doc" > "$MOCK_DIR/assets/fbk-docs/fbk-sdl-workflow/guide.md"
 
-  cat > "$MOCK_DIR/home/dot-claude/settings.json" << 'EOF'
+  cat > "$MOCK_DIR/assets/settings.json" << 'EOF'
 {
   "hooks": {
     "TaskCompleted": [
@@ -59,9 +59,9 @@ setup_mock_source() {
 }
 EOF
 
-  echo "should not be installed" > "$MOCK_DIR/home/dot-claude/CLAUDE.md"
+  echo "should not be installed" > "$MOCK_DIR/assets/CLAUDE.md"
 
-  echo "$MOCK_DIR/home/dot-claude"
+  echo "$MOCK_DIR/assets"
 }
 
 setup_target() {
@@ -87,7 +87,7 @@ TARGET=$(setup_target)
 bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" > /dev/null 2>&1
 RC=$?
 if [ -f "$TARGET/skills/fbk-spec/prompt.md" ] && [ -f "$TARGET/agents/fbk-code-review-detector.md" ] && \
-   [ -f "$TARGET/hooks/fbk-sdl-workflow/task-completed.sh" ] && [ -f "$TARGET/docs/fbk-sdl-workflow/guide.md" ]; then
+   [ -f "$TARGET/hooks/fbk-sdl-workflow/task-completed.sh" ] && [ -f "$TARGET/fbk-docs/fbk-sdl-workflow/guide.md" ]; then
   ok "fresh install creates fbk-prefixed files in target"
 else
   not_ok "fresh install creates fbk-prefixed files in target" "rc=$RC files_check_failed"
@@ -216,6 +216,20 @@ if [ "$CUSTOM_CONTENT" = "user content" ]; then
   ok "existing non-fbk files in target are untouched"
 else
   not_ok "existing non-fbk files in target are untouched" "file was modified or deleted"
+fi
+
+# Test 11: Attempts GitHub download when no local source exists
+TARGET=$(setup_target)
+ISOLATED_DIR=$(mktemp -d)
+TEMP_DIRS+=("$ISOLATED_DIR")
+cp "$INSTALL_SCRIPT" "$ISOLATED_DIR/install.sh"
+STDERR_OUT=$(FIREBREAK_GITHUB_REPO="nonexistent-owner/nonexistent-repo" \
+  bash "$ISOLATED_DIR/install.sh" --target "$TARGET" 2>&1 >/dev/null)
+RC=$?
+if [ $RC -ne 0 ] && echo "$STDERR_OUT" | grep -q "Downloading firebreak"; then
+  ok "attempts GitHub download when local source is missing"
+else
+  not_ok "attempts GitHub download when local source is missing" "rc=$RC stderr=$STDERR_OUT"
 fi
 
 # Summary

@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 MODE=install
 DRY_RUN=0
 TARGET_DIR=""
-SOURCE_DIR="$(cd "$SCRIPT_DIR/../home/dot-claude" 2>/dev/null && pwd || echo "")"
+SOURCE_DIR=""
 INSTALL_MODE=global
 
 # Indexed arrays for file tracking (bash 3.2+ compatible — no associative arrays)
@@ -15,6 +15,12 @@ SRC_FILES=()
 DST_FILES=()
 MANIFEST_FILES=()
 BACKUP_FILE=""
+
+# Download state
+DOWNLOAD_TMPDIR=""
+SOURCE_EXPLICIT=0
+GITHUB_REPO="${FIREBREAK_GITHUB_REPO:-firebreak-ai/firebreak}"
+GITHUB_BRANCH="${FIREBREAK_GITHUB_BRANCH:-main}"
 
 # Temp files for manifest assembly
 MERGE_OUTPUT_FILE=""
@@ -25,8 +31,54 @@ cleanup_temps() {
   [ -n "$MERGE_OUTPUT_FILE" ] && rm -f "$MERGE_OUTPUT_FILE"
   [ -n "$SETTINGS_JSON_FILE" ] && rm -f "$SETTINGS_JSON_FILE"
   [ -n "$MANIFEST_RECORD_FILE" ] && rm -f "$MANIFEST_RECORD_FILE"
+  [ -n "$DOWNLOAD_TMPDIR" ] && rm -rf "$DOWNLOAD_TMPDIR"
 }
 trap cleanup_temps EXIT
+
+# --- Download from GitHub ---
+download_source() {
+  local tarball_url="https://github.com/$GITHUB_REPO/archive/$GITHUB_BRANCH.tar.gz"
+
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "Error: curl is required to download from GitHub." >&2
+    exit 1
+  fi
+
+  DOWNLOAD_TMPDIR="$(mktemp -d)" || {
+    echo "Error: Failed to create temp directory." >&2
+    exit 1
+  }
+
+  echo "Downloading firebreak from $GITHUB_REPO ($GITHUB_BRANCH)..." >&2
+
+  if ! curl -fsSL "$tarball_url" | tar xz -C "$DOWNLOAD_TMPDIR"; then
+    echo "Error: Failed to download from GitHub." >&2
+    echo "  URL: $tarball_url" >&2
+    echo "  Check your network connection and that the repository exists." >&2
+    exit 1
+  fi
+
+  local extracted
+  extracted="$(find "$DOWNLOAD_TMPDIR" -mindepth 1 -maxdepth 1 -type d | head -1)"
+
+  if [ -z "$extracted" ]; then
+    echo "Error: Downloaded archive is empty." >&2
+    exit 1
+  fi
+
+  if [ ! -d "${extracted}/assets" ]; then
+    echo "Error: Downloaded archive does not contain expected source tree." >&2
+    exit 1
+  fi
+
+  if [ ! -f "${extracted}/installer/merge-settings.py" ]; then
+    echo "Error: Downloaded archive does not contain merge-settings.py." >&2
+    exit 1
+  fi
+
+  SOURCE_DIR="${extracted}/assets"
+  SCRIPT_DIR="${extracted}/installer"
+}
 
 # --- Argument parsing ---
 while [ $# -gt 0 ]; do
@@ -37,6 +89,7 @@ while [ $# -gt 0 ]; do
       ;;
     --source)
       SOURCE_DIR="$2"
+      SOURCE_EXPLICIT=1
       shift 2
       ;;
     --uninstall)
@@ -53,10 +106,14 @@ Usage: install.sh [OPTIONS]
 
 Options:
   --target <path>   Install target directory (skips interactive prompt)
-  --source <path>   Source directory (default: auto-detected)
+  --source <path>   Source directory (default: auto-detected or downloaded)
   --uninstall       Remove a firebreak installation
   --dry-run         Print planned operations without making changes
   --help            Show this help
+
+Environment:
+  FIREBREAK_GITHUB_REPO    GitHub owner/repo (default: firebreak-ai/firebreak)
+  FIREBREAK_GITHUB_BRANCH  Git branch to download (default: main)
 EOF
       exit 0
       ;;
@@ -66,6 +123,11 @@ EOF
       ;;
   esac
 done
+
+# If installing (not uninstalling) and source not available, download from GitHub
+if [ "$MODE" != "uninstall" ] && [ "$SOURCE_EXPLICIT" = "0" ] && { [ -z "$SOURCE_DIR" ] || [ ! -d "$SOURCE_DIR" ]; }; then
+  download_source
+fi
 
 # Determine install mode from target path
 if [ -n "$TARGET_DIR" ]; then
@@ -204,16 +266,26 @@ merge_settings() {
     fi
   fi
 
+  # For project installs, rewrite $HOME hook paths to $CLAUDE_PROJECT_DIR
+  # before merging so the manifest records the correct value for uninstall
+  local merge_source="$firebreak_settings"
+  if [ "$INSTALL_MODE" = "project" ]; then
+    merge_source="$(mktemp)"
+    sed 's|\\"\$HOME\\"/\.claude/|\\"\$CLAUDE_PROJECT_DIR\\"/\.claude/|g' "$firebreak_settings" > "$merge_source"
+  fi
+
   # Run merge script — stdout gets merged JSON, stderr gets errors
   MERGE_OUTPUT_FILE="$(mktemp)"
   local merge_stderr_file
   merge_stderr_file="$(mktemp)"
-  if ! python3 "$merge_script" "$TARGET_DIR/settings.json" "$firebreak_settings" > "$MERGE_OUTPUT_FILE" 2>"$merge_stderr_file"; then
+  if ! python3 "$merge_script" "$TARGET_DIR/settings.json" "$merge_source" > "$MERGE_OUTPUT_FILE" 2>"$merge_stderr_file"; then
     cat "$merge_stderr_file" >&2
     rm -f "$merge_stderr_file"
+    [ "$merge_source" != "$firebreak_settings" ] && rm -f "$merge_source"
     exit 1
   fi
   rm -f "$merge_stderr_file"
+  [ "$merge_source" != "$firebreak_settings" ] && rm -f "$merge_source"
 
   # Split on ---MANIFEST---
   SETTINGS_JSON_FILE="$(mktemp)"
@@ -413,10 +485,23 @@ print(str(hooks_removed) + ' hooks removed, ' + str(env_removed) + ' env keys re
     fi
   fi
 
-  # Remove empty fbk-prefixed directories (bottom-up)
+  # Remove empty directories that held firebreak files (bottom-up by depth)
+  # Collect unique parent dirs from manifest, then rmdir deepest-first
   while IFS= read -r empty_dir; do
     rmdir "$empty_dir" 2>/dev/null || true
-  done < <(find "$TARGET_DIR" -type d -name '*fbk-*' -empty 2>/dev/null | sort -r)
+  done < <(python3 -c "
+import json, sys, os
+d = json.load(open(sys.argv[1]))
+target = sys.argv[2]
+dirs = set()
+for f in d.get('files', []):
+    p = os.path.dirname(f)
+    while p:
+        dirs.add(os.path.join(target, p))
+        p = os.path.dirname(p)
+for d in sorted(dirs, key=lambda x: x.count(os.sep), reverse=True):
+    print(d)
+" "$manifest_path" "$TARGET_DIR")
 
   # Remove manifest
   rm -f "$manifest_path"
