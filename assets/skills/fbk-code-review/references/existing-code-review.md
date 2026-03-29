@@ -31,3 +31,9 @@ A focused review produces a feature-level spec. A broad review may produce a pro
 ## When Only Structural Issues Surface
 
 If the review reveals only structural issues and the user confirms no design intent is needed, stay lightweight — present findings against the AI failure mode checklist and let the user confirm or dismiss. If the user later provides design intent, transition naturally into spec co-authoring.
+
+## Retrospective
+
+After the review completes, produce a retrospective following the fields defined in `code-review-guide.md`. Append a findings summary to the feature retrospective if one exists.
+
+After the retrospective is written, invoke `/fbk-improve <feature-name>` to analyze the retrospective for pipeline improvement opportunities.

@@ -44,6 +44,10 @@ Collect proposals from all teammates. Proposals may target any Firebreak asset r
 
 After all teammates return, shut down the team.
 
+## Routing Chain Analysis
+
+After per-asset analysis, identify routing chains in the asset list: skills with `references/` directories and index docs with execution-handoff routing tables. For each chain, spawn one additional analyst with all files in the chain as its assigned paths. Collect proposals from chain analysts alongside per-asset proposals.
+
 ## Proposal Presentation
 
 Present the collected proposals as a numbered list. Each proposal displays:

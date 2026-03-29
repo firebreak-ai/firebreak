@@ -26,7 +26,7 @@ not_ok() {
 echo "TAP version 13"
 
 # --- Test 1: valid task set passes ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/valid/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/valid/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 0 ] && echo "$STDOUT" | grep -q '"result"'; then
@@ -36,7 +36,7 @@ else
 fi
 
 # --- Test 2: missing required fields rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/missing-fields/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/missing-fields/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "missing"; then
@@ -46,7 +46,7 @@ else
 fi
 
 # --- Test 3: impl without test_tasks rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/impl-no-test-tasks/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/impl-no-test-tasks/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "test_tasks"; then
@@ -56,7 +56,7 @@ else
 fi
 
 # --- Test 4: overlapping file boundaries rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/overlap/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/overlap/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "shared.py\|conflict"; then
@@ -66,7 +66,7 @@ else
 fi
 
 # --- Test 5: uncovered AC rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/uncovered-ac/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/uncovered-ac/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "AC-03"; then
@@ -76,7 +76,7 @@ else
 fi
 
 # --- Test 6: invalid test_tasks reference rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/bad-test-ref/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/bad-test-ref/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 2 ] && echo "$STDERR" | grep -qiE "task-99|invalid|does not match"; then
@@ -86,7 +86,7 @@ else
 fi
 
 # --- Test 7: missing file lists rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/no-files/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/no-files/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 2 ] && echo "$STDERR" | grep -qiE "files_to_create|files_to_modify|neither"; then
@@ -96,7 +96,7 @@ else
 fi
 
 # --- Test 8: files_to_modify with non-existent path rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/bad-path/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/bad-path/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "nonexistent\|does not exist"; then
@@ -106,7 +106,7 @@ else
 fi
 
 # --- Test 9: valid task set with full AC coverage passes ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/valid/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/valid/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 if [ $RC -eq 0 ]; then
   ok "valid task set with full AC coverage passes without false rejections"
@@ -116,7 +116,7 @@ fi
 
 # --- Test 10: corrective category passes with test-only AC coverage ---
 # AC-02 is covered only by a test task; corrective category should allow this.
-STDOUT=$(bash "$GATE" "$FIXTURES/corrective/corrective-spec.md" "$FIXTURES/corrective/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/corrective/corrective-spec.md" "$FIXTURES/corrective/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 0 ] && echo "$STDOUT" | grep -q '"result"'; then
@@ -145,7 +145,7 @@ completion_gate: "regression tests compile and fail"
 
 Write regression tests covering AC-01 only (AC-02 removed to trigger failure).
 TASKEOF
-STDOUT=$(bash "$GATE" "$FIXTURES/corrective/corrective-spec.md" "$TMPDIR_T11/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/corrective/corrective-spec.md" "$TMPDIR_T11/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 rm -rf "$TMPDIR_T11"
@@ -157,7 +157,7 @@ fi
 
 # --- Test 12: testing-infrastructure passes with test-only ACs ---
 # AC-01 is covered only by a test task; testing-infrastructure category should allow this.
-STDOUT=$(bash "$GATE" "$FIXTURES/testing-infra/testing-infra-spec.md" "$FIXTURES/testing-infra/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/testing-infra/testing-infra-spec.md" "$FIXTURES/testing-infra/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 0 ] && echo "$STDOUT" | grep -q '"result"'; then
@@ -178,7 +178,7 @@ cat > "$TMPDIR_T13/task.json" <<'JSONEOF'
   ]
 }
 JSONEOF
-STDOUT=$(bash "$GATE" "$FIXTURES/testing-infra/testing-infra-spec.md" "$TMPDIR_T13/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/testing-infra/testing-infra-spec.md" "$TMPDIR_T13/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 rm -rf "$TMPDIR_T13"
@@ -199,7 +199,7 @@ cat > "$TMPDIR_T14/task.json" <<'JSONEOF'
   ]
 }
 JSONEOF
-STDOUT=$(bash "$GATE" "$FIXTURES/testing-infra/testing-infra-spec.md" "$TMPDIR_T14/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/testing-infra/testing-infra-spec.md" "$TMPDIR_T14/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 rm -rf "$TMPDIR_T14"
@@ -223,7 +223,7 @@ cat > "$TMPDIR_T15/task.json" <<'JSONEOF'
   ]
 }
 JSONEOF
-STDOUT=$(bash "$GATE" "$FIXTURES/corrective/corrective-spec.md" "$TMPDIR_T15/" 2>/tmp/tr-stderr)
+STDOUT=$(bash "$GATE" "$FIXTURES/corrective/corrective-spec.md" "$TMPDIR_T15/" "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 rm -rf "$TMPDIR_T15"

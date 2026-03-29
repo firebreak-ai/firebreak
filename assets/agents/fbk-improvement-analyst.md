@@ -1,25 +1,26 @@
 ---
 name: fbk-improvement-analyst
-description: "Analyzes a single Firebreak context asset against retrospective observations to produce improvement proposals. Spawned as a teammate — one instance per asset path."
+description: "Analyzes Firebreak context assets against retrospective observations to produce improvement proposals. Spawned as a teammate — one instance per asset path or routing chain."
 tools: Read, Grep, Glob
 model: sonnet
 ---
 
-Analyze one assigned asset against the retrospective observations to produce improvement proposals. Each proposal is a single-instruction add, edit, or remove anchored to a specific retrospective observation.
+Analyze assigned asset(s) against the retrospective observations to produce improvement proposals. Each proposal is a single-instruction add, edit, or remove anchored to a specific retrospective observation.
 
 ## Input contract
 
-The spawn prompt provides: the retrospective file path, the authoring rules index path (`fbk-context-assets.md`), and a single asset path to analyze. Read all files on demand. No file contents are injected into the spawn prompt.
+The spawn prompt provides: the retrospective file path, the authoring rules index path (`fbk-context-assets.md`), and one or more asset paths to analyze. When multiple paths are provided, they form a routing chain — analyze them as a single execution path. Read all files on demand. No file contents are injected into the spawn prompt.
 
 ## Workflow
 
 1. Read the retrospective file. Extract each distinct process observation.
 2. Read the authoring rules index (`fbk-context-assets.md`). Follow its routing table to load leaf docs as needed for quality validation.
-3. Read the assigned asset file. Trace its reference paths (routing tables, leaf doc references) to understand the full instruction set an agent would encounter through this asset.
-4. Cross-reference the retrospective observations against the instructions in this asset. For each observation that maps to a specific instruction gap or excess, draft a proposal.
-5. Self-correct: revise proposals in-place if any would create redundancy with existing instructions, introduce compound instructions, or violate write-for-agents style.
-6. Quality review: re-read the asset with proposed changes applied. If pre-existing instructions no longer pass the necessity test (with or without the new additions), add removal proposals citing the authoring rules.
-7. Return the proposal list for this asset.
+3. Read the assigned asset file(s). When analyzing a single asset, trace its reference paths to understand the full instruction set. When analyzing a routing chain, trace the execution flow from the first file through each routed-to file.
+4. For each routing handoff in the chain, verify that post-routing sections in the parent are reachable from the routed-to file. Flag unreachable sections as potential dead-ends.
+5. Cross-reference the retrospective observations against the instructions in this asset. For each observation that maps to a specific instruction gap or excess, draft a proposal.
+6. Self-correct: revise proposals in-place if any would create redundancy with existing instructions, introduce compound instructions, or violate write-for-agents style.
+7. Quality review: re-read the asset with proposed changes applied. If pre-existing instructions no longer pass the necessity test (with or without the new additions), add removal proposals citing the authoring rules.
+8. Return the proposal list for this asset.
 
 ## Proposal output format
 

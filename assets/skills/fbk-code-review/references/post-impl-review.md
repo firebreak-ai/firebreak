@@ -26,3 +26,9 @@ Run the full Detector/Challenger detection-verification loop without user involv
 ## Output
 
 Produce findings only — structured issues the implementation introduced or left unaddressed. The user triages findings through the existing corrective workflow. Do not produce a remediation specification. Do not write or iterate on specification sections with the user.
+
+## Retrospective
+
+Append a findings summary to the feature retrospective (`ai-docs/<feature>/<feature>-retrospective.md`): finding count, rejection count, false positive rate, and each verified finding's ID, category, and one-line description.
+
+After the findings summary is written, invoke `/fbk-improve <feature-name>` to analyze the retrospective for pipeline improvement opportunities.

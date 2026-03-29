@@ -18,6 +18,8 @@ When compiling interface contracts for existing files:
 
 When a task references files created or modified by other tasks, the task instructions must specify cross-task interface contracts. At minimum: import/export convention (default vs. named), module type (ESM/CJS), key string or enum conventions used by the referenced module, and any rendering or update-loop wiring patterns the task must follow. Extend this list with any additional cross-task assumptions specific to the project's technology stack — these are a floor, not an exhaustive set.
 
+**New interfaces**: When a test task and implementation task share a function or interface that does not yet exist in the codebase at compilation time, state the exact signature in both task files. The test task declares the signature; the implementation task copies it verbatim. Do not leave the signature for either agent to infer from the spec — agents compiling independently from the same spec text will produce incompatible signatures.
+
 **Orchestrator tasks**: When a task modifies the orchestrator file (the file that wires all modules together), it is higher-risk and requires additional specification: an explicit wiring checklist stating what must be imported, what must be initialized, what must be updated per frame/tick, and what must be cleaned up. Orchestrator tasks are routed to Sonnet minimum (regardless of other sizing heuristics) and include the wiring checklist as a dedicated section in the task file.
 
 ## Sizing Constraints

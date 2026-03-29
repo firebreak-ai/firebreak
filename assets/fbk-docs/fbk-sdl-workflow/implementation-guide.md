@@ -135,6 +135,8 @@ Run after all implementation tasks in the wave complete:
 
 The TaskCompleted hook catches test and lint failures per-task. Per-wave verification adds the aggregate cross-task checks: merge conflicts and file scope.
 
+When the spec defines schema constants, naming conventions, or shared string values, spot-check modified files for bare string literals that should reference those constants.
+
 ---
 
 ## Wave Checkpoint

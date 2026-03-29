@@ -242,12 +242,12 @@ else
   not_ok "AI failure mode checklist exists and is non-empty" "file: $CHECKLIST"
 fi
 
-# --- Test 23: Checklist contains at least 10 numbered items ---
+# --- Test 23: Checklist contains at least 5 numbered items ---
 numbered=$(grep -cE '^[0-9]+\.|^[0-9]+\)|^- \*\*[0-9]+' "$CHECKLIST" 2>/dev/null || true)
-if [ "$numbered" -ge 10 ]; then
-  ok "Checklist contains at least 10 numbered items"
+if [ "$numbered" -ge 5 ]; then
+  ok "Checklist contains at least 5 numbered items"
 else
-  not_ok "Checklist contains at least 10 numbered items" "numbered=$numbered"
+  not_ok "Checklist contains at least 5 numbered items" "numbered=$numbered"
 fi
 
 # --- Test 24: Checklist contains key failure mode keywords ---

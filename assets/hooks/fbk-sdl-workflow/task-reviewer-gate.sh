@@ -5,6 +5,7 @@ set -euo pipefail
 
 SPEC="${1:-}"
 TASKS_DIR="${2:-}"
+PROJECT_ROOT_OVERRIDE="${3:-}"
 
 [[ -z "$SPEC" || -z "$TASKS_DIR" ]] && { echo "Usage: task-reviewer-gate.sh <spec-path> <tasks-dir>" >&2; exit 2; }
 [[ -f "$SPEC" ]] || { echo "Spec file not found: $SPEC" >&2; exit 2; }
@@ -23,7 +24,7 @@ for f in "$TASKS_DIR"/task-*.md; do
 done
 TASK_JSON+="}"
 
-python3 - "$SPEC" "$TASKS_DIR" "$TASK_JSON" <<'PYEOF'
+python3 - "$SPEC" "$TASKS_DIR" "$TASK_JSON" "$PROJECT_ROOT_OVERRIDE" <<'PYEOF'
 import json, sys, os, re
 
 try:
@@ -45,7 +46,7 @@ def find_project_root(start):
         current = os.path.dirname(current)
     return os.path.abspath('.')
 
-project_root = find_project_root(tasks_dir)
+project_root = sys.argv[4] if sys.argv[4] else find_project_root(tasks_dir)
 
 # Read category from task.json in tasks_dir
 VALID_CATEGORIES = {"feature", "corrective", "testing-infrastructure"}

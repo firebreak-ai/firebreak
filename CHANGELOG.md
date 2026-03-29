@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.2] — 2026-03-29
+
+### Changed
+- **Improvement analyst traces routing chains.** Per-asset analysis followed by a path-tracing pass that spawns chain-scoped analysts for skills with execution handoffs. Addresses blind spot where per-file analysis misdiagnosed cross-file routing dead-ends as behavioral problems (same misdiagnosis in Phase 4 and Phase 5).
+- Checklist item threshold in code review tests lowered from 10 to 5, matching the research-grounded ai-failure-modes.md checklist size.
+- Config loader test and fixture updated for `replan_cap` → `escalation_cap` rename from 0.3.1.
+- Task reviewer gate accepts optional project root argument for test isolation.
+
+### Added
+- **Execution path completeness test** (`test-execution-paths.sh`): Self-enforcing structural test that discovers skills with `references/` directories, extracts terminal sections from SKILL.md, and verifies every reference file reaches those sections. No manifest required.
+- **New-interface signature rule** in task compilation: test+impl tasks sharing a function that does not yet exist must state the exact signature in both task files.
+- Schema/constant drift spot-check in per-wave verification.
+- Retrospective and `/fbk-improve` finalization steps in both code review reference paths (post-impl and standalone), closing a routing dead-end that caused missed finalization in two consecutive phases.
+
+### Fixed
+- Code review reference files were routing dead-ends — agent followed `references/post-impl-review.md` to completion without reaching the Retrospective section in SKILL.md. Both reference paths now terminate with their own finalization steps.
+- Orphaned `research-findings.md` moved from `assets/fbk-docs/fbk-dispatch/` to `ai-docs/dispatch/research/`. Stale path reference in dispatch-overview.md updated.
+- Pre-existing test failures resolved: 5 failures across 4 test suites, all from post-0.3.1 drift (rename residue, threshold mismatch, fixture path resolution).
+
 ## [0.3.1] — 2026-03-28
 
 ### Changed

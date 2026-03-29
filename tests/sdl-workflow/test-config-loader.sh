@@ -43,7 +43,7 @@ import sys, json
 d = json.load(sys.stdin)
 assert d['token_budget'] is None
 assert d['max_concurrent_agents'] == 1
-assert d['replan_cap'] == 2
+assert d['escalation_cap'] == 2
 assert d['model'] == 'sonnet'
 print('yes')
 " 2>/dev/null)
@@ -62,7 +62,7 @@ import sys, json
 d = json.load(sys.stdin)
 assert d['token_budget'] == 5000
 assert d['max_concurrent_agents'] == 3
-assert d['replan_cap'] == 5
+assert d['escalation_cap'] == 5
 assert d['model'] == 'sonnet'
 print('yes')
 " 2>/dev/null)

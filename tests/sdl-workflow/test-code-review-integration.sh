@@ -153,10 +153,10 @@ fi
 
 # Test 15: Checklist items are numbered and referenceable (UV-5 structural proxy)
 numbered_count=$(grep -cE '^[0-9]+\.' "$CHECKLIST")
-if [ "$numbered_count" -ge 10 ]; then
+if [ "$numbered_count" -ge 5 ]; then
   ok "checklist items are numbered and referenceable ($numbered_count items)"
 else
-  not_ok "checklist items are numbered and referenceable" "only $numbered_count numbered items, need at least 10"
+  not_ok "checklist items are numbered and referenceable" "only $numbered_count numbered items, need at least 5"
 fi
 
 # --- E2e --- Full code review cycle (UV-1 through UV-4) ---
