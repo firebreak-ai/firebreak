@@ -1,12 +1,27 @@
 # Firebreak
 
-**Firebreak improves the reliability and maintainability of AI-generated code.** It's a research-backed framework for Claude Code that closes the gap between code that works and code you'd want to maintain.
+**Firebreak improves the reliability and maintainability of AI-generated code.** It's a research-grounded framework for Claude Code that closes the gap between code that works and code you'd want to maintain.
 
 You talk to it like a person — "We need to add rate limiting to the API. Let's spec it out." You co-author the spec, the system handles review, breakdown, and implementation autonomously, and you review the results. Human judgment goes where it has the highest leverage (spec authoring); everything after that runs as a pipeline with verification at every stage.
 
-Core design decisions trace to [published research](research.md) — see [what problems this solves](#what-problems-does-this-solve) and the [full research basis, reasoning, and process](ai-docs/).
+Most AI coding tools optimize for getting code written. Firebreak optimizes for getting code you'd want to maintain — it treats AI code quality as a [systems problem](ai-docs/dispatch/failure-modes.md), not a prompting problem. Core design decisions trace to [published research](research.md), and the pipeline [revises itself](ai-docs/dispatch/harness-patterns-analysis.md) from structured failure data after every run.
 
-Firebreak is a research base and a reference implementation. Use the pipeline, or just take the techniques that solve your problems.
+Use the full pipeline, or just take the [techniques](#whats-different) that solve your problems.
+
+## What's different
+
+AI-generated code ships with [1.7x more issues and 1.5–2x more security vulnerabilities](https://www.coderabbit.ai/blog/state-of-ai-vs-human-code-generation-report) than human-written code (CodeRabbit, 2025), with [~8x growth in duplicated blocks and a 60% collapse in refactoring activity](https://www.gitclear.com/ai_assistant_code_quality_2025_research) (GitClear, 2024–2025). Spec-driven pipelines address behavioral correctness — agents follow specs and produce code that works — but leave reliability and maintainability gaps. Firebreak targets those gaps specifically:
+
+- **[AI failure taxonomy](ai-docs/dispatch/failure-modes.md)** — 39 catalogued failure modes from 25+ empirical sources (ICSE, OWASP, Microsoft AI Red Team, arXiv), mapped to pipeline stages with a coverage matrix. A systematic model of how AI code fails, usable as a standalone reference regardless of tooling.
+- **[Self-improving pipeline](ai-docs/dispatch/harness-patterns-analysis.md)** — Structured retrospectives classify every failure as spec gap, compilation gap, or implementation error. This data drives revisions to the pipeline itself. The first run [passed all tests but didn't work for real users](ai-docs/dispatch/harness-patterns-analysis.md) — "zero escalations" masked 5 human interventions and 3 corrective cycles. The retrospective caught the metric hiding real problems, the pipeline was revised, and the next run completed with zero corrective cycles.
+
+  This loop is active: [v0.3.1](CHANGELOG.md) was produced by a self-improvement cycle that renamed "re-plans" to "task escalations" and added a two-tier friction model — because the pipeline's own retrospective identified that the old terminology was hiding real friction behind a vanity metric.
+- **[Context isolation](assets/agents/)** — Test writers, implementers, and reviewers never share context. LLMs [derive test assertions from implementation behavior rather than spec intent](https://arxiv.org/abs/2410.21136), producing tests that freeze bugs as "correct." Isolating agents prevents these correlated failures.
+- **[Adversarial code review](assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md)** — A Detector/Challenger loop where the Detector identifies behavioral mismatches and the Challenger demands concrete evidence before promoting them to findings. In brownfield testing, this caught [14 verified issues invisible to CI](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md) — tests that passed without checking anything meaningful, missing deep-copies, incomplete guards.
+- **[Test immutability](assets/fbk-docs/fbk-sdl-workflow/implementation-guide.md)** — After a [dedicated test reviewer](assets/agents/fbk-test-reviewer.md) approves test files, they are locked by SHA-256 hash. Implementation agents cannot weaken tests to make them pass — mechanical enforcement, not instruction-based.
+- **[Research-grounded design](research.md)** — Core design decisions cite published studies with methodology and sample sizes. Research, reasoning, and process are [published alongside the tools](ai-docs/). Where evidence challenges the design (e.g., the [Vercel skill-discovery finding](research.md) vs. progressive disclosure), the tension is documented rather than hidden.
+
+Each technique works independently — take what solves your problems. For [progressive disclosure](research.md), [council review](assets/fbk-docs/fbk-sdl-workflow/review-perspectives.md), and [context asset authoring guidelines](assets/fbk-docs/fbk-context-assets.md), see the [documentation](#documentation).
 
 ## Quick Start
 
@@ -23,6 +38,8 @@ curl -fsSL https://raw.githubusercontent.com/firebreak-ai/firebreak/main/install
 curl -fsSL https://raw.githubusercontent.com/firebreak-ai/firebreak/main/installer/install.sh | bash -s -- --dry-run
 ```
 
+Or clone the repo and run `installer/install.sh` directly.
+
 Then open any project with Claude Code and start talking:
 
 ```
@@ -33,7 +50,7 @@ Firebreak picks up the intent and walks you through spec authoring. You describe
 
 ### Improve your context assets (any project)
 
-Context assets are anything the agent loads — CLAUDE.md files, skills, hooks, agents. Even without the full pipeline, Firebreak includes guidelines for writing these that produce measurably better agent behavior. Works in any project immediately.
+Context assets are anything the agent loads — CLAUDE.md files, skills, hooks, agents. Even without the full pipeline, Firebreak includes guidelines for writing these that produce more effective agent behavior. Works in any project immediately.
 
 ```
 "Help me write a CLAUDE.md for this project"
@@ -56,78 +73,75 @@ You co-author the spec, the system handles review, breakdown, and implementation
 
 | Command | What it does |
 |---------|-------------|
-| `/spec` | Co-author a specification with acceptance criteria and testing strategy |
-| `/spec-review` | Run council review (architect, security, guardian, advocate, analyst) |
-| `/breakdown` | Compile the reviewed spec into sized, wave-assigned tasks |
-| `/implement` | Execute tasks with parallel agent teams and per-wave verification |
-| `/council` | Assemble 6 independent agents to discuss a problem and reach consensus |
-| `/code-review` | Adversarial Detector/Challenger review of existing code |
-| `/context-asset-authoring` | Guidance for writing effective context assets |
+| `/fbk-spec` | Co-author a specification with acceptance criteria and testing strategy |
+| `/fbk-spec-review` | Run council review (architect, security, guardian, advocate, analyst) |
+| `/fbk-breakdown` | Compile the reviewed spec into sized, wave-assigned tasks |
+| `/fbk-implement` | Execute tasks with parallel agent teams and per-wave verification |
+| `/fbk-council` | Assemble 6 independent agents to discuss a problem and reach consensus |
+| `/fbk-code-review` | Adversarial Detector/Challenger review of existing code |
+| `/fbk-improve` | Pipeline self-improvement from retrospective observations |
+| `/fbk-context-asset-authoring` | Guidance for writing effective context assets |
 
 Natural language works too — talking about designing features, fixing bugs, or reviewing code triggers the appropriate skill automatically.
 
-## Techniques you can use independently
-
-Each of these works on its own, in any project, without the full pipeline.
-
-- **[Progressive disclosure](assets/fbk-docs/fbk-context-assets.md)** — organize context so agents load only what they need, preventing the performance degradation that comes from irrelevant instructions
-- **[Adversarial code review](assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md)** — a Detector/Challenger loop where sightings require evidence to become findings, catching semantic issues invisible to CI
-- **[Council review](assets/fbk-docs/fbk-sdl-workflow/review-perspectives.md)** — independent perspectives (architect, security, guardian, advocate, analyst) that challenge the user and each other, countering agent sycophancy
-- **[Context-independent agents](assets/agents/)** — test writers, implementers, and reviewers never share reasoning, preventing agents from confirming their own work ([arXiv:2410.21136](https://arxiv.org/abs/2410.21136))
-- **[Test-first with AI bias mitigations](assets/fbk-docs/fbk-sdl-workflow/implementation-guide.md)** — a [dedicated test reviewer](assets/agents/fbk-test-reviewer.md) gates quality before implementation, and SHA-256 hash verification ensures implementation agents cannot weaken tests
-- **[Failure mode taxonomy](ai-docs/dispatch/failure-modes.md)** — 39 catalogued ways AI code fails, from 25+ empirical sources, usable as a reference regardless of pipeline
-- **[Structured retrospectives](ai-docs/dispatch/harness-patterns-analysis.md)** — classified failure data (spec gap, compilation gap, implementation error) after every run, enabling the pipeline to [improve itself](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md)
-- **[Context asset authoring guidelines](assets/fbk-docs/fbk-context-assets.md)** — [empirical research](research.md) on instruction density, positive framing, and compression applied to writing skills, agents, and CLAUDE.md files
-
-## What problems does this solve?
-
-AI-generated code ships with [1.7x more issues and 1.5–2x more security vulnerabilities](https://www.coderabbit.ai/blog/state-of-ai-vs-human-code-generation-report) than human-written code (CodeRabbit, 2025), with doubled code churn, [~8x growth in duplicated blocks, and a 60% collapse in refactoring activity](https://www.gitclear.com/ai_assistant_code_quality_2025_research) (GitClear, 2024–2025). Existing pipelines address behavioral correctness — agents follow specs and produce code that works — but leave reliability and maintainability gaps:
-
-| Gap | How Firebreak addresses it | Evidence | Deep dive |
-|-----------|-------------|---------------|-----------|
-| **Context overload degrades output** — irrelevant instructions hurt performance even when the window has room; models collapse past ~150 constraints | Three-tier context hierarchy (router/index/leaf) where agents load only what they need. Authoring framework applies the Necessity Test to every instruction. | [IFScale](https://arxiv.org/abs/2507.11538) 2025 (20 models), [Context Rot](https://research.trychroma.com/context-rot) (Chroma, 2025) | [Context assets](assets/fbk-docs/fbk-context-assets.md), [research](research.md) |
-| **CI can't catch semantic quality issues** — tests that pass vacuously, missing deep-copies, dead code guards with incomplete scope | Adversarial Detector/Challenger review at project scope. Detector uses behavioral comparison against specs or failure checklist; Challenger demands evidence before promoting findings. | 14 verified findings in brownfield validation — all invisible to CI | [Code review guide](assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md), [Detector](assets/agents/fbk-code-review-detector.md), [Challenger](assets/agents/fbk-code-review-challenger.md) |
-| **No systematic model of how AI code fails** — teams address symptoms individually rather than mapping the failure space | 39 failure modes across 6 categories from 25+ empirical sources (ICSE, MAST, OWASP, Microsoft AI Red Team), each mapped to pipeline stages with coverage matrix and gap analysis | Grounded in published research, not experience | [Failure modes](ai-docs/dispatch/failure-modes.md) |
-| **Pipelines don't learn from their own mistakes** — the same failure patterns repeat across runs | Built-in retrospectives with structured failure attribution. Every problem classified as spec gap, compilation gap, or implementation error. Human-mediated correction loop works today; the data structure supports future automated self-correction. | Re-plans and wave failures dropped to zero by Phase 2 of the brownfield test | [Harness analysis](ai-docs/dispatch/harness-patterns-analysis.md), [brownfield validation](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md) |
-| **Correlated failures between test and implementation agents** — LLMs derive test assertions from implementation behavior rather than spec intent, producing tests that freeze actual behavior as "correct" regardless of whether it matches requirements | Test writers, implementers, and reviewers never share context. No agent reviews its own work. Context isolation prevents the agent's understanding of its own implementation from contaminating test expectations. | [arXiv:2410.21136](https://arxiv.org/abs/2410.21136) | [Research](research.md) |
-| **Design decisions built on intuition don't generalize** — experience-driven frameworks over-fit to the author's projects | Every structural decision cites published studies with methodology and sample sizes. Research, reasoning, and process published alongside the tools. | Full citations with confidence levels and open questions | [Research](research.md), [`ai-docs/`](ai-docs/) |
-
 ## Results
 
-Tested through a greenfield project (13 features, ~80 tasks, 137 tests), a brownfield feature addition (19 tasks, 43 new tests), and an ongoing large-scale brownfield remediation. Results are from the author's projects and have not been independently replicated.
+Results are from the author's projects and have not been independently replicated. If you run the pipeline on your own codebase, [share what you find](https://github.com/firebreak-ai/firebreak/issues) — independent data points are the main thing this project needs. Include your Firebreak-generated retrospectives!
 
-**Greenfield — the self-improvement loop in action:**
+**Greenfield** (13 features, ~80 tasks, 137 tests) — The first run passed all tests but [didn't work correctly for a real user](ai-docs/dispatch/harness-patterns-analysis.md). The retrospective revealed the root cause: every e2e test was a smoke test. The pipeline was revised — user verification steps, a [test reviewer](assets/agents/fbk-test-reviewer.md) that fails on missing behavioral coverage, interventions tracked as a first-class metric. This is the self-improvement loop: structured failure data in, specific pipeline corrections out.
 
-The first full run produced a working application across 13 features with zero formal re-plans. But the retrospective revealed that "zero re-plans" masked 5 team-lead interventions and 3 corrective feature cycles — the metric was hiding real problems. The application passed all 137 tests but [didn't work correctly for a real user](ai-docs/dispatch/harness-patterns-analysis.md). Root cause: every e2e test was a smoke test (verifies no crashes) rather than a behavior test (verifies the application works). All bugs existed at integration seams between correctly-implemented modules — exactly where unit tests mock across boundaries.
+**Brownfield feature addition** (19 tasks, 43 new tests) — The revised pipeline completed with zero corrective cycles and zero human interventions. The feature worked on first human test. Council review caught 22 findings before code was written. The test reviewer caught 8 defects across 2 checkpoints. [Full greenfield/brownfield comparison](ai-docs/dispatch/harness-patterns-analysis.md).
 
-**Corrective actions:** The pipeline was revised to require [user verification steps](ai-docs/dispatch/phase-1.5-core-enhancement/phase-1.5-core-enhancement-spec.md) in every spec (action → observable outcome), enforce integration seam declarations, and add a [two-tier test reviewer](assets/agents/fbk-test-reviewer.md) that actively fails on missing behavioral coverage and silent-failure assertions. The greenfield had zero e2e tests; the brownfield tracked interventions as a first-class metric — the measurement the greenfield retrospective revealed was missing.
-
-**Brownfield feature addition (verification):** The next test — 19 tasks, 43 new tests on a different codebase — completed with zero corrective cycles and zero team-lead interventions. The feature worked on first human test. The spec produced 8 e2e tests from the start, catching 2 integration bugs during implementation that unit tests would have missed. Council review caught 22 findings before code was written. The test reviewer caught 8 defects across 2 checkpoints. Structured failure data in, specific pipeline corrections out, measurably better results next run. See the [full comparison](ai-docs/dispatch/harness-patterns-analysis.md).
-
-**Brownfield remediation (in progress — 4 of 8 phases complete):**
-- 110 pre-decomposed tasks (1-2 file scope each), 98.2% first-attempt pass rate, zero escalations to larger models — the cheapest model tier handled every task assigned to it
-- 4 team-lead interventions where the decomposition itself failed — the more interesting signal, and the [dominant remaining failure mode](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md)
-- 26 blocking spec review findings caught across 3 phases, including one that forced a complete architecture rewrite before code was written
-- 14 verified code review findings (Detector/Challenger) — all invisible to CI. For example, a thread-safe config wrapper returned collection fields by reference without deep-copying; the Detector identified the behavioral mismatch, the Challenger [verified it against the call graph](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/phase-0-security-retrospective.md). Other findings included vacuously-passing tests, incomplete guards, and dead code paths that appeared covered but weren't
-- Remediation exposed [7 false-passing tests](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/phase-1-test-infrastructure-retrospective.md) hidden by wrong mock wiring — a deprecated mock function was set but never called by production code, so tests exercised the mock's generic responses instead of actual behavior. Assertions were loose enough to accept either. CI reported green; the codebase's apparent test health was worse than its actual test health
-
-See [full greenfield/brownfield analysis](ai-docs/dispatch/harness-patterns-analysis.md) and [preliminary brownfield validation](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md).
+**Brownfield remediation** (in progress — 4 of 8 phases, 110 tasks) — 98.2% first-attempt pass rate, zero escalations to larger models. 14 code review findings invisible to CI — for example, a thread-safe config wrapper [returned collections by reference without deep-copying](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/phase-0-security-retrospective.md); the Detector identified the behavioral mismatch, the Challenger verified it against the call graph. Remediation exposed [7 false-passing tests](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/phase-1-test-infrastructure-retrospective.md) hidden by wrong mock wiring — a deprecated mock function was set but never called by production code, so tests exercised mock responses instead of actual behavior. CI reported green. [Full analysis](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md).
 
 ## How it works
 
+```mermaid
+flowchart LR
+    Spec --> Review --> Breakdown
+    Breakdown --> TTC[Test Task<br>Creation]
+    TTC --> ITC[Impl Task<br>Creation]
+    ITC --> TR[Task<br>Review]
+    TR --> TE[Test<br>Execution]
+    TE --> TRev[Test Code<br>Review]
+    TRev --> IE[Impl<br>Execution]
+    IE --> Verify[Verification]
+    Verify --> CR[Code<br>Review]
+    CR --> Improve
+
+    Improve -.->|feeds back into pipeline assets| Spec
+
+    style Improve fill:#f9f,stroke:#333
 ```
-Spec ─► Review ─► Breakdown ─► Test Creation ─► Test Review ─► Implementation ─► Verification ─► Code Review ─► PR
-         ▲                          ▲                ▲                                  ▲              ▲
-     council +               context-independent   pipeline-         deterministic checks +    adversarial
-     agentic review          test-writing agents   blocking          mutation testing +        Detector/Challenger
-                                                   gate              test immutability         verification loop
+
+| Transition | Gate |
+|------------|------|
+| Spec → Review | Council: 6 independent agents challenge the spec |
+| Review → Breakdown | Structural gate: deterministic completeness checks |
+| Breakdown → Test Task Creation | Context isolation: independent agent writes test tasks from spec only |
+| Test Task Creation → Impl Task Creation | Second independent agent sees spec + test tasks, not test agent's reasoning |
+| Impl Task Creation → Task Review | Test reviewer validates tasks cover all spec requirements; structural gate |
+| Task Review → Test Execution | Context-independent agents execute test tasks |
+| Test Execution → Test Code Review | Pipeline-blocking gate: test reviewer validates behavioral coverage |
+| Test Code Review → Impl Execution | Tests locked by SHA-256 hash before implementation begins |
+| Impl Execution → Verification | Deterministic checks + mutation testing + test immutability |
+| Verification → Code Review | Adversarial Detector/Challenger with evidence requirements |
+| Code Review → Improve | Retrospective: structured failure data feeds back into pipeline assets |
+
+<details>
+<summary>Text-only pipeline diagram</summary>
+
+```
+Spec ─► Review ─► Breakdown ─► Test Tasks ─► Impl Tasks ─► Task Review ─► Test Exec ─► Test Review ─► Impl Exec ─► Verification ─► Code Review ─► Improve
+         ▲            ▲            ▲             ▲              ▲              ▲              ▲                           ▲              ▲              ▲
+     council +   structural   context-       sees spec +    test reviewer:  context-     pipeline-       deterministic checks +   adversarial    retrospective
+     agentic     gate         independent    test tasks     tasks cover     independent  blocking        mutation testing +       Detector/       feeds back into
+     review                   agent                         spec            agents       gate            test immutability        Challenger      pipeline assets
 ```
 
-**Context assets** use a three-tier hierarchy (router/index/leaf) to prevent context pollution — the agent starts with a lightweight router (CLAUDE.md), follows references when a topic is relevant, and loads only the specific leaf it needs. Most context never enters the window. The [authoring framework](assets/fbk-docs/fbk-context-assets.md) applies empirical research on instruction density and compression to every asset.
+</details>
 
-**The SDL pipeline** runs five stages — Spec, Review, Breakdown, Implement, Code Review — with [deterministic verification gates](assets/hooks/fbk-sdl-workflow/) at each transition. Implementation uses wave-based parallel execution with capped retry loops. Test writers, implementers, and reviewers are context-independent agents that never share reasoning. Test files are locked by SHA-256 hash after the test reviewer approves them, preventing implementation agents from weakening tests to pass.
-
-**Retrospectives** classify every pipeline failure as a spec gap, compilation gap, or implementation error. This structured failure data drives the next revision of the pipeline itself — Firebreak was built using its own SDL workflow, and each iteration addresses the gaps the previous one revealed. See the [harness analysis](ai-docs/dispatch/harness-patterns-analysis.md) for the full bootstrapping narrative.
+The pipeline runs with [deterministic verification gates](assets/hooks/fbk-sdl-workflow/) between each stage. Context assets use a [three-tier hierarchy](assets/fbk-docs/fbk-context-assets.md) (router/index/leaf) so agents load only what they need. Firebreak was built using its own SDL workflow — see the [harness analysis](ai-docs/dispatch/harness-patterns-analysis.md) for the full bootstrapping narrative.
 
 ## Documentation
 
