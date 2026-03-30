@@ -245,3 +245,38 @@ Current results: 4 failures, all correct — both `post-impl-review.md` and `exi
 - **Change**: Add note that test+impl pairs with non-overlapping file scopes can coexist in the same wave with explicit ordering (test runs before impl)
 - **Observation**: 10 waves for 29 tasks — attributed to strict separate-wave rule combined with file scope prevention
 - **Necessity**: Reduces wave count without sacrificing isolation guarantees. The current strict rule is more conservative than necessary when file scopes don't overlap.
+
+## Linting Baseline (Pre-Phase 6)
+
+First linter integration established at the Phase 5 boundary. Prior to this point, no automated linting was configured — all code quality findings came from the adversarial code review pipeline.
+
+### Cross-Phase Results (golangci-lint, default + aggressive linters)
+
+**Default linters** (errcheck, staticcheck, govet, unused, gosimple, ineffassign):
+
+| Category | Full codebase | Introduced by remediation (phases 0-5) | Pre-existing |
+|----------|--------------|----------------------------------------|-------------|
+| Production | 30 | 2 | 28 |
+| Test | 50 | 19 | 31 |
+| Experimental | 20 | 17 | 3 |
+| **Total** | **100** | **38** | **62** |
+
+**Aggressive linters** (+ gocognit, gocyclo, dupl, gocritic, revive):
+
+| Linter | Full codebase | Introduced by remediation |
+|--------|--------------|--------------------------|
+| Cognitive complexity (>30) — production | 20 functions | 0 |
+| Cognitive complexity (>30) — test | 15 functions | 5 (structural AST scan tests, inherently complex) |
+| Code duplication (dupl) | 0 | 0 |
+| Cyclomatic complexity (gocyclo) | 0 | 0 |
+| Style/idiom (revive) | 50 | — (predominantly unused-parameter in test mocks) |
+
+### Interpretation
+
+Remediation introduced 2 production lint issues across ~39K lines of changes and 404 files touched (both unchecked error returns). Pre-existing code contains 28 production lint issues and 20 functions exceeding cognitive complexity thresholds — these represent the baseline that future phases can target.
+
+Linter findings measure the floor (obvious bugs, style violations), not the ceiling (behavioral fidelity, architectural coherence). The 14 code review findings from this phase — semantic drift, dead state, test integrity gaps — were all invisible to linters. The adversarial review pipeline and linting are complementary, not redundant.
+
+### Linter Integration with Code Review
+
+The code review skill integrates with any project-configured linter. Prior to Phase 6, no linters were configured — all quality findings came from the Detector/Challenger pipeline alone. With linting now available, the code review agent can delegate mechanical checks (unchecked errors, unused variables, style violations) to the linter and focus attention on the behavioral and structural issues that linters cannot detect. Expected effects: reduced false positives on mechanical issues, improved finding quality on issues requiring spec-aware reasoning.
