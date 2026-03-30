@@ -64,6 +64,8 @@ Step-by-step implementation instructions. Number each step. Each step is a concr
 Acceptable step: "Add a `validateToken(token string) (Claims, error)` function to `auth/tokens.go` after the `parseToken` function."
 Unacceptable step: "Add a token validation function with appropriate error handling."
 
+**Per-site completion conditions**: When a task modifies multiple mutation sites (multiple locations in one file, or locations across two files), each site must have its own numbered step with a concrete completion condition. The agent verifies each site independently rather than treating the task as a single atomic change. Example: "Step 1: In `auth.go` line 45, replace X with Y. Completion: `grep -q 'Y' auth.go` succeeds. Step 2: In `auth_test.go` line 12, update the assertion. Completion: test compiles."
+
 **4. Files to create/modify**
 Explicit scope boundary. List each file with its path relative to the project root. The agent must not touch files outside this list.
 
@@ -163,6 +165,8 @@ For every code-modifying change, create two tasks: a test task and an implementa
 **Implementation task**: Write the code that makes the test task's tests pass.
 
 Within each wave, order test tasks before their corresponding implementation tasks. Test tasks and implementation tasks in the same wave may run in parallel with other pairs, but a test task must complete before its paired implementation task begins.
+
+**E2E harness exception**: When a task creates an E2E test harness (test infrastructure setup + the tests that exercise it), combine the harness setup and its tests into a single task. Separating harness creation from harness-dependent tests creates an artificial boundary — the harness has no value without its tests, and the tests cannot compile without the harness. This exception applies only to E2E harness creation, not to standard unit or integration test tasks.
 
 Name paired tasks consistently: `task-NN-test-<behavior>.md` and `task-MM-impl-<behavior>.md`.
 

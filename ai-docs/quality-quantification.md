@@ -359,6 +359,19 @@ Notably, code added during remediation (new search infrastructure, scoring decor
 
 **The pre-remediation review drove the remediation plan**, making the two reviews not fully independent. The post-remediation review was designed as a follow-up, not a blind re-assessment. A fully independent review by a different team or tool would be a stronger comparison.
 
+### Manual verification: the project works
+
+The strongest data point is the simplest one: the project was manually tested after remediation and it works. Before remediation, the project was effectively non-functional — core features were disconnected (interfaces with incompatible signatures), the psychology-based memory system couldn't run as an integrated system, world context was never injected, and the project was locked to a single model. After 7 phases of structured remediation, manual testing confirmed:
+
+- Core features function end-to-end (the systems that were disconnected now work together)
+- Previously broken or unwired subsystems are operational
+- The project runs against multiple models (no longer locked to one)
+- The e2e test harness (created during remediation) passes
+
+This is the ground truth that linter metrics, code review findings, and structural analysis are all proxies for. Linters told us the pipeline didn't introduce debt. Code review told us the finding character shifted from critical to structural. But "does it actually work for a real user" is the question that matters, and the answer changed from no to yes.
+
+No automated metric captured this transition. The pre-remediation test suite passed (with broken tests exercising dead code), CI was green, and linters had no signal on disconnected interfaces or unwired subsystems. The gap between "tests pass" and "the project works" is exactly where the adversarial code review pipeline and structured remediation add value — they identified the deep issues that made the project non-functional despite green CI.
+
 ## Self-Improvement Proposals from Post-Remediation Review
 
 The post-remediation review's retrospective was analyzed by 8 improvement analysts, producing 43 proposals (after deduplication) targeting 8 Firebreak assets. These proposals address both the specific blind spots revealed by the review and a broader gap: the pipeline's detection scope is shaped by its AI failure mode taxonomy, creating a blind spot for "normal engineering issues" that any competent reviewer would catch regardless of whether the code was AI-generated.

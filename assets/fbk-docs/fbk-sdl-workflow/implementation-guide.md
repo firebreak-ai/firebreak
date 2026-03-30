@@ -66,6 +66,8 @@ Resume at the earliest incomplete wave. A wave is incomplete if any of its tasks
 
 Each teammate reads its task file as its sole instruction context, plus `fbk-docs/fbk-design-guidelines.md` and the matching leaf for its task type (test authoring, function implementation, or composition). The teammate does not read the spec, other task files, or the task overview.
 
+Spawn a fresh agent for each task. Do not reuse workers across tasks — context pollution from a prior task's code, errors, or partial reasoning can cause the agent to make incorrect assumptions about the current task's codebase state. Each task execution starts with a clean agent context containing only the task file and the designated reference files.
+
 Stage 3 guarantees non-overlapping file scopes within the same wave. Concurrent-edit conflicts cannot occur within a wave.
 
 ---
@@ -111,10 +113,14 @@ Configure a `TaskCompleted` hook in `.claude/settings.json`. The hook fires on e
 
 The hook script scopes itself via context check: parse the task description for an SDL task file path matching `ai-docs/*/tasks/task-*.md`. If no match, exit 0 (pass-through) — the hook applies only to SDL tasks.
 
+**Hook rejection retry cap**: When a hook rejection triggers an in-session retry, cap retries at 3 per task attempt. After 3 hook rejection retries without resolution, the teammate stops retrying and reports the failure to the team lead, who initiates the escalation protocol. This prevents infinite retry loops on systemic failures (e.g., a lint rule the agent cannot satisfy).
+
 For SDL tasks, the hook validates:
 
 - The full test suite passes — not just the task's new tests, but all tests in the project.
 - No new lint errors are introduced.
+
+Run all verification and hook commands in the foreground. Background execution can produce empty stdout/stderr, causing validation to report success when the command never completed or silently failed. Foreground execution ensures the hook captures complete output for feedback to the teammate.
 
 Exit code 2 (reject with feedback) on any failure. This prevents task completion and returns the failure output to the teammate as feedback.
 

@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.3] — 2026-03-30
+
+### Changed
+- **Two-axis finding classification.** Code review findings are now classified on two orthogonal axes — type (behavioral, structural, test-integrity, fragile) and severity (critical, major, minor, info) — aligned with industry standards (SonarQube, CodeClimate, CodeRabbit). Replaces the single-axis `category` field. Canonical definitions in code-review-guide.md, referenced by Detector, Challenger, and existing-code-review.md.
+- **Detector is read-only.** Removed Bash from Detector tools and deleted linter discovery section. Linter execution relocated to SKILL.md orchestrator as a pre-spawn step — orchestrator discovers and runs linters, passes results as supplementary context to Detector agent teams.
+- **Challenger nit handling.** "Downgrade to nit" replaced with "reject as nit" — nits are excluded from findings entirely and counted separately in retrospectives.
+- AI failure modes checklist expanded from 5 to 11 items: bare literals (expanded from magic numbers), non-enforcing tests (expanded from test name contradictions), dead infrastructure, comment-code drift, zero-value sentinel ambiguity, context bypass, string-based error classification.
+- Fresh agent per task — workers are no longer reused across tasks to prevent context pollution.
+
+### Added
+- **Detection scope expansion.** 5 new structural detection targets in quality-detection.md: parallel collection coupling, dead infrastructure, semantic drift, silent error and context discard, string-based type discrimination.
+- **6 new review instructions** in existing-code-review.md: dual-path verification, sentinel value confusion, test-production string alignment, string-based error classification, dead infrastructure detection, severity-ordered finding presentation.
+- **Code review orchestration hardening.** Pre-spawn linter execution with 100-finding truncation. Parallel Detector agent team spawning. Stuck-agent recovery (relaunch once, then escalate — never substitute). Cross-unit pattern deduplication and naming. Detection source tagging. `quality-detection.md` reference in Detector spawn instructions.
+- **Challenger extensions.** Adjacent observation channel (informational items appended to retrospective). Caller tracing requirement for behavioral-type sightings. `verified-pending-execution` status for test-integrity sightings requiring execution.
+- **Test reviewer expansion.** 3 new Tier 1 criteria: stale failure annotations, empty gate tests, advisory assertions. 3 new checkpoint checks: unconditionally skipped tests, phantom assertion strings, build-tag consistency.
+- **Implementation pipeline rules.** Hook-rejection retry cap (3 retries). Foreground execution for all verification and hook commands. E2E harness task exception (combined test+impl). Per-site completion conditions for multi-mutation tasks.
+- **Quality quantification framework** (`ai-docs/quality-quantification.md`): measurement framework for tracking code quality across remediation phases, with per-phase linter data, post-remediation review analysis, and industry comparison.
+- Benchmark research document (`ai-docs/benchmark-research.md`).
+- 8 new structural test scripts covering all 0.3.3 acceptance criteria (194 total test assertions).
+
+### Fixed
+- Sighting format template and retrospective fields omitted `linter` as a detection source value despite being added to the canonical list.
+- SKILL.md termination condition used stale "nit-category" language inconsistent with the two-axis classification system.
+- Redundant checklist item (bare string literal type discrimination) removed — content already covered by expanded bare literals item and string-based error classification item.
+
 ## [0.3.2] — 2026-03-29
 
 ### Changed

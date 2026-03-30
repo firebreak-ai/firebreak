@@ -65,16 +65,16 @@ else
   not_ok "Detector description field is non-empty" "desc_val='$desc_val'"
 fi
 
-# --- Test 5: Detector tools field lists Read, Grep, Glob, Bash ---
+# --- Test 5: Detector tools field lists Read, Grep, Glob without Bash ---
 tools_line=$(echo "$fm" | grep '^tools:')
 has_read=$(echo "$tools_line" | grep -c 'Read')
 has_grep=$(echo "$tools_line" | grep -c 'Grep')
 has_glob=$(echo "$tools_line" | grep -c 'Glob')
 has_bash=$(echo "$tools_line" | grep -c 'Bash')
-if [ "$has_read" -gt 0 ] && [ "$has_grep" -gt 0 ] && [ "$has_glob" -gt 0 ] && [ "$has_bash" -gt 0 ]; then
-  ok "Detector tools field lists Read, Grep, Glob, Bash"
+if [ "$has_read" -gt 0 ] && [ "$has_grep" -gt 0 ] && [ "$has_glob" -gt 0 ] && [ "$has_bash" -eq 0 ]; then
+  ok "Detector tools field lists Read, Grep, Glob without Bash"
 else
-  not_ok "Detector tools field lists Read, Grep, Glob, Bash" "tools_line='$tools_line'"
+  not_ok "Detector tools field lists Read, Grep, Glob without Bash" "tools_line='$tools_line'"
 fi
 
 # --- Test 6: Detector tools field excludes Write and Edit ---
@@ -169,39 +169,39 @@ fi
 finding_id=$(grep -ci 'finding id' "$GUIDE" 2>/dev/null || true)
 sighting=$(grep -ci 'sighting' "$GUIDE" 2>/dev/null || true)
 location=$(grep -ci 'location' "$GUIDE" 2>/dev/null || true)
-category=$(grep -ci 'category' "$GUIDE" 2>/dev/null || true)
+type_field=$(grep -ci 'Type:' "$GUIDE" 2>/dev/null || true)
 current=$(grep -ci 'current behavior' "$GUIDE" 2>/dev/null || true)
 expected=$(grep -ci 'expected behavior' "$GUIDE" 2>/dev/null || true)
 source=$(grep -ci 'source of truth' "$GUIDE" 2>/dev/null || true)
 evidence=$(grep -ci 'evidence' "$GUIDE" 2>/dev/null || true)
-if [ "$finding_id" -gt 0 ] && [ "$sighting" -gt 0 ] && [ "$location" -gt 0 ] && [ "$category" -gt 0 ] && [ "$current" -gt 0 ] && [ "$expected" -gt 0 ] && [ "$source" -gt 0 ] && [ "$evidence" -gt 0 ]; then
+if [ "$finding_id" -gt 0 ] && [ "$sighting" -gt 0 ] && [ "$location" -gt 0 ] && [ "$type_field" -gt 0 ] && [ "$current" -gt 0 ] && [ "$expected" -gt 0 ] && [ "$source" -gt 0 ] && [ "$evidence" -gt 0 ]; then
   ok "Guide documents finding format with all 8 required fields"
 else
-  not_ok "Guide documents finding format with all 8 required fields" "finding_id=$finding_id sighting=$sighting location=$location category=$category current=$current expected=$expected source=$source evidence=$evidence"
+  not_ok "Guide documents finding format with all 8 required fields" "finding_id=$finding_id sighting=$sighting location=$location type_field=$type_field current=$current expected=$expected source=$source evidence=$evidence"
 fi
 
-# --- Test 17: Guide documents all 4 allowed category values ---
-semantic=$(grep -c 'semantic-drift' "$GUIDE" 2>/dev/null || true)
+# --- Test 17: Guide documents all 4 type values ---
+behavioral=$(grep -c 'behavioral' "$GUIDE" 2>/dev/null || true)
 structural=$(grep -c 'structural' "$GUIDE" 2>/dev/null || true)
 test_integrity=$(grep -c 'test-integrity' "$GUIDE" 2>/dev/null || true)
-nit=$(grep -c 'nit' "$GUIDE" 2>/dev/null || true)
-if [ "$semantic" -gt 0 ] && [ "$structural" -gt 0 ] && [ "$test_integrity" -gt 0 ] && [ "$nit" -gt 0 ]; then
-  ok "Guide documents all 4 allowed category values"
+fragile=$(grep -c 'fragile' "$GUIDE" 2>/dev/null || true)
+if [ "$behavioral" -gt 0 ] && [ "$structural" -gt 0 ] && [ "$test_integrity" -gt 0 ] && [ "$fragile" -gt 0 ]; then
+  ok "Guide documents all 4 type values"
 else
-  not_ok "Guide documents all 4 allowed category values" "semantic=$semantic structural=$structural test_integrity=$test_integrity nit=$nit"
+  not_ok "Guide documents all 4 type values" "behavioral=$behavioral structural=$structural test_integrity=$test_integrity fragile=$fragile"
 fi
 
 # --- Test 18: Guide documents sighting format with required fields ---
 sighting_id=$(grep -ci 'sighting id' "$GUIDE" 2>/dev/null || true)
 sighting_location=$(grep -ci 'location' "$GUIDE" 2>/dev/null || true)
-sighting_category=$(grep -ci 'category' "$GUIDE" 2>/dev/null || true)
+sighting_type=$(grep -ci 'Type:' "$GUIDE" 2>/dev/null || true)
 observation=$(grep -ci 'observation' "$GUIDE" 2>/dev/null || true)
 sighting_expected=$(grep -ci 'expected' "$GUIDE" 2>/dev/null || true)
 sighting_source=$(grep -ci 'source of truth' "$GUIDE" 2>/dev/null || true)
-if [ "$sighting_id" -gt 0 ] && [ "$sighting_location" -gt 0 ] && [ "$sighting_category" -gt 0 ] && [ "$observation" -gt 0 ] && [ "$sighting_expected" -gt 0 ] && [ "$sighting_source" -gt 0 ]; then
+if [ "$sighting_id" -gt 0 ] && [ "$sighting_location" -gt 0 ] && [ "$sighting_type" -gt 0 ] && [ "$observation" -gt 0 ] && [ "$sighting_expected" -gt 0 ] && [ "$sighting_source" -gt 0 ]; then
   ok "Guide documents sighting format with required fields"
 else
-  not_ok "Guide documents sighting format with required fields" "sighting_id=$sighting_id sighting_location=$sighting_location sighting_category=$sighting_category observation=$observation sighting_expected=$sighting_expected sighting_source=$sighting_source"
+  not_ok "Guide documents sighting format with required fields" "sighting_id=$sighting_id sighting_location=$sighting_location sighting_type=$sighting_type observation=$observation sighting_expected=$sighting_expected sighting_source=$sighting_source"
 fi
 
 # --- Test 19: Guide documents behavioral comparison methodology ---
@@ -242,30 +242,30 @@ else
   not_ok "AI failure mode checklist exists and is non-empty" "file: $CHECKLIST"
 fi
 
-# --- Test 23: Checklist contains at least 5 numbered items ---
+# --- Test 23: Checklist contains at least 11 numbered items ---
 numbered=$(grep -cE '^[0-9]+\.|^[0-9]+\)|^- \*\*[0-9]+' "$CHECKLIST" 2>/dev/null || true)
-if [ "$numbered" -ge 5 ]; then
-  ok "Checklist contains at least 5 numbered items"
+if [ "$numbered" -ge 11 ]; then
+  ok "Checklist contains at least 11 numbered items"
 else
-  not_ok "Checklist contains at least 5 numbered items" "numbered=$numbered"
+  not_ok "Checklist contains at least 11 numbered items" "numbered=$numbered"
 fi
 
-# --- Test 24: Checklist contains key failure mode keywords ---
+# --- Test 24: Checklist contains key failure mode keywords (updated for 0.3.3) ---
 reimplement=$(grep -ci 're-implement' "$CHECKLIST" 2>/dev/null || true)
 duplication=$(grep -ci 'duplication' "$CHECKLIST" 2>/dev/null || true)
-magic=$(grep -ci 'magic number' "$CHECKLIST" 2>/dev/null || true)
+bare_literal=$(grep -ci 'bare literal' "$CHECKLIST" 2>/dev/null || true)
 dead=$(grep -ci 'dead code' "$CHECKLIST" 2>/dev/null || true)
 hardcoded=$(grep -ci 'hardcoded' "$CHECKLIST" 2>/dev/null || true)
 inconsistent=$(grep -ci 'inconsistent' "$CHECKLIST" 2>/dev/null || true)
 middleware=$(grep -ci 'middleware' "$CHECKLIST" 2>/dev/null || true)
 trivial=$(grep -ci 'trivially-true' "$CHECKLIST" 2>/dev/null || true)
-testname=$(grep -ci 'test name' "$CHECKLIST" 2>/dev/null || true)
+nonenforcing=$(grep -ci 'non-enforcing' "$CHECKLIST" 2>/dev/null || true)
 surface=$(grep -ci 'surface-level' "$CHECKLIST" 2>/dev/null || true)
-keyword_count=$((reimplement + duplication + magic + dead + hardcoded + inconsistent + middleware + trivial + testname + surface))
+keyword_count=$((reimplement + duplication + bare_literal + dead + hardcoded + inconsistent + middleware + trivial + nonenforcing + surface))
 if [ "$keyword_count" -ge 5 ]; then
-  ok "Checklist contains key failure mode keywords"
+  ok "Checklist contains key failure mode keywords (updated for 0.3.3)"
 else
-  not_ok "Checklist contains key failure mode keywords" "keyword_count=$keyword_count"
+  not_ok "Checklist contains key failure mode keywords (updated for 0.3.3)" "keyword_count=$keyword_count"
 fi
 
 # --- Summary ---

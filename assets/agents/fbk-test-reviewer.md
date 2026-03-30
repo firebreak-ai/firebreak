@@ -22,27 +22,39 @@ Apply these five criteria at the checkpoints specified below.
 - At CP1: flag test descriptions formulated solely as "no error" outcomes.
 - At CP3: flag test implementations whose assertion block contains only error-absence checks.
 
-Tier 1 has no override. Silent failure tests must be corrected.
+**Criterion 2: Stale failure annotations.** Flag tests bearing failure annotations (e.g., `xfail`, `expectedFailure`, `currently fails`, `TODO: expected to fail`). When the test can be executed (existing test in brownfield, or post-implementation checkpoint), verify by running — a stale annotation on a passing test is a Tier 1 violation. For newly created tests at pre-implementation checkpoints, skip this criterion — tests are expected to fail before implementation exists.
+
+- At CP3: for existing tests being modified, run the test and flag if the failure annotation is stale (test passes). For newly created tests, skip — no implementation exists yet.
+
+**Criterion 3: Empty gate tests.** Flag any test that exists but contains zero assertion calls. An empty gate test occupies a test slot and appears in pass counts without verifying any behavior.
+
+- At CP3: flag test implementations whose body contains no assertion calls (assert, expect, should, verify, or framework-equivalent).
+
+**Criterion 4: Advisory assertions.** Flag any test that logs, prints, or writes a behavioral check result to output but does not assert on it. A non-failing output for a behavioral check provides no regression protection.
+
+- At CP3: flag test implementations that compute a behavioral result and output it (console.log, print, fmt.Println, or equivalent) without a corresponding assertion on the same value.
+
+Tier 1 has no override. Silent failure tests, stale failure annotations, empty gate tests, and advisory assertions must be corrected.
 
 ### Tier 2 — Structured judgment (overridable)
 
-**Criterion 2: Test-level adequacy.** Flag when all tests for runtime-dependent behavior are mock-only. Runtime-dependent indicators: Canvas/WebGL rendering, Web Audio API, real DOM geometry (getBoundingClientRect, IntersectionObserver, layout/scroll/resize), real network I/O, real filesystem access. When flagging, cite which indicator triggered the flag.
+**Criterion 5: Test-level adequacy.** Flag when all tests for runtime-dependent behavior are mock-only. Runtime-dependent indicators: Canvas/WebGL rendering, Web Audio API, real DOM geometry (getBoundingClientRect, IntersectionObserver, layout/scroll/resize), real network I/O, real filesystem access. When flagging, cite which indicator triggered the flag.
 
-**Criterion 3: Behavioral completeness.** For each user verification (UV) step in the spec, name the specific test that covers it and describe the failure mode — what observable result would change if the behavior were removed or broken. The reviewer states: "UV-N is covered by [test name], which would fail because [specific mechanism]."
+**Criterion 6: Behavioral completeness.** For each user verification (UV) step in the spec, name the specific test that covers it and describe the failure mode — what observable result would change if the behavior were removed or broken. The reviewer states: "UV-N is covered by [test name], which would fail because [specific mechanism]."
 
 For corrective specs (bugfix workflow), two additional variants apply:
 - Existing failing test: "UV-N is covered by [existing test], which currently fails because [the bug]. The fix will make it pass by [fix mechanism]."
 - Existing passing test (regression protection): "UV-N is covered by [existing test], which currently passes. This test must continue to pass after the fix."
 
-**Criterion 4: Integration seam coverage.** For each integration seam declared in the spec, verify at least one test exercises the full chain end-to-end rather than mocking across it. Flag declared seams with no e2e test coverage.
+**Criterion 7: Integration seam coverage.** For each integration seam declared in the spec, verify at least one test exercises the full chain end-to-end rather than mocking across it. Flag declared seams with no e2e test coverage.
 
-**Criterion 5: Seam declaration completeness.** Evaluate whether the spec's technical approach describes module interactions missing from the integration seam declaration. Flag interactions that cross module boundaries but are not listed as declared seams.
+**Criterion 8: Seam declaration completeness.** Evaluate whether the spec's technical approach describes module interactions missing from the integration seam declaration. Flag interactions that cross module boundaries but are not listed as declared seams.
 
 ## Override mechanism
 
-Tier 1 (Criterion 1) has no override. Correct the test.
+Tier 1 (Criteria 1–4) has no override. Correct the test.
 
-Tier 2 (Criteria 2–5) overrides require a rationale from one of these categories:
+Tier 2 (Criteria 5–8) overrides require a rationale from one of these categories:
 - "Covered by existing integration test at [path]" — the seam is already tested elsewhere
 - "Seam not testable in current infrastructure" — requires infrastructure that doesn't exist (e.g., visual regression tooling)
 - "Behavior verified by [other mechanism]" — manual QA step, deployment smoke test, etc.
@@ -71,6 +83,8 @@ Verify the testing strategy covers every AC defined in the spec. List any AC wit
 Verify test descriptions are specific enough to produce concrete test tasks. Flag descriptions that are vague or untestable (e.g., "test that it works").
 
 Verify proposed tests validate behavior, not implementation details. Flag tests that assert internal state, mock structure, or implementation-specific sequencing.
+
+Check for build-tag consistency in infrastructure-dependent tests. When the spec's testing strategy includes tests requiring specific build tags, compilation flags, or environment constraints, verify those tags are consistent with the project's actual build configuration. Flag tests that specify build tags not present in the project's CI pipeline or build system.
 
 **Pass condition:** all ACs covered, all test descriptions are concrete, no implementation-coupled tests, all five evaluation criteria satisfied or overridden with valid rationale.
 
@@ -105,6 +119,10 @@ Verify tests compile and are structured to fail before implementation exists (te
 Verify tests match the approved test tasks — no added tests without task basis, no omitted tests.
 
 Verify tests catch real regressions — they test observable behavior, not implementation artifacts.
+
+Check for unconditionally skipped tests with behavioral names. Flag tests that are `skip`ped or `xit`/`xdescribe`d unconditionally (no runtime condition) but have names suggesting behavioral verification (e.g., "validates input," "rejects expired tokens"). Unconditionally skipped behavioral tests provide zero coverage while appearing in the test inventory.
+
+Check for phantom assertion strings. Flag test assertions that reference string values (error messages, status codes, format patterns) absent from the production code being tested. These assertions pass trivially because the production code never produces the matched string.
 
 **Pass condition:** all tests traceable, compilable, matching tasks, testing behavior, no Tier 1 violations in test implementations.
 

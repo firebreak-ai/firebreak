@@ -32,6 +32,30 @@ A focused review produces a feature-level spec. A broad review may produce a pro
 
 If the review reveals only structural issues and the user confirms no design intent is needed, stay lightweight — present findings against the AI failure mode checklist and let the user confirm or dismiss. If the user later provides design intent, transition naturally into spec co-authoring.
 
+## Dual-path verification
+
+When the codebase has both a bulk path and an incremental path for the same operation (e.g., initial load vs. event-driven update, full sync vs. delta sync), verify that both paths populate the same state. Flag cases where the bulk path sets fields that the incremental path ignores, or vice versa, as this creates state divergence that manifests only under specific execution sequences.
+
+## Sentinel value confusion
+
+When reviewing guard conditions, verify that the code distinguishes "unset" or "missing" from "explicitly zero" (or empty string, or nil). Flag sentinel value confusion where a zero-like value serves as both a default and a valid domain value without a guard that differentiates the two cases.
+
+## Test-production string alignment
+
+When reviewing tests that assert on string values (error messages, status strings, format patterns), verify that the asserted strings actually exist in the production code being tested. Flag test assertions that reference string values absent from the production code — these are phantom assertions that pass trivially because the production code never produces the string being matched.
+
+## String-based error classification
+
+Flag error handling that branches on error message content (substring matching, prefix checking, string equality) instead of using typed errors, error codes, or sentinel values. String-based error classification is fragile — any change to the error message text silently breaks the dispatch logic.
+
+## Dead infrastructure detection
+
+Flag code that constructs, initializes, or declares components that are never invoked in the application's runtime path. Distinguish from dead code (unreachable branches): dead infrastructure is reachable code that is simply never called. Look for constructors or factory calls whose return values are assigned but never passed to any consumer, and for registered handlers with no route or event that triggers them.
+
+## Finding presentation
+
+Present verified findings ordered by severity (critical first, then major, minor, info), grouped by type within each severity tier. This ensures behavioral bugs with production impact are reviewed before structural debt.
+
 ## Retrospective
 
 After the review completes, produce a retrospective following the fields defined in `code-review-guide.md`. Append a findings summary to the feature retrospective if one exists.
