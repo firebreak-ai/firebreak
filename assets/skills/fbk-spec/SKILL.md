@@ -11,6 +11,8 @@ Read `.claude/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md` for detailed guid
 
 When the user describes corrective work (bug reports, failing tests, fix intent), read `.claude/fbk-docs/fbk-sdl-workflow/corrective-workflow.md` for diagnostic and fast-track workflows.
 
+When the feature modifies or extends existing code (brownfield work), read `.claude/fbk-docs/fbk-brownfield-spec.md` for codebase-first authoring constraints.
+
 ## Entry
 
 If `$ARGUMENTS` is set, use it as the feature name. Otherwise, ask the user for a name and brief description before proceeding.
@@ -36,8 +38,12 @@ When the user signals the spec is complete, run:
 ```
 
 - If the gate fails: report which checks failed and what is missing.
-- If the gate passes: present the semantic criteria from the doc for the user to assess.
+- If the gate passes: present the semantic criteria from the doc for the user to assess. Verify that the testing strategy enumerates all callers of any symbol being removed or renamed, not only the definition site.
 - If the user is satisfied: ask "Would you like to move to spec review?"
+
+## Retrospective
+
+After the gate passes, write the Stage 1 section to `ai-docs/$ARGUMENTS/$ARGUMENTS-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
 ## Transition
 

@@ -8,7 +8,7 @@ Use when: new bug class, unknown root cause, or multiple systems affected with u
 4. **Spec the fix**, constrained by diagnosis findings and pre-existing tests. The fix spec references the diagnostic tests as completion gates.
 5. **Review** — council evaluates fix design and test coverage. The test reviewer applies Tier 2 corrective guidance: existing failing tests map to UV steps as "currently fails because [bug], fix will make it pass by [mechanism]."
 6. **Breakdown and implement** — fix constrained by behavioral tests as completion gate. Use `category: corrective` in `task.json` for relaxed gate invariants (test tasks can cover ACs without paired implementation tasks).
-7. **Retest** — if failures remain, return to step 3. Each iteration may reveal a different root cause or a test design issue.
+7. **Retest** — run the full test suite (not just the diagnostic tests from step 2). If failures remain, return to step 3. Each iteration may reveal a different root cause or a test design issue.
 
 ---
 

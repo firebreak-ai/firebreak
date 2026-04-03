@@ -1,4 +1,4 @@
-# Agent Harness Patterns: Insights for Dispatch
+# Agent Harness Patterns: Insights for Firebreak
 
 Source: [Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) — Anthropic Engineering, 2025.
 
@@ -6,39 +6,39 @@ Source: [Effective Harnesses for Long-Running Agents](https://www.anthropic.com/
 
 Anthropic's engineering team studied how to make AI agents effective across long-running, multi-session tasks. Their core finding: agents need structured external state to maintain coherence and constrained interfaces to prevent common failure modes. They built a two-agent architecture (initializer + coding agent) with a startup checklist, a structured feature list, progress files, and git-based checkpointing.
 
-This analysis compares their empirical findings against Dispatch's design and identifies actionable improvements.
+This analysis compares their empirical findings against Firebreak's design and identifies actionable improvements.
 
 ## Validated design bets
 
-These Dispatch design decisions are independently supported by the article's empirical results.
+These Firebreak design decisions are independently supported by the article's empirical results.
 
 ### Structured artifacts as the primary quality lever
 
-The article's most effective intervention was a structured JSON feature list that agents could only modify by flipping a `passes` field — not editing descriptions or steps. This constrains the agent's role from "figure out what to build" to "implement this well-defined thing." Dispatch's spec-driven approach codifies this architecturally; the article arrived at it empirically.
+The article's most effective intervention was a structured JSON feature list that agents could only modify by flipping a `passes` field — not editing descriptions or steps. This constrains the agent's role from "figure out what to build" to "implement this well-defined thing." Firebreak's spec-driven approach codifies this architecturally; the article arrived at it empirically.
 
 ### Immutable boundaries
 
-The article's "only edit the `passes` field" constraint prevented feature scope creep and documentation loss. Dispatch generalizes this with test file immutability (SHA-256 hash manifests after Stage 7). The underlying insight: agents silently modify artifacts that should be fixed reference points unless modification is mechanically impossible.
+The article's "only edit the `passes` field" constraint prevented feature scope creep and documentation loss. Firebreak generalizes this with test file immutability (SHA-256 hash manifests after Stage 7). The underlying insight: agents silently modify artifacts that should be fixed reference points unless modification is mechanically impossible.
 
 ### Context-independent specialized agents
 
-The article raises "specialized multi-agent architectures" as a future direction. Dispatch has already committed to this — separate agents for test writing, implementation, and review, each context-independent. The article's experience with a single general-purpose agent struggling with breadth of concerns suggests this is the right call.
+The article raises "specialized multi-agent architectures" as a future direction. Firebreak has already committed to this — separate agents for test writing, implementation, and review, each context-independent. The article's experience with a single general-purpose agent struggling with breadth of concerns suggests this is the right call.
 
 ### Git as checkpoint infrastructure
 
-Both systems use git commits as recovery points. The article's coding agent commits after each feature to enable reverting problematic code. Dispatch's wave-based implementation with per-wave verification serves the same purpose at finer granularity.
+Both systems use git commits as recovery points. The article's coding agent commits after each feature to enable reverting problematic code. Firebreak's wave-based implementation with per-wave verification serves the same purpose at finer granularity.
 
 ### Testing as the critical gate
 
-The article found agents would mark features done without proper testing and needed explicit prompting for end-to-end verification. Dispatch's five-checkpoint test validation model is an aggressive response to exactly this failure mode. The article validates that the concern is real, not theoretical.
+The article found agents would mark features done without proper testing and needed explicit prompting for end-to-end verification. Firebreak's five-checkpoint test validation model is an aggressive response to exactly this failure mode. The article validates that the concern is real, not theoretical.
 
-## Actionable improvements for Dispatch
+## Actionable improvements for Firebreak
 
 ### 1. Agent-side startup verification
 
 **Finding**: The article's most practical pattern is a deterministic startup sequence per agent session — read progress, verify the environment still works, *then* begin new work.
 
-**Gap**: Dispatch's implementation agents receive a task file and a repo clone, but the overview doesn't describe a per-agent startup verification step. The inter-wave file reference check (Stage 8) is a dispatcher-side check, not an agent-side one.
+**Gap**: Firebreak's implementation agents receive a task file and a repo clone, but the overview doesn't describe a per-agent startup verification step. The inter-wave file reference check (Stage 8) is a dispatcher-side check, not an agent-side one.
 
 **Recommendation**: Add to implementation agent instructions: before writing code, verify prerequisites compile/run and existing tests pass. This catches environment issues the dispatcher's structural checks miss (e.g., a dependency that installs but fails at runtime, a prior wave's output that compiles but doesn't behave as expected).
 
@@ -63,7 +63,7 @@ The original recommendation also included a per-step `changelog` array for mid-t
 
 **Finding**: The article found agents would pass unit tests but fail end-to-end verification. Browser automation (Puppeteer) was needed to catch the gap between "tests pass" and "feature works."
 
-**Gap**: Dispatch's testing philosophy addresses test quality (behavioral assertions, mutation testing) but doesn't explicitly address the unit-vs-integration test spectrum. LLMs naturally produce unit tests. Unit tests can pass without the feature working in context.
+**Gap**: Firebreak's testing philosophy addresses test quality (behavioral assertions, mutation testing) but doesn't explicitly address the unit-vs-integration test spectrum. LLMs naturally produce unit tests. Unit tests can pass without the feature working in context.
 
 **Recommendation**: The spec template's testing strategy section should require explicit decisions about test granularity — pushing toward integration/behavioral tests over isolated unit tests. The test reviewer checkpoints (Stages 3, 5, 7) should evaluate whether test granularity matches the acceptance criteria's scope. An AC about user-visible behavior needs an integration test, not a unit test on an internal function.
 
@@ -73,7 +73,7 @@ The original recommendation also included a per-step `changelog` array for mid-t
 
 **Finding**: The article's startup checklist begins with "verify fundamental features still function" before starting new work. This applies verification at session start, not just pipeline end.
 
-**Gap**: Dispatch's fresh-verification protocol runs at Stage 9. The inter-wave check validates file existence but not behavioral correctness.
+**Gap**: Firebreak's fresh-verification protocol runs at Stage 9. The inter-wave check validates file existence but not behavioral correctness.
 
 **Recommendation**: After Wave N completes and before Wave N+1 agents start, run the full existing test suite (not just Wave N's new tests) to confirm the repo is in a working state. If Wave N broke something, catch it before Wave N+1 agents start building on a broken foundation. This is a dispatcher-side check that strengthens the inter-wave boundary.
 
@@ -83,7 +83,7 @@ The original recommendation also included a per-step `changelog` array for mid-t
 
 **Finding**: The article's #1 failure mode was agents declaring they were done when they weren't.
 
-**Gap**: Dispatch mitigates this in implementation (deterministic completion gates — referenced tests must pass), but the failure mode can still manifest in agentic stages: a review agent declaring a spec "good enough," a breakdown agent producing incomplete task coverage, or an implementation agent reporting DONE when tests pass but end-to-end behavior is broken.
+**Gap**: Firebreak mitigates this in implementation (deterministic completion gates — referenced tests must pass), but the failure mode can still manifest in agentic stages: a review agent declaring a spec "good enough," a breakdown agent producing incomplete task coverage, or an implementation agent reporting DONE when tests pass but end-to-end behavior is broken.
 
 **Recommendation**: Treat AC coverage checks as load-bearing infrastructure, not ceremony. For agentic stages without deterministic gates (review, breakdown), consider adding a deterministic "completeness check" layer that validates structural coverage independent of the agent's self-assessment.
 
@@ -91,12 +91,12 @@ The original recommendation also included a per-step `changelog` array for mid-t
 
 ## Structural divergence
 
-The article optimizes for a single agent working incrementally across many sessions on one codebase. Dispatch optimizes for many specialized agents working in parallel on one feature. These are different coordination problems:
+The article optimizes for a single agent working incrementally across many sessions on one codebase. Firebreak optimizes for many specialized agents working in parallel on one feature. These are different coordination problems:
 
 - **Article's challenge**: Temporal continuity (memory across sessions).
-- **Dispatch's challenge**: Spatial coordination (multiple agents touching the same codebase simultaneously).
+- **Firebreak's challenge**: Spatial coordination (multiple agents touching the same codebase simultaneously).
 
-The article doesn't address the spatial problem. Dispatch's wave structure and file-boundary constraints solve a problem the article hasn't encountered. The coordination patterns don't transfer directly, but the failure-mode thinking does: wherever agents have autonomy, they find ways to silently fail, and mitigations need to be mechanically enforced, not instruction-based.
+The article doesn't address the spatial problem. Firebreak's wave structure and file-boundary constraints solve a problem the article hasn't encountered. The coordination patterns don't transfer directly, but the failure-mode thinking does: wherever agents have autonomy, they find ways to silently fail, and mitigations need to be mechanically enforced, not instruction-based.
 
 ## Future exploration: Lead agent for cross-task coordination
 
@@ -147,7 +147,7 @@ The per-task changelogs added in recommendation #2 are a prerequisite for this f
 
 The Anthropic Skill Creator guide ([The Complete Guide to Building Skills for Claude](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf)) describes an iterative improvement workflow for agent skills: observe behavior, identify failures, refine prompts, re-test. Anthropic acknowledges this is currently human-driven — autonomous self-improvement is a stated future direction, not a shipped capability.
 
-Applying this pattern to Dispatch is harder because the pipeline's ultimate output is code, and code quality (bugs, maintainability, design adherence) is notoriously difficult to measure without sustained human effort. But the pipeline generates rich structured data about its own operations that is measurable and actionable.
+Applying this pattern to Firebreak is harder because the pipeline's ultimate output is code, and code quality (bugs, maintainability, design adherence) is notoriously difficult to measure without sustained human effort. But the pipeline generates rich structured data about its own operations that is measurable and actionable.
 
 ### Layered approach
 
@@ -353,7 +353,7 @@ This maps to step 3 of the bug-fix workflow. The troubleshooter's output is a st
 
 A context-independent agent that reviews completed changes and PRs before final acceptance or merge. Reviews against the spec and the produced code without access to the implementing agents' reasoning.
 
-This extends the advisory code review already present in Dispatch's Stage 9 verification. The design question is whether this agent should be advisory (output attached to PR for human review) or gate-blocking (PR cannot merge without passing review). The advisory model is safer initially — it generates quality signal data without risking false-positive blocks. If the review agent's findings consistently align with human-discovered issues over time, its authority can be elevated.
+This extends the advisory code review already present in Firebreak's Stage 9 verification. The design question is whether this agent should be advisory (output attached to PR for human review) or gate-blocking (PR cannot merge without passing review). The advisory model is safer initially — it generates quality signal data without risking false-positive blocks. If the review agent's findings consistently align with human-discovered issues over time, its authority can be elevated.
 
 Both agents follow the established pattern: context-independent, separate persona, no shared reasoning with the agents whose work they evaluate. The troubleshooter evaluates existing code to find problems; the code reviewer evaluates new code to prevent problems. Together with the test reviewer, they form a three-agent quality layer — each operating independently, each seeing only what it needs.
 

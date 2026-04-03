@@ -41,10 +41,15 @@ Run the iterative detection and verification loop:
 2. Collect sightings
 3. Spawn Challenger with sightings + code + 'verify or reject each sighting with evidence'
 4. Collect verified findings and rejections
-5. Run additional rounds for weakened but unrejected sightings
-6. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds
+5. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
+6. Run additional rounds for weakened but unrejected sightings
+7. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds
 
 Only verified findings surface to the user. Rejected sightings are excluded.
+
+## Post-Fix Verification
+
+After all fixes from a review session are applied, run the full test suite and confirm zero failures before closing the review.
 
 ## Broad-Scope Reviews
 

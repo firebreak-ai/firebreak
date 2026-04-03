@@ -18,10 +18,11 @@ Use the feature spec that drove the implementation — its ACs and UV steps.
 
 Run the full Detector/Challenger detection-verification loop without user involvement:
 
-1. Spawn Detector with modified files + feature spec ACs
-2. Spawn Challenger to verify sightings
-3. Loop until a round produces only `nit`-category sightings or no sightings, or after 5 rounds
-4. Present verified findings to the user
+1. Run the project's full test suite and confirm zero failures before proceeding. Surface any failures to the user before starting detection.
+2. Spawn Detector with modified files + feature spec ACs
+3. Spawn Challenger to verify sightings
+4. Loop until a round produces no new sightings above `info` severity or no sightings, or after 5 rounds
+5. Present verified findings to the user
 
 ## Output
 

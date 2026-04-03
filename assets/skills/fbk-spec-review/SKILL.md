@@ -36,6 +36,7 @@ Invoke `/fbk-council` with the classified agents. For each agent, frame the prom
 - The SDL concern that agent owns
 - The exact prompt framing from the SDL concerns table
 - Relevant spec sections scoped to that agent's focus
+- For any spec that removes, renames, or changes a symbol's signature: instruct the Architect agent to grep for all callers of the changed symbol and flag any the spec does not enumerate.
 
 ## Finding synthesis
 
@@ -72,6 +73,10 @@ Run the review gate with the classified perspectives as a comma-separated list:
 ```
 
 Omit the third argument if no threat model was created. Report any failures from stderr.
+
+## Retrospective
+
+After the review completes, write the Stage 2 section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
 ## Transition
 

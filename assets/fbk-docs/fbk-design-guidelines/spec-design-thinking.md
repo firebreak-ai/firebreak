@@ -24,6 +24,8 @@ After identifying individual behaviors, identify how they interact. Ask:
 
 Describe all composition explicitly — which function calls which, what each caller does with each result, and what ordering or error handling applies. Unspecified composition results in inlining.
 
+When the technical approach threads a value from one component to another (a context, a lifecycle signal, a configuration reference), identify the concrete source of that value at the outermost wiring point. State which component creates or obtains the value and passes it inward.
+
 ## Brownfield considerations
 
 When the feature modifies existing code, read the existing code before designing. Identify behaviors that are currently embedded in monolithic functions. Design toward the target structure, not the current structure — the target location of a behavior is where it should live after implementation, which may require extraction from where it currently lives.

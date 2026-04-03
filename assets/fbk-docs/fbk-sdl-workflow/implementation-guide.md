@@ -87,6 +87,12 @@ If any check fails, the agent reports the specific mismatch without attempting i
 
 ---
 
+## Full Test Suite Definition
+
+"Full test suite" means the project's test runner command — the command that compiles test files, executes every test, and reports per-test pass/fail results. A build or compile command does not satisfy this requirement: many toolchains do not compile test files during a standard build, so compilation failures in test files will be invisible. When this guide says "full test suite passes," run the test runner and verify zero failures in its output.
+
+---
+
 ## Inter-Wave Baseline-Snapshot Regression Check
 
 The baseline is the set of tests that pass when wave execution begins. After each wave, the baseline tests must still pass. Any baseline test that now fails is a regression — the wave is not advanced until it's resolved.
@@ -191,7 +197,9 @@ Run after the final wave's checkpoint.
 
 ## Retrospective
 
-Write `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verification.
+Write the Stage 4 section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verification, following `fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+
+**Stage 4 fields:**
 
 **Factual data** (no AI judgment):
 
@@ -214,6 +222,7 @@ Write `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verif
   - **Spec gap** — the spec was underspecified or ambiguous.
   - **Compilation gap** — the task instructions missed something the spec covered.
   - **Implementation error** — the task instructions were correct but the agent failed to follow them.
+  - **Process gap** — the orchestrator skipped or substituted a required verification step.
 - Base the classification on comparing the failure output against the task file and the spec.
 
 ---
