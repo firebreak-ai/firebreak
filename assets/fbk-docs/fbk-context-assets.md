@@ -89,6 +89,8 @@ Scope rules with `paths:` at project level when the content is conditional. A ru
 
 Files in `.claude/docs/` load only when the agent reads them in response to a routing instruction.
 
+When a retrospective documents a behavioral gap that was already addressed by a prior corrective action, escalate enforcement from a rule or doc instruction to a hook.
+
 ## Write for Agents, Not Humans
 
 Start with the first instruction.

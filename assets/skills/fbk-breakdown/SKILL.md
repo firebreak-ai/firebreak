@@ -42,7 +42,7 @@ Invoke a second Agent Teams teammate with independent context, after the test ta
 
 Load brownfield instructions from `.claude/fbk-docs/fbk-brownfield-breakdown.md` and include them in the teammate's prompt.
 
-The teammate produces implementation tasks from the spec's technical approach and acceptance criteria. Each task specifies: files to create/modify (explicit paths), AC identifiers satisfied, references to specific test tasks as completion gates, and constraints (file scope, no test modification).
+The teammate produces implementation tasks from the spec's technical approach and acceptance criteria. Each task specifies: files to create/modify (explicit paths — include all callers of any changed symbol, not only those the spec enumerates), AC identifiers satisfied, references to specific test tasks as completion gates, and constraints (file scope, no test modification).
 
 Each implementation task references specific test task IDs. The completion gate for each implementation task is: the referenced tests pass.
 
@@ -85,6 +85,12 @@ Run the Stage 3 gate:
   "ai-docs/$FEATURE/$FEATURE-tasks"
 ```
 If the gate fails, report each failure and fix before proceeding.
+
+## Retrospective
+
+After the breakdown gate passes, write the Stage 3 section to `ai-docs/$FEATURE/$FEATURE-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+
+## Transition
 
 Summarize completed work before offering next steps: total task count, wave count, any council recommendation. Offer: review individual tasks, invoke council, or proceed.
 

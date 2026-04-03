@@ -11,3 +11,4 @@ Check every context asset for:
 Review heuristic: **"Is this sentence written for the agent, or for a human browsing the repo?"**
 
 Update `CHANGELOG.md` when preparing tagged releases. Follow [keepachangelog.com](https://keepachangelog.com/) format: group changes under Added, Changed, Deprecated, Removed, Fixed, Security.
+After any `CHANGELOG.md` update, check the `README.md` for any required updates. Discuss proposed readme changes with the user.

@@ -17,7 +17,7 @@ Use Glob to search `ai-docs/<feature-name>/` for files matching `*-retrospective
 
 If no retrospective is found, report: "No retrospective found at `ai-docs/<feature-name>/`. Run `/fbk-code-review` to generate one." Exit.
 
-If a retrospective is found, offer: "Found retrospective at `<path>`. Proceed with improvement analysis, or skip?" If the user skips, exit.
+If one retrospective is found, offer: "Found retrospective at `<path>`. Proceed with improvement analysis, or skip?" If multiple are found, list all paths and offer: "Found N retrospectives. Proceed with improvement analysis using all files, or skip?" Collect all found paths as the retrospective set. If the user skips, exit.
 
 ## Asset Discovery
 
@@ -31,7 +31,7 @@ From the resolved installation root, enumerate all `fbk-*` prefixed files under 
 
 Create an agent team. For each asset path in the discovered list, spawn an `fbk-improvement-analyst` teammate. Each teammate's spawn prompt contains:
 
-- Path to the retrospective file
+- Paths to all retrospective files in the retrospective set
 - Path to the authoring rules index (resolve `fbk-context-assets.md` relative to the installation root's `fbk-docs/` directory)
 - The single asset path assigned to this teammate
 - The proposal output format contract: each proposal must include target (asset file and instruction), change type (add/edit/remove with diff), observation (the retrospective observation that motivates the proposal), and necessity (why removing this instruction increases the probability of an agent mistake)

@@ -13,6 +13,8 @@ When compiling interface contracts for existing files:
 - **If the spec's claim doesn't match the code**, flag the mismatch. If the code is authoritative (existing convention), correct the task instruction to match the code. If the spec is authoritative (new design that intentionally changes the convention), present the mismatch to the user ("the spec says X but the code uses Y — which is correct?") and wait for resolution before continuing.
 - **For brownfield work**, read existing test files to learn testing conventions, existing modules for import/export patterns, and existing configuration for environment requirements.
 - **Compile every spec-identified impact into an explicit task.** When the spec's testing strategy, impact analysis, or dependency sections identify existing files that will be affected by the changes (tests requiring mock migration, assertions needing updates, callers requiring signature changes), create a task for each. Spec impact entries are mandatory work items, not informational context — if the spec says a file is affected, the breakdown must include a task that addresses it.
+- **When a task removes, renames, or changes the signature of any symbol** (struct field, function, type), grep the codebase for all call sites of that symbol. Do not rely solely on the spec's impact analysis. Create a task for each call site not already covered. Spec impact sections are a starting point, not a complete enumeration.
+- **When a task instruction requires passing or using a specific value** (a context object, a reference, a constructed instance), verify that value is reachable in the target file at compilation time. If the value does not yet exist — because it must be threaded through constructors or other files not yet modified — create a prerequisite task that establishes it and add it as a dependency. State the intended final value in the task instruction, even when a prerequisite must deliver it first.
 
 ## Interface Contracts
 
@@ -40,6 +42,8 @@ If a task exceeds these constraints, split it. If splitting creates artificial b
 When a task changes an interface (function signature, constructor, API contract), split the definition change from caller migration. The definition task modifies the interface. Caller migration tasks update call sites in batches of 4-5 files or 80 lines, whichever is reached first. Apply this split when 5 or more callers must change.
 
 Migration batches that modify the same file must be assigned to sequential waves. Each migration test task verifies only that its batch's callers use the new interface — do not assert absence of the old interface until the final verification gate.
+
+When a task removes a struct field or makes a field unexported, the implementing agent will fix all downstream compile errors in the same pass rather than leaving the build broken — downstream caller-migration tasks will be superseded. Either combine the field removal and all caller migrations into one task (document the file-scope justification), or mark each downstream caller task as `expected-superseded` in the task.json `note` field.
 
 ## Task File Structure
 
@@ -160,7 +164,7 @@ Do not satisfy a quantifier AC with a single task that addresses a subset of ins
 
 For every code-modifying change, create two tasks: a test task and an implementation task.
 
-**Test task**: Write or update tests that specify the expected behavior. Tests must compile and fail (or be skipped) before implementation begins. Read `fbk-docs/fbk-design-guidelines/test-authoring.md` when designing test task instructions.
+**Test task**: Write or update tests that specify the expected behavior. Tests must compile and fail (or be skipped) before implementation begins. Test tasks modify only test files. If the test requires a new exported function or accessor that does not yet exist, create an extraction task in an earlier wave and add it as a dependency. Read `fbk-docs/fbk-design-guidelines/test-authoring.md` when designing test task instructions.
 
 **Implementation task**: Write the code that makes the test task's tests pass.
 

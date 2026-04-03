@@ -4,6 +4,16 @@ Import the production module and call its exported function with known inputs. A
 
 When a test file does not import the module it claims to test, or imports it but does not call the function under test, flag it as not exercising the production path.
 
+## Fixture consistency
+
+When a test constructs multiple objects that interact (e.g., a store entry and a candidate struct that references it), verify that every field shared between them carries the same value. A mismatch between a fixture's stored object and the struct that references it creates an internally contradictory scenario — the test compiles and passes, but it does not prove what it claims to prove.
+
+Before asserting on output, trace each fixture field that the production function reads. Confirm that the corresponding field in every dependent object is set to a consistent value.
+
+## Zero-value fixture fields
+
+Set every field in a test fixture that the production function reads. When a field's zero value is the intentional test input, add a comment stating that explicitly: `// zero value is the correct input for this scenario`.
+
 ## Recognizing re-implementation
 
 A test re-implements production logic when the test body contains computation that mirrors what the production function does internally. Signals:

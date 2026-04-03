@@ -29,3 +29,7 @@ When a helper function is small and used only within one module, export it rathe
 Each function does one thing. If describing what a function does requires "and" — "it validates the input AND processes the order AND sends the confirmation" — it is doing too much. Extract each responsibility into its own function; compose them in the caller.
 
 When reading or modifying existing code, identify functions that handle multiple responsibilities. Propose extraction when the function's multiple concerns can be meaningfully separated. Accept co-location when the concerns are genuinely inseparable at the current level of abstraction, or when separation would add indirection without improving testability.
+
+When removing a parameter, struct field, or condition, grep for guards and branches that test the removed value. Remove guards that are now unreachable rather than leaving dead conditional code in place.
+
+After extracting shared logic into a function, verify every caller uses the extracted function. Remove duplicate constructions of that logic from all call sites.

@@ -1,6 +1,6 @@
-# Agentic AI Coding: Failure Mode Taxonomy and Dispatch Mitigation Matrix
+# Agentic AI Coding: Failure Mode Taxonomy and Firebreak Mitigation Matrix
 
-Compiled from 25+ empirical studies, industry reports, and formal taxonomies (March 2026). Each failure mode is mapped to the Dispatch pipeline stage(s) that mitigate it.
+Compiled from 25+ empirical studies, industry reports, and formal taxonomies (March 2026). Each failure mode is mapped to the Firebreak pipeline stage(s) that mitigate it.
 
 ## Sources
 
@@ -160,7 +160,7 @@ Multiple tasks modify the same files or components, creating merge conflicts or 
 
 ---
 
-## Dispatch Mitigation Matrix
+## Firebreak Mitigation Matrix
 
 Pipeline stages: **Queue** (S1) · **Validation** (S2) · **Council Review** (S3) · **Breakdown** (S4) · **Task Review** (S5) · **Test Review** (S6) · **Implementation** (S7) · **Verification** (S8) · **PR** (S9)
 

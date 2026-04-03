@@ -90,7 +90,7 @@ Report any gaps. Do not write the retrospective until final verification passes,
 
 ## Retrospective
 
-Write `ai-docs/$FEATURE/$FEATURE-retrospective.md`. Include the factual data, upstream traceability, and failure attribution sections defined in the implementation guide.
+Write the Stage 4 section to `ai-docs/$FEATURE/$FEATURE-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages. Include the factual data, upstream traceability, and failure attribution sections defined in the implementation guide.
 
 ## Team Shutdown
 

@@ -62,6 +62,11 @@ done < <(
   # One additional level: fbk-docs/fbk-name/file.md (inside a subdirectory, not top-level index)
   # These are leaf docs when the parent dir itself is named after an fbk- collection
   find "$ASSETS_DIR/fbk-docs" -mindepth 2 -maxdepth 2 -name "*.md" -type f 2>/dev/null | sort
+  # Top-level standalone docs (not index files): fbk-docs/fbk-brownfield-*.md etc.
+  # Index files (fbk-context-assets.md, fbk-design-guidelines.md, fbk-sdl-workflow.md) are excluded
+  # because they are routing tables referenced by skills, not leaf content.
+  find "$ASSETS_DIR/fbk-docs" -mindepth 1 -maxdepth 1 -name "fbk-*.md" -type f 2>/dev/null \
+    | grep -v -E '(fbk-context-assets|fbk-design-guidelines|fbk-sdl-workflow)\.md$' | sort
   # Skill reference docs
   find "$ASSETS_DIR/skills" -path "*/references/*.md" -type f 2>/dev/null | sort
 )

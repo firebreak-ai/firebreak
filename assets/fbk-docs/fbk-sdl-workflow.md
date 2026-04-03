@@ -13,7 +13,7 @@ Use a 4-stage pipeline for complex features: Spec → Review → Breakdown → I
 | 1: Feature Spec | Human-driven, no hard cap | User drives iteration frequency |
 | 2: Spec Review | 1 thorough review + 1 revision if blocking findings | Escalate if blocking findings persist |
 | 3: Task Breakdown | 2 compilation attempts | Escalate if compilation fails twice |
-| 4: Implementation | 2 task escalations per task, then escalate to user | Escalate to user if escalation limit reached |
+| 4: Implementation | 2 task escalations per task, then escalate to user | Escalate to user if escalation limit reached. After the final wave, run the full test suite before offering any commit. |
 
 A **task escalation** is a task rewrite assigned to a different teammate after in-session resolution fails. **In-session retries** — TaskCompleted hook rejections resolved by the teammate without escalation — are not task escalations. Track both metrics separately in the retrospective.
 
@@ -42,6 +42,8 @@ When reviewing code or running post-implementation review → `/code-review` ski
 When following a corrective or diagnostic workflow → `fbk-sdl-workflow/corrective-workflow.md`
 
 When analyzing retrospectives for pipeline improvement → `/fbk-improve` skill spawns the improvement analyst agent
+
+When writing or updating a feature retrospective → `fbk-sdl-workflow/retrospective-guide.md`
 
 ## Stage Transitions
 

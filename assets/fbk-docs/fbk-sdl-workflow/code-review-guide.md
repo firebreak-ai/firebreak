@@ -95,8 +95,9 @@ The detection-verification loop operates iteratively across up to 5 rounds:
 2. The Detector produces sightings
 3. The orchestrator spawns the Challenger with the sightings, the target code, and instructions to verify or reject each sighting with evidence
 4. The Challenger produces verified findings (with evidence) and rejections (with counter-evidence)
-5. If sightings remain that were weakened but not rejected, run additional rounds
-6. The loop terminates when a round produces no new sightings above `info` severity, or after a maximum of 5 rounds
+5. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance, not only the location cited in the sighting.
+6. If sightings remain that were weakened but not rejected, run additional rounds
+7. The loop terminates when a round produces no new sightings above `info` severity, or after a maximum of 5 rounds
 
 Only verified findings surface to the user. Rejected sightings and the internal sighting data are not user-facing.
 

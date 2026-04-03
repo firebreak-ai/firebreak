@@ -52,6 +52,10 @@ Flag error handling that branches on error message content (substring matching, 
 
 Flag code that constructs, initializes, or declares components that are never invoked in the application's runtime path. Distinguish from dead code (unreachable branches): dead infrastructure is reachable code that is simply never called. Look for constructors or factory calls whose return values are assigned but never passed to any consumer, and for registered handlers with no route or event that triggers them.
 
+## Dead code after field or function removal
+
+When a struct field is removed or a function signature changes, check for guards, conditionals, and logging branches that reference the removed value.
+
 ## Finding presentation
 
 Present verified findings ordered by severity (critical first, then major, minor, info), grouped by type within each severity tier. This ensures behavioral bugs with production impact are reviewed before structural debt.
