@@ -32,7 +32,7 @@ Complex findings from the code review feed into the spec-driven pipeline as reme
 
 Structured [retrospectives](ai-docs/research/harness-patterns-analysis.md) from every pipeline run classify failures as spec gaps, compilation gaps, or implementation errors. This data drives specific, actionable revisions to the layers above. The cycle is human-approved — the pipeline produces actionable data, the human decides what to act on.
 
-Four self-improvement cycles have shipped: [v0.3.1](CHANGELOG.md) fixed terminology that obscured friction, [v0.3.2](CHANGELOG.md) caught a routing dead-end in the pipeline's own code review skill, [v0.3.3](CHANGELOG.md) expanded detection scope from AI-specific failure modes to standard engineering concerns, and [v0.3.4](CHANGELOG.md) hardened verification gates, added call-site completeness checks, and introduced rolling retrospectives across all pipeline stages.
+Five self-improvement cycles have shipped: [v0.3.1](CHANGELOG.md) fixed terminology that obscured friction, [v0.3.2](CHANGELOG.md) caught a routing dead-end in the pipeline's own code review skill, [v0.3.3](CHANGELOG.md) expanded detection scope from AI-specific failure modes to standard engineering concerns, [v0.3.4](CHANGELOG.md) hardened verification gates, added call-site completeness checks, and introduced rolling retrospectives across all pipeline stages, and [v0.3.5](CHANGELOG.md) made intent extraction mandatory — evaluation against a TypeScript project showed intent-sourced findings drove both critical findings and nearly tripled issue overlap with independently filed bugs.
 
 ## Quick Start
 
@@ -104,7 +104,7 @@ Natural language often triggers the appropriate skill — talking about designin
 
 Results are from the author's projects and have not been independently replicated. If you run Firebreak on your own codebase, [share what you find](https://github.com/firebreak-ai/firebreak/issues) — independent data points are the main thing this project needs. [Full results with methodology, per-phase data, and analysis](results.md).
 
-Firebreak has been tested across greenfield development (13 features, 137 tests), brownfield feature addition (19 tasks, 43 tests), and two rounds of brownfield remediation (12 phases, ~290 tasks) against a project chosen for its high density of AI code failure modes. The project was effectively non-functional before remediation despite passing CI.
+Firebreak has been tested across greenfield development (13 features, 137 tests), brownfield feature addition (19 tasks, 43 tests), two rounds of brownfield remediation (12 phases, ~290 tasks) against a Go project chosen for its high density of AI code failure modes, and adversarial code review of a TypeScript AI agent project with 28 independently filed issues as a detection accuracy baseline. The Go project was effectively non-functional before remediation despite passing CI.
 
 The adversarial code review catches issues that require reasoning across call graphs and intent alignment — invisible to CI and static analysis. Across all measurement points, linter findings and code review findings have [zero overlap](ai-docs/research/quality-quantification.md). Examples from the brownfield test:
 

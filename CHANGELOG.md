@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.5] — 2026-04-05
+
+### Changed
+- **Intent extraction is mandatory.** The code review pipeline now requires intent extraction before detection begins — discover project documentation, build a structured intent register (prose claims + Mermaid diagram), present to the user for confirmation, supplement from code. Previously, intent extraction existed only in planning docs and was skipped in every review.
+- **Code review output consolidates into a single review report file** (`fbk-code-review-<date>-<time>.md`). Intent register, verified findings, and retrospective accumulate in one file the user opens in VSCode to see rendered diagrams and results.
+- **Retrospective output unified.** All three code review paths (SKILL.md, existing-code-review.md, code-review-guide.md) now write the retrospective to the review report file instead of separate feature retrospective paths.
+- **Instruction-hygiene restructuring.** Deduplicated 3 redundant definitions (dead infrastructure, string-based classification, context bypass/silent error). Resolved scope contradiction in ai-failure-modes.md. Promoted 3 trapped heuristics to quality-detection.md. Split compound checklist item 12 into items 12+13. Added nit suppression to Detector, pattern-label handling to Challenger. Restructured prompt ordering (content-first, instructions-last). Loaded quality-detection.md in conversational review path.
+
+### Added
+- **`intent` detection source** in sighting and finding format — findings triggered by behavioral comparison against intent register claims.
+- **Intent Extraction section** in SKILL.md: 4-step process (discover documentation, build intent register, user checkpoint, supplement from code).
+- **Review Report section** in SKILL.md: establishes the consolidated output file early in the review flow.
+- **Intent Register section** in existing-code-review.md: disambiguates "design intent" (user-provided during conversation) from "intent register" (doc-extracted before detection). Instructs register updates when user input contradicts documented claims.
+- **Step 0** in code-review-guide.md Orchestration Protocol: intent extraction before the first detection round.
+- **Intent register** in code-review-guide.md Retrospective Fields: claims extracted, findings attributed, claims invalidated.
+- **Detection accuracy evaluation.** Three reviews of a TS AI agent project (pre-hygiene, post-hygiene, post-intent-fix) compared against 28 filed repo issues. Partial overlap improved from 14.3% to 39.3%. Intent extraction produced 12 findings (29% of total), both criticals intent-sourced. New finding type: "tests protecting bug" — tests that validate broken behavior against documented intent.
+- **v0.4.0 plan refinements** based on evaluation: new Tier 2 detection targets (workflow completeness, concurrent path interaction), "tests protecting bug" as Test Reviewer detection target, 3 confirmed methodology gaps (unbounded growth, batch atomicity, intra-function redundancy).
+- 5 new test scripts for instruction-hygiene structural coverage.
+
+### Fixed
+- Intent extraction skipped in every code review because no pipeline instruction document mentioned it — now structurally gated by section placement and cross-file references.
+- Sighting format template in code-review-guide.md missing `intent` in detection source enum.
+- code-review-guide.md Post-output steps referenced nonexistent `ai-docs/<feature>/<feature>-retrospective.md` path — now targets the review report file.
+
 ## [0.3.4] — 2026-04-03
 
 ### Changed
