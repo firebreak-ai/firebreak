@@ -1,0 +1,261 @@
+{
+  "spec": "ai-docs/detection-accuracy/instruction-hygiene/instruction-hygiene-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Update existing detection scope tests for redirected/removed heuristic assertions and item count threshold",
+      "file": "task-01-test-existing-detection-scope-updates.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-04",
+        "AC-09"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single-file test update with clear grep-based assertions",
+      "status": "complete",
+      "summary": "Updated test-detection-scope.sh: threshold to >=14, redirected tests 15/16 to quality-detection.md, removed 3 duplicate tests, renumbered to 17 total. 14/17 pass (3 expected failures pre-impl).",
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Update existing guide extensions and structural tests for dead infrastructure redirect and item count",
+      "file": "task-02-test-existing-guide-structural-updates.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-09"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Two-file test update with straightforward threshold and target changes",
+      "status": "complete",
+      "summary": "Updated test-code-review-guide-extensions.sh Test 3 redirect to quality-detection.md and test-code-review-structural.sh Test 23 threshold to >=14.",
+      "note": null
+    },
+    {
+      "id": "task-03",
+      "title": "New tests for scope resolution, dedup references, item split, and section split",
+      "file": "task-03-test-scope-dedup-split.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-03",
+        "AC-01",
+        "AC-02",
+        "AC-09",
+        "AC-11"
+      ],
+      "model": "Haiku",
+      "model_rationale": "New test file with clear grep assertions following established conventions",
+      "status": "complete",
+      "summary": "Created test-instruction-hygiene-scope.sh: 10 tests for scope resolution, dedup references, item split, context bypass split. 2/10 pass pre-impl.",
+      "note": null
+    },
+    {
+      "id": "task-04",
+      "title": "New tests for promoted heuristic presence, format, and removal from existing-code-review.md",
+      "file": "task-04-test-promoted-heuristics.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-04"
+      ],
+      "model": "Haiku",
+      "model_rationale": "New test file with clear grep assertions following established conventions",
+      "status": "complete",
+      "summary": "Created test-instruction-hygiene-heuristics.sh: 10 tests for promoted heuristic presence/format and removal from existing-code-review.md. 0/10 pass pre-impl.",
+      "note": null
+    },
+    {
+      "id": "task-05",
+      "title": "New tests for Detector nit suppression and Challenger pattern-label handling",
+      "file": "task-05-test-agent-definitions.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-05",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "New test file with clear grep assertions following established conventions",
+      "status": "complete",
+      "summary": "Created test-instruction-hygiene-agents.sh: 6 tests for Detector nit suppression, Challenger pattern-labels, format template fields. 0/6 pass pre-impl.",
+      "note": null
+    },
+    {
+      "id": "task-06",
+      "title": "New tests for SKILL.md prompt ordering, initial reads, and guide alignment",
+      "file": "task-06-test-orchestration-alignment.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-07",
+        "AC-12",
+        "AC-13"
+      ],
+      "model": "Haiku",
+      "model_rationale": "New test file with clear grep assertions following established conventions",
+      "status": "complete",
+      "summary": "Created test-instruction-hygiene-orchestration.sh: 6 tests for SKILL.md ordering, initial reads, guide alignment. 1/6 pass pre-impl.",
+      "note": null
+    },
+    {
+      "id": "task-07",
+      "title": "New tests for detection target coverage \u2014 no target lost during moves",
+      "file": "task-07-test-detection-target-coverage.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-08",
+        "AC-10"
+      ],
+      "model": "Haiku",
+      "model_rationale": "New test file with repetitive grep assertions following established conventions",
+      "status": "complete",
+      "summary": "Created test-instruction-hygiene-coverage.sh: 30 tests for detection target presence. Some failing pre-impl for promoted targets.",
+      "note": "AC-08 coverage is nominal \u2014 spec declares AC-08 as verified-by-inspection, not automatable. Task-07 includes a pass-through test documenting this."
+    },
+    {
+      "id": "task-08",
+      "title": "Rewrite ai-failure-modes.md: scope fix, dedup items 7/10/11, split item 12",
+      "file": "task-08-impl-scope-dedup-split.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01",
+        "task-02",
+        "task-03",
+        "task-07"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-03",
+        "AC-08",
+        "AC-09",
+        "AC-10",
+        "AC-11"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single-file markdown edits with exact replacement text provided",
+      "status": "complete",
+      "summary": "Rewrote ai-failure-modes.md: scope fix line 1, dedup items 7/10/11 as summaries with triggers, split item 12 into 12+13, renumbered 13->14. 14 items total.",
+      "note": null
+    },
+    {
+      "id": "task-09",
+      "title": "Split silent error/context discard section and add 3 promoted heuristics to quality-detection.md",
+      "file": "task-09-impl-promoted-heuristics.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-03",
+        "task-04",
+        "task-07"
+      ],
+      "covers": [
+        "AC-04",
+        "AC-10",
+        "AC-11"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single-file markdown edits with exact replacement and append text provided",
+      "status": "complete",
+      "summary": "Split Silent error and context discard into 2 sections, added 3 promoted heuristics (dual-path, test-production string, dead code after field) in standard format.",
+      "note": null
+    },
+    {
+      "id": "task-10",
+      "title": "Remove 6 detection heuristic sections from existing-code-review.md",
+      "file": "task-10-impl-heuristic-removal.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01",
+        "task-04",
+        "task-07"
+      ],
+      "covers": [
+        "AC-04",
+        "AC-08",
+        "AC-10"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single-file section removal with clear heading-based boundaries",
+      "status": "complete",
+      "summary": "Removed 6 detection heuristic sections from existing-code-review.md (dual-path, sentinel, test-production, string-based, dead infra, dead code after removal).",
+      "note": null
+    },
+    {
+      "id": "task-11",
+      "title": "Update code-review-guide.md: remove dead infra subsection, add pattern-label fields, align orchestration and source-of-truth",
+      "file": "task-11-impl-guide-updates.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-02",
+        "task-05",
+        "task-06",
+        "task-07"
+      ],
+      "covers": [
+        "AC-06",
+        "AC-13"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single-file markdown edits at 4 locations with exact replacement text",
+      "status": "complete",
+      "summary": "Updated code-review-guide.md: removed dead infra subsection, added Pattern label fields to both format templates, aligned Orchestration Protocol and Source of Truth Handling.",
+      "note": null
+    },
+    {
+      "id": "task-12",
+      "title": "Rewrite SKILL.md steps 1/3 for content-first ordering and add quality-detection.md to initial reads",
+      "file": "task-12-impl-orchestrator-updates.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-06"
+      ],
+      "covers": [
+        "AC-07",
+        "AC-12"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single-file markdown edits with exact replacement text provided",
+      "status": "complete",
+      "summary": "Rewrote SKILL.md steps 1/3 for content-first ordering, added quality-detection.md to initial read instructions.",
+      "note": null
+    },
+    {
+      "id": "task-13",
+      "title": "Add nit suppression to Detector and pattern-label handling to Challenger agent definitions",
+      "file": "task-13-impl-agent-definitions.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-05",
+        "task-07"
+      ],
+      "covers": [
+        "AC-05",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Two-file markdown edits with exact insertion text, <10 lines each",
+      "status": "complete",
+      "summary": "Added nit suppression to Detector scope discipline, added 2 pattern-label instructions to Challenger verified finding section.",
+      "note": null
+    }
+  ]
+}

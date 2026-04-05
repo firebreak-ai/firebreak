@@ -26,12 +26,12 @@ not_ok() {
 
 echo "TAP version 13"
 
-# --- Test 1: ai-failure-modes.md checklist item count >= 11 (AC-36 through AC-42) ---
+# --- Test 1: ai-failure-modes.md checklist item count >= 14 (AC-36 through AC-42) ---
 numbered=$(grep -cE '^[0-9]+\.' "$CHECKLIST" 2>/dev/null || true)
-if [ "$numbered" -ge 11 ]; then
-  ok "ai-failure-modes.md checklist item count >= 11"
+if [ "$numbered" -ge 14 ]; then
+  ok "ai-failure-modes.md checklist item count >= 14"
 else
-  not_ok "ai-failure-modes.md checklist item count >= 11" "numbered=$numbered"
+  not_ok "ai-failure-modes.md checklist item count >= 14" "numbered=$numbered"
 fi
 
 # --- Test 2: ai-failure-modes.md contains "bare literal" keyword (AC-36) ---
@@ -126,42 +126,21 @@ else
   not_ok "quality-detection.md contains \"string-based type\" keyword"
 fi
 
-# --- Test 15: existing-code-review.md contains "dual-path" keyword (AC-43) ---
-if grep -qiE 'dual.path' "$EXISTING"; then
-  ok "existing-code-review.md contains \"dual-path\" keyword"
+# --- Test 15: quality-detection.md contains "dual-path" keyword (AC-43) ---
+if grep -qiE 'dual.path' "$QUALITY"; then
+  ok "quality-detection.md contains \"dual-path\" keyword"
 else
-  not_ok "existing-code-review.md contains \"dual-path\" keyword"
+  not_ok "quality-detection.md contains \"dual-path\" keyword"
 fi
 
-# --- Test 16: existing-code-review.md contains "sentinel value" keyword (AC-44) ---
-if grep -qi 'sentinel value' "$EXISTING"; then
-  ok "existing-code-review.md contains \"sentinel value\" keyword"
+# --- Test 16: quality-detection.md contains "string alignment" or "test-production" keyword (AC-45) ---
+if grep -qiE 'string alignment|test.production' "$QUALITY"; then
+  ok "quality-detection.md contains \"string alignment\" or \"test-production\" keyword"
 else
-  not_ok "existing-code-review.md contains \"sentinel value\" keyword"
+  not_ok "quality-detection.md contains \"string alignment\" or \"test-production\" keyword"
 fi
 
-# --- Test 17: existing-code-review.md contains "string alignment" or "test-production" keyword (AC-45) ---
-if grep -qiE 'string alignment|test.production' "$EXISTING"; then
-  ok "existing-code-review.md contains \"string alignment\" or \"test-production\" keyword"
-else
-  not_ok "existing-code-review.md contains \"string alignment\" or \"test-production\" keyword"
-fi
-
-# --- Test 18: existing-code-review.md contains "string-based error" keyword (AC-46) ---
-if grep -qi 'string-based error' "$EXISTING"; then
-  ok "existing-code-review.md contains \"string-based error\" keyword"
-else
-  not_ok "existing-code-review.md contains \"string-based error\" keyword"
-fi
-
-# --- Test 19: existing-code-review.md contains "dead infrastructure" keyword (AC-47) ---
-if grep -qi 'dead infrastructure' "$EXISTING"; then
-  ok "existing-code-review.md contains \"dead infrastructure\" keyword"
-else
-  not_ok "existing-code-review.md contains \"dead infrastructure\" keyword"
-fi
-
-# --- Test 20: existing-code-review.md contains severity ordering keyword (AC-48) ---
+# --- Test 17: existing-code-review.md contains severity ordering keyword (AC-48) ---
 if grep -qiE 'severity|critical first' "$EXISTING"; then
   ok "existing-code-review.md contains severity ordering keyword"
 else
