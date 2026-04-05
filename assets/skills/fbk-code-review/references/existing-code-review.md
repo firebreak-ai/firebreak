@@ -10,6 +10,10 @@ This path is a guided conversation. The user directs the review — defining sco
 
 Present verified findings as conversation evidence. The user discusses findings, provides corrections, and supplies design intent that the agent cannot infer from code alone. Example user inputs: 'Focus on the auth module', 'That duplication is actually the bigger problem', 'The caching layer bypass is the real issue.'
 
+## Intent Register
+
+The orchestrator completes Intent Extraction (SKILL.md) before beginning this conversational flow. The intent register contains behavioral claims extracted from project documentation. During the conversation, the user may provide additional design intent — corrections, clarifications, or priorities that documentation does not capture. Update the intent register in the review report file when the user provides design intent that contradicts or extends a documented claim.
+
 ## Spec Co-Authoring
 
 As the conversation progresses, draft spec sections from the findings and user-stated intent:
@@ -38,6 +42,6 @@ Present verified findings ordered by severity (critical first, then major, minor
 
 ## Retrospective
 
-After the review completes, produce a retrospective following the fields defined in `code-review-guide.md`. Append a findings summary to the feature retrospective if one exists.
+After the review completes, append the retrospective to the review report file, following the fields defined in `code-review-guide.md`.
 
 After the retrospective is written, invoke `/fbk-improve <feature-name>` to analyze the retrospective for pipeline improvement opportunities.
