@@ -18,7 +18,7 @@ Determine the invocation context:
 
 ## Source of Truth Handling
 
-Check for existing specs — provided by the user or discovered in `ai-docs/`. If specs exist, use their ACs and UV steps as the comparison target. If no specs are available, use the AI failure mode checklist for structural issue detection. If no spec and no existing code context is provided, ask the user what to review.
+Check for existing specs — provided by the user or discovered in `ai-docs/`. If specs exist, use their ACs and UV steps as the primary comparison target. Run Intent Extraction for standalone and broad-scope reviews — documentation outside the spec often contains behavioral claims not covered by ACs. When no specs are available, the intent register and the AI failure mode checklist together form the comparison target. If no documentation and no existing code context is provided, ask the user what to review.
 
 ## Agent Team
 
@@ -29,18 +29,58 @@ Spawn agents as a team with fresh context per invocation. Use two agents:
 
 Inject the behavioral comparison methodology from `code-review-guide.md` and the relevant source of truth into each agent's spawn prompt. Agents do not inherit skills.
 
+## Review Report
+
+Create a review report file at the start of every review: `fbk-code-review-<YYYY-MM-DD>-<HHMM>.md` in the project's working directory. Write the intent register, verified findings, and retrospective to this file as the review progresses. The user opens this file to see rendered diagrams and review results.
+
 ## Pre-Spawn Linter Execution
 
 Before spawning Detectors, discover and run project-native linters and static analysis tools. Search for lint configurations (`.eslintrc`, `eslint.config.*`, `.pylintrc`, `pyproject.toml`, `golangci-lint` configs) and run available tools. Capture raw text output, truncated to the first 100 findings if output is large. Include the linter output as supplementary context in each Detector's spawn prompt. Linter output is context, not pre-formed sightings — the Detector reads it to understand what mechanical issues the linter already caught and focuses on issues linters miss. Tag any sightings derived from linter output with detection source `linter`.
+
+## Intent Extraction
+
+Complete these steps before spawning Detectors.
+
+### Discover documentation
+
+Search for intent-bearing documents in priority order:
+1. Feature specs in `ai-docs/` (acceptance criteria and UV steps)
+2. README, CLAUDE.md, CONTRIBUTING.md, architecture docs
+3. Inline module-level documentation (JSDoc, docstrings, module headers)
+4. CI/CD configuration, deployment docs, API documentation
+
+### Build the intent register
+
+From discovered documentation, produce a structured intent register with two parts:
+
+**Intent claims**: A list of up to 30 behavioral claims the project makes about itself. Each claim is one sentence describing what the project or a specific module is supposed to do. Prefer claims that are specific and verifiable.
+
+**Intent diagram**: Generate a Mermaid diagram capturing module relationships, data flow, and key behavioral contracts. Optimize for the VSCode markdown preview renderer:
+- Use `graph TD` or `graph LR` for data flow and module relationships
+- Keep node labels under 30 characters
+- Use subgraphs to group related modules
+- Label edges with the behavioral contract (e.g., "filters by interest", "scores via AI")
+- Avoid `classDef`, `click`, `callback`, and other advanced features that may not render
+
+Write the intent register (claims + diagram) to the review report file.
+
+### User checkpoint
+
+Tell the user the review report file is ready for review. Ask specific questions to close ambiguity — areas where documentation is silent, contradictory, or where multiple interpretations exist. Proceed after the user confirms, corrects, or instructs the agent to continue as-is.
+
+### Supplement from code
+
+Where the intent register has gaps (modules with no documentation coverage), derive intent from code structure: function names, type signatures, module organization, and cross-module call patterns. Update the diagram and claims in the review report file.
 
 ## Detection-Verification Loop
 
 Run the iterative detection and verification loop:
 
-1. Spawn Detector with: target code file contents first, then linter output (if available), then source of truth + behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` last. Instruct the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, or `linter`).
+1. Spawn Detector with: target code file contents first, then linter output (if available), then intent register (from Intent Extraction), then source of truth + behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` last. Instruct the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, `intent`, or `linter`).
 2. Collect sightings
 3. Spawn Challenger with: target code file contents first, then sightings to verify, then verification instructions last.
 4. Collect verified findings and rejections
+4a. After each verification round, append verified findings to the review report file.
 5. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
 6. Run additional rounds for weakened but unrejected sightings
 7. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds
@@ -72,6 +112,6 @@ When multiple specs exist for the reviewed code, compare them for consistency. S
 
 ## Retrospective
 
-After the review completes, produce a retrospective following the fields defined in `code-review-guide.md`.
+After the review completes, append the retrospective to the review report file, following the fields defined in `code-review-guide.md`.
 
 After the retrospective is written to disk, invoke `/fbk-improve <feature-name>` to analyze the retrospective for pipeline improvement opportunities.
