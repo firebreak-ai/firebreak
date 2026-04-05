@@ -4,6 +4,8 @@ Firebreak's pipeline catches quality issues invisible to CI and static analysis,
 
 Results are from the author's projects and have not been independently replicated — the author runs the pipeline, judges the findings, and writes the retrospectives. Different codebases, languages, team structures, and evaluators may produce different outcomes. If you run Firebreak on your own codebase, [share what you find](https://github.com/firebreak-ai/firebreak/issues).
 
+Firebreak has been tested across two languages (Go, TypeScript) and multiple project types. The brownfield remediation data below comes from a Go project. The [detection accuracy evaluation](#detection-accuracy-typescript-project) comes from a TypeScript AI agent project with independently filed issues as a baseline.
+
 ## At a glance
 
 | Metric | Value |
@@ -134,7 +136,60 @@ Gates caught issues before they became implementation failures:
 
 ## How the pipeline improves
 
-The pipeline revises itself from structured retrospective data. Each cycle is human-approved — the pipeline produces actionable proposals, the human decides what to act on. Four cycles have shipped: [v0.3.1](CHANGELOG.md) fixed terminology that obscured friction, [v0.3.2](CHANGELOG.md) caught a routing dead-end in the code review skill, [v0.3.3](CHANGELOG.md) expanded detection scope from AI-specific failure modes to standard engineering concerns, and [v0.3.4](CHANGELOG.md) hardened verification gates, added call-site completeness checks across 5 pipeline stages, and introduced rolling retrospectives that accumulate across all stages instead of being written only at implementation end. See the [CHANGELOG](CHANGELOG.md) for details.
+The pipeline revises itself from structured retrospective data. Each cycle is human-approved — the pipeline produces actionable proposals, the human decides what to act on. Five cycles have shipped: [v0.3.1](CHANGELOG.md) fixed terminology that obscured friction, [v0.3.2](CHANGELOG.md) caught a routing dead-end in the code review skill, [v0.3.3](CHANGELOG.md) expanded detection scope from AI-specific failure modes to standard engineering concerns, [v0.3.4](CHANGELOG.md) hardened verification gates, added call-site completeness checks across 5 pipeline stages, and introduced rolling retrospectives that accumulate across all stages instead of being written only at implementation end, and [v0.3.5](CHANGELOG.md) made intent extraction a mandatory pipeline step after evaluation showed it drives the highest-severity findings and nearly triples issue overlap with independently filed bugs. See the [CHANGELOG](CHANGELOG.md) for details.
+
+## Detection accuracy (TypeScript project)
+
+The adversarial code review was evaluated against a public TypeScript AI agent project (~35 source files, 25 test files) with 28 independently filed issues as a detection accuracy baseline. Three reviews were conducted — pre-instruction-hygiene (v0.3.4), post-instruction-hygiene (v0.3.5 without intent extraction), and post-intent-fix (v0.3.5 with intent extraction) — to measure improvement across pipeline versions.
+
+### Three-review comparison
+
+| Metric | Pre-hygiene (v0.3.4) | Post-hygiene (v0.3.5) | Post-intent-fix (v0.3.5) |
+|--------|---------------------|----------------------|--------------------------|
+| Total verified findings | 53 | 119 | 42 |
+| Critical | 0 | 1 | 2 |
+| Major | 13 | 32 | 20 |
+| Major+ ratio | 25% | 29% | 52% |
+| Intent-sourced findings | 7 (separate pass) | 0 (skipped) | 12 (29% of total) |
+| Rounds to converge | 4 | 4 | 5 |
+| Partial overlap with filed issues | 4/28 (14.3%) | 11/28 (39.3%) | Pending |
+
+The filed issues are an independent baseline for calibrating detection accuracy, not ground truth — the issue-filing agent has its own detection strengths and blind spots. Both pipelines found issues the other missed entirely. [Full three-way comparison with per-issue analysis](ai-docs/detection-accuracy/three-way-comparison.md).
+
+### Key observations
+
+**Intent extraction changes what the review finds.** Both critical findings in the post-intent-fix review were intent-sourced — documented features that don't work, including a core token-savings feature claimed in the README that the code doesn't implement. The same code defect was found by the post-hygiene review as a minor/structural issue (comment-code drift). The intent register provides the severity frame: "documented feature doesn't work" vs "comment doesn't match code."
+
+**Intent extraction introduced a new finding type: tests protecting bugs.** Tests that assert the broken behavior is correct — passing by validating the bug, not the intent. This detection class requires both the code (test passes) and the intent (documentation says the opposite) to identify. No checklist item can catch it.
+
+**The instruction budget is zero-sum.** Adding ~25 intent claims to a Detector already at 3x the reliable instruction threshold (~62 instructions) caused structural finding volume to drop (77 minor → 20 minor) while behavioral and test-integrity findings increased. The total count dropped from 119 to 42, but the major+ ratio doubled (29% → 52%). This trade-off confirms the architectural case for [detector decomposition](ai-docs/detection-accuracy/detection-accuracy-overview.md) — dedicated narrow-mandate agents would eliminate the either/or between intent coverage and structural coverage.
+
+**The Challenger layer caught a false negative across reviews.** A config read-modify-write race condition was rejected twice in the post-hygiene review ("single-threaded JS means no interleaving"). The post-intent-fix review's Challenger verified it by tracing the async boundary between concurrent Telegram commands. The intent register may have contributed — it established concurrent config mutations as an expected usage pattern, making the Challenger more skeptical of the single-thread argument.
+
+### Token usage and cost (post-intent-fix review)
+
+**Scope:** 42 findings across 5 rounds, ~35 source files + 25 test files + 8 scripts. Intent extraction + iterative Detector/Challenger loop. Single fresh session.
+
+**Token usage by model:**
+
+| | Opus 4 | Sonnet 4 |
+|--|--------|----------|
+| Input | 5K | 19K |
+| Output | 40K | 88K |
+| Cache write | 1M | 1.6M |
+| Cache read | 16.8M | 24.4M |
+
+**Estimated API cost** (at May 2025 published rates — verify at [anthropic.com/pricing](https://www.anthropic.com/pricing)):
+
+| Model | Cost | % of total | Primary driver |
+|-------|------|-----------|----------------|
+| Opus 4 | ~$47 | 76% | Cache read ($25) + cache write ($19) |
+| Sonnet 4 | ~$15 | 24% | Cache read ($7) + cache write ($6) |
+| **Total** | **~$62** | | **89% is cache costs** |
+
+**Comparison with [Go standalone code review](#measured-data-standalone-code-review):** The TS review is cheaper (~$62 vs ~$69) despite running 5 rounds. The primary driver is codebase size — the TS project is ~6K lines across 35 source files, smaller than the Go project. Every Detector spawn includes target code in its prompt, so smaller codebase = smaller cache writes per agent. Multi-round iteration also benefits from cache reuse — later rounds read from cache established by earlier rounds. On a Max plan, both reviews are included in flat-rate billing.
+
+[Full evaluation methodology, per-round data, and analysis →](ai-docs/detection-accuracy/project-b-review-post-hygiene.md)
 
 ## Token usage and cost
 
@@ -223,7 +278,7 @@ Measured from a code review against one remediation phase's changes (Phase 4 —
 - **PR-scope review is cheap.** Reviewing one phase's changes costs ~$3.29 — useful for quick post-implementation sanity checks or lightweight PR review where the full adversarial pipeline isn't warranted.
 - **Cache still dominates.** Even at this small scale, cache read/write is 88% of the total cost. Output tokens cost $0.41.
 
-All three measurements are from one Go project. Different codebases, languages, and session patterns will produce different numbers.
+The three measurements above are from one Go project. The TypeScript evaluation adds a fourth data point — see [Detection accuracy](#detection-accuracy-typescript-project). Different codebases, languages, and session patterns will produce different numbers.
 
 ### Cost optimization: match effort to finding complexity
 
@@ -261,9 +316,9 @@ For current API rates, see [Anthropic's pricing page](https://www.anthropic.com/
 
 ## Caveats and limitations
 
-**Single author, single evaluator, single test project.** All brownfield remediation data comes from one Go project tested by the project author. Every "verified finding" was verified by the author. Every "false positive" was judged by the author. There is no inter-rater reliability. Different codebases, languages, team structures, and evaluators may produce different outcomes. Independent reviewers are actively sought.
+**Single author, single evaluator.** Brownfield remediation data comes from one Go project; detection accuracy evaluation from one TypeScript project. Both tested by the project author. Every "verified finding" was verified by the author. Every "false positive" was judged by the author. There is no inter-rater reliability. Different codebases, languages, team structures, and evaluators may produce different outcomes. Independent reviewers are actively sought.
 
-**Go-specific advantages may not generalize.** Go's compiler catches unused variables, enforces interface implementations, and fails on type mismatches — giving the pipeline a structural advantage that dynamically typed languages would not provide. The same issues might be silent in Python or JavaScript codebases.
+**Go-specific advantages may not generalize.** Go's compiler catches unused variables, enforces interface implementations, and fails on type mismatches — giving the pipeline a structural advantage that dynamically typed languages would not provide. The TypeScript evaluation partially addresses this: TypeScript has optional typing and a less strict compiler, and the pipeline still found 42 verified findings (2 critical, 20 major). More language diversity is needed.
 
 **The pre-remediation review drove the remediation plan.** The two reviews are not fully independent. The post-remediation review was conducted by the same pipeline that drove the remediation, looking at code it had already seen. A blind re-assessment by a different team or tool would be a stronger comparison.
 
@@ -271,7 +326,7 @@ For current API rates, see [Anthropic's pricing page](https://www.anthropic.com/
 
 **Cost data is from one measured session.** A single full-pipeline run on a mechanical phase cost ~$97 on API billing, with 91% driven by cache costs. More complex phases and different usage patterns (idle gaps, shorter sessions) will produce different numbers. See [Token usage and cost](#token-usage-and-cost) for the full breakdown and how caching patterns affect cost.
 
-**No false negative measurement.** The document measures what the pipeline finds. It cannot measure what the pipeline misses, because there is no ground truth for "all issues that exist." The post-remediation review found 60 issues; how many remain undiscovered is unknown.
+**Limited false negative measurement.** For the Go project, there is no ground truth for "all issues that exist" — how many issues remain undiscovered is unknown. The TypeScript evaluation provides a partial signal: 28 independently filed issues allow measuring what the pipeline misses against an independent reviewer. Current best: 39.3% partial overlap (v0.3.5), meaning 61% of independently identified issues were not matched. The unmatched issues cluster in areas the pipeline doesn't target: performance/scalability, input validation, and specific single-function path-tracing bugs.
 
 **No industry benchmark comparison.** The closest public benchmark ([Martian Code Review Bench](ai-docs/research/benchmark-research.md)) measures PR-scoped review — a fundamentally different task from full-codebase review against a failure mode taxonomy. Direct comparison is not currently possible.
 
