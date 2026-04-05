@@ -1,8 +1,39 @@
-# Pipeline Retrospective: Evaluation Round (Preliminary)
+# Pipeline Retrospective: Evaluation Round
 
 **Date**: 2026-04-04
 **Scope**: Code review of 3 public repos (Project A: JS game, Project B: TS AI agent, Project C: Java+Angular budget app)
 **Finding**: Agent instruction-following is the primary bottleneck, not methodology coverage
+
+## Current State
+
+| Feature | Release | Status | Spec | Commit |
+|---------|---------|--------|------|--------|
+| `instruction-hygiene` | v0.3.5 | **Complete** — committed, pending push/tag/release | `instruction-hygiene/instruction-hygiene-spec.md` | `24b8e5a` |
+| `detector-decomposition` | v0.4.0 | Not started | Needs spec | — |
+| `tiered-detection` | v0.4.0 | Not started, depends on detector-decomposition | Needs spec | — |
+
+**Project overview**: `detection-accuracy-overview.md`
+
+### What instruction-hygiene (v0.3.5) addressed
+- Deduplicated 3 redundant definitions (dead infrastructure, string-based classification, context bypass/silent error)
+- Resolved scope contradiction in ai-failure-modes.md
+- Promoted 3 trapped heuristics to quality-detection.md
+- Split compound checklist item 12
+- Added nit suppression to Detector, pattern-label handling to Challenger
+- Restructured prompt ordering (content-first, instructions-last)
+- Loaded quality-detection.md in conversational review path
+- Aligned code-review-guide.md Orchestration Protocol and Source of Truth Handling
+
+### What instruction-hygiene did NOT address (deferred to v0.4.0)
+- Instruction count still ~62 per Detector (~30 detection targets + ~32 format/methodology) — 3x the ~20 reliable threshold
+- No forced enumeration — agents can still satisfice after first match
+- No intent extraction phase — still depends on orchestrator remembering to do it
+- No narrow-mandate agent decomposition — still 1 Detector with all checklist items
+- No cross-cutting Tier 2 agents — cross-module patterns still depend on file scope overlap
+- No dedicated test reviewer agent — test-integrity items mixed with code checklist
+- 4 methodology gaps not addressed: unbounded growth, migration idempotency, batch atomicity, intra-function redundancy
+
+---
 
 ## Key Metrics
 
@@ -69,19 +100,19 @@ The two approaches had almost zero overlap in what they found. Neither subsumes 
 
 ### Confirmed by research and instruction trace
 
-1. **Instruction overload (confirmed)**: Detectors receive ~63 discrete instructions from 5 documents at ~3,950 tokens. IFScale research shows standard Claude Sonnet exhibits linear compliance decay from instruction 1. Practical reliable threshold is ~20 instructions. We're at 3x.
+1. **Instruction overload (confirmed)**: Detectors receive ~62 discrete instructions from 4 documents. IFScale research shows standard Claude Sonnet exhibits linear compliance decay from instruction 1. Practical reliable threshold is ~20 instructions. We're at 3x. **Partially addressed by instruction-hygiene** (reduced redundancy and contradictions); **structurally addressed by detector-decomposition** (3-5 items per agent).
 
-2. **Instruction ordering is backwards (confirmed)**: We put instructions in the middle of the prompt (between agent system prompt and code files). Anthropic explicitly recommends data at top, instructions at bottom, with a measured 30% improvement. We're doing the opposite.
+2. **Instruction ordering was backwards (fixed in v0.3.5)**: We put instructions in the middle of the prompt. Anthropic recommends data at top, instructions at bottom, with a measured 30% improvement. **Fixed**: SKILL.md steps 1 and 3 now specify content-first ordering.
 
-3. **Redundancy wastes instruction budget (confirmed)**: Dead infrastructure defined in 4 places, string-based classification in 3 places. Each redundant definition counts against the ~20-instruction reliable budget while adding no detection value.
+3. **Redundancy wasted instruction budget (fixed in v0.3.5)**: Dead infrastructure defined in 4 places, string-based classification in 3 places, context bypass overlapped. **Fixed**: Deduplicated to 1 canonical + 1 summary each.
 
-4. **Scope contradiction (confirmed)**: ai-failure-modes.md says "only without specs" but the orchestrator injects it unconditionally alongside quality-detection.md. Detector receives conflicting scope signals.
+4. **Scope contradiction (fixed in v0.3.5)**: ai-failure-modes.md said "only without specs" but orchestrator injected unconditionally. **Fixed**: Unconditional scope, quality-detection.md loaded in all paths.
 
-5. **Context competition (confirmed)**: Cognitive load research shows linear degradation as task content grows relative to instructions. Code files are "distractor interference" from the instruction-following perspective.
+5. **Context competition (confirmed, not yet addressed)**: Cognitive load research shows linear degradation as task content grows relative to instructions. **Addressed by detector-decomposition** (less content per agent via narrow scope).
 
-6. **Satisficing after first match (confirmed)**: The "find one then move on" pattern is expected behavior when agents have 63 instructions and large code volumes. Finding one instance produces a plausible completion. Research recommends forced enumeration to prevent this.
+6. **Satisficing after first match (confirmed, not yet addressed)**: The "find one then move on" pattern is expected with 62 instructions and large code volumes. **Addressed by detector-decomposition** (forced enumeration + narrow mandate).
 
-7. **Three detection heuristics trapped in orchestrator-only doc (new finding)**: Dual-path verification, test-production string alignment, and dead code after field removal exist in existing-code-review.md but are never injected into agent spawn prompts. Agents never see them.
+7. **Three detection heuristics trapped in orchestrator-only doc (fixed in v0.3.5)**: Dual-path verification, test-production string alignment, dead code after field removal. **Fixed**: Promoted to quality-detection.md, quality-detection.md loaded in all paths.
 
 ### Not confirmed / still hypothetical
 
@@ -91,138 +122,44 @@ The two approaches had almost zero overlap in what they found. Neither subsumes 
 
 ---
 
-## Improvement Proposals
+## Remaining Work: detector-decomposition (v0.4.0)
 
-### Proposal A: Two-Tier Detector Architecture
-
-Split detection into two agent tiers per round, optimized for different detection goals.
-
-**Tier 1: Focused detectors** (per-file or small module)
-- 3-5 checklist items per agent
-- Full file contents but minimal instructions
-- Forced per-file, per-item enumeration ("no issues found" entries required)
-- Targets: edge cases, null safety, error handling, specific pattern instances
-
-**Tier 2: Cross-cutting detectors** (broader scope, lighter content)
-- File summaries/signatures instead of full contents (exports, function names, types, call graphs)
-- Architectural instructions: dual-path verification, caller re-implementation across modules, state flow, API contract mismatches
-- Targets: cross-module interactions, composition opacity, state divergence
-
-**Trade-offs**: More agents = more cost and coordination. Tier 2 depends on quality of file summaries. Overlap between tiers needs deduplication.
-
-### Proposal B: Instruction Decomposition (Many Narrow Agents)
-
-Instead of 3 detectors with 63 instructions each, spawn 8-12 detectors each with 3-5 related checklist items and the same file scope.
-
-Example groupings:
-- Agent 1: Bare literals + hardcoded coupling + string-based discrimination
-- Agent 2: Dead infrastructure + dead conditional guards + middleware never connected
-- Agent 3: Non-enforcing tests + test-integrity variants + composition opacity
-- Agent 4: Zero-value sentinel + context bypass + silent error discard
-- Agent 5: Comment-code drift + semantic drift
-- Agent 6: Mixed logic/side effects + ambient state + non-importable behaviors
-- Agent 7: Caller re-implementation + parallel collection coupling + multi-responsibility
-
-**Trade-offs**: Higher agent count = higher cost. Each agent still scans all files but with a narrow detection mandate. Doesn't solve cross-module detection on its own.
-
-### Proposal C: Prompt Restructuring (Cheapest Change)
-
-Keep current agent topology but fix the instruction presentation:
-
-1. **Reverse prompt order**: Code files first (top), instructions last (bottom). 30% measured improvement.
-2. **Deduplicate**: Remove 6 identified redundancies (~350 tokens, ~8 instruction slots freed).
-3. **Resolve scope contradiction**: Remove "only without specs" from ai-failure-modes.md.
-4. **Move trapped heuristics**: Promote dual-path verification, test-production string alignment, dead code after removal from existing-code-review.md to quality-detection.md.
-5. **Add nit suppression to Detector**: Reduce wasted Challenger cycles.
-6. **Add pattern-label handling to Challenger**: Prevent silent label loss.
-
-**Trade-offs**: Lowest cost, lowest disruption. Doesn't address the fundamental instruction count problem (~63 → ~55 after dedup, still well above ~20 threshold). Quick win that buys marginal improvement.
-
-### Proposal D: Forced Enumeration
-
-Require each detector to produce structured output accounting for every file against every assigned checklist item:
-
-```
-File: src/pipeline.ts
-  - Bare literals: No issues found
-  - Dead infrastructure: S-01 (bloom filter pool declared, never used)
-  - Silent error discard: S-02 (catch block swallows with log only)
-```
-
-**Trade-offs**: Significantly increases output token usage. May slow detection. But directly prevents the "find one then move on" satisficing pattern. Works with any agent topology.
-
-### Proposal E: Self-Verification Pass
-
-After the initial detection pass, run a second pass where the detector reviews its own output:
-
-> "Before you finish, verify that you have applied every checklist item to every file. For any checklist item with zero findings across all files, re-examine the files specifically for that pattern."
-
-**Trade-offs**: Doubles the detection phase time. But targets the specific failure mode (silent omission of checklist items) with minimal architectural change.
-
-### Proposal F: Intent Pass as Standard Phase
-
-Formalize intent extraction as a mandatory first phase rather than an optional/skippable step:
-
-1. Extract testable behavioral claims from project docs
-2. Present intent register to orchestrator for scope confirmation
-3. Run intent-alignment detection as a separate agent wave alongside (not after) checklist detection
-
-**Trade-offs**: Adds time to every review. But the evaluation showed intent findings are qualitatively different from checklist findings — neither subsumes the other. Making it mandatory prevents the orchestrator from skipping it.
-
-### Proposal G: Randomized Checklist Ordering
-
-Randomize the order of checklist items across detection rounds. Items at the beginning get more attention (primacy effect); randomizing ensures no item is consistently disadvantaged.
-
-**Trade-offs**: Trivial to implement. Small marginal improvement. Only helps with position-dependent attention, not instruction count.
-
----
-
-## Compatibility Matrix
-
-| | A (Two-Tier) | B (Narrow Agents) | C (Prompt Fix) | D (Forced Enum) | E (Self-Verify) | F (Intent Phase) | G (Random Order) |
-|---|---|---|---|---|---|---|---|
-| **A** | — | Partially exclusive (both reshape topology) | Complementary | Complementary | Complementary | Complementary | Complementary |
-| **B** | Partially exclusive | — | Complementary | Complementary | Less needed (narrow scope reduces satisficing) | Complementary | Less needed (fewer items per agent) |
-| **C** | Complementary | Complementary | — | Complementary | Complementary | Complementary | Complementary |
-| **D** | Complementary | Complementary | Complementary | — | Partially redundant (both target omissions) | Complementary | Complementary |
-| **E** | Complementary | Less needed | Complementary | Partially redundant | — | Complementary | Complementary |
-| **F** | Complementary | Complementary | Complementary | Complementary | Complementary | — | Complementary |
-| **G** | Complementary | Less needed | Complementary | Complementary | Complementary | Complementary | — |
-
-**Key relationships:**
-- **A and B are partially exclusive** — both reshape the detector topology. Pick one approach to agent decomposition.
-- **D and E are partially redundant** — both target the "silent omission" problem. D prevents it structurally; E catches it after the fact. D is more reliable but costlier.
-- **C is complementary with everything** — it's a low-cost structural fix that improves any configuration.
-- **F is complementary with everything** — it's an orthogonal detection dimension.
-- **B makes E and G less needed** — narrow agents with 3-5 instructions have less satisficing and less position bias.
-
----
-
-## Recommended Implementation Path
-
-### Phase 1: Quick wins (Proposal C + G)
-- Prompt restructuring, deduplication, scope fix, trapped heuristic promotion
+Absorbs Proposals B + D + F + G from the original analysis:
+- 7 narrow-mandate Tier 1 detector groups (3-5 items each)
+- Forced per-file enumeration
+- Mandatory intent extraction phase + dedicated intent path tracer
+- Dedicated test reviewer agent (separated from Tier 1 checklist groups)
 - Randomized checklist ordering
-- Lowest cost, no architectural change, immediate improvement
-- Estimated impact: 10-20% improvement in instruction compliance
 
-### Phase 2: Structural improvement (Proposal B + D + F)
-- Decompose to narrow-mandate agents (3-5 items each)
-- Add forced enumeration to each narrow agent
-- Formalize intent extraction as mandatory phase
-- Higher cost, significant architectural change, addresses root causes
-- Estimated impact: 40-60% improvement in detection coverage
+Key design decisions already made (see `detection-accuracy-overview.md`):
+- 8 agent types: 7 checklist groups + intent path tracer
+- Test reviewer as separate dedicated agent with its own context shape
+- Intent extractor produces up to 30 structured claims; path tracer traces 5-8 main paths
+- Evaluation via fresh repos with existing filed issues (25% overlap baseline to beat)
 
-### Phase 3: Architectural evolution (Proposal A)
-- Two-tier detector architecture (focused + cross-cutting)
-- Requires Phase 2's narrow-agent infrastructure as the Tier 1 foundation
-- Adds Tier 2 cross-cutting agents with summarized file context
-- Estimated impact: catches the cross-module interaction class that narrow agents miss
+## Remaining Work: tiered-detection (v0.4.0)
+
+Absorbs Proposal A:
+- Tier 2 cross-cutting detectors operating on summarized file context
+- Hybrid summary format: deterministic AST skeleton + LLM behavioral annotation
+- Language-agnostic AST tooling instruction
+- Cross-tier deduplication
+
+Depends on detector-decomposition (Tier 1 infrastructure must be in place first).
 
 ---
 
 ## Supporting Documents
 
-- `instruction-trace-report.md` — Full trace of instruction sets per agent type
+- `instruction-trace-report.md` — Full trace of instruction sets per agent type (pre-instruction-hygiene baseline)
 - `agent-instruction-alignment-research.md` — External research on instruction following
 - `firebreak-detection-divergence-analysis.md` — Divergence analysis vs Project B maintainer's findings
+- `instruction-hygiene/` — Complete spec, review, tasks, and retrospective for the v0.3.5 feature
+- `detection-accuracy-overview.md` — Project overview with all 3 features and resolved design decisions
+
+## Evaluation Artifacts (gitignored, in tmp/firebreak-eval/)
+
+- Code review results for all 3 projects
+- Outreach drafts for all 3 projects
+- Divergence analysis with specific issue numbers
+- Cloned repos for re-evaluation (UV-9)

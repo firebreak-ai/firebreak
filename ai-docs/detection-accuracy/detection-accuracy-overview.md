@@ -19,7 +19,7 @@ Orchestrator → spawns 3 Detectors (each: 63 instructions + all files in scope)
 Target state (after Phase 3):
 ```
 Orchestrator
-  ├── Intent Extractor (reads all docs → intent register, up to 30 claims)
+  ├── Intent Extraction (v0.3.5, orchestrator step — reads docs → intent register + Mermaid diagram → user checkpoint)
   ├── AST skeleton extraction (deterministic: imports, exports, signatures)
   ├── Summarizer agents (per-module behavioral annotation, 3-5 sentences each)
   │
@@ -57,20 +57,36 @@ Key architectural decisions:
 
 ## 4. Feature Map
 
-| Feature | Spec path | Release | Depends on |
-|---------|-----------|---------|------------|
-| `instruction-hygiene` | `ai-docs/detection-accuracy/instruction-hygiene/instruction-hygiene-spec.md` | v0.3.5 | None |
-| `detector-decomposition` | `ai-docs/detection-accuracy/detector-decomposition/detector-decomposition-spec.md` | v0.4.0 | instruction-hygiene |
-| `tiered-detection` | `ai-docs/detection-accuracy/tiered-detection/tiered-detection-spec.md` | v0.4.0 | detector-decomposition |
+| Feature | Spec path | Release | Depends on | Status |
+|---------|-----------|---------|------------|--------|
+| `instruction-hygiene` | `ai-docs/detection-accuracy/instruction-hygiene/instruction-hygiene-spec.md` | v0.3.5 | None | Complete (`24b8e5a`) |
+| `intent-extraction` | Implemented directly in SKILL.md + code-review-guide.md | v0.3.5 | instruction-hygiene | Complete (`977f828`) |
+| `detector-decomposition` | `ai-docs/detection-accuracy/detector-decomposition/detector-decomposition-spec.md` | v0.4.0 | instruction-hygiene, intent-extraction | Not started |
+| `tiered-detection` | `ai-docs/detection-accuracy/tiered-detection/tiered-detection-spec.md` | v0.4.0 | detector-decomposition | Not started |
 
-**instruction-hygiene** (v0.3.5)
+**instruction-hygiene** (v0.3.5) — Complete
 Prompt restructuring, deduplication, scope contradiction fix, trapped heuristic promotion, nit suppression for detectors, pattern-label handling for challengers. Lowest cost, no architectural change.
 
-**detector-decomposition** (v0.4.0)
-Decompose from 3 detectors with 63 instructions each to 7 Tier 1 groups with 2-4 instructions each, plus dedicated Intent Path Tracer and Test Reviewer agents. Add forced per-file enumeration. Formalize intent extraction as mandatory first phase. Randomize checklist ordering across runs.
+**intent-extraction** (v0.3.5) — Complete
+Mandatory intent extraction phase with user checkpoint, review report file, Mermaid diagram generation. Added to SKILL.md, code-review-guide.md, and existing-code-review.md. Validated against Project B: 12 intent-sourced findings (29% of total), both critical findings intent-sourced, new finding type "tests protecting bug" uniquely enabled by intent.
 
-**tiered-detection** (v0.4.0)
-Add Tier 2 detector agents that operate on deterministic AST skeletons + LLM behavioral summaries, focused on cross-module patterns: dual-path divergence, state flow between components, contract mismatches, architectural intent alignment. Includes AST tooling installation, summarizer agents, and cross-tier deduplication.
+**detector-decomposition** (v0.4.0) — Updated based on v0.3.5 evaluation data
+Decompose from 3 detectors with 63 instructions each to 7 Tier 1 groups with 2-4 instructions each, plus dedicated Intent Path Tracer and Test Reviewer agents. Randomize checklist ordering across runs.
+
+Updates from v0.3.5 evaluation:
+- Intent extraction is already implemented — the Intent Path Tracer agent consumes the existing intent register format (prose claims + Mermaid diagram) rather than designing a new extraction step. The Mermaid diagram may be path-tracer-specific context (excluded from general Detector prompts to save ~900 tokens) pending further data.
+- Test Reviewer adds "tests protecting bug" as a named detection target — tests that validate broken behavior against documented intent. This finding type was uniquely enabled by intent extraction in the v0.3.5 evaluation.
+- Forced per-file enumeration schema: consider making strict schema optional. Informal enumeration instructions ("state what you checked per file") achieved compliance in all three v0.3.5 evaluations without a rigid format.
+
+**tiered-detection** (v0.4.0) — Updated based on v0.3.5 evaluation data
+Add Tier 2 detector agents that operate on deterministic AST skeletons + LLM behavioral summaries, focused on cross-module patterns: dual-path divergence, state flow between components, contract mismatches, architectural intent alignment.
+
+Updates from v0.3.5 evaluation:
+- Add two detection targets: **workflow completeness** (does an operation's inverse undo all effects — repo issue #23 /unsubscribe doesn't remove Reddit feeds) and **concurrent path interaction** (do concurrent invocations of the same path interfere — repo issue #24, fresh review F-34/F-35).
+- Three of four original methodology gaps confirmed as still undetected: unbounded data structure growth (#4, #25), batch transaction atomicity (#3), intra-function logical redundancy (#9). Add to Tier 2 or checklist detection targets.
+- Cross-tier deduplication keys on existing pattern label field in sighting format — Tier 2 finding with same pattern label as Tier 1 findings subsumes the Tier 1 instances.
+
+Includes AST tooling installation, summarizer agents, and cross-tier deduplication.
 
 ## 5. Cross-Cutting Concerns
 
@@ -78,7 +94,7 @@ Add Tier 2 detector agents that operate on deterministic AST skeletons + LLM beh
 
 **Cost management**: More agents = more API calls. Phase 2 increases detector count from ~3 to ~8-12. Phase 3 adds ~2-3 Tier 2 agents. Total agent invocations per round roughly triples. The intent extraction phase adds 1 agent per review. This is a deliberate cost-for-coverage trade.
 
-**Testing**: Each phase is validated against fresh repos with existing filed issues (not re-runs of previously reviewed repos). The filed issues provide ground truth: the pipeline should at minimum find what humans already found. The initial evaluation (6/24 overlap = 25% issue coverage) is the baseline to beat. Target: ≥50% overlap on comparable repos after Phase 2.
+**Testing**: Each phase is validated against fresh repos with existing filed issues (not re-runs of previously reviewed repos). The filed issues are an independent baseline for calibrating detection accuracy, not ground truth — the issue-filing agent has its own blind spots. Current baselines on Project B: v0.3.4 14.3% partial overlap, v0.3.5 39.3%. Target: ≥50% partial overlap on comparable repos after Phase 2.
 
 **Evaluation data**: The 3 public repo reviews, divergence analysis, and instruction trace are the evidence base. All stored in `tmp/firebreak-eval/`.
 
@@ -100,9 +116,16 @@ Add Tier 2 detector agents that operate on deterministic AST skeletons + LLM beh
    - **Intent Path Tracer**: Traces main execution paths against intent register. Catches architectural mismatches, documented behaviors with no entry point, and module-level intent drift.
    - **Test Reviewer**: Dedicated agent for test quality. Test-intent alignment (do tests cover documented paths?) + agentic test failure modes (name-assertion mismatch, mock permissiveness, vacuous assertions, fixture coherence, coverage gaps). Receives test files + production imports + intent register.
 
-3. **Intent extraction depth** (resolved): Two-stage intent analysis with a separate test reviewer.
-   - **Intent extractor**: Reads all project docs, produces up to 30 structured behavioral claims (capped for cost). Full extraction — the evaluation showed both major and minor findings were valuable.
-   - **Intent path tracer**: Instead of checking each claim against every file, traces the application's main execution paths (5-8 paths typically) and compares what actually happens against the intent register. Path tracing naturally catches architectural mismatches by following real composition — it surfaces both misaligned behaviors (prefilter doesn't filter) and documented behaviors with no entry point (tower health system). Cheaper than brute-force claim-by-claim checking and better at catching cross-module issues.
-   - **Test reviewer**: Separate dedicated agent. Receives test files + their production imports + intent register. Focuses on: (a) test-intent alignment — do tests cover what the docs say the application does? (b) agentic test failure modes — name-assertion mismatch, mock permissiveness, fixture coherence, vacuous assertions, coverage gaps. This removes test-integrity items from the Tier 1 checklist groups (group 3 becomes: composition opacity only, merged into another group) and gives test review its own optimized context shape.
+3. **Intent extraction depth** (resolved, partially implemented in v0.3.5): Two-stage intent analysis with a separate test reviewer.
+   - **Intent extractor**: Implemented in v0.3.5 as orchestrator-level instructions in SKILL.md. Reads all project docs, produces up to 30 structured behavioral claims + Mermaid diagram, gated by user checkpoint. Validated: 25 claims extracted from Project B, 12 findings sourced from intent (29% of total), both criticals intent-sourced.
+   - **Intent path tracer**: v0.4.0 agent. Consumes the existing intent register format (not a separate extraction). Traces 5-8 main execution paths against intent claims. Path tracing catches architectural mismatches by following real composition — the v0.3.5 evaluation confirmed this: F-01 (auto-reg unreachable) and F-03 (prefilter no-op) are path-tracing findings produced by general Detectors that a dedicated agent would find more reliably without displacing structural detection.
+   - **Test reviewer**: Separate dedicated agent. Receives test files + their production imports + intent register. Focuses on: (a) test-intent alignment — do tests cover what the docs say the application does? (b) **tests protecting bugs** — tests that validate broken behavior against documented intent (new finding type from v0.3.5 evaluation: F-11 prefilter tests assert all articles go to AI, which is correct per code but wrong per intent). (c) agentic test failure modes — name-assertion mismatch, mock permissiveness, fixture coherence, vacuous assertions, coverage gaps. This removes test-integrity items from the Tier 1 checklist groups and gives test review its own optimized context shape.
 
-4. **Evaluation methodology**: Each phase should be validated against fresh repos — small-medium public projects with existing filed open issues. The open issues serve as ground truth: at minimum, the pipeline should detect what humans have already detected. This is a floor, not a ceiling (there will always be unfiled issues hiding in any code), but it provides an objective, non-overfitting measurement of detection coverage per release. The initial evaluation (6/24 overlap) is the Phase 1 baseline.
+4. **Evaluation methodology**: Each phase should be validated against fresh repos — small-medium public projects with existing filed open issues. The open issues serve as an independent baseline for calibrating detection accuracy — not ground truth, as the issue-filing agent has its own blind spots. Overlap measures alignment with an independent reviewer, not correctness. See `three-way-comparison.md` Section 5 for detailed analysis.
+
+   Current baselines (Project B, 28 matchable issues):
+   - Pre-hygiene (v0.3.4): 4/28 partial overlap (14.3%)
+   - Post-hygiene no intent (v0.3.5): 11/28 partial overlap (39.3%)
+   - Post-hygiene with intent (v0.3.5+intent): pending comparison (42 findings, TBD overlap)
+   
+   v0.4.0 target: ≥50% partial overlap on comparable repos after detector-decomposition.
