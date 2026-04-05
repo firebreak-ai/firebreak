@@ -8,6 +8,7 @@ TOTAL=0
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
+QUALITY="$PROJECT_ROOT/assets/fbk-docs/fbk-design-guidelines/quality-detection.md"
 
 ok() {
   TOTAL=$((TOTAL + 1))
@@ -38,11 +39,11 @@ else
   not_ok "Guide test-integrity includes name-scope mismatch" "name-scope or scope-mismatch not found in $GUIDE"
 fi
 
-# --- Test 3: Guide contains dead infrastructure check (AC-25) ---
-if grep -qiE 'dead infrastructure|disconnected infrastructure' "$GUIDE"; then
-  ok "Guide contains dead infrastructure check"
+# --- Test 3: quality-detection.md contains dead infrastructure check (AC-25) ---
+if grep -qiE 'dead infrastructure|disconnected infrastructure' "$QUALITY"; then
+  ok "quality-detection.md contains dead infrastructure check"
 else
-  not_ok "Guide contains dead infrastructure check" "dead/disconnected infrastructure not found in $GUIDE"
+  not_ok "quality-detection.md contains dead infrastructure check" "dead/disconnected infrastructure not found in $QUALITY"
 fi
 
 # --- Test 4: Guide contains explicit nit exclusion instruction (AC-26) ---

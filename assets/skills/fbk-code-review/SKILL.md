@@ -7,7 +7,7 @@ argument-hint: "[target-path or feature-name]"
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash, Agent
 ---
 
-Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral comparison methodology, finding format, sighting format, orchestration protocol, and retrospective fields. Read `.claude/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md` for the AI failure mode checklist used when no specs are available.
+Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral comparison methodology, finding format, sighting format, orchestration protocol, and retrospective fields. Read `.claude/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md` for the AI failure mode checklist used when no specs are available. Read `.claude/fbk-docs/fbk-design-guidelines/quality-detection.md` for structural detection targets applicable to all code reviews.
 
 ## Entry and Path Routing
 
@@ -37,9 +37,9 @@ Before spawning Detectors, discover and run project-native linters and static an
 
 Run the iterative detection and verification loop:
 
-1. Spawn Detector with target code scope + source of truth + behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` + linter output (if available). Remind the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, or `linter`).
+1. Spawn Detector with: target code file contents first, then linter output (if available), then source of truth + behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` last. Instruct the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, or `linter`).
 2. Collect sightings
-3. Spawn Challenger with sightings + code + 'verify or reject each sighting with evidence'
+3. Spawn Challenger with: target code file contents first, then sightings to verify, then verification instructions last.
 4. Collect verified findings and rejections
 5. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
 6. Run additional rounds for weakened but unrejected sightings

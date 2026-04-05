@@ -12,10 +12,6 @@ Apply behavioral comparison to every code review: describe what the code does, t
 
 When reviewing against spec acceptance criteria, verify each AC individually. Produce a separate sighting for each AC that the code does not satisfy. Do not batch multiple AC violations into a single sighting — each AC represents a distinct behavioral contract.
 
-### Dead and disconnected infrastructure
-
-Check for components that are constructed, initialized, or declared but never invoked in the application's runtime path. Dead infrastructure is reachable code that is simply never called — distinct from dead code (unreachable branches). Produce a `structural` type sighting for each instance.
-
 ## Sighting Format
 
 Sightings are the Detector's internal output — observations of potential behavioral misalignments discovered during code inspection. Sightings are not user-facing; they feed the verification loop.
@@ -30,6 +26,7 @@ Detection source: [spec-ac | checklist | structural-target | linter]
 Observation: what the Detector observed — behavioral description
 Expected: from spec AC or failure mode checklist
 Source of truth: reference to the spec AC or checklist item
+Pattern label: cross-cutting pattern name (if applicable)
 ```
 
 Origin values:
@@ -57,6 +54,7 @@ Current behavior: confirmed behavioral description
 Expected behavior: from spec AC or failure mode checklist
 Source of truth: reference to the spec AC or checklist item
 Evidence: Challenger's verification evidence — code path, test result, or behavioral proof
+Pattern label: cross-cutting pattern name (if applicable)
 ```
 
 ## Finding Classification
@@ -91,7 +89,7 @@ Nits (naming, formatting, style, minor inconsistency with no behavioral or maint
 
 The detection-verification loop operates iteratively across up to 5 rounds:
 
-1. The orchestrator spawns the Detector with target code, source of truth, this guide's behavioral comparison instructions, and the structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md`
+1. The orchestrator spawns the Detector with target code file contents first, then linter output (if available), then source of truth + this guide's behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` last
 2. The Detector produces sightings
 3. The orchestrator spawns the Challenger with the sightings, the target code, and instructions to verify or reject each sighting with evidence
 4. The Challenger produces verified findings (with evidence) and rejections (with counter-evidence)
@@ -109,7 +107,7 @@ Only verified findings surface to the user. Rejected sightings and the internal 
 
 **Spec available**: Use the spec's acceptance criteria (ACs) and user-visible (UV) steps as the primary comparison target. These define the intended behavior against which the code is measured.
 
-**No spec available**: Use the AI failure mode checklist (`fbk-docs/fbk-sdl-workflow/ai-failure-modes.md`) for structural issue detection. This checklist captures common failure patterns in agentic code when the feature spec is absent or incomplete. Supplement with the structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` for framework-aware pattern detection.
+**No spec available**: Use both the AI failure mode checklist (`fbk-docs/fbk-sdl-workflow/ai-failure-modes.md`) and the structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` for structural issue detection.
 
 **Post-implementation**: Use the feature spec that drove the implementation as the source of truth. When the spec is finalized after implementation (e.g., during recovery workflows), treat the spec as the authoritative baseline for behavioral comparison.
 

@@ -13,4 +13,4 @@ Record each observation as a sighting using the format provided by the orchestra
 
 ## Scope discipline
 
-Analyze only the code the orchestrator directs you to. Do not expand scope beyond what is indicated. Do not write files — you are read-only.
+Analyze only the code the orchestrator directs you to. Do not expand scope beyond what is indicated. Do not write files — you are read-only. Exclude nits (naming, formatting, style with no behavioral or maintainability impact) from sightings.

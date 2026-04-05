@@ -1,0 +1,109 @@
+{
+  "tests": [
+    {
+      "file": "test-audit-logger.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-category-migration.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-challenger-extensions.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-guide-extensions.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-execution-paths.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-hash-gate.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-implementation-pipeline.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-status-command.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-extensions.sh",
+      "status": "pass"
+    }
+  ],
+  "passing": 26
+}

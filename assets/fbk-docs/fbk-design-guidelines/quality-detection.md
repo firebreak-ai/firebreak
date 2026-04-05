@@ -40,10 +40,26 @@ Flag code that constructs, initializes, or declares components (structs, classes
 
 Flag code whose documented or named meaning diverges from its actual behavior. This includes function names that describe an action the function does not perform, variable names that describe a property the value does not hold, and module names that describe a responsibility the module does not own. Detect this when reading the name or documentation produces a behavioral expectation that the code contradicts.
 
-## Silent error and context discard
+## Silent error discard
 
-Flag code that discards errors without logging or propagating them, or that replaces a caller-provided context with a fresh background context, discarding cancellation signals, deadlines, or trace propagation. Detect this when an error return is assigned to `_` or ignored without a comment justifying the discard, or when a function that receives a context parameter constructs a new context instead of forwarding the caller's.
+Flag code that discards errors without logging or propagating them. Detect this when an error return is assigned to `_` or ignored without a comment justifying the discard.
+
+## Context discard
+
+Flag code that replaces a caller-provided context with a fresh background context, discarding cancellation signals, deadlines, or trace propagation. Detect this when a function that receives a context parameter constructs a new context instead of forwarding the caller's.
 
 ## String-based type discrimination
 
 Flag code that branches on string content (error messages, type name strings, format patterns) to determine control flow, instead of using typed errors, enums, constants, or interface checks. Detect this when a conditional expression applies string matching operations (substring check, prefix match, equality comparison) to an error message, type name, or status string to select a code path.
+
+## Dual-path verification
+
+Flag operations that have both a bulk path and an incremental path for the same state. Detect this when the bulk path (initial load, full sync) sets fields that the incremental path (event-driven update, delta sync) ignores, or vice versa — this creates state divergence that manifests only under specific execution sequences.
+
+## Test-production string alignment
+
+Flag test assertions that match on string values absent from the production code being tested. Detect this when a test asserts on an error message, status string, or format pattern that does not appear in the production module's source — these are phantom assertions that pass trivially because the production code never produces the matched string.
+
+## Dead code after field or function removal
+
+Flag guards, conditionals, and logging branches that reference values from a removed field or changed function signature. Detect this when a field removal or parameter change leaves downstream checks on the removed value — the check is reachable code that can never evaluate to true.
