@@ -33,7 +33,16 @@ setup_mock_source() {
   mkdir -p "$src/assets/hooks/fbk-sdl-workflow"
   mkdir -p "$src/assets/fbk-docs/fbk-sdl-workflow"
   echo "mock spec prompt" > "$src/assets/skills/fbk-spec/prompt.md"
-  echo "mock agent" > "$src/assets/agents/fbk-code-review-detector.md"
+  echo "mock agent" > "$src/assets/agents/fbk-t1-value-abstraction-detector.md"
+  echo "mock agent" > "$src/assets/agents/fbk-t1-dead-code-detector.md"
+  echo "mock agent" > "$src/assets/agents/fbk-t1-signal-loss-detector.md"
+  echo "mock agent" > "$src/assets/agents/fbk-t1-behavioral-drift-detector.md"
+  echo "mock agent" > "$src/assets/agents/fbk-t1-function-boundaries-detector.md"
+  echo "mock agent" > "$src/assets/agents/fbk-t1-cross-boundary-structure-detector.md"
+  echo "mock agent" > "$src/assets/agents/fbk-t1-missing-safeguards-detector.md"
+  echo "mock agent" > "$src/assets/agents/fbk-intent-path-tracer.md"
+  echo "mock agent" > "$src/assets/agents/fbk-cr-test-reviewer.md"
+  echo "mock agent" > "$src/assets/agents/fbk-sighting-deduplicator.md"
   printf '#!/usr/bin/env bash\necho done' > "$src/assets/hooks/fbk-sdl-workflow/task-completed.sh"
   echo "mock doc" > "$src/assets/fbk-docs/fbk-sdl-workflow/guide.md"
   echo '{"hooks":{"TaskCompleted":[{"hooks":[{"type":"command","command":"\"$HOME\"/.claude/hooks/fbk-sdl-workflow/task-completed.sh"}]}]},"env":{"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS":"1"}}' \
@@ -121,11 +130,11 @@ bash "$INSTALL_SCRIPT" --uninstall --target "$TARGET" 2>/dev/null
 RC=$?
 if [ $RC -eq 0 ] \
   && [ ! -f "$TARGET/skills/fbk-spec/prompt.md" ] \
-  && [ ! -f "$TARGET/agents/fbk-code-review-detector.md" ] \
+  && [ ! -f "$TARGET/agents/fbk-t1-value-abstraction-detector.md" ] \
   && [ ! -f "$TARGET/hooks/fbk-sdl-workflow/task-completed.sh" ]; then
   ok "uninstall removes fbk-prefixed files"
 else
-  not_ok "uninstall removes fbk-prefixed files" "rc=$RC skill=$([ -f "$TARGET/skills/fbk-spec/prompt.md" ] && echo exists || echo gone) agent=$([ -f "$TARGET/agents/fbk-code-review-detector.md" ] && echo exists || echo gone)"
+  not_ok "uninstall removes fbk-prefixed files" "rc=$RC skill=$([ -f "$TARGET/skills/fbk-spec/prompt.md" ] && echo exists || echo gone) agent=$([ -f "$TARGET/agents/fbk-t1-value-abstraction-detector.md" ] && echo exists || echo gone)"
 fi
 
 # --- Test 6: uninstall removes hooks from settings.json ---

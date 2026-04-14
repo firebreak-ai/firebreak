@@ -74,11 +74,11 @@ else
   not_ok "SKILL.md contains pattern deduplication instruction" "file: $SKILL"
 fi
 
-# --- Test 8: SKILL.md Detector spawn references quality-detection.md (AC-21) ---
+# --- Test 8: SKILL.md references quality-detection.md (AC-21) ---
 if grep -q 'quality-detection' "$SKILL"; then
-  ok "SKILL.md Detector spawn references quality-detection.md"
+  ok "SKILL.md references quality-detection.md"
 else
-  not_ok "SKILL.md Detector spawn references quality-detection.md" "file: $SKILL"
+  not_ok "SKILL.md references quality-detection.md" "file: $SKILL"
 fi
 
 # --- Test 9: SKILL.md Detector spawn includes detection source tagging (AC-22) ---

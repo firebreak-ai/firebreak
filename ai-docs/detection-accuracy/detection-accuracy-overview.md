@@ -1,3 +1,5 @@
+> **Note (2026-04-09):** This document describes the internal 3-repo evaluation that motivated the detection accuracy work. For the external benchmark baseline (50 PRs, consensus-judged), see `martian-benchmark/results/deviation_analysis.md`.
+
 # Detection Accuracy Improvement — Project Overview
 
 ## 1. Vision

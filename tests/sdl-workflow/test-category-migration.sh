@@ -8,7 +8,7 @@ TOTAL=0
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
-DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
+DETECTOR="$PROJECT_ROOT/assets/agents/fbk-t1-value-abstraction-detector.md"
 CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
 
 ok() {

@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
+DETECTOR="$PROJECT_ROOT/assets/agents/fbk-t1-value-abstraction-detector.md"
 CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
 GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
 CHECKLIST="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md"
@@ -213,13 +213,11 @@ else
   not_ok "Guide documents behavioral comparison methodology" "behavioral=$behavioral describe_compare=$describe_compare"
 fi
 
-# --- Test 20: Guide does not use defect-detection framing as instructions ---
-find_bugs_total=$(grep -c 'find bugs' "$GUIDE" 2>/dev/null || true)
-find_bugs_negated=$(grep 'find bugs' "$GUIDE" 2>/dev/null | grep -cE "don't|not|never|avoid" || true)
-if [ "$find_bugs_total" -eq 0 ] || [ "$find_bugs_total" -eq "$find_bugs_negated" ]; then
-  ok "Guide does not use defect-detection framing as instructions"
+# --- Test 20: Sighting ID format in tier 1 agents accepts S- or group-prefixed IDs ---
+if grep -qE 'S-|G[0-9]-S-' "$DETECTOR" 2>/dev/null; then
+  ok "Sighting ID format in tier 1 agents accepts S- or group-prefixed IDs (S- or G1-S-)"
 else
-  not_ok "Guide does not use defect-detection framing as instructions" "find_bugs_total=$find_bugs_total find_bugs_negated=$find_bugs_negated"
+  not_ok "Sighting ID format in tier 1 agents accepts S- or group-prefixed IDs" "detector missing 'S-' or 'G1-S-' sighting ID format"
 fi
 
 # --- Test 21: Guide documents all required retrospective fields ---

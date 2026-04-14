@@ -25,15 +25,28 @@ not_ok() {
   [ -n "${2:-}" ] && echo "# $2"
 }
 
-# Define paths to the 5 agent-facing documents
+# Define paths to the agent-facing documents
 CHECKLIST="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md"
 QUALITY="$PROJECT_ROOT/assets/fbk-docs/fbk-design-guidelines/quality-detection.md"
 GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
-DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
 CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
 
+# Per-group agents (Tier 1)
+G1="$PROJECT_ROOT/assets/agents/fbk-t1-value-abstraction-detector.md"
+G2="$PROJECT_ROOT/assets/agents/fbk-t1-dead-code-detector.md"
+G3="$PROJECT_ROOT/assets/agents/fbk-t1-signal-loss-detector.md"
+G4="$PROJECT_ROOT/assets/agents/fbk-t1-behavioral-drift-detector.md"
+G5="$PROJECT_ROOT/assets/agents/fbk-t1-function-boundaries-detector.md"
+G6="$PROJECT_ROOT/assets/agents/fbk-t1-cross-boundary-structure-detector.md"
+G7="$PROJECT_ROOT/assets/agents/fbk-t1-missing-safeguards-detector.md"
+
+# Specialized agents
+INTENT_TRACER="$PROJECT_ROOT/assets/agents/fbk-intent-path-tracer.md"
+TEST_REVIEWER="$PROJECT_ROOT/assets/agents/fbk-test-reviewer.md"
+DEDUPLICATOR="$PROJECT_ROOT/assets/agents/fbk-sighting-deduplicator.md"
+
 # Combine all docs for grep -l queries
-ALL_DOCS="$CHECKLIST $QUALITY $GUIDE $DETECTOR $CHALLENGER"
+ALL_DOCS="$CHECKLIST $QUALITY $GUIDE $CHALLENGER $G1 $G2 $G3 $G4 $G5 $G6 $G7 $INTENT_TRACER $TEST_REVIEWER $DEDUPLICATOR"
 
 # Helper function to check if a detection target appears in any agent-facing document
 check_target() {

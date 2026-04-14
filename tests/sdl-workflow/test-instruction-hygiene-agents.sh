@@ -5,7 +5,7 @@ set -uo pipefail
 # TAP format: https://testanything.org/
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
+DETECTOR="$PROJECT_ROOT/assets/agents/fbk-t1-value-abstraction-detector.md"
 CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
 GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
 

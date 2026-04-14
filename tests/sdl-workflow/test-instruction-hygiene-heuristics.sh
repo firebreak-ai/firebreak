@@ -47,10 +47,10 @@ fi
 
 # Test 4: AC-04 format - promoted sections contain "Detect this when" heuristic
 count=$(grep -c 'Detect this when' "$QUALITY" || true)
-if [ "$count" -ge 11 ]; then
-  tap_ok "quality-detection.md contains 'Detect this when' at least 11 times (found $count)"
+if [ "$count" -ge 15 ]; then
+  tap_ok "quality-detection.md contains 'Detect this when' at least 15 times (found $count)"
 else
-  tap_not_ok "quality-detection.md contains 'Detect this when' at least 11 times (found $count, expected >= 11)"
+  tap_not_ok "quality-detection.md contains 'Detect this when' at least 15 times (found $count, expected >= 15)"
 fi
 
 # Test 5: AC-04 removal - "Dual-path verification" section heading absent

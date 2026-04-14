@@ -22,12 +22,28 @@ Check for existing specs — provided by the user or discovered in `ai-docs/`. I
 
 ## Agent Team
 
-Spawn agents as a team with fresh context per invocation. Use two agents:
+Spawn agents as a team with fresh context per invocation. The agent complement is determined by the selected detection preset.
 
-- **Detector** (`code-review-detector`): Reads code, produces sightings with type and severity classification. Tools: Read, Grep, Glob.
-- **Challenger** (`code-review-challenger`): Verifies or rejects sightings. Tools: Read, Grep, Glob.
+- **Tier 1 Detectors** (`fbk-t1-value-abstraction-detector`, `fbk-t1-dead-code-detector`, `fbk-t1-signal-loss-detector`, `fbk-t1-behavioral-drift-detector`, `fbk-t1-function-boundaries-detector`, `fbk-t1-cross-boundary-structure-detector`, `fbk-t1-missing-safeguards-detector`): Per-group detection agents, each with 3-5 assigned detection targets. Tools: Read, Grep, Glob. Construct all Tier 1 spawn prompts with identical code payloads in identical order to maximize prompt cache hits across agents.
+- **Intent Path Tracer** (`fbk-intent-path-tracer`): Traces execution paths against the intent register. Tools: Read, Grep, Glob.
+- **Test Reviewer** (`fbk-cr-test-reviewer`): Reviews test quality, test-intent alignment, and agentic test failure modes. Tools: Read, Grep, Glob.
+- **Sighting Deduplicator** (`fbk-sighting-deduplicator`): Merges duplicate sightings before Challenger verification. No tools.
+- **Challenger** (`fbk-code-review-challenger`): Verifies or rejects sightings. Tools: Read, Grep, Glob.
 
 Inject the behavioral comparison methodology from `code-review-guide.md` and the relevant source of truth into each agent's spawn prompt. Agents do not inherit skills.
+
+## Detection Presets
+
+| Preset | Agents spawned | Use case |
+|--------|---------------|----------|
+| `behavioral-only` (default) | Groups 1-4 (value-abstraction, dead-code, signal-loss, behavioral-drift) + Intent Path Tracer | Highest signal-to-noise for most reviews |
+| `structural` | Groups 5-7 (function-boundaries, cross-boundary-structure, missing-safeguards) | Architecture and design pattern analysis |
+| `test-only` | Test Reviewer | Dedicated test quality pass |
+| `full` | All 9 agents | Complete analysis — runs preset waves sequentially |
+
+The default preset is `behavioral-only`. When the user does not specify a preset, apply `behavioral-only` silently. When the user requests a different scope by name (e.g., 'run a full review', 'also check the tests', 'structural review'), the orchestrator interprets and maps to the appropriate preset or toggle. Do not prompt users to select a preset.
+
+Per-group toggles override any preset. Enable or disable individual groups by name to customize the agent complement. For example, `behavioral-only` + `test-reviewer` runs Groups 1-4 + Intent Path Tracer + Test Reviewer.
 
 ## Review Report
 
@@ -76,14 +92,28 @@ Where the intent register has gaps (modules with no documentation coverage), der
 
 Run the iterative detection and verification loop:
 
-1. Spawn Detector with: target code file contents first, then linter output (if available), then intent register (from Intent Extraction), then source of truth + behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` last. Instruct the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, `intent`, or `linter`).
+1. Resolve the selected detection preset to its agent groups. Spawn the preset's agents in parallel:
+   - **Tier 1 Detectors**: Spawn each selected per-group agent by name. Inject into each spawn prompt: target code file contents first, then linter output (if available), then intent register claims last. Construct all Tier 1 spawn prompts with identical code payloads in identical order to maximize prompt cache hits across agents. Randomize the order of detection targets within each agent's group payload before injection. Groups 2 (dead-code) and 6 (cross-boundary-structure) also receive the Mermaid diagram; all other Tier 1 groups receive claims only.
+   - **Intent Path Tracer** (if included in preset): Spawn `fbk-intent-path-tracer`. Inject: intent register (claims + Mermaid diagram) and entry points with associated intent claims. The Path Tracer reads code files on demand via tools.
+   - **Test Reviewer** (if included in preset): Spawn `fbk-cr-test-reviewer`. Inject: test files in scope + their production imports first, then intent register claims (no Mermaid diagram) last.
+   Instruct each agent to tag sightings with its detection source.
+
+Identify entry points for the Intent Path Tracer from three sources: (1) Intent register — behavioral claims describing user-facing actions or triggers. (2) Conventional entry points — main files, route/command handlers, event listeners, exported CLI commands, cron/scheduler callbacks. (3) Package configuration — scripts in package.json, entry fields, CI workflow triggers. Provide up to 10 entry point file paths with the intent claim each relates to, prioritized by coverage of intent claims.
+
+1a. When the preset wave spawned multiple agents, spawn the Sighting Deduplicator (`fbk-sighting-deduplicator`) with the complete sighting list from all agents in the wave. The Deduplicator merges sightings at the same file and overlapping line ranges, returns a deduplicated sighting list and a merge log. When the preset wave contains a single agent, skip the Deduplicator — pass sightings directly to Challenger verification. Record merge count and merged pairs from dedup logs in the retrospective.
+
+For `full` runs, execute each preset wave sequentially: `behavioral-only` → `structural` → `test-only`. Within each wave, spawn all agents in parallel. Each wave runs its own Sighting Deduplicator (skipped for single-agent waves) and Challenger pass. After all preset waves complete, perform cross-preset finding dedup inline: if two findings from different presets reference the same file and overlapping line ranges, keep the higher-severity finding and note both detection sources. This cross-preset dedup is orchestrator-level — no additional agent spawn.
+
 2. Collect sightings
-3. Spawn Challenger with: target code file contents first, then sightings to verify, then verification instructions last.
+3. Spawn Challengers with: target code file contents first, then sightings to verify, then verification instructions last. Batch sightings: spawn 1 Challenger per 5 sightings, grouped by originating detection category (matching the Tier 1 group, Intent Path Tracer, or Test Reviewer that produced them). Spawn all Challengers in parallel. Challengers run per preset wave, scoped to that wave's deduplicated sightings.
 4. Collect verified findings and rejections
 4a. After each verification round, append verified findings to the review report file.
+4b. Filter each verified finding through two gates. Resolve the scripts directory: `S=$([ -f scripts/charter-filter.sh ] && echo scripts || echo ~/.claude/scripts)`. First, run `bash "$S/charter-filter.sh" <finding_type> <active_preset>` — drop findings that fail (out-of-charter for the active preset). Second, run `bash "$S/confidence.sh" <self_score> <agent_count> <challenger_verdict>` — drop findings with final confidence below 8.0. Record all excluded findings in the retrospective under a "Filtered" section with the reason (out-of-charter or below-threshold) and score.
 5. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
 6. Run additional rounds for weakened but unrejected sightings
-7. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds
+7. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds.
+
+In iterative detection rounds, only respawn an agent if its previous instance produced at least one verified sighting above info level. If an agent's sightings all failed Challenger verification or were info-level only, do not respawn that agent in the next round. Maximum 5 repetitions per agent regardless of output. This applies independently to each Tier 1 group, the Intent Path Tracer, and the Test Reviewer. When a merged sighting survives Challenger verification, all originating agents (per the Deduplicator's merge log) are credited for respawn eligibility.
 
 Only verified findings surface to the user. Rejected sightings are excluded.
 
@@ -97,7 +127,7 @@ When the user requests a full codebase review rather than specific modules:
 
 1. Survey the project structure and identify reviewable units
 2. Propose a review order to the user
-3. Spawn fresh Detector/Challenger pairs per unit. For broad-scope reviews with multiple independent units, spawn parallel Detector agents as a team — each Detector reviews its assigned unit independently with its own context. Detectors do not share state.
+3. Spawn the selected preset's agent complement per unit. For broad-scope reviews with multiple independent units, spawn parallel agent teams — each unit gets its own preset-driven agent set reviewing independently with its own context. Agents do not share state across units.
 4. Accumulate verified findings across units, watching for cross-module patterns
 5. After all units complete, perform cross-unit pattern deduplication: identify findings from different units that describe the same underlying pattern, assign a shared pattern name (e.g., "string-error-dispatch", "dead-handler-registration"), and group them in the retrospective. Deduplicated findings retain their individual IDs but share the pattern label.
 6. Checkpoint with the user after each unit

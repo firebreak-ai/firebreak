@@ -1,3 +1,5 @@
+> **Note (2026-04-09):** Preliminary internal evaluation. Superseded by the Martian benchmark evaluation (50 PRs, consensus-judged) in `martian-benchmark/results/deviation_analysis.md`.
+
 # Pipeline Retrospective: Evaluation Round
 
 **Date**: 2026-04-04

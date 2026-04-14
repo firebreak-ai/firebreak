@@ -19,7 +19,7 @@ Use the feature spec that drove the implementation — its ACs and UV steps.
 Run the full Detector/Challenger detection-verification loop without user involvement:
 
 1. Run the project's full test suite and confirm zero failures before proceeding. Surface any failures to the user before starting detection.
-2. Spawn Detector with modified files + feature spec ACs
+2. Spawn the selected preset's Tier 1 per-group agents, Intent Path Tracer, and Test Reviewer with modified files + feature spec ACs. Use the same preset-driven multi-agent spawn and deduplication from the Detection-Verification Loop in SKILL.md.
 3. Spawn Challenger to verify sightings
 4. Loop until a round produces no new sightings above `info` severity or no sightings, or after 5 rounds
 5. Present verified findings to the user

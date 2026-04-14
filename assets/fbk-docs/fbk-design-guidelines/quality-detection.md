@@ -63,3 +63,19 @@ Flag test assertions that match on string values absent from the production code
 ## Dead code after field or function removal
 
 Flag guards, conditionals, and logging branches that reference values from a removed field or changed function signature. Detect this when a field removal or parameter change leaves downstream checks on the removed value — the check is reachable code that can never evaluate to true.
+
+## Unbounded data structure growth
+
+Flag long-lived data structures (Maps, Sets, arrays on module-scoped or class-scoped variables) and persistent tables that grow monotonically with no eviction, rotation, TTL, or size cap. Detect this when a collection or table receives insertions (add, set, push, INSERT) without any corresponding deletion, eviction, or size-limiting mechanism in the same module or a scheduled job.
+
+## Migration/DDL idempotency
+
+Flag schema migrations and one-time initialization code that lacks guards against re-execution. Detect this when a migration file contains ALTER TABLE, CREATE TABLE, ADD COLUMN, or equivalent DDL statements without IF NOT EXISTS, IF EXISTS, or equivalent idempotency guards.
+
+## Batch transaction atomicity
+
+Flag loops performing multiple independent write operations where partial completion leaves inconsistent state. Detect this when a loop body contains two or more write calls (database writes, file writes, API calls with side effects) without a surrounding transaction, batch construct, or rollback mechanism.
+
+## Intra-function logical redundancy
+
+Flag conditional checks within a single execution path that are fully subsumed by earlier checks in the same path. Detect this when a guard or branch condition tests a property that was already guaranteed by a preceding check, early return, or assignment in the same function.

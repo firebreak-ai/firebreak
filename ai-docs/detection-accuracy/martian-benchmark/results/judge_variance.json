@@ -1,0 +1,92 @@
+[
+  {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR14740",
+    "pr_url": "https://github.com/calcom/cal.com/pull/14740",
+    "golden_index": "4",
+    "golden_severity": "Medium",
+    "golden_comment": "uniqueGuests filters out existing attendees and blacklisted emails but does not deduplicate duplicates within the input; createMany can insert duplica",
+    "consensus": 15,
+    "vote_count": 2,
+    "total_votes": 3,
+    "all_votes": [
+      15,
+      18,
+      15
+    ]
+  },
+  {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR5",
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/5",
+    "golden_index": "1",
+    "golden_severity": "Low",
+    "golden_comment": "Mixing float: left with flexbox causes layout issues. Further this PR removes the float-based right alignment for .d-header .panel, which may cause th",
+    "consensus": 2,
+    "vote_count": 2,
+    "total_votes": 3,
+    "all_votes": [
+      2,
+      2,
+      null
+    ]
+  },
+  {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR7",
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/7",
+    "golden_index": "1",
+    "golden_severity": "Low",
+    "golden_comment": "In .topic-meta-data h5 a, the original code had color: scale-color($primary, $lightness: 30%) but was changed to dark-light-choose(scale-color($primar",
+    "consensus": null,
+    "vote_count": 2,
+    "total_votes": 3,
+    "all_votes": [
+      null,
+      1,
+      null
+    ]
+  },
+  {
+    "instance_id": "grafana__grafana__grafana__PR103633",
+    "pr_url": "https://github.com/grafana/grafana/pull/103633",
+    "golden_index": "1",
+    "golden_severity": "High",
+    "golden_comment": "The Check operation exhibits asymmetric cache trust logic: cached permission grants are trusted and returned immediately, but cached denials from the ",
+    "consensus": null,
+    "vote_count": 2,
+    "total_votes": 3,
+    "all_votes": [
+      null,
+      1,
+      null
+    ]
+  },
+  {
+    "instance_id": "keycloak__keycloak__keycloak__PR36880",
+    "pr_url": "https://github.com/keycloak/keycloak/pull/36880",
+    "golden_index": "1",
+    "golden_severity": "High",
+    "golden_comment": "Inconsistent feature flag bug causing orphaned permissions. The AdminPermissions event listener, responsible for cleaning up permissions upon role, cl",
+    "consensus": 2,
+    "vote_count": 2,
+    "total_votes": 3,
+    "all_votes": [
+      2,
+      3,
+      2
+    ]
+  },
+  {
+    "instance_id": "keycloak__keycloak__keycloak__PR37038",
+    "pr_url": "https://github.com/keycloak/keycloak/pull/37038",
+    "golden_index": "1",
+    "golden_severity": "High",
+    "golden_comment": "Incorrect permission check in canManage() method",
+    "consensus": null,
+    "vote_count": 2,
+    "total_votes": 3,
+    "all_votes": [
+      5,
+      null,
+      null
+    ]
+  }
+]

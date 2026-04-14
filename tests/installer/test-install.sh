@@ -35,7 +35,16 @@ setup_mock_source() {
   mkdir -p "$MOCK_DIR/assets/fbk-docs/fbk-sdl-workflow"
 
   echo "mock spec prompt" > "$MOCK_DIR/assets/skills/fbk-spec/prompt.md"
-  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-code-review-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-value-abstraction-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-dead-code-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-signal-loss-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-behavioral-drift-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-function-boundaries-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-cross-boundary-structure-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-missing-safeguards-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-intent-path-tracer.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-cr-test-reviewer.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-sighting-deduplicator.md"
   echo -e "#!/usr/bin/env bash\necho done" > "$MOCK_DIR/assets/hooks/fbk-sdl-workflow/task-completed.sh"
   echo "mock doc" > "$MOCK_DIR/assets/fbk-docs/fbk-sdl-workflow/guide.md"
 
@@ -86,7 +95,7 @@ MOCK_SOURCE=$(setup_mock_source)
 TARGET=$(setup_target)
 bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" > /dev/null 2>&1
 RC=$?
-if [ -f "$TARGET/skills/fbk-spec/prompt.md" ] && [ -f "$TARGET/agents/fbk-code-review-detector.md" ] && \
+if [ -f "$TARGET/skills/fbk-spec/prompt.md" ] && [ -f "$TARGET/agents/fbk-t1-value-abstraction-detector.md" ] && \
    [ -f "$TARGET/hooks/fbk-sdl-workflow/task-completed.sh" ] && [ -f "$TARGET/fbk-docs/fbk-sdl-workflow/guide.md" ]; then
   ok "fresh install creates fbk-prefixed files in target"
 else
@@ -187,7 +196,7 @@ MOCK_SOURCE=$(setup_mock_source)
 PROJECT_DIR=$(mktemp -d)
 TEMP_DIRS+=("$PROJECT_DIR")
 bash "$INSTALL_SCRIPT" --target "$PROJECT_DIR/.claude" --source "$MOCK_SOURCE" > /dev/null 2>&1
-if [ -f "$PROJECT_DIR/.claude/skills/fbk-spec/prompt.md" ] && [ -f "$PROJECT_DIR/.claude/agents/fbk-code-review-detector.md" ]; then
+if [ -f "$PROJECT_DIR/.claude/skills/fbk-spec/prompt.md" ] && [ -f "$PROJECT_DIR/.claude/agents/fbk-t1-value-abstraction-detector.md" ]; then
   ok "project-level install creates files at correct path"
 else
   not_ok "project-level install creates files at correct path" "files not found at .claude subdir"

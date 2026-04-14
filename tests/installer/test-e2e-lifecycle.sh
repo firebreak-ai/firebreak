@@ -35,7 +35,16 @@ setup_mock_source() {
   mkdir -p "$MOCK_DIR/assets/fbk-docs/fbk-sdl-workflow"
 
   echo "mock spec prompt" > "$MOCK_DIR/assets/skills/fbk-spec/prompt.md"
-  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-code-review-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-value-abstraction-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-dead-code-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-signal-loss-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-behavioral-drift-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-function-boundaries-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-cross-boundary-structure-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-t1-missing-safeguards-detector.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-intent-path-tracer.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-cr-test-reviewer.md"
+  echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-sighting-deduplicator.md"
   echo -e "#!/usr/bin/env bash\necho done" > "$MOCK_DIR/assets/hooks/fbk-sdl-workflow/task-completed.sh"
   echo "mock doc" > "$MOCK_DIR/assets/fbk-docs/fbk-sdl-workflow/guide.md"
 
@@ -104,7 +113,7 @@ bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" > /dev/null 2>
 RC=$?
 
 # Test 1: Post-install fbk files exist
-if [ -f "$TARGET/skills/fbk-spec/prompt.md" ] && [ -f "$TARGET/agents/fbk-code-review-detector.md" ] && \
+if [ -f "$TARGET/skills/fbk-spec/prompt.md" ] && [ -f "$TARGET/agents/fbk-t1-value-abstraction-detector.md" ] && \
    [ -f "$TARGET/hooks/fbk-sdl-workflow/task-completed.sh" ] && [ -f "$TARGET/fbk-docs/fbk-sdl-workflow/guide.md" ]; then
   ok "post-install: fbk-prefixed files exist"
 else
@@ -198,7 +207,7 @@ fi
 bash "$INSTALL_SCRIPT" --uninstall --target "$TARGET" > /dev/null 2>&1
 
 # Test 11: Post-uninstall fbk files removed
-if [ ! -f "$TARGET/skills/fbk-spec/prompt.md" ] && [ ! -f "$TARGET/agents/fbk-code-review-detector.md" ]; then
+if [ ! -f "$TARGET/skills/fbk-spec/prompt.md" ] && [ ! -f "$TARGET/agents/fbk-t1-value-abstraction-detector.md" ]; then
   ok "post-uninstall: fbk files removed"
 else
   not_ok "post-uninstall: fbk files removed" "fbk files still exist"
