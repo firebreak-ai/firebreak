@@ -83,12 +83,12 @@ else
   not_ok "ai-failure-modes.md contains \"string-based error\" keyword"
 fi
 
-# --- Test 9: quality-detection.md detection target count >= 11 (AC-31 through AC-35) ---
+# --- Test 9: quality-detection.md detection target count >= 15 (AC-31 through AC-35) ---
 headings=$(grep -cE '^## ' "$QUALITY" 2>/dev/null || true)
-if [ "$headings" -ge 11 ]; then
-  ok "quality-detection.md detection target count >= 11"
+if [ "$headings" -ge 15 ]; then
+  ok "quality-detection.md detection target count >= 15"
 else
-  not_ok "quality-detection.md detection target count >= 11" "headings=$headings"
+  not_ok "quality-detection.md detection target count >= 15" "headings=$headings"
 fi
 
 # --- Test 10: quality-detection.md contains "parallel collection" keyword (AC-31) ---

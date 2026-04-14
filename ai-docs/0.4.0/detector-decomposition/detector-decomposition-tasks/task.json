@@ -1,0 +1,740 @@
+{
+  "spec": "ai-docs/0.4.0/detector-decomposition/detector-decomposition-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Shell test: 7 per-group Tier 1 agent files exist with required frontmatter",
+      "file": "task-01-test-t1-agent-files-exist.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Shell test: each per-group agent contains its assigned detection targets exclusively",
+      "file": "task-02-test-t1-detection-targets.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-19"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-03",
+      "title": "Shell test: Intent Path Tracer agent exists with required fields",
+      "file": "task-03-test-intent-path-tracer.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-04"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-04",
+      "title": "Shell test: Test Reviewer agent exists with 5 agentic failure mode names",
+      "file": "task-04-test-test-reviewer.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-05"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-05",
+      "title": "Shell test: quality-detection.md contains 4 new detection targets",
+      "file": "task-05-test-quality-detection-new-targets.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-06",
+      "title": "Shell test: SKILL.md references all agent types, identical payload ordering, and broad-scope update",
+      "file": "task-06-test-skill-agent-references.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-07",
+      "title": "Shell test: Sighting Deduplicator agent exists and SKILL.md step 1a references it",
+      "file": "task-07-test-deduplicator-agent.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-08",
+      "title": "Shell test: SKILL.md contains Challenger batching guidance",
+      "file": "task-08-test-challenger-batching.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-09"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-09",
+      "title": "Shell test: no detection target lost during decomposition",
+      "file": "task-09-test-no-target-lost.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-07",
+        "AC-19"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-10",
+      "title": "Shell test: SKILL.md contains randomization and entry point heuristic",
+      "file": "task-10-test-randomize-and-entry-points.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-10",
+        "AC-12"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-11",
+      "title": "Shell test: code-review-guide.md has preset spawn, dedup, retrospective fields, instruction trace, and Challenger batching",
+      "file": "task-11-test-guide-updates.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-08",
+        "AC-14",
+        "AC-15"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-12",
+      "title": "Shell test: Mermaid diagram scoping \u2014 correct agents have/don't have diagram refs",
+      "file": "task-12-test-mermaid-scoping.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-11"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-13",
+      "title": "Shell test: post-impl-review.md references multi-agent spawn",
+      "file": "task-13-test-post-impl-multi-agent.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-13"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-14",
+      "title": "Shell test: per-group agents contain enumeration and cross-instance instructions",
+      "file": "task-14-test-enumeration-cross-instance.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-15",
+      "title": "Shell test: SKILL.md contains per-agent respawn gating",
+      "file": "task-15-test-respawn-gating.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-20"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-16",
+      "title": "Shell test: SKILL.md defines all preset names with default and per-group toggles",
+      "file": "task-16-test-presets.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-16",
+        "AC-17"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-17",
+      "title": "Shell test: SKILL.md contains sequential full-preset execution and cross-preset dedup",
+      "file": "task-17-test-sequential-preset-execution.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-18"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single test file creation with bounded grep assertions",
+      "status": "complete",
+      "summary": "Shell test file created and verified \u2014 compiles and runs, tests fail as expected (no implementation yet)",
+      "note": null
+    },
+    {
+      "id": "task-18",
+      "title": "Update test-code-review-integration.sh and test-code-review-structural.sh for per-group agents",
+      "file": "task-18-test-update-detector-refs-integration.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-03"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded grep assertion updates in 2 existing test files",
+      "status": "complete",
+      "summary": "Existing test file updated to reference per-group agents",
+      "note": null
+    },
+    {
+      "id": "task-19",
+      "title": "Update test-classification-system.sh and test-category-migration.sh for per-group agents",
+      "file": "task-19-test-update-detector-refs-classification.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded grep assertion updates in 2 existing test files",
+      "status": "complete",
+      "summary": "Existing test file updated to reference per-group agents",
+      "note": null
+    },
+    {
+      "id": "task-20",
+      "title": "Update test-instruction-hygiene-agents.sh and test-instruction-hygiene-coverage.sh for per-group agents",
+      "file": "task-20-test-update-hygiene-agents.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded grep assertion updates in 2 existing test files",
+      "status": "complete",
+      "summary": "Existing test file updated to reference per-group agents",
+      "note": null
+    },
+    {
+      "id": "task-21",
+      "title": "Update test-instruction-hygiene-orchestration.sh and test-orchestration-extensions.sh for preset-driven spawn",
+      "file": "task-21-test-update-orchestration-refs.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded grep assertion updates in 2 existing test files",
+      "status": "complete",
+      "summary": "Existing test file updated to reference per-group agents",
+      "note": null
+    },
+    {
+      "id": "task-22",
+      "title": "Update test-detection-scope.sh and test-instruction-hygiene-heuristics.sh count thresholds",
+      "file": "task-22-test-update-quality-detection-counts.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded threshold update in 2 existing test files",
+      "status": "complete",
+      "summary": "Existing test file updated to reference per-group agents",
+      "note": null
+    },
+    {
+      "id": "task-23",
+      "title": "Update installer test-install.sh and test-upgrade-uninstall.sh for per-group agent files",
+      "file": "task-23-test-update-installer.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-04",
+        "AC-05",
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded mock source and assertion updates in 2 existing test files",
+      "status": "complete",
+      "summary": "Existing test file updated to reference per-group agents",
+      "note": null
+    },
+    {
+      "id": "task-24",
+      "title": "Update test-e2e-lifecycle.sh for per-group agent files",
+      "file": "task-24-test-update-e2e-lifecycle.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded assertion updates in 1 existing test file",
+      "status": "complete",
+      "summary": "Existing test file updated to reference per-group agents",
+      "note": null
+    },
+    {
+      "id": "task-25",
+      "title": "Create Group 1 (value-abstraction) Tier 1 agent definition",
+      "file": "task-25-impl-t1-value-abstraction.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01",
+        "task-02",
+        "task-14"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-07",
+        "AC-19"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file creation with clear instructions and no architectural judgment",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-26",
+      "title": "Create Group 2 (dead-code) Tier 1 agent definition",
+      "file": "task-26-impl-t1-dead-code.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01",
+        "task-02",
+        "task-14"
+      ],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file creation with clear instructions and no architectural judgment",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-27",
+      "title": "Create Group 3 (signal-loss) Tier 1 agent definition",
+      "file": "task-27-impl-t1-signal-loss.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01",
+        "task-02",
+        "task-14"
+      ],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file creation with clear instructions and no architectural judgment",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-28",
+      "title": "Create Group 4 (behavioral-drift) Tier 1 agent definition",
+      "file": "task-28-impl-t1-behavioral-drift.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01",
+        "task-02",
+        "task-14"
+      ],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file creation with clear instructions and no architectural judgment",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-29",
+      "title": "Create Group 5 (function-boundaries) Tier 1 agent definition",
+      "file": "task-29-impl-t1-function-boundaries.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01",
+        "task-02",
+        "task-14"
+      ],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file creation with clear instructions and no architectural judgment",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-30",
+      "title": "Create Group 6 (cross-boundary-structure) Tier 1 agent definition",
+      "file": "task-30-impl-t1-cross-boundary-structure.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01",
+        "task-02",
+        "task-14"
+      ],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file creation with clear instructions and no architectural judgment",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-31",
+      "title": "Create Group 7 (missing-safeguards) Tier 1 agent definition",
+      "file": "task-31-impl-t1-missing-safeguards.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01",
+        "task-02",
+        "task-14"
+      ],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file creation with clear instructions and no architectural judgment",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-32",
+      "title": "Create Intent Path Tracer agent definition",
+      "file": "task-32-impl-intent-path-tracer.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-03"
+      ],
+      "covers": [
+        "AC-04"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file creation with clear instructions",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-33",
+      "title": "Create Test Reviewer agent definition",
+      "file": "task-33-impl-test-reviewer.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-04"
+      ],
+      "covers": [
+        "AC-05"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file creation with clear instructions",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-34",
+      "title": "Create Sighting Deduplicator agent definition",
+      "file": "task-34-impl-sighting-deduplicator.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-07"
+      ],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file creation with clear instructions",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-35",
+      "title": "Add 4 new detection targets to quality-detection.md",
+      "file": "task-35-impl-quality-detection-new-targets.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-05"
+      ],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file modification appending 4 sections in established format",
+      "status": "complete",
+      "summary": "Agent definition file created with required frontmatter, detection targets, and sighting output sections",
+      "note": null
+    },
+    {
+      "id": "task-36",
+      "title": "Update SKILL.md Agent Team, add Detection Presets, update Broad-Scope Reviews",
+      "file": "task-36-impl-skill-agent-team-presets-broad.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-06",
+        "task-16"
+      ],
+      "covers": [
+        "AC-03",
+        "AC-16",
+        "AC-17"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-section SKILL.md modification requiring architectural understanding",
+      "status": "complete",
+      "summary": "SKILL.md/guide/post-impl updated for multi-agent orchestration",
+      "note": null
+    },
+    {
+      "id": "task-37",
+      "title": "Replace SKILL.md Detection-Verification Loop with multi-agent spawn, dedup step, and batching",
+      "file": "task-37-impl-skill-spawn-dedup-batching.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-06",
+        "task-07",
+        "task-08",
+        "task-10",
+        "task-12"
+      ],
+      "covers": [
+        "AC-03",
+        "AC-08",
+        "AC-09",
+        "AC-10",
+        "AC-11",
+        "AC-12"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Complex SKILL.md modification with multi-section changes and architectural judgment",
+      "status": "complete",
+      "summary": "SKILL.md Detection-Verification Loop rewritten; generic detector removed",
+      "note": null
+    },
+    {
+      "id": "task-41",
+      "title": "Add sequential full execution and respawn gating to SKILL.md",
+      "file": "task-41-impl-skill-sequential-and-respawn.md",
+      "type": "implementation",
+      "wave_id": 5,
+      "dependencies": [
+        "task-15",
+        "task-17"
+      ],
+      "covers": [
+        "AC-18",
+        "AC-20"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "SKILL.md modification with multi-wave orchestration logic",
+      "status": "complete",
+      "summary": "Sequential preset execution and per-agent respawn gating added to SKILL.md",
+      "note": null
+    },
+    {
+      "id": "task-43",
+      "title": "Update code-review-guide.md Orchestration Protocol and Retrospective Fields",
+      "file": "task-43-impl-guide-orchestration-retrospective.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-11"
+      ],
+      "covers": [
+        "AC-02",
+        "AC-14",
+        "AC-15"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Guide modification requiring understanding of orchestration and metrics design",
+      "status": "complete",
+      "summary": "SKILL.md/guide/post-impl updated for multi-agent orchestration",
+      "note": null
+    },
+    {
+      "id": "task-45",
+      "title": "Update post-impl-review.md step 2 for multi-agent spawn",
+      "file": "task-45-impl-post-impl-review.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-13"
+      ],
+      "covers": [
+        "AC-13"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single-line modification in existing file",
+      "status": "complete",
+      "summary": "SKILL.md/guide/post-impl updated for multi-agent orchestration",
+      "note": null
+    },
+    {
+      "id": "task-47",
+      "title": "Remove generic fbk-code-review-detector.md",
+      "file": "task-47-impl-remove-generic-detector.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-01",
+        "task-36"
+      ],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single file deletion",
+      "status": "complete",
+      "summary": "Generic detector file deleted",
+      "note": null
+    }
+  ]
+}

@@ -17,3 +17,12 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
+
+# Martian benchmark execution artifacts (reproducible via scripts)
+ai-docs/detection-accuracy/martian-benchmark/diffs/
+ai-docs/detection-accuracy/martian-benchmark/logs/
+ai-docs/detection-accuracy/martian-benchmark/results/judge_batches.jsonl
+ai-docs/detection-accuracy/martian-benchmark/results/judge_automated.*
+ai-docs/detection-accuracy/martian-benchmark/results/judge_active.json
+ai-docs/detection-accuracy/martian-benchmark/results/judge_diff.json
+ai-docs/detection-accuracy/martian-benchmark/.claude/

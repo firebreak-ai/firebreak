@@ -91,9 +91,10 @@ Nits (naming, formatting, style, minor inconsistency with no behavioral or maint
 The detection-verification loop operates iteratively across up to 5 rounds:
 
 0. Complete Intent Extraction before the first detection round. The intent register feeds into step 1's Detector spawn prompt.
-1. The orchestrator spawns the Detector with target code file contents first, then linter output (if available), then intent register (from Intent Extraction), then source of truth + this guide's behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` last
-2. The Detector produces sightings
-3. The orchestrator spawns the Challenger with the sightings, the target code, and instructions to verify or reject each sighting with evidence
+1. The orchestrator resolves the selected detection preset to its agent groups and spawns them in parallel. Tier 1 per-group agents receive target code file contents first, then linter output, then intent register claims last. The Intent Path Tracer receives intent register (claims + Mermaid diagram) and entry points. The Test Reviewer receives test files + production imports + intent claims.
+1a. When the wave spawned multiple agents, spawn the Sighting Deduplicator with the wave's sighting list. The Deduplicator merges sightings at the same file and overlapping line ranges, returns a deduplicated list and merge log. Skip for single-agent waves.
+2. The agents produce sightings
+3. The orchestrator spawns Challengers with deduplicated sightings, target code, and verification instructions. Batch: 1 Challenger per 5 sightings, grouped by detection category, all parallel.
 4. The Challenger produces verified findings (with evidence) and rejections (with counter-evidence)
 5. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance, not only the location cited in the sighting.
 6. If sightings remain that were weakened but not rejected, run additional rounds
@@ -128,3 +129,7 @@ Each code review run produces a retrospective capturing these fields:
 - **Tool usage**: which project-native tools (grep, file navigation, test runners) were available and used vs. grep/glob fallback
 - **Finding quality**: false positive rate (findings the user dismissed), false negative signals (issues the user identified that the Detector missed), breakdown by origin (introduced vs. pre-existing)
 - **Intent register**: claims extracted (count and sources), findings attributed to intent comparison (detection source: intent), intent claims invalidated during verification
+- **Per-group metrics**: For each agent group (Tier 1 groups, Intent Path Tracer, Test Reviewer), report: enumeration compliance (files_reported / files_in_scope — measures whether the agent accounted for all files), sighting volume (total sightings produced), sighting survival rate (sightings promoted to findings / total sightings — measures detection precision), and phase attribution (Phase 1 enumeration vs Phase 2 cross-instance sighting counts)
+- **Deduplication metrics**: merge count, merged sighting ID pairs from Deduplicator logs
+- **Instruction trace**: per-agent instruction files loaded at runtime, prompt composition (instruction tokens vs payload tokens). If hook-based Read attribution is available (PreToolUse hook logging agent_id and file_path), use it; otherwise fall back to structured agent output listing instruction files read
+

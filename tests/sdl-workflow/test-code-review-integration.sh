@@ -11,7 +11,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SKILL_FILE="$PROJECT_ROOT/assets/skills/fbk-code-review/SKILL.md"
 EXISTING_REF="$PROJECT_ROOT/assets/skills/fbk-code-review/references/existing-code-review.md"
 POSTIMPL_REF="$PROJECT_ROOT/assets/skills/fbk-code-review/references/post-impl-review.md"
-DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
+DETECTOR="$PROJECT_ROOT/assets/agents/fbk-t1-value-abstraction-detector.md"
 CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
 GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
 CHECKLIST="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md"
@@ -63,9 +63,9 @@ fi
 
 # Test 3: Detector agent defines sighting output
 if grep -qi 'sighting' "$DETECTOR"; then
-  ok "detector agent defines sighting output"
+  ok "tier 1 agent defines sighting output"
 else
-  not_ok "detector agent defines sighting output" "detector missing 'sighting' keyword"
+  not_ok "tier 1 agent defines sighting output" "tier 1 agent missing 'sighting' keyword"
 fi
 
 # Test 4: Challenger agent defines verification output
@@ -91,9 +91,9 @@ fi
 
 # Test 7: Detector -> Challenger sighting handoff format (structural proxy)
 if grep -q 'S-' "$DETECTOR" && grep -q 'S-' "$CHALLENGER"; then
-  ok "detector and challenger both reference sighting ID format (S-)"
+  ok "tier 1 agent and challenger both reference sighting ID format (S-)"
 else
-  not_ok "detector and challenger both reference sighting ID format (S-)" "one or both agents missing 'S-' sighting ID reference"
+  not_ok "tier 1 agent and challenger both reference sighting ID format (S-)" "one or both agents missing 'S-' sighting ID reference"
 fi
 
 # Test 8: Guide defines the orchestration loop protocol
@@ -161,13 +161,19 @@ fi
 
 # --- E2e --- Full code review cycle (UV-1 through UV-4) ---
 
-# Test 16: All 7 context assets exist
+# Test 16: All 13 context assets exist
 all_assets=1
 for f in \
   "$SKILL_FILE" \
   "$EXISTING_REF" \
   "$POSTIMPL_REF" \
-  "$DETECTOR" \
+  "$PROJECT_ROOT/assets/agents/fbk-t1-value-abstraction-detector.md" \
+  "$PROJECT_ROOT/assets/agents/fbk-t1-dead-code-detector.md" \
+  "$PROJECT_ROOT/assets/agents/fbk-t1-signal-loss-detector.md" \
+  "$PROJECT_ROOT/assets/agents/fbk-t1-behavioral-drift-detector.md" \
+  "$PROJECT_ROOT/assets/agents/fbk-t1-function-boundaries-detector.md" \
+  "$PROJECT_ROOT/assets/agents/fbk-t1-cross-boundary-structure-detector.md" \
+  "$PROJECT_ROOT/assets/agents/fbk-t1-missing-safeguards-detector.md" \
   "$CHALLENGER" \
   "$GUIDE" \
   "$CHECKLIST"; do
@@ -177,18 +183,17 @@ for f in \
   fi
 done
 if [ "$all_assets" -eq 1 ]; then
-  ok "all 7 context assets exist"
+  ok "all 13 context assets exist"
 else
-  not_ok "all 7 context assets exist" "one or more context asset files missing"
+  not_ok "all 13 context assets exist" "one or more context asset files missing"
 fi
 
-# Test 17: Cross-file reference: Skill references agents by correct name
-detector_name=$(grep '^name:' "$DETECTOR" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+# Test 17: Cross-file reference: Skill references tier 1 agents by correct name
 challenger_name=$(grep '^name:' "$CHALLENGER" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
-if grep -qF "$detector_name" "$SKILL_FILE" && grep -qF "$challenger_name" "$SKILL_FILE"; then
-  ok "skill references agents by correct name ($detector_name, $challenger_name)"
+if (grep -qi 'value-abstraction' "$SKILL_FILE" || grep -qi 'code-review-detector' "$SKILL_FILE") && grep -qF "$challenger_name" "$SKILL_FILE"; then
+  ok "skill references tier 1 agents by correct name"
 else
-  not_ok "skill references agents by correct name" "skill missing '$detector_name' or '$challenger_name'"
+  not_ok "skill references tier 1 agents by correct name" "skill missing agent references or '$challenger_name'"
 fi
 
 # Test 18: Cross-file reference: Skill references guide by correct path
