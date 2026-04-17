@@ -1,0 +1,33 @@
+[
+  {
+    "id": "S-01",
+    "finding_id": "F-01",
+    "title": "forEach(async) drops return value silently",
+    "location": {"file": "src/handler.ts", "start_line": 42, "end_line": 55},
+    "type": "behavioral",
+    "severity": "critical",
+    "origin": "introduced",
+    "detection_source": "intent",
+    "pattern": "async-in-sync-iterator",
+    "mechanism": "forEach(async callback) discards the Promise returned by each iteration",
+    "consequence": "Callbacks execute concurrently with no error propagation to the caller",
+    "evidence": "Lines 42-48: bookingHandler.forEach(async (booking) => ...)",
+    "remediation": "Replace forEach(async) with for...of loop",
+    "status": "verified",
+    "verification_evidence": "Traced caller chain from router.ts:18 to handler.ts:42. Caller awaits void.",
+    "reclassified_from": {"type": "fragile", "severity": "minor"},
+    "adjacent_observations": ["Adjacent to S-01: sendReminder also lacks error boundary"]
+  },
+  {
+    "id": "S-02",
+    "title": "Style nit that was rejected",
+    "location": {"file": "src/utils.ts", "start_line": 5},
+    "type": "structural",
+    "severity": "minor",
+    "mechanism": "Variable name uses abbreviation instead of full word",
+    "consequence": "Slightly less readable but no behavioral impact",
+    "evidence": "Line 5: const req = request",
+    "status": "rejected-as-nit",
+    "rejection_reason": "Technically accurate but functionally irrelevant naming preference"
+  }
+]

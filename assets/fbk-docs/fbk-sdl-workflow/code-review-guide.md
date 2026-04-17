@@ -14,49 +14,38 @@ When reviewing against spec acceptance criteria, verify each AC individually. Pr
 
 ## Sighting Format
 
-Sightings are the Detector's internal output — observations of potential behavioral misalignments discovered during code inspection. Sightings are not user-facing; they feed the verification loop.
+Sightings are the Detector's output — observations of potential behavioral misalignments discovered during code inspection. Sightings are not user-facing; they feed the verification loop. The Detector produces sightings as a JSON array.
 
-```
-Sighting ID: S-NN
-Location: file path, line range
-Type: [behavioral | structural | test-integrity | fragile]
-Severity: [critical | major | minor | info]
-Origin: [introduced | pre-existing | unknown]
-Detection source: [spec-ac | checklist | structural-target | intent | linter]
-Observation: what the Detector observed — behavioral description
-Expected: from spec AC or failure mode checklist
-Source of truth: reference to the spec AC or checklist item
-Pattern label: cross-cutting pattern name (if applicable)
-```
+**Required-or-reject** (parser rejects the sighting if missing or empty):
+- `id`: sequential, reassigned by orchestrator (S-01, S-02...)
+- `title`: mechanism-first, min 10 characters
+- `location`: object with `file` (string) and `start_line` (integer); optional `end_line`
+- `type`: one of `behavioral`, `structural`, `test-integrity`, `fragile`
+- `severity`: one of `critical`, `major`, `minor`, `info`
+- `mechanism`: the exact code expression that misbehaves and what it does wrong, min 10 characters
+- `consequence`: downstream impact of the mechanism, min 10 characters
+- `evidence`: specific code path, line reference, or test case
 
-Origin values:
-- `introduced` — issue was created by the changes under review (new code, new test, modified logic)
-- `pre-existing` — issue existed before the changes under review; discovered incidentally during inspection
-- `unknown` — insufficient evidence to determine; default when git history is unavailable
-
-Detection source values:
-- `spec-ac` — triggered by behavioral comparison against a spec acceptance criterion
-- `checklist` — triggered by an AI failure mode checklist item
-- `structural-target` — triggered by a quality-detection.md structural detection target
-- `intent` — triggered by behavioral comparison against an intent register claim
-- `linter` — triggered by project-native linter or static analysis tool output provided as supplementary context
+**Required-with-defaults** (parser fills a default if missing):
+- `origin`: one of `introduced`, `pre-existing`, `unknown` (default: `unknown`)
+- `detection_source`: one of `spec-ac`, `checklist`, `structural-target`, `intent`, `linter` (default: `intent`)
+- `source_of_truth_ref`: the specific reference compared against, e.g., "AC-03", "intent claim 4" (default: `""`)
+- `pattern`: cross-cutting pattern label (default: `""`)
+- `remediation`: one-line fix direction (default: `""`)
 
 ## Finding Format
 
-Verified findings are the Challenger's output and surface in conversation or reports. Each finding is a sighting that survived verification with evidence.
+Findings are sightings that survived Challenger verification. The Challenger adds verdict fields to the same JSON objects — no format translation.
 
-```
-Finding ID: F-NN
-Sighting: reference to the sighting ID (e.g., S-01)
-Location: file path, line range
-Type: [behavioral | structural | test-integrity | fragile]
-Severity: [critical | major | minor | info]
-Current behavior: confirmed behavioral description
-Expected behavior: from spec AC or failure mode checklist
-Source of truth: reference to the spec AC or checklist item
-Evidence: Challenger's verification evidence — code path, test result, or behavioral proof
-Pattern label: cross-cutting pattern name (if applicable)
-```
+**Challenger verdict fields:**
+- `status`: one of `verified`, `verified-pending-execution`, `rejected`, `rejected-as-nit`
+- `verification_evidence`: required when status is `verified` or `verified-pending-execution`, min 10 characters — the Challenger's own reasoning from the code
+- `rejection_reason`: required when status is `rejected`, min 10 characters
+- `reclassified_from`: object with `type` and `severity` when the Challenger changed either; empty object `{}` when no reclassification
+- `adjacent_observations`: array of strings; empty array `[]` when none observed
+- `finding_id`: assigned by orchestrator after verification (F-01, F-02...)
+
+`verified-pending-execution` indicates the finding is credible from code reading but requires test execution for confirmation — used for test-integrity sightings. The orchestrator treats it like `verified` with a caveat marker. `rejected-as-nit` indicates the sighting is technically accurate but functionally irrelevant. The orchestrator treats it like `rejected` but counts nit rejections separately.
 
 ## Finding Classification
 
@@ -64,23 +53,37 @@ Classification uses two orthogonal axes. Canonical definitions are here; Detecto
 
 ### Type axis
 
-Assigned by the Detector. Describes what kind of issue was found.
+Assigned by the Detector. Classification is determined by runtime consequence, not pattern shape.
 
-- `behavioral` — code does something different from what its name, documentation, or spec says
-- `structural` — code organization issue (duplication, dead code, dead infrastructure, bare literals)
-- `test-integrity` — test provides less coverage than it appears to. Includes name-scope mismatch: test name claims broader scope than its assertions actually cover
-- `fragile` — code works now but breaks under likely future changes (string-based dispatch, sentinel confusion, context bypass)
+- `behavioral` — the code produces wrong output, data loss, crash, or security bypass for a **concrete, constructible input** using the codebase as it exists in the diff. Behavioral findings are always critical or major.
+- `structural` — the code has no wrong output under any input, but is harder to maintain than necessary. Removing or renaming the code would not change any observable output. Structural findings are always minor or info.
+- `test-integrity` — a test passes but does not verify what it claims. The test name, docstring, or surrounding context implies coverage that the assertions do not provide. Test-integrity findings are critical, major, or minor.
+- `fragile` — the code produces correct output today, but will break under a **specific, plausible change** you can name. Fragile findings are always major or minor.
 
-**Disambiguation rule:** When an issue fits multiple types, classify by the primary risk. If the code produces wrong results now, it is `behavioral`. If it produces correct results but will break under realistic changes, it is `fragile`. If it is a code organization problem with no correctness risk, it is `structural`. If a test provides less coverage than it appears to, it is `test-integrity`.
+**Disambiguation rules:**
+- If a naming issue causes a runtime collision or wrong dispatch, it is `behavioral` — follow the consequence, not the pattern.
+- If the code under review is a test file, a bug in the test's assertion logic is `test-integrity`, not `behavioral`.
+- To distinguish behavioral from fragile: can you construct a failing input using only the current code? Yes → behavioral. No, you need a hypothetical code change → fragile.
+
+**Type-severity validity matrix:**
+
+|  | critical | major | minor | info |
+|--|----------|-------|-------|------|
+| **behavioral** | valid | valid | invalid | invalid |
+| **structural** | invalid | invalid | valid | valid |
+| **test-integrity** | valid | valid | valid | invalid |
+| **fragile** | invalid | valid | valid | invalid |
+
+Invalid combinations are rejected by the parser at both Detector and Challenger stages.
 
 ### Severity axis
 
-Initial estimate by the Detector, validated or adjusted by the Challenger.
+Initial estimate by the Detector, validated or adjusted by the Challenger. Severity is defined by observability.
 
-- `critical` — affects production correctness, security, or data integrity now
-- `major` — significant risk under realistic conditions
-- `minor` — should be addressed but not urgently
-- `info` — informational; accurate observation but no action required
+- `critical` — the next user who exercises the changed code path hits the bug. No special input or timing required. *A human reviewer would block the PR.*
+- `major` — a developer can write a test that demonstrates the failure. The triggering input is constructible but not the default path. *A human reviewer would request changes.*
+- `minor` — observable only through code reading. No runtime failure can be demonstrated against the current codebase. *A human reviewer might leave a comment.*
+- `info` — accurate observation with no recommended action. Excluded from finding count by default. *A human reviewer would not comment.*
 
 ### Nit exclusion
 
@@ -91,15 +94,18 @@ Nits (naming, formatting, style, minor inconsistency with no behavioral or maint
 The detection-verification loop operates iteratively across up to 5 rounds:
 
 0. Complete Intent Extraction before the first detection round. The intent register feeds into step 1's Detector spawn prompt.
-1. The orchestrator spawns the Detector with target code file contents first, then linter output (if available), then intent register (from Intent Extraction), then source of truth + this guide's behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` last
-2. The Detector produces sightings
-3. The orchestrator spawns the Challenger with the sightings, the target code, and instructions to verify or reject each sighting with evidence
-4. The Challenger produces verified findings (with evidence) and rejections (with counter-evidence)
-5. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance, not only the location cited in the sighting.
-6. If sightings remain that were weakened but not rejected, run additional rounds
-7. The loop terminates when a round produces no new sightings above `info` severity, or after a maximum of 5 rounds
+1. The orchestrator spawns the Detector with target code file contents first, then linter output (if available), then intent register, then source of truth + this guide's behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` + the JSON schema and type/severity definitions last. Instruct the Detector to output sightings as a JSON array.
+2. The Detector produces sightings as JSON.
+3. The orchestrator runs `uv run pipeline.py run --preset <preset> --min-severity <threshold>` to validate, domain-filter, and severity-filter the sightings in a single invocation. Default preset is `behavioral-only`, default severity threshold is `minor`.
+4. The orchestrator spawns the Challenger with target code file contents first, then the filtered JSON sightings, then verification instructions + type/severity definitions + the type-severity validity matrix last. The Challenger receives and produces JSON.
+5. The orchestrator validates Challenger output (status, evidence fields, matrix validation on reclassified type-severity).
+6. The orchestrator filters to `status: verified` or `verified-pending-execution`, assigns sequential finding IDs (F-01, F-02...).
+7. The orchestrator runs `uv run pipeline.py to-markdown` to convert verified findings to markdown for the review report. JSON is the working format throughout; markdown conversion happens once for the human-facing report.
+8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
+9. Run additional rounds for weakened but unrejected sightings.
+10. The loop terminates when a round produces no new sightings above `info` severity, or after a maximum of 5 rounds.
 
-Only verified findings surface to the user. Rejected sightings and the internal sighting data are not user-facing.
+Only verified findings surface to the user. Rejected sightings and internal sighting data are not user-facing.
 
 **Post-output steps**: After the loop terminates:
 1. Append a findings summary to the review report file: finding count, rejection count, false positive rate, and each verified finding's ID, type, severity, and one-line description.

@@ -123,8 +123,8 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Test file created and verified",
       "note": null
     },
     {
@@ -139,8 +139,8 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Test file created and verified",
       "note": null
     },
     {
@@ -156,8 +156,8 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Test file created and verified",
       "note": null
     },
     {
@@ -172,8 +172,8 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Test file created and verified",
       "note": null
     },
     {
@@ -188,8 +188,8 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Test file created and verified",
       "note": null
     },
     {
@@ -204,8 +204,8 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Test file created and verified",
       "note": null
     },
     {
@@ -220,8 +220,8 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Test file created and verified",
       "note": null
     },
     {
@@ -239,8 +239,8 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Test file created and verified",
       "note": null
     },
     {
@@ -403,7 +403,7 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
+      "status": "in_progress",
       "summary": null,
       "note": null
     },
@@ -423,8 +423,8 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "tests_fail",
+      "summary": "Task marked complete but subcommands left as stubs. Reassigning.",
       "note": null
     },
     {
@@ -443,8 +443,8 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "tests_fail",
+      "summary": "Task marked complete but subcommands left as stubs. Reassigning.",
       "note": null
     },
     {
@@ -461,7 +461,7 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
+      "status": "in_progress",
       "summary": null,
       "note": null
     },
@@ -483,7 +483,7 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
+      "status": "in_progress",
       "summary": null,
       "note": null
     },
@@ -505,7 +505,7 @@
       ],
       "model": "sonnet",
       "model_rationale": "Multi-concern or architectural judgment",
-      "status": "not_started",
+      "status": "in_progress",
       "summary": null,
       "note": null
     },
