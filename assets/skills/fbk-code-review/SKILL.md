@@ -80,11 +80,11 @@ Run the iterative detection and verification loop:
 
 1. Spawn Detector with: target code file contents first, then linter output (if available), then intent register (from Intent Extraction), then source of truth + behavioral comparison instructions from `code-review-guide.md` + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` + the JSON sighting schema and type/severity definitions last. Instruct the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, `intent`, or `linter`) and to output sightings as a JSON array.
 2. Collect sightings as JSON.
-3. Run `uv run assets/scripts/pipeline.py run --preset <preset> --min-severity <threshold>` to validate, domain-filter, and severity-filter the sightings in a single invocation. If >30% of sightings are rejected during validation, log a warning about prompt compliance.
+3. Run `uv run "$HOME/.claude/scripts/fbk-pipeline.py" run --preset <preset> --min-severity <threshold>` to validate, domain-filter, and severity-filter the sightings in a single invocation. If >30% of sightings are rejected during validation, log a warning about prompt compliance.
 4. Spawn Challenger with: target code file contents first, then the filtered JSON sightings to verify, then verification instructions + type/severity definitions + the type-severity validity matrix last. The Challenger receives and produces JSON — no format translation between agents.
-5. Validate Challenger output: status and evidence fields present, matrix validation on any reclassified type-severity combinations.
+5. Validate Challenger output by piping the JSON through `uv run "$HOME/.claude/scripts/fbk-pipeline.py" validate` — this enforces required fields, enum values, and the type-severity matrix on any reclassified combinations. Also verify status and evidence fields are present (status is `verified`, `verified-pending-execution`, `rejected`, or `rejected-as-nit`; evidence required for verified statuses).
 6. Filter to `status: verified` or `verified-pending-execution`. Assign sequential finding IDs (F-01, F-02...).
-7. Run `uv run assets/scripts/pipeline.py to-markdown` to convert verified findings to markdown once for the review report. Adjacent observations from the Challenger are rendered at the end of each finding and accumulated into the retrospective.
+7. Run `uv run "$HOME/.claude/scripts/fbk-pipeline.py" to-markdown` to convert verified findings to markdown once for the review report. Adjacent observations from the Challenger are rendered at the end of each finding and accumulated into the retrospective.
 7a. After each verification round, append verified findings to the review report file.
 8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
 9. Run additional rounds for weakened but unrejected sightings.

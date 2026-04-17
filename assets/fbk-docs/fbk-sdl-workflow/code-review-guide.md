@@ -96,11 +96,11 @@ The detection-verification loop operates iteratively across up to 5 rounds:
 0. Complete Intent Extraction before the first detection round. The intent register feeds into step 1's Detector spawn prompt.
 1. The orchestrator spawns the Detector with target code file contents first, then linter output (if available), then intent register, then source of truth + this guide's behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` + the JSON schema and type/severity definitions last. Instruct the Detector to output sightings as a JSON array.
 2. The Detector produces sightings as JSON.
-3. The orchestrator runs `uv run pipeline.py run --preset <preset> --min-severity <threshold>` to validate, domain-filter, and severity-filter the sightings in a single invocation. Default preset is `behavioral-only`, default severity threshold is `minor`.
+3. The orchestrator runs `uv run fbk-pipeline.py run --preset <preset> --min-severity <threshold>` to validate, domain-filter, and severity-filter the sightings in a single invocation. Default preset is `behavioral-only`, default severity threshold is `minor`.
 4. The orchestrator spawns the Challenger with target code file contents first, then the filtered JSON sightings, then verification instructions + type/severity definitions + the type-severity validity matrix last. The Challenger receives and produces JSON.
 5. The orchestrator validates Challenger output (status, evidence fields, matrix validation on reclassified type-severity).
 6. The orchestrator filters to `status: verified` or `verified-pending-execution`, assigns sequential finding IDs (F-01, F-02...).
-7. The orchestrator runs `uv run pipeline.py to-markdown` to convert verified findings to markdown for the review report. JSON is the working format throughout; markdown conversion happens once for the human-facing report.
+7. The orchestrator runs `uv run fbk-pipeline.py to-markdown` to convert verified findings to markdown for the review report. JSON is the working format throughout; markdown conversion happens once for the human-facing report.
 8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
 9. Run additional rounds for weakened but unrejected sightings.
 10. The loop terminates when a round produces no new sightings above `info` severity, or after a maximum of 5 rounds.

@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PRESETS="$PROJECT_ROOT/assets/config/presets.json"
+PRESETS="$PROJECT_ROOT/assets/config/fbk-presets.json"
 
 ok() {
   TOTAL=$((TOTAL + 1))
@@ -24,25 +24,25 @@ not_ok() {
 
 echo "TAP version 13"
 
-# --- Test 1: presets.json exists and is non-empty ---
+# --- Test 1: fbk-presets.json exists and is non-empty ---
 if [ -s "$PRESETS" ]; then
-  ok "presets.json exists and is non-empty"
+  ok "fbk-presets.json exists and is non-empty"
 else
-  not_ok "presets.json exists and is non-empty" "file: $PRESETS"
+  not_ok "fbk-presets.json exists and is non-empty" "file: $PRESETS"
 fi
 
-# --- Test 2: presets.json is valid JSON ---
+# --- Test 2: fbk-presets.json is valid JSON ---
 if python3 -c "import json, sys; json.load(sys.stdin)" < "$PRESETS" 2>/dev/null; then
-  ok "presets.json is valid JSON"
+  ok "fbk-presets.json is valid JSON"
 else
-  not_ok "presets.json is valid JSON" "file failed JSON parse: $PRESETS"
+  not_ok "fbk-presets.json is valid JSON" "file failed JSON parse: $PRESETS"
 fi
 
-# --- Test 3: presets.json contains behavioral-only preset ---
+# --- Test 3: fbk-presets.json contains behavioral-only preset ---
 if python3 -c "import json, sys; d=json.load(sys.stdin); assert 'behavioral-only' in d" < "$PRESETS" 2>/dev/null; then
-  ok "presets.json contains behavioral-only preset"
+  ok "fbk-presets.json contains behavioral-only preset"
 else
-  not_ok "presets.json contains behavioral-only preset" "key 'behavioral-only' not found"
+  not_ok "fbk-presets.json contains behavioral-only preset" "key 'behavioral-only' not found"
 fi
 
 # --- Test 4: behavioral-only preset has allowed_types ["behavioral"] ---
@@ -87,11 +87,11 @@ else
   not_ok "all four presets have default_severity_threshold \"minor\"" "default_severity_threshold mismatch in one or more presets"
 fi
 
-# --- Test 10: presets.json contains exactly four presets ---
+# --- Test 10: fbk-presets.json contains exactly four presets ---
 if python3 -c "import json, sys; d=json.load(sys.stdin); assert len(d) == 4" < "$PRESETS" 2>/dev/null; then
-  ok "presets.json contains exactly four presets"
+  ok "fbk-presets.json contains exactly four presets"
 else
-  not_ok "presets.json contains exactly four presets" "expected 4 keys in presets.json"
+  not_ok "fbk-presets.json contains exactly four presets" "expected 4 keys in fbk-presets.json"
 fi
 
 # --- Summary ---

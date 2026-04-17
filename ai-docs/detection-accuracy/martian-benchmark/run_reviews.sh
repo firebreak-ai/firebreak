@@ -351,7 +351,7 @@ if $FULL_PIPELINE; then
   echo ""
   echo "Running post-review pipeline..."
 
-  echo "  Step 3: inject_results.py --tool-name $TOOL_NAME --min-severity minor (via uv run pipeline.py)"
+  echo "  Step 3: inject_results.py --tool-name $TOOL_NAME --min-severity minor (via uv run fbk-pipeline.py)"
   uv run "$SCRIPT_DIR/inject_results.py" --tool-name "$TOOL_NAME" --min-severity minor
 
   echo "  Step 4: judge_anthropic.py --tool $TOOL_NAME"

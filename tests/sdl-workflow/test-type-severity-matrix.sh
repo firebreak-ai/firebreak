@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PIPELINE="$PROJECT_ROOT/assets/scripts/pipeline.py"
+PIPELINE="$PROJECT_ROOT/assets/scripts/fbk-pipeline.py"
 
 trap 'rm -f /tmp/test-matrix-*.json' EXIT
 

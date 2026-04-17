@@ -27,7 +27,7 @@ DEFAULTS = {
 
 
 def load_presets():
-    preset_path = pathlib.Path(__file__).parent.parent / "config" / "presets.json"
+    preset_path = pathlib.Path(__file__).parent.parent / "config" / "fbk-presets.json"
     with open(preset_path) as f:
         return json.load(f)
 
@@ -257,7 +257,10 @@ def cmd_run(args):
 
     # Step 3: Severity filter
     min_sev = args.min_severity
-    threshold = SEVERITY_ORDER.get(min_sev, 0)
+    if min_sev not in VALID_SEVERITIES:
+        print(f"ERROR: invalid severity '{min_sev}'. Valid: {', '.join(sorted(VALID_SEVERITIES, key=lambda x: SEVERITY_ORDER[x]))}", file=sys.stderr)
+        sys.exit(1)
+    threshold = SEVERITY_ORDER[min_sev]
     severity_filtered = []
     for s in domain_filtered:
         sev = s.get("severity", "info")

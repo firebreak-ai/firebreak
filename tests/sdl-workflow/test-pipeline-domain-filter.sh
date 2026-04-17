@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PIPELINE="$PROJECT_ROOT/assets/scripts/pipeline.py"
+PIPELINE="$PROJECT_ROOT/assets/scripts/fbk-pipeline.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/pipeline"
 
 trap 'rm -f /tmp/test-domain-*.json /tmp/test-domain-*-err.txt' EXIT

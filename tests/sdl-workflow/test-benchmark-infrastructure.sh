@@ -104,11 +104,11 @@ else
   not_ok "inject_results.py references JSON consumption" "file: $BENCHMARK_DIR/inject_results.py"
 fi
 
-# --- Test 12: run_reviews.sh references pipeline.py or uv run ---
+# --- Test 12: run_reviews.sh references fbk-pipeline.py or uv run ---
 if grep -qE 'pipeline\.py|uv run' "$BENCHMARK_DIR/run_reviews.sh" 2>/dev/null; then
-  ok "run_reviews.sh references pipeline.py or uv run"
+  ok "run_reviews.sh references fbk-pipeline.py or uv run"
 else
-  not_ok "run_reviews.sh references pipeline.py or uv run" "file: $BENCHMARK_DIR/run_reviews.sh"
+  not_ok "run_reviews.sh references fbk-pipeline.py or uv run" "file: $BENCHMARK_DIR/run_reviews.sh"
 fi
 
 # --- Summary ---

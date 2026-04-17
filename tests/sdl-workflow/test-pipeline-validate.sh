@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PIPELINE="$PROJECT_ROOT/assets/scripts/pipeline.py"
+PIPELINE="$PROJECT_ROOT/assets/scripts/fbk-pipeline.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/pipeline"
 
 trap 'rm -f /tmp/test-validate-*.json /tmp/test-validate-*-err.txt' EXIT
@@ -27,11 +27,11 @@ not_ok() {
 
 echo "TAP version 13"
 
-# --- Test 1: pipeline.py exists and is non-empty ---
+# --- Test 1: fbk-pipeline.py exists and is non-empty ---
 if [ -s "$PIPELINE" ]; then
-  ok "pipeline.py exists and is non-empty"
+  ok "fbk-pipeline.py exists and is non-empty"
 else
-  not_ok "pipeline.py exists and is non-empty" "file: $PIPELINE"
+  not_ok "fbk-pipeline.py exists and is non-empty" "file: $PIPELINE"
 fi
 
 # --- Test 2: validate accepts valid sightings and outputs JSON array ---

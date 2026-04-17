@@ -104,13 +104,13 @@ else
   not_ok "Guide documents type-severity validity matrix" "count=$validity_matrix"
 fi
 
-# --- Test 11: Guide orchestration protocol references pipeline.py ---
+# --- Test 11: Guide orchestration protocol references fbk-pipeline.py ---
 orch_section=$(sed -n '/## Orchestration Protocol/,/^## /p' "$GUIDE" 2>/dev/null || true)
 pipeline_ref=$(echo "$orch_section" | grep -ciE 'pipeline\.py|uv run' 2>/dev/null || true)
 if [ "$pipeline_ref" -gt 0 ]; then
-  ok "Guide orchestration protocol references pipeline.py"
+  ok "Guide orchestration protocol references fbk-pipeline.py"
 else
-  not_ok "Guide orchestration protocol references pipeline.py" "count=$pipeline_ref"
+  not_ok "Guide orchestration protocol references fbk-pipeline.py" "count=$pipeline_ref"
 fi
 
 # --- Test 12: Guide orchestration protocol references JSON as working format ---
