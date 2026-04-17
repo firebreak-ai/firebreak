@@ -1,0 +1,628 @@
+{
+  "spec": "ai-docs/0.4.0/single-detector-precision/single-detector-precision-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Create a TAP-style bash test that validates the Detector agent definition contains the persona, output quality bar, cons",
+      "file": "task-01-test-detector-persona.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-04",
+        "AC-05",
+        "AC-07"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Create a TAP-style bash test that validates the Challenger agent definition contains the mistrustful persona, independen",
+      "file": "task-02-test-challenger-persona.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-03",
+      "title": "Create a TAP-style bash test that validates the code review guide contains consequence-based type definitions, observabi",
+      "file": "task-03-test-guide-alignment.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-04",
+      "title": "Create a TAP-style bash test that validates the preset configuration file contains all four presets with correct allowed",
+      "file": "task-04-test-preset-config.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-09"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-05",
+      "title": "Update two existing test files that will break due to the Detector/Challenger persona rewrite and guide format changes. ",
+      "file": "task-05-test-existing-updates-high-confidence.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-03",
+        "AC-04",
+        "AC-05",
+        "AC-08"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-06",
+      "title": "Update two existing test files with likely breakage from the Detector/Challenger rewrite and guide update. These require",
+      "file": "task-06-test-existing-updates-likely-breakage.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-03",
+        "AC-08",
+        "AC-11"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-07",
+      "title": "Create a TAP-style bash test with a shared JSON fixture that validates the `pipeline.py validate` subcommand correctly a",
+      "file": "task-07-test-pipeline-validate.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-06",
+        "AC-10"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-08",
+      "title": "Create a TAP-style bash test that exhaustively tests all 16 type-severity combinations against the validity matrix, conf",
+      "file": "task-08-test-type-severity-matrix.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-09",
+      "title": "Create a TAP-style bash test that validates the `pipeline.py domain-filter` subcommand correctly filters sightings by ty",
+      "file": "task-09-test-pipeline-domain-filter.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-09",
+        "AC-10"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-10",
+      "title": "Create a TAP-style bash test that validates the `pipeline.py severity-filter` subcommand correctly filters sightings by ",
+      "file": "task-10-test-pipeline-severity-filter.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-11",
+      "title": "Create a TAP-style bash test that validates the `pipeline.py to-markdown` subcommand correctly converts sightings (S-NN ",
+      "file": "task-11-test-pipeline-to-markdown.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-12",
+      "title": "Create a TAP-style bash test that validates the `pipeline.py run` subcommand (full pipeline in single invocation) produc",
+      "file": "task-12-test-pipeline-run-and-edge-cases.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-13",
+      "title": "Create a TAP-style bash test that validates SKILL.md's Detection-Verification Loop references the JSON pipeline: Detecto",
+      "file": "task-13-test-orchestrator-integration.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-11"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-14",
+      "title": "Create a deterministic fixture-driven integration test that passes a canned JSON sighting array through the full pipelin",
+      "file": "task-14-test-deterministic-pipeline-integration.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-06",
+        "AC-09",
+        "AC-10"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-15",
+      "title": "Create a TAP-style bash test with a fixture that validates the rewritten `inject_results.py` reads JSON findings directl",
+      "file": "task-15-test-inject-script.md",
+      "type": "test",
+      "wave_id": 3,
+      "dependencies": [],
+      "covers": [
+        "AC-12"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-16",
+      "title": "Create a TAP-style bash test that validates the Martian benchmark infrastructure files are present and runnable from the",
+      "file": "task-16-test-benchmark-infrastructure.md",
+      "type": "test",
+      "wave_id": 3,
+      "dependencies": [],
+      "covers": [
+        "AC-13",
+        "AC-14"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-17",
+      "title": "Update two more existing test files with likely breakage from the persona rewrite and orchestrator pipeline update. Thes",
+      "file": "task-17-test-existing-updates-remaining.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-03",
+        "AC-08",
+        "AC-11"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-18",
+      "title": "Update two existing test files that test SKILL.md and guide orchestration content, which may break from the orchestrator",
+      "file": "task-18-test-existing-updates-orchestration.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-08",
+        "AC-11"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-19",
+      "title": "Update two existing test files that may break from the SKILL.md orchestrator rewrite and Detector/Challenger persona cha",
+      "file": "task-19-test-existing-updates-skill-and-category.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-03",
+        "AC-11"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-20",
+      "title": "Create the detection preset configuration file that defines four named presets with type allow-lists and default severit",
+      "file": "task-20-impl-preset-config.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [
+        "task-04"
+      ],
+      "covers": [
+        "AC-09"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-21",
+      "title": "Replace the Detector agent definition with a persona-driven definition containing the staff engineer identity, output qu",
+      "file": "task-21-impl-detector-agent.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-02",
+        "AC-04",
+        "AC-05",
+        "AC-07"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-22",
+      "title": "Replace the Challenger agent definition with a persona-driven definition containing the mistrustful senior engineer iden",
+      "file": "task-22-impl-challenger-agent.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [
+        "task-02"
+      ],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-23",
+      "title": "Create `assets/scripts/pipeline.py` with the `validate` subcommand, shared constants, preset loading, and the argparse s",
+      "file": "task-23-impl-pipeline-validate.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-07",
+        "task-08"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-06"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-23b",
+      "title": "Add the `domain-filter` and `severity-filter` subcommands to `pipeline.py`. These replace the placeholder functions crea",
+      "file": "task-23b-impl-pipeline-filters.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-09",
+        "task-10"
+      ],
+      "covers": [
+        "AC-09",
+        "AC-10"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-23c",
+      "title": "Add the `to-markdown` and `run` subcommands to `pipeline.py`. These replace the placeholder functions created in task-23",
+      "file": "task-23c-impl-pipeline-markdown-and-run.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-11",
+        "task-12",
+        "task-14"
+      ],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-24",
+      "title": "Update the code review guide to contain consequence-based type definitions, observability-based severity definitions, JS",
+      "file": "task-24-impl-code-review-guide.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-03"
+      ],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-25",
+      "title": "Update two existing test files that break due to the Detector/Challenger persona rewrite and guide format changes. These",
+      "file": "task-25-impl-existing-test-updates-wave1.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-05"
+      ],
+      "covers": [
+        "AC-02",
+        "AC-03",
+        "AC-04",
+        "AC-05",
+        "AC-08"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-26",
+      "title": "Update two existing test files with likely breakage from the Detector/Challenger rewrite and guide update. These require",
+      "file": "task-26-impl-existing-test-updates-likely.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-06"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-03",
+        "AC-08",
+        "AC-11"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-27",
+      "title": "Update the Detection-Verification Loop in SKILL.md to use the JSON pipeline: Detector produces JSON sightings, `pipeline",
+      "file": "task-27-impl-orchestrator-skill.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-13"
+      ],
+      "covers": [
+        "AC-11"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-28",
+      "title": "Update two existing test files with likely breakage from the persona rewrite and orchestrator pipeline update. These tes",
+      "file": "task-28-impl-existing-test-updates-remaining.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-17"
+      ],
+      "covers": [
+        "AC-02",
+        "AC-03",
+        "AC-08",
+        "AC-11"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-29",
+      "title": "Update two existing test files that test SKILL.md and guide orchestration content, which may break from the orchestrator",
+      "file": "task-29-impl-existing-test-updates-orchestration.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-18"
+      ],
+      "covers": [
+        "AC-08",
+        "AC-11"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-30",
+      "title": "Update two existing test files that may break from the SKILL.md orchestrator rewrite and Detector/Challenger persona cha",
+      "file": "task-30-impl-existing-test-updates-skill-category.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-19"
+      ],
+      "covers": [
+        "AC-02",
+        "AC-03",
+        "AC-11"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-31",
+      "title": "Cherry-pick the Martian benchmark infrastructure from the `feature/0.4.0-detector-decomposition` branch so the benchmark",
+      "file": "task-31-impl-benchmark-cherry-pick.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-16"
+      ],
+      "covers": [
+        "AC-13",
+        "AC-14"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-32",
+      "title": "Rewrite `inject_results.py` to consume JSON findings directly instead of parsing markdown with regex. The script maps un",
+      "file": "task-32-impl-inject-script-rewrite.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-15"
+      ],
+      "covers": [
+        "AC-12"
+      ],
+      "model": "sonnet",
+      "model_rationale": "Multi-concern or architectural judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    }
+  ]
+}
