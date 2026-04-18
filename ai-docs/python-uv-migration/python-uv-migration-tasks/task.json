@@ -1,0 +1,812 @@
+{
+  "spec": "ai-docs/python-uv-migration/python-uv-migration-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Create pytest unit tests for `fbk.gates.spec` section validation and open-questions logic.",
+      "file": "task-01-test-spec-gate-sections.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Create pytest unit tests for `fbk.gates.spec` injection detection logic.",
+      "file": "task-02-test-spec-gate-injection.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-03",
+      "title": "Create pytest unit tests for `fbk.gates.review` validation logic.",
+      "file": "task-03-test-review-gate.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-04",
+      "title": "Create pytest unit tests for `fbk.gates.breakdown` validation logic.",
+      "file": "task-04-test-breakdown-gate.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-05",
+      "title": "Create pytest unit tests for `fbk.gates.task_reviewer` validation logic.",
+      "file": "task-05-test-task-reviewer-gate.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-06",
+      "title": "Create pytest unit tests for `fbk.gates.test_hash` manifest creation and modification detection.",
+      "file": "task-06-test-test-hash-gate.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-07",
+      "title": "Create pytest unit tests for `fbk.hooks.task_completed` test runner and linter detection.",
+      "file": "task-07-test-task-completed-hook.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-08",
+      "title": "Create pytest unit tests for `fbk.hooks.dispatch_status` output formatting.",
+      "file": "task-08-test-dispatch-status-hook.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-09",
+      "title": "Create pytest unit tests for `fbk.audit` `log_event()` structured logging.",
+      "file": "task-09-test-audit-module.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-10",
+      "title": "Create pytest unit tests for `fbk.config` layered config merging and PyYAML error handling.",
+      "file": "task-10-test-config-module.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-09"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-11",
+      "title": "Create pytest unit tests for `fbk.state` transition enforcement.",
+      "file": "task-11-test-state-module.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-12",
+      "title": "Create pytest unit tests for `fbk.pipeline` type-severity matrix validation.",
+      "file": "task-12-test-pipeline-module.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-13",
+      "title": "Create pytest unit tests for `fbk.py` dispatcher command resolution and Python version check.",
+      "file": "task-13-test-dispatcher-resolution.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-03",
+        "AC-04"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-36",
+      "title": "Create the pytest test infrastructure: `conftest.py` with shared fixtures for the `fbk-scripts` test suite.",
+      "file": "task-36-test-conftest-setup.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-37",
+      "title": "Create the `assets/fbk-scripts/` project directory structure with `pyproject.toml`, package `__init__.py` files, and rel",
+      "file": "task-37-impl-project-structure.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-03"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-38",
+      "title": "Create the `fbk.py` dispatcher script that maps 14 command names to Python module paths and dynamically imports and call",
+      "file": "task-38-impl-dispatcher.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-03",
+        "AC-04"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-39",
+      "title": "Relocate `assets/hooks/fbk-sdl-workflow/audit-logger.py` to `assets/fbk-scripts/fbk/audit.py` as an importable module wi",
+      "file": "task-39-impl-audit-module.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-40",
+      "title": "Relocate `assets/hooks/fbk-sdl-workflow/config-loader.py` to `assets/fbk-scripts/fbk/config.py` with PyYAML import guard",
+      "file": "task-40-impl-config-module.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-09"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-41",
+      "title": "Relocate `assets/hooks/fbk-sdl-workflow/state-engine.py` to `assets/fbk-scripts/fbk/state.py` as an importable module wi",
+      "file": "task-41-impl-state-module.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-42",
+      "title": "Relocate `assets/scripts/fbk-pipeline.py` to `assets/fbk-scripts/fbk/pipeline.py` with updated preset path resolution.",
+      "file": "task-42-impl-pipeline-module.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-43",
+      "title": "Convert `assets/hooks/fbk-sdl-workflow/spec-gate.sh` to `assets/fbk-scripts/fbk/gates/spec.py`, reimplementing all bash ",
+      "file": "task-43-impl-spec-gate.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-44",
+      "title": "Convert `assets/hooks/fbk-sdl-workflow/review-gate.sh` to `assets/fbk-scripts/fbk/gates/review.py`, reimplementing all b",
+      "file": "task-44-impl-review-gate.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-45",
+      "title": "Convert `assets/hooks/fbk-sdl-workflow/breakdown-gate.sh` to `assets/fbk-scripts/fbk/gates/breakdown.py`, extracting the",
+      "file": "task-45-impl-breakdown-gate.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-46",
+      "title": "Convert `assets/hooks/fbk-sdl-workflow/task-reviewer-gate.sh` to `assets/fbk-scripts/fbk/gates/task_reviewer.py`, extrac",
+      "file": "task-46-impl-task-reviewer-gate.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-47",
+      "title": "Convert `assets/hooks/fbk-sdl-workflow/test-hash-gate.sh` to `assets/fbk-scripts/fbk/gates/test_hash.py`, replacing `sha",
+      "file": "task-47-impl-hash-gate.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-48",
+      "title": "Convert `assets/hooks/fbk-sdl-workflow/task-completed.sh` to `assets/fbk-scripts/fbk/hooks/task_completed.py`, reimpleme",
+      "file": "task-48-impl-task-completed-hook.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-49",
+      "title": "Convert `assets/hooks/fbk-sdl-workflow/dispatch-status.sh` to `assets/fbk-scripts/fbk/hooks/dispatch_status.py`, extract",
+      "file": "task-49-impl-dispatch-status-hook.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-50",
+      "title": "Relocate `assets/skills/fbk-council/session-logger.py` to `assets/fbk-scripts/fbk/council/session_logger.py` as an impor",
+      "file": "task-50-impl-session-logger.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-51",
+      "title": "Relocate `assets/skills/fbk-council/session-manager.py` to `assets/fbk-scripts/fbk/council/session_manager.py` with cros",
+      "file": "task-51-impl-session-manager.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-52",
+      "title": "Relocate `assets/skills/fbk-council/ralph-council.py` to `assets/fbk-scripts/fbk/council/ralph.py` as an importable modu",
+      "file": "task-52-impl-ralph-council.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-14",
+      "title": "Create bash integration tests verifying `python3 fbk.py spec-gate` produces correct JSON output and exit codes.",
+      "file": "task-14-test-gate-output-spec.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-15",
+      "title": "Create bash integration tests verifying `python3 fbk.py review-gate` produces correct pass/fail output.",
+      "file": "task-15-test-gate-output-review.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-16",
+      "title": "Create bash integration test verifying `python3 fbk.py state create` creates state file and outputs valid JSON.",
+      "file": "task-16-test-state-integration.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-17",
+      "title": "Create bash integration tests verifying `python3 fbk.py session-logger` and `python3 fbk.py session-manager` work throug",
+      "file": "task-17-test-session-integration.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-18",
+      "title": "Create bash integration test verifying `assets/settings.json` contains the new dispatcher hook command.",
+      "file": "task-18-test-settings-json-hook.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-05"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-19",
+      "title": "Create bash integration test verifying all 11 context asset files contain no old path patterns.",
+      "file": "task-19-test-no-old-path-patterns.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-20",
+      "title": "Create bash integration test verifying `assets/skills/fbk-council/SKILL.md` contains new dispatcher references and no ol",
+      "file": "task-20-test-council-skill-references.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-22",
+      "title": "Capture golden reference output from the bash spec-gate and create an e2e parity test comparing Python output against th",
+      "file": "task-22-test-e2e-spec-gate-parity.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-23",
+      "title": "Capture golden reference output from the bash breakdown-gate and create an e2e parity test comparing Python output again",
+      "file": "task-23-test-e2e-breakdown-gate-parity.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-28",
+      "title": "Create a bash test that verifies no old script paths remain in any test file after the migration.",
+      "file": "task-28-test-verify-test-paths-updated.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-24",
+      "title": "Update path variables in 6 non-pipeline test scripts to invoke through the dispatcher instead of direct script paths.",
+      "file": "task-24-impl-update-non-pipeline-tests.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-25",
+      "title": "Update path variables in `test-task-reviewer.sh`, `test-preset-config.sh`, and 4 pipeline test scripts to invoke through",
+      "file": "task-25-impl-update-gate-pipeline-tests-1.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-26",
+      "title": "Update 3 remaining pipeline tests and 2 integration grep tests to use the dispatcher.",
+      "file": "task-26-impl-update-pipeline-grep-tests.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-27",
+      "title": "Update 4 installer test scripts and 1 test fixture to match the new `fbk-scripts/` layout.",
+      "file": "task-27-impl-update-installer-tests.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-53",
+      "title": "Update all gate script references in 4 SDL workflow SKILL.md files to use the dispatcher.",
+      "file": "task-53-impl-update-sdl-skill-refs.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-54",
+      "title": "Update all script references in code-review SKILL.md, existing-code-review.md, and council SKILL.md to use the dispatche",
+      "file": "task-54-impl-update-review-council-refs.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or architectural judgment required",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-55",
+      "title": "Update script references in 3 fbk-docs files and `settings.json` to use the dispatcher.",
+      "file": "task-55-impl-update-docs-settings.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-05",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-21",
+      "title": "Create bash integration test verifying old script locations contain no `.sh` or `.py` files.",
+      "file": "task-21-test-old-locations-empty.md",
+      "type": "test",
+      "wave_id": 3,
+      "dependencies": [],
+      "covers": [
+        "AC-07"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-71",
+      "title": "Remove all 15 old script and data files from their original locations after migration to `fbk-scripts/`.",
+      "file": "task-71-impl-remove-old-files.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [],
+      "covers": [
+        "AC-07"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with clear instructions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    }
+  ]
+}
