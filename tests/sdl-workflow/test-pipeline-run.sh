@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PIPELINE="$PROJECT_ROOT/assets/scripts/fbk-pipeline.py"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/pipeline"
 
 ok() {
@@ -28,11 +28,11 @@ trap 'rm -f /tmp/test-run-*.json /tmp/test-run-*.md /tmp/test-run-*-err.txt' EXI
 echo "TAP version 13"
 
 # --- Test 1: run --preset behavioral-only produces same result as sequential pipeline ---
-uv run "$PIPELINE" validate < "$FIXTURES/valid-sightings.json" 2>/dev/null \
-  | uv run "$PIPELINE" domain-filter --preset behavioral-only 2>/dev/null \
-  | uv run "$PIPELINE" severity-filter --min-severity minor 2>/dev/null \
+python3 "$DISPATCHER" pipeline validate < "$FIXTURES/valid-sightings.json" 2>/dev/null \
+  | python3 "$DISPATCHER" pipeline domain-filter --preset behavioral-only 2>/dev/null \
+  | python3 "$DISPATCHER" pipeline severity-filter --min-severity minor 2>/dev/null \
   > /tmp/test-run-sequential.json || true
-uv run "$PIPELINE" run --preset behavioral-only --min-severity minor \
+python3 "$DISPATCHER" pipeline run --preset behavioral-only --min-severity minor \
   < "$FIXTURES/valid-sightings.json" > /tmp/test-run-combined.json 2>/dev/null || true
 if python3 -c "
 import json
@@ -57,7 +57,7 @@ else
 fi
 
 # --- Test 3: run --preset full --min-severity minor keeps all non-info sightings ---
-uv run "$PIPELINE" run --preset full --min-severity minor \
+python3 "$DISPATCHER" pipeline run --preset full --min-severity minor \
   < "$FIXTURES/valid-sightings.json" > /tmp/test-run-full.json 2>/dev/null || true
 if python3 -c "
 import json,sys
@@ -70,7 +70,7 @@ else
 fi
 
 # --- Test 4: run --output-markdown produces markdown instead of JSON ---
-uv run "$PIPELINE" run --preset behavioral-only --min-severity minor --output-markdown \
+python3 "$DISPATCHER" pipeline run --preset behavioral-only --min-severity minor --output-markdown \
   < "$FIXTURES/valid-sightings.json" > /tmp/test-run-md.md 2>/dev/null || true
 if grep -q '### ' /tmp/test-run-md.md 2>/dev/null; then
   ok "run --output-markdown produces markdown instead of JSON"
@@ -79,7 +79,7 @@ else
 fi
 
 # --- Test 5: run on empty array outputs empty JSON array ---
-echo '[]' | uv run "$PIPELINE" run --preset behavioral-only --min-severity minor \
+echo '[]' | python3 "$DISPATCHER" pipeline run --preset behavioral-only --min-severity minor \
   > /tmp/test-run-empty.json 2>/dev/null || true
 if python3 -c "import json,sys; assert json.load(sys.stdin)==[]" < /tmp/test-run-empty.json 2>/dev/null; then
   ok "run on empty array outputs empty JSON array"
@@ -88,7 +88,7 @@ else
 fi
 
 # --- Test 6: run where all sightings are filtered outputs empty array ---
-uv run "$PIPELINE" run --preset structural --min-severity major \
+python3 "$DISPATCHER" pipeline run --preset structural --min-severity major \
   < "$FIXTURES/valid-sightings.json" > /tmp/test-run-allfiltered.json 2>/dev/null || true
 if python3 -c "import json,sys; assert json.load(sys.stdin)==[]" < /tmp/test-run-allfiltered.json 2>/dev/null; then
   ok "run where all sightings are filtered outputs empty array"
@@ -97,7 +97,7 @@ else
 fi
 
 # --- Test 7: run with unknown preset exits non-zero ---
-if uv run "$PIPELINE" run --preset nonexistent \
+if python3 "$DISPATCHER" pipeline run --preset nonexistent \
      < "$FIXTURES/valid-sightings.json" > /dev/null 2>/dev/null; then
   not_ok "run with unknown preset exits non-zero" "pipeline exited 0 for unknown preset"
 else
@@ -105,7 +105,7 @@ else
 fi
 
 # --- Test 8: run with malformed JSON input exits non-zero ---
-if echo 'not json at all' | uv run "$PIPELINE" run --preset behavioral-only \
+if echo 'not json at all' | python3 "$DISPATCHER" pipeline run --preset behavioral-only \
      > /dev/null 2>/tmp/test-run-malformed-err.txt; then
   not_ok "run with malformed JSON input exits non-zero" "pipeline exited 0 for malformed JSON"
 else
@@ -129,7 +129,7 @@ cat > /tmp/test-run-unicode-input.json <<'EOJSON'
   "evidence": "Line 10: encodeURI(input) with \u00e9\u00e8\u00ea test values"
 }]
 EOJSON
-uv run "$PIPELINE" run --preset behavioral-only --min-severity minor \
+python3 "$DISPATCHER" pipeline run --preset behavioral-only --min-severity minor \
   < /tmp/test-run-unicode-input.json > /tmp/test-run-unicode-out.json 2>/dev/null || true
 if python3 -c "import json,sys; d=json.load(sys.stdin); assert len(d)==1" < /tmp/test-run-unicode-out.json 2>/dev/null; then
   ok "run preserves unicode in field values"

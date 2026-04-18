@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PIPELINE="$PROJECT_ROOT/assets/scripts/fbk-pipeline.py"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/pipeline"
 
 trap 'rm -f /tmp/test-integ-*.json /tmp/test-integ-*.md /tmp/test-integ-*-err.txt' EXIT
@@ -28,7 +28,7 @@ not_ok() {
 echo "TAP version 13"
 
 # --- Test 1: Full pipeline with behavioral-only preset produces expected count ---
-uv run "$PIPELINE" run --preset behavioral-only --min-severity minor < "$FIXTURES/integration-input.json" > /tmp/test-integ-behavioral.json 2>/tmp/test-integ-behavioral-err.txt || true
+python3 "$DISPATCHER" pipeline run --preset behavioral-only --min-severity minor < "$FIXTURES/integration-input.json" > /tmp/test-integ-behavioral.json 2>/tmp/test-integ-behavioral-err.txt || true
 if python3 -c "import json,sys; d=json.load(sys.stdin); assert len(d)==2, f'expected 2, got {len(d)}'" < /tmp/test-integ-behavioral.json 2>/dev/null; then
   ok "behavioral-only preset with minor threshold produces 2 sightings"
 else
@@ -52,7 +52,7 @@ else
 fi
 
 # --- Test 4: Full pipeline with full preset and minor threshold produces expected count ---
-uv run "$PIPELINE" run --preset full --min-severity minor < "$FIXTURES/integration-input.json" > /tmp/test-integ-full.json 2>/dev/null || true
+python3 "$DISPATCHER" pipeline run --preset full --min-severity minor < "$FIXTURES/integration-input.json" > /tmp/test-integ-full.json 2>/dev/null || true
 if python3 -c "import json,sys; d=json.load(sys.stdin); assert len(d)==4, f'expected 4, got {len(d)}'" < /tmp/test-integ-full.json 2>/dev/null; then
   ok "full preset with minor threshold produces 4 sightings"
 else
@@ -61,7 +61,7 @@ else
 fi
 
 # --- Test 5: Full pipeline with full preset and info threshold keeps info sightings ---
-uv run "$PIPELINE" run --preset full --min-severity info < "$FIXTURES/integration-input.json" > /tmp/test-integ-info.json 2>/dev/null || true
+python3 "$DISPATCHER" pipeline run --preset full --min-severity info < "$FIXTURES/integration-input.json" > /tmp/test-integ-info.json 2>/dev/null || true
 if python3 -c "import json,sys; d=json.load(sys.stdin); assert len(d)==5, f'expected 5, got {len(d)}'" < /tmp/test-integ-info.json 2>/dev/null; then
   ok "full preset with info threshold produces 5 sightings"
 else
@@ -70,7 +70,7 @@ else
 fi
 
 # --- Test 6: Pipeline output converted to markdown is well-formed ---
-uv run "$PIPELINE" run --preset behavioral-only --min-severity minor --output-markdown < "$FIXTURES/integration-input.json" > /tmp/test-integ-md.md 2>/dev/null || true
+python3 "$DISPATCHER" pipeline run --preset behavioral-only --min-severity minor --output-markdown < "$FIXTURES/integration-input.json" > /tmp/test-integ-md.md 2>/dev/null || true
 header_count=$(grep -c '### S-' /tmp/test-integ-md.md 2>/dev/null || true)
 header_count="${header_count:-0}"
 has_mechanism=0

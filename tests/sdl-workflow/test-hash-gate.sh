@@ -21,7 +21,7 @@ not_ok() {
 # Setup
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-GATE="$PROJECT_ROOT/assets/hooks/fbk-sdl-workflow/test-hash-gate.sh"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/hash-gate/sample-tests"
 
 TMPDIR_TEST="$(mktemp -d)"
@@ -38,7 +38,7 @@ echo "TAP version 13"
 echo "1..7"
 
 # ---- Test 1: First run creates manifest with correct JSON ----
-OUTPUT=$(bash "$GATE" "$FEATURE_DIR" 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" test-hash-gate "$FEATURE_DIR" 2>&1)
 EXIT_CODE=$?
 if [[ $EXIT_CODE -eq 0 ]] && [[ -f "$FEATURE_DIR/test-hashes.json" ]]; then
   VALID=$(python3 -c "
@@ -66,7 +66,7 @@ else
 fi
 
 # ---- Test 2: Subsequent run with no changes exits 0 ----
-OUTPUT=$(bash "$GATE" "$FEATURE_DIR" 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" test-hash-gate "$FEATURE_DIR" 2>&1)
 EXIT_CODE=$?
 if [[ $EXIT_CODE -eq 0 ]]; then
   ok "subsequent run with no changes exits 0"
@@ -76,7 +76,7 @@ fi
 
 # ---- Test 3: Modified file detected — exit 2, stderr names file ----
 echo "# modified" >> "$FEATURE_DIR/tests/test-alpha.sh"
-OUTPUT=$(bash "$GATE" "$FEATURE_DIR" 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" test-hash-gate "$FEATURE_DIR" 2>&1)
 EXIT_CODE=$?
 if [[ $EXIT_CODE -eq 2 ]] && echo "$OUTPUT" | grep -q "test-alpha.sh"; then
   ok "modified file detected: exit 2, stderr names file"
@@ -87,11 +87,11 @@ fi
 cp "$FIXTURES/test-alpha.sh" "$FEATURE_DIR/tests/test-alpha.sh"
 # Regenerate manifest with clean state
 rm "$FEATURE_DIR/test-hashes.json"
-bash "$GATE" "$FEATURE_DIR" >/dev/null 2>&1
+python3 "$DISPATCHER" test-hash-gate "$FEATURE_DIR" >/dev/null 2>&1
 
 # ---- Test 4: Deleted file detected — exit 2, stderr names file ----
 rm "$FEATURE_DIR/tests/test-beta.sh"
-OUTPUT=$(bash "$GATE" "$FEATURE_DIR" 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" test-hash-gate "$FEATURE_DIR" 2>&1)
 EXIT_CODE=$?
 if [[ $EXIT_CODE -eq 2 ]] && echo "$OUTPUT" | grep -q "test-beta.sh"; then
   ok "deleted file detected: exit 2, stderr names file"
@@ -101,11 +101,11 @@ fi
 # Restore
 cp "$FIXTURES/test-beta.sh" "$FEATURE_DIR/tests/test-beta.sh"
 rm "$FEATURE_DIR/test-hashes.json"
-bash "$GATE" "$FEATURE_DIR" >/dev/null 2>&1
+python3 "$DISPATCHER" test-hash-gate "$FEATURE_DIR" >/dev/null 2>&1
 
 # ---- Test 5: New file detected — exit 2, stderr names file ----
 echo '#!/bin/bash' > "$FEATURE_DIR/tests/test-gamma.sh"
-OUTPUT=$(bash "$GATE" "$FEATURE_DIR" 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" test-hash-gate "$FEATURE_DIR" 2>&1)
 EXIT_CODE=$?
 if [[ $EXIT_CODE -eq 2 ]] && echo "$OUTPUT" | grep -q "test-gamma.sh"; then
   ok "new file detected: exit 2, stderr names file"
@@ -133,7 +133,7 @@ fi
 # ---- Test 7: Empty test directory handled gracefully ----
 EMPTY_DIR="$TMPDIR_TEST/empty-feature"
 mkdir -p "$EMPTY_DIR"
-OUTPUT=$(bash "$GATE" "$EMPTY_DIR" 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" test-hash-gate "$EMPTY_DIR" 2>&1)
 EXIT_CODE=$?
 if [[ $EXIT_CODE -eq 0 ]]; then
   ok "empty test directory handled gracefully (exit 0)"

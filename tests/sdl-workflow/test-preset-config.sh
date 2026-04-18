@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PRESETS="$PROJECT_ROOT/assets/config/fbk-presets.json"
+PRESETS="$PROJECT_ROOT/assets/fbk-scripts/fbk/data/fbk-presets.json"
 
 ok() {
   TOTAL=$((TOTAL + 1))

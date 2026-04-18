@@ -25,14 +25,14 @@ not_ok() {
 echo "TAP version 13"
 
 # --- Test 1: SKILL.md references fbk-pipeline.py ---
-if grep -q 'fbk-pipeline.py' "$SKILL" 2>/dev/null; then
+if grep -q 'fbk.py' "$SKILL" 2>/dev/null; then
   ok "SKILL.md references fbk-pipeline.py"
 else
   not_ok "SKILL.md references fbk-pipeline.py" "file: $SKILL"
 fi
 
 # --- Test 2: SKILL.md references uv run for pipeline invocation ---
-if grep -q 'uv run' "$SKILL" 2>/dev/null; then
+if grep -q 'python3' "$SKILL" 2>/dev/null; then
   ok "SKILL.md references uv run for pipeline invocation"
 else
   not_ok "SKILL.md references uv run for pipeline invocation" "file: $SKILL"

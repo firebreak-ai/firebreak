@@ -1,0 +1,62 @@
+{
+  "spec": "tests/fixtures/tasks/valid-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Write tests for the alpha feature that validate AC-01.",
+      "file": "task-01-test-feature-alpha.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": ["AC-01"],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task",
+      "status": "pending",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Write tests for the beta feature that validate AC-02 and AC-03.",
+      "file": "task-02-test-feature-beta.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": ["AC-02", "AC-03"],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task",
+      "status": "pending",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-03",
+      "title": "Implement the alpha feature in src/alpha.py to satisfy AC-01.",
+      "file": "task-03-impl-feature-alpha.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": ["task-01"],
+      "covers": ["AC-01"],
+      "model": "Sonnet",
+      "model_rationale": "Implementation task requiring code generation",
+      "status": "pending",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-04",
+      "title": "Implement the beta feature in src/beta.py to satisfy AC-02 and AC-03.",
+      "file": "task-04-impl-feature-beta.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": ["task-02"],
+      "covers": ["AC-02", "AC-03"],
+      "model": "Sonnet",
+      "model_rationale": "Implementation task requiring code generation",
+      "status": "pending",
+      "summary": null,
+      "note": null
+    }
+  ]
+}

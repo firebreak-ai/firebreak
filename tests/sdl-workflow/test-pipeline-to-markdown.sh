@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PIPELINE="$PROJECT_ROOT/assets/scripts/fbk-pipeline.py"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/pipeline"
 
 trap 'rm -f /tmp/test-md-*.md /tmp/test-md-sighting-input.json' EXIT
@@ -32,8 +32,8 @@ cat > /tmp/test-md-sighting-input.json <<'EOJSON'
 [{"id":"S-01","title":"forEach(async) drops return value silently","location":{"file":"src/handler.ts","start_line":42,"end_line":55},"type":"behavioral","severity":"critical","origin":"introduced","detection_source":"intent","pattern":"async-in-sync-iterator","mechanism":"forEach(async callback) discards the Promise returned by each iteration","consequence":"Callbacks execute concurrently with no error propagation to the caller","evidence":"Lines 42-48: bookingHandler.forEach(async (booking) => ...)","remediation":"Replace forEach(async) with for...of loop"}]
 EOJSON
 
-uv run "$PIPELINE" to-markdown < /tmp/test-md-sighting-input.json > /tmp/test-md-sighting.md 2>/dev/null || true
-uv run "$PIPELINE" to-markdown < "$FIXTURES/finding-for-markdown.json" > /tmp/test-md-finding.md 2>/dev/null || true
+python3 "$DISPATCHER" pipeline to-markdown < /tmp/test-md-sighting-input.json > /tmp/test-md-sighting.md 2>/dev/null || true
+python3 "$DISPATCHER" pipeline to-markdown < "$FIXTURES/finding-for-markdown.json" > /tmp/test-md-finding.md 2>/dev/null || true
 
 # --- Test 1: to-markdown converts sighting to markdown with S-NN header ---
 if grep -q '### S-01' /tmp/test-md-sighting.md 2>/dev/null; then
@@ -99,7 +99,7 @@ else
 fi
 
 # --- Test 10: to-markdown on empty array produces empty or minimal output ---
-if echo '[]' | uv run "$PIPELINE" to-markdown > /tmp/test-md-empty.md 2>/dev/null; then
+if echo '[]' | python3 "$DISPATCHER" pipeline to-markdown > /tmp/test-md-empty.md 2>/dev/null; then
   if ! grep -q '### ' /tmp/test-md-empty.md 2>/dev/null; then
     ok "to-markdown on empty array produces empty or minimal output"
   else

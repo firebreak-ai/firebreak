@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PIPELINE="$PROJECT_ROOT/assets/scripts/fbk-pipeline.py"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 
 trap 'rm -f /tmp/test-matrix-*.json' EXIT
 
@@ -46,7 +46,7 @@ test_combination() {
 EOJSON
 
   local out
-  out=$(uv run "$PIPELINE" validate < /tmp/test-matrix-input.json 2>/dev/null)
+  out=$(python3 "$DISPATCHER" pipeline validate < /tmp/test-matrix-input.json 2>/dev/null)
   local count
   count=$(echo "$out" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "error")
 

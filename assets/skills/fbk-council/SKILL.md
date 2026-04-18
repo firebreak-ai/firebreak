@@ -88,8 +88,8 @@ If recovery is detected, read `council-state.json` for:
 ```bash
 # Run each command separately - DO NOT combine with && as this breaks permissions
 SESSION_ID="council-$(date +%Y%m%d-%H%M%S)"
-python3 ~/.claude/skills/fbk-council/session-manager.py register "$SESSION_ID" [quick|full]
-python3 ~/.claude/skills/fbk-council/session-logger.py init "$SESSION_ID" --tier [quick|full] --task "Task summary"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-manager register "$SESSION_ID" [quick|full]
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger init "$SESSION_ID" --tier [quick|full] --task "Task summary"
 ```
 This enables context-aware auto-approval of research tools during the council session.
 
@@ -373,7 +373,7 @@ The orchestrator conducts a brief self-evaluation:
 
 3. **Log self-evaluation**:
 ```bash
-python3 ~/.claude/skills/fbk-council/session-logger.py self-eval "$SESSION_ID" \
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger self-eval "$SESSION_ID" \
   --worked "parallel invocation efficient" \
   --friction "permission prompts interrupted flow" \
   --proposal "Expand auto-approval for Read tool during research phases" \
@@ -524,14 +524,14 @@ Or if the task is complete:
 
 **Session Cleanup**: Unregister the council session:
 ```bash
-python3 ~/.claude/skills/fbk-council/session-manager.py unregister "$SESSION_ID"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-manager unregister "$SESSION_ID"
 ```
 This removes the session from the active sessions tracker.
 
 **On Task Completion**: When outputting `COUNCIL_COMPLETE`, also clean up state:
 ```bash
 rm -f ~/.claude/council-logs/council-state.json
-python3 ~/.claude/skills/fbk-council/session-manager.py unregister "$SESSION_ID"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-manager unregister "$SESSION_ID"
 ```
 
 ---
@@ -704,7 +704,7 @@ You are the **Council Orchestrator**, a neutral facilitator who manages the disc
 
 Session logging is **automatic by default** for tracking council performance over time. Use `--no-log` flag to disable.
 
-**Logger location**: `~/.claude/skills/fbk-council/session-logger.py`
+**Logger location**: `"$HOME"/.claude/fbk-scripts/fbk.py session-logger`
 **Log directory**: `~/.claude/council-logs/`
 
 ### Automatic Logging
@@ -727,40 +727,40 @@ To disable logging for a specific session:
 
 ```bash
 # Initialize session (automatic in Phase 0)
-python3 ~/.claude/skills/fbk-council/session-logger.py init "$SESSION_ID" --tier quick --task "Task description"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger init "$SESSION_ID" --tier quick --task "Task description"
 
 # Log phase timing
-python3 ~/.claude/skills/fbk-council/session-logger.py phase-start "$SESSION_ID" "Phase-3-Discussion"
-python3 ~/.claude/skills/fbk-council/session-logger.py phase-end "$SESSION_ID" "Phase-3-Discussion"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger phase-start "$SESSION_ID" "Phase-3-Discussion"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger phase-end "$SESSION_ID" "Phase-3-Discussion"
 
 # Log agent contributions with full content (via stdin)
-echo "Full discussion content from agent" | python3 ~/.claude/skills/fbk-council/session-logger.py contribution "$SESSION_ID" "Architect" "Phase-3" --input-tokens 1500 --output-tokens 800
+echo "Full discussion content from agent" | python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger contribution "$SESSION_ID" "Architect" "Phase-3" --input-tokens 1500 --output-tokens 800
 
 # Log agent contributions (legacy mode - character count only)
-python3 ~/.claude/skills/fbk-council/session-logger.py contribution "$SESSION_ID" "Architect" "Phase-3" --chars 1500
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger contribution "$SESSION_ID" "Architect" "Phase-3" --chars 1500
 
 # Log tool usage by agents
-python3 ~/.claude/skills/fbk-council/session-logger.py tool-use "$SESSION_ID" "Builder" "Read" --target "src/main.py" --success
-python3 ~/.claude/skills/fbk-council/session-logger.py tool-use "$SESSION_ID" "Security" "Grep" --target "password" --duration-ms 150
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger tool-use "$SESSION_ID" "Builder" "Read" --target "src/main.py" --success
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger tool-use "$SESSION_ID" "Security" "Grep" --target "password" --duration-ms 150
 
 # Log outcome
-python3 ~/.claude/skills/fbk-council/session-logger.py outcome "$SESSION_ID" --protocol unanimous --result "Recommendation summary"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger outcome "$SESSION_ID" --protocol unanimous --result "Recommendation summary"
 
 # Finalize session (automatic in Phase 5)
-python3 ~/.claude/skills/fbk-council/session-logger.py finalize "$SESSION_ID"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger finalize "$SESSION_ID"
 
 # View session data
-python3 ~/.claude/skills/fbk-council/session-logger.py show "$SESSION_ID"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger show "$SESSION_ID"
 
 # View chronological timeline only
-python3 ~/.claude/skills/fbk-council/session-logger.py show "$SESSION_ID" --timeline
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger show "$SESSION_ID" --timeline
 
 # Filter timeline by agent or event type
-python3 ~/.claude/skills/fbk-council/session-logger.py show "$SESSION_ID" --timeline --agent "Architect"
-python3 ~/.claude/skills/fbk-council/session-logger.py show "$SESSION_ID" --timeline --type "contribution"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger show "$SESSION_ID" --timeline --agent "Architect"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger show "$SESSION_ID" --timeline --type "contribution"
 
 # Filter by permission requests
-python3 ~/.claude/skills/fbk-council/session-logger.py show "$SESSION_ID" --timeline --type "permission_request"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger show "$SESSION_ID" --timeline --type "permission_request"
 ```
 
 ### Permission Logging
@@ -769,7 +769,7 @@ Permission requests are automatically logged by the permissions hook during coun
 
 ```bash
 # Manual permission logging (usually called by hook automatically)
-python3 ~/.claude/skills/fbk-council/session-logger.py permission-request "Edit" --decision ask --context "/project/file.ts" --rule "project_file"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger permission-request "Edit" --decision ask --context "/project/file.ts" --rule "project_file"
 
 # Decisions: auto_approved, user_approved, user_denied, ask
 # Rules: council_research, safe_path, project_file, readonly_bash, default

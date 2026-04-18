@@ -26,7 +26,7 @@ Read `task.json`. Verify it exists and is valid JSON conforming to the task mani
 Run:
 
 ```
-.claude/hooks/fbk-sdl-workflow/breakdown-gate.sh \
+python3 "$HOME"/.claude/fbk-scripts/fbk.py breakdown-gate \
   "ai-docs/$FEATURE/$FEATURE-spec.md" \
   "ai-docs/$FEATURE/$FEATURE-tasks/"
 ```

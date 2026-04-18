@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PIPELINE="$PROJECT_ROOT/assets/scripts/fbk-pipeline.py"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/pipeline"
 
 trap 'rm -f /tmp/test-validate-*.json /tmp/test-validate-*-err.txt' EXIT
@@ -28,14 +28,14 @@ not_ok() {
 echo "TAP version 13"
 
 # --- Test 1: fbk-pipeline.py exists and is non-empty ---
-if [ -s "$PIPELINE" ]; then
+if [ -s "$DISPATCHER" ] && [ -s "$PROJECT_ROOT/assets/fbk-scripts/fbk/pipeline.py" ]; then
   ok "fbk-pipeline.py exists and is non-empty"
 else
-  not_ok "fbk-pipeline.py exists and is non-empty" "file: $PIPELINE"
+  not_ok "fbk-pipeline.py exists and is non-empty" "file: $DISPATCHER"
 fi
 
 # --- Test 2: validate accepts valid sightings and outputs JSON array ---
-if uv run "$PIPELINE" validate < "$FIXTURES/valid-sightings.json" > /tmp/test-validate-out.json 2>/dev/null; then
+if python3 "$DISPATCHER" pipeline validate < "$FIXTURES/valid-sightings.json" > /tmp/test-validate-out.json 2>/dev/null; then
   if python3 -c "import json,sys; json.load(sys.stdin)" < /tmp/test-validate-out.json 2>/dev/null; then
     ok "validate accepts valid sightings and outputs JSON array"
   else
@@ -66,7 +66,7 @@ cat > /tmp/test-validate-missing-input.json <<'EOJSON'
   {"id":"S-02","location":{"file":"src/b.ts","start_line":1},"type":"structural","severity":"minor","mechanism":"Title is empty","title":"","consequence":"Below 10 char min","evidence":"Lines 1-5"}
 ]
 EOJSON
-uv run "$PIPELINE" validate < /tmp/test-validate-missing-input.json > /tmp/test-validate-missing.json 2>/tmp/test-validate-missing-err.txt || true
+python3 "$DISPATCHER" pipeline validate < /tmp/test-validate-missing-input.json > /tmp/test-validate-missing.json 2>/tmp/test-validate-missing-err.txt || true
 valid_count=$(python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d))" < /tmp/test-validate-missing.json 2>/dev/null || echo "0")
 err_nonempty=$([ -s /tmp/test-validate-missing-err.txt ] && echo "1" || echo "0")
 if [ "$valid_count" -eq 0 ] && [ "$err_nonempty" -eq 1 ]; then
@@ -82,7 +82,7 @@ cat > /tmp/test-validate-enum-input.json <<'EOJSON'
   {"id":"S-02","title":"Invalid severity enum value sighting","location":{"file":"src/d.ts","start_line":1},"type":"behavioral","severity":"high","mechanism":"Invalid severity not in enum","consequence":"Parser should reject this","evidence":"Lines 1-5"}
 ]
 EOJSON
-uv run "$PIPELINE" validate < /tmp/test-validate-enum-input.json > /tmp/test-validate-enum.json 2>/tmp/test-validate-enum-err.txt || true
+python3 "$DISPATCHER" pipeline validate < /tmp/test-validate-enum-input.json > /tmp/test-validate-enum.json 2>/tmp/test-validate-enum-err.txt || true
 enum_valid_count=$(python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d))" < /tmp/test-validate-enum.json 2>/dev/null || echo "0")
 enum_err_nonempty=$([ -s /tmp/test-validate-enum-err.txt ] && echo "1" || echo "0")
 if [ "$enum_valid_count" -eq 0 ] && [ "$enum_err_nonempty" -eq 1 ]; then
@@ -98,7 +98,7 @@ cat > /tmp/test-validate-matrix-input.json <<'EOJSON'
   {"id":"S-02","title":"Structural critical is invalid combination","location":{"file":"src/f.ts","start_line":1},"type":"structural","severity":"critical","mechanism":"structural+critical invalid per matrix","consequence":"Parser should reject this","evidence":"Lines 1-5"}
 ]
 EOJSON
-uv run "$PIPELINE" validate < /tmp/test-validate-matrix-input.json > /tmp/test-validate-matrix.json 2>/tmp/test-validate-matrix-err.txt || true
+python3 "$DISPATCHER" pipeline validate < /tmp/test-validate-matrix-input.json > /tmp/test-validate-matrix.json 2>/tmp/test-validate-matrix-err.txt || true
 matrix_valid_count=$(python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d))" < /tmp/test-validate-matrix.json 2>/dev/null || echo "0")
 matrix_err_nonempty=$([ -s /tmp/test-validate-matrix-err.txt ] && echo "1" || echo "0")
 if [ "$matrix_valid_count" -eq 0 ] && [ "$matrix_err_nonempty" -eq 1 ]; then

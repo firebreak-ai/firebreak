@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PIPELINE="$PROJECT_ROOT/assets/scripts/fbk-pipeline.py"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/pipeline"
 
 trap 'rm -f /tmp/test-severity-*.json /tmp/test-severity-*-err.txt' EXIT
@@ -28,7 +28,7 @@ not_ok() {
 echo "TAP version 13"
 
 # --- Test 1: --min-severity minor drops info, keeps minor+major+critical ---
-uv run "$PIPELINE" severity-filter --min-severity minor < "$FIXTURES/mixed-severities.json" > /tmp/test-severity-minor.json 2>/dev/null || true
+python3 "$DISPATCHER" pipeline severity-filter --min-severity minor < "$FIXTURES/mixed-severities.json" > /tmp/test-severity-minor.json 2>/dev/null || true
 if python3 -c "import json,sys; d=json.load(sys.stdin); assert len(d)==3, f'expected 3, got {len(d)}'" < /tmp/test-severity-minor.json 2>/dev/null; then
   ok "--min-severity minor drops info, keeps minor+major+critical"
 else
@@ -37,7 +37,7 @@ else
 fi
 
 # --- Test 2: --min-severity major drops info+minor, keeps major+critical ---
-uv run "$PIPELINE" severity-filter --min-severity major < "$FIXTURES/mixed-severities.json" > /tmp/test-severity-major.json 2>/dev/null || true
+python3 "$DISPATCHER" pipeline severity-filter --min-severity major < "$FIXTURES/mixed-severities.json" > /tmp/test-severity-major.json 2>/dev/null || true
 if python3 -c "import json,sys; d=json.load(sys.stdin); assert len(d)==2, f'expected 2, got {len(d)}'" < /tmp/test-severity-major.json 2>/dev/null; then
   ok "--min-severity major drops info+minor, keeps major+critical"
 else
@@ -46,7 +46,7 @@ else
 fi
 
 # --- Test 3: --min-severity critical drops everything below critical ---
-uv run "$PIPELINE" severity-filter --min-severity critical < "$FIXTURES/mixed-severities.json" > /tmp/test-severity-critical.json 2>/dev/null || true
+python3 "$DISPATCHER" pipeline severity-filter --min-severity critical < "$FIXTURES/mixed-severities.json" > /tmp/test-severity-critical.json 2>/dev/null || true
 if python3 -c "import json,sys; d=json.load(sys.stdin); assert len(d)==1 and d[0]['severity']=='critical', f'expected 1 critical, got {d}'" < /tmp/test-severity-critical.json 2>/dev/null; then
   ok "--min-severity critical drops everything below critical"
 else
@@ -55,7 +55,7 @@ else
 fi
 
 # --- Test 4: --min-severity info keeps all sightings ---
-uv run "$PIPELINE" severity-filter --min-severity info < "$FIXTURES/mixed-severities.json" > /tmp/test-severity-info.json 2>/dev/null || true
+python3 "$DISPATCHER" pipeline severity-filter --min-severity info < "$FIXTURES/mixed-severities.json" > /tmp/test-severity-info.json 2>/dev/null || true
 if python3 -c "import json,sys; d=json.load(sys.stdin); assert len(d)==4, f'expected 4, got {len(d)}'" < /tmp/test-severity-info.json 2>/dev/null; then
   ok "--min-severity info keeps all sightings"
 else
@@ -64,7 +64,7 @@ else
 fi
 
 # --- Test 5: severity-filter logs dropped sightings to stderr ---
-uv run "$PIPELINE" severity-filter --min-severity major < "$FIXTURES/mixed-severities.json" > /dev/null 2>/tmp/test-severity-stderr.txt || true
+python3 "$DISPATCHER" pipeline severity-filter --min-severity major < "$FIXTURES/mixed-severities.json" > /dev/null 2>/tmp/test-severity-stderr.txt || true
 stderr_size=$(wc -c < /tmp/test-severity-stderr.txt 2>/dev/null || echo "0")
 if [ "$stderr_size" -gt 0 ]; then
   ok "severity-filter logs dropped sightings to stderr"
@@ -73,7 +73,7 @@ else
 fi
 
 # --- Test 6: severity-filter on empty array outputs empty array ---
-echo '[]' | uv run "$PIPELINE" severity-filter --min-severity minor > /tmp/test-severity-empty.json 2>/dev/null || true
+echo '[]' | python3 "$DISPATCHER" pipeline severity-filter --min-severity minor > /tmp/test-severity-empty.json 2>/dev/null || true
 if python3 -c "import json,sys; d=json.load(sys.stdin); assert d==[], f'expected [], got {d}'" < /tmp/test-severity-empty.json 2>/dev/null; then
   ok "severity-filter on empty array outputs empty array"
 else
@@ -82,7 +82,7 @@ else
 fi
 
 # --- Test 7: severity-filter preserves sighting field content ---
-uv run "$PIPELINE" severity-filter --min-severity critical < "$FIXTURES/mixed-severities.json" > /tmp/test-severity-fields.json 2>/dev/null || true
+python3 "$DISPATCHER" pipeline severity-filter --min-severity critical < "$FIXTURES/mixed-severities.json" > /tmp/test-severity-fields.json 2>/dev/null || true
 if python3 -c "import json,sys; d=json.load(sys.stdin); s=d[0]; assert s['title']=='forEach(async) drops return value silently' and s['type']=='behavioral'" < /tmp/test-severity-fields.json 2>/dev/null; then
   ok "severity-filter preserves sighting field content"
 else

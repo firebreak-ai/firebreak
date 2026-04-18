@@ -31,12 +31,12 @@ setup_mock_source() {
 
   mkdir -p "$MOCK_DIR/assets/skills/fbk-spec"
   mkdir -p "$MOCK_DIR/assets/agents"
-  mkdir -p "$MOCK_DIR/assets/hooks/fbk-sdl-workflow"
+  mkdir -p "$MOCK_DIR/assets/fbk-scripts"
   mkdir -p "$MOCK_DIR/assets/fbk-docs/fbk-sdl-workflow"
 
   echo "mock spec prompt" > "$MOCK_DIR/assets/skills/fbk-spec/prompt.md"
   echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-code-review-detector.md"
-  echo -e "#!/usr/bin/env bash\necho done" > "$MOCK_DIR/assets/hooks/fbk-sdl-workflow/task-completed.sh"
+  echo "# mock fbk.py" > "$MOCK_DIR/assets/fbk-scripts/fbk.py"
   echo "mock doc" > "$MOCK_DIR/assets/fbk-docs/fbk-sdl-workflow/guide.md"
 
   cat > "$MOCK_DIR/assets/settings.json" << 'EOF'
@@ -47,7 +47,7 @@ setup_mock_source() {
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME\"/.claude/hooks/fbk-sdl-workflow/task-completed.sh"
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py task-completed"
           }
         ]
       }
@@ -87,7 +87,7 @@ TARGET=$(setup_target)
 bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" > /dev/null 2>&1
 RC=$?
 if [ -f "$TARGET/skills/fbk-spec/prompt.md" ] && [ -f "$TARGET/agents/fbk-code-review-detector.md" ] && \
-   [ -f "$TARGET/hooks/fbk-sdl-workflow/task-completed.sh" ] && [ -f "$TARGET/fbk-docs/fbk-sdl-workflow/guide.md" ]; then
+   [ -f "$TARGET/fbk-scripts/fbk.py" ] && [ -f "$TARGET/fbk-docs/fbk-sdl-workflow/guide.md" ]; then
   ok "fresh install creates fbk-prefixed files in target"
 else
   not_ok "fresh install creates fbk-prefixed files in target" "rc=$RC files_check_failed"

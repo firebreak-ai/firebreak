@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-GATE="$PROJECT_ROOT/assets/hooks/fbk-sdl-workflow/task-reviewer-gate.sh"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/tasks"
 
 ok() {
@@ -26,7 +26,7 @@ not_ok() {
 echo "TAP version 13"
 
 # --- Test 1: valid task set passes ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/valid/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/valid-spec.md" "$FIXTURES/valid/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 0 ] && echo "$STDOUT" | grep -q '"result"'; then
@@ -36,77 +36,77 @@ else
 fi
 
 # --- Test 2: missing required fields rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/missing-fields/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/valid-spec.md" "$FIXTURES/missing-fields/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "missing"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qi "missing"; then
   ok "missing required fields rejected with exit 2"
 else
   not_ok "missing required fields rejected with exit 2" "rc=$RC stderr=$STDERR"
 fi
 
 # --- Test 3: impl without test_tasks rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/impl-no-test-tasks/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/valid-spec.md" "$FIXTURES/impl-no-test-tasks/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "test_tasks"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qi "test_tasks"; then
   ok "implementation task without test_tasks rejected"
 else
   not_ok "implementation task without test_tasks rejected" "rc=$RC stderr=$STDERR"
 fi
 
 # --- Test 4: overlapping file boundaries rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/overlap/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/valid-spec.md" "$FIXTURES/overlap/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "shared.py\|conflict"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qi "shared.py\|conflict"; then
   ok "overlapping file boundaries rejected with exit 2"
 else
   not_ok "overlapping file boundaries rejected with exit 2" "rc=$RC stderr=$STDERR"
 fi
 
 # --- Test 5: uncovered AC rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/uncovered-ac/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/valid-spec.md" "$FIXTURES/uncovered-ac/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "AC-03"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qi "AC-03"; then
   ok "uncovered AC rejected with exit 2, mentions AC-03"
 else
   not_ok "uncovered AC rejected with exit 2, mentions AC-03" "rc=$RC stderr=$STDERR"
 fi
 
 # --- Test 6: invalid test_tasks reference rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/bad-test-ref/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/valid-spec.md" "$FIXTURES/bad-test-ref/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qiE "task-99|invalid|does not match"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qiE "task-99|invalid|does not match"; then
   ok "invalid test_tasks reference rejected"
 else
   not_ok "invalid test_tasks reference rejected" "rc=$RC stderr=$STDERR"
 fi
 
 # --- Test 7: missing file lists rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/no-files/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/valid-spec.md" "$FIXTURES/no-files/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qiE "files_to_create|files_to_modify|neither"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qiE "files_to_create|files_to_modify|neither"; then
   ok "missing file lists rejected"
 else
   not_ok "missing file lists rejected" "rc=$RC stderr=$STDERR"
 fi
 
 # --- Test 8: files_to_modify with non-existent path rejected ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/bad-path/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/valid-spec.md" "$FIXTURES/bad-path/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "nonexistent\|does not exist"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qi "nonexistent\|does not exist"; then
   ok "files_to_modify with non-existent path rejected"
 else
   not_ok "files_to_modify with non-existent path rejected" "rc=$RC stderr=$STDERR"
 fi
 
 # --- Test 9: valid task set with full AC coverage passes ---
-STDOUT=$(bash "$GATE" "$FIXTURES/valid-spec.md" "$FIXTURES/valid/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/valid-spec.md" "$FIXTURES/valid/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 if [ $RC -eq 0 ]; then
   ok "valid task set with full AC coverage passes without false rejections"
@@ -116,7 +116,7 @@ fi
 
 # --- Test 10: corrective category passes with test-only AC coverage ---
 # AC-02 is covered only by a test task; corrective category should allow this.
-STDOUT=$(bash "$GATE" "$FIXTURES/corrective/corrective-spec.md" "$FIXTURES/corrective/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/corrective/corrective-spec.md" "$FIXTURES/corrective/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 0 ] && echo "$STDOUT" | grep -q '"result"'; then
@@ -145,11 +145,11 @@ completion_gate: "regression tests compile and fail"
 
 Write regression tests covering AC-01 only (AC-02 removed to trigger failure).
 TASKEOF
-STDOUT=$(bash "$GATE" "$FIXTURES/corrective/corrective-spec.md" "$TMPDIR_T11/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/corrective/corrective-spec.md" "$TMPDIR_T11/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 rm -rf "$TMPDIR_T11"
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "AC-02"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qi "AC-02"; then
   ok "corrective category rejects AC covered by neither test nor impl"
 else
   not_ok "corrective category rejects AC covered by neither test nor impl" "rc=$RC stderr=$STDERR"
@@ -157,7 +157,7 @@ fi
 
 # --- Test 12: testing-infrastructure passes with test-only ACs ---
 # AC-01 is covered only by a test task; testing-infrastructure category should allow this.
-STDOUT=$(bash "$GATE" "$FIXTURES/testing-infra/testing-infra-spec.md" "$FIXTURES/testing-infra/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/testing-infra/testing-infra-spec.md" "$FIXTURES/testing-infra/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 if [ $RC -eq 0 ] && echo "$STDOUT" | grep -q '"result"'; then
@@ -178,11 +178,11 @@ cat > "$TMPDIR_T13/task.json" <<'JSONEOF'
   ]
 }
 JSONEOF
-STDOUT=$(bash "$GATE" "$FIXTURES/testing-infra/testing-infra-spec.md" "$TMPDIR_T13/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/testing-infra/testing-infra-spec.md" "$TMPDIR_T13/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 rm -rf "$TMPDIR_T13"
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "AC-01\|implementation"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qi "AC-01\|implementation"; then
   ok "feature category rejects test-only AC coverage"
 else
   not_ok "feature category rejects test-only AC coverage" "rc=$RC stderr=$STDERR"
@@ -199,11 +199,11 @@ cat > "$TMPDIR_T14/task.json" <<'JSONEOF'
   ]
 }
 JSONEOF
-STDOUT=$(bash "$GATE" "$FIXTURES/testing-infra/testing-infra-spec.md" "$TMPDIR_T14/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/testing-infra/testing-infra-spec.md" "$TMPDIR_T14/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 rm -rf "$TMPDIR_T14"
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "AC-01\|implementation"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qi "AC-01\|implementation"; then
   ok "absent category defaults to feature behavior and rejects test-only AC"
 else
   not_ok "absent category defaults to feature behavior and rejects test-only AC" "rc=$RC stderr=$STDERR"
@@ -223,11 +223,11 @@ cat > "$TMPDIR_T15/task.json" <<'JSONEOF'
   ]
 }
 JSONEOF
-STDOUT=$(bash "$GATE" "$FIXTURES/corrective/corrective-spec.md" "$TMPDIR_T15/" "$FIXTURES" 2>/tmp/tr-stderr)
+STDOUT=$(python3 "$DISPATCHER" task-reviewer-gate "$FIXTURES/corrective/corrective-spec.md" "$TMPDIR_T15/" --project-root "$FIXTURES" 2>/tmp/tr-stderr)
 RC=$?
 STDERR=$(cat /tmp/tr-stderr)
 rm -rf "$TMPDIR_T15"
-if [ $RC -eq 2 ] && echo "$STDERR" | grep -qi "experimental\|valid categor\|corrective\|testing-infrastructure"; then
+if [ $RC -eq 2 ] && echo "$STDOUT" | grep -qi "experimental\|valid categor\|corrective\|testing-infrastructure"; then
   ok "unrecognized category rejected with error listing valid categories"
 else
   not_ok "unrecognized category rejected with error listing valid categories" "rc=$RC stderr=$STDERR"

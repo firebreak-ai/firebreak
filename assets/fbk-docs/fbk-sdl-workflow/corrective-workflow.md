@@ -48,5 +48,5 @@ Fast-track does not enter the pipeline. The developer applies the fix directly w
 ## Pipeline Integration
 
 - **Test reviewer** (CP1): Tier 2 behavioral completeness accommodates corrective specs with two additional "show your work" variants — existing failing tests ("currently fails because [bug]") and existing passing tests ("must continue to pass after fix"). See `.claude/agents/fbk-test-reviewer.md`, Criterion 3.
-- **Task reviewer gate**: `category: corrective` relaxes the AC coverage invariant — test tasks can cover ACs without paired implementation tasks. See `.claude/hooks/fbk-sdl-workflow/task-reviewer-gate.sh`.
+- **Task reviewer gate**: `category: corrective` relaxes the AC coverage invariant — test tasks can cover ACs without paired implementation tasks. See `python3 "$HOME"/.claude/fbk-scripts/fbk.py task-reviewer-gate`.
 - **Baseline-snapshot regression check**: Failing diagnostic tests are automatically excluded from the baseline because they fail at capture time. After the final wave, all tests (including diagnostic tests) must pass. See `implementation-guide.md`.
