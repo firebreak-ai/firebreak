@@ -245,14 +245,17 @@ def validate_tasks_from_files(
     spec_path: str,
     task_files: Dict[str, str],
     project_root: Optional[str] = None,
+    tasks_dir: Optional[str] = None,
 ) -> Dict:
     """Validate task files and return a structured result dict.
 
     Args:
-        spec_path: Path to the spec markdown file (used to extract ACs and category)
+        spec_path: Path to the spec markdown file (used to extract ACs)
         task_files: Dict mapping task filenames to raw markdown content strings
         project_root: Root directory for resolving files_to_modify paths.
-                      Auto-detected from spec_path if not provided.
+                      Auto-detected from tasks_dir if not provided.
+        tasks_dir: Directory containing task.json (used to read category).
+                   Defaults to dirname of spec_path if not provided.
 
     Returns:
         Dict with keys: gate, result, tasks, acs_covered, waves, failures
@@ -267,7 +270,8 @@ def validate_tasks_from_files(
             "failures": ["Error: PyYAML required"],
         }
 
-    tasks_dir = os.path.dirname(spec_path)
+    if tasks_dir is None:
+        tasks_dir = os.path.dirname(spec_path)
     if project_root is None:
         project_root = find_project_root(tasks_dir)
 
@@ -329,7 +333,7 @@ def main() -> None:
             with open(fpath) as f:
                 task_files[fname] = f.read()
 
-    result = validate_tasks_from_files(args.spec_path, task_files, args.project_root)
+    result = validate_tasks_from_files(args.spec_path, task_files, args.project_root, args.tasks_dir)
 
     print(json.dumps(result))
 
