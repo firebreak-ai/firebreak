@@ -6,19 +6,22 @@
 
 set -e
 
-# Define the 11 context asset files
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# Define the 11 context asset files with absolute paths
 declare -a files=(
-  "assets/skills/fbk-spec/SKILL.md"
-  "assets/skills/fbk-spec-review/SKILL.md"
-  "assets/skills/fbk-breakdown/SKILL.md"
-  "assets/skills/fbk-implement/SKILL.md"
-  "assets/skills/fbk-code-review/SKILL.md"
-  "assets/skills/fbk-council/SKILL.md"
-  "assets/skills/fbk-code-review/references/existing-code-review.md"
-  "assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
-  "assets/fbk-docs/fbk-sdl-workflow/verify-yml-schema.md"
-  "assets/fbk-docs/fbk-sdl-workflow/corrective-workflow.md"
-  "assets/settings.json"
+  "$PROJECT_ROOT/assets/skills/fbk-spec/SKILL.md"
+  "$PROJECT_ROOT/assets/skills/fbk-spec-review/SKILL.md"
+  "$PROJECT_ROOT/assets/skills/fbk-breakdown/SKILL.md"
+  "$PROJECT_ROOT/assets/skills/fbk-implement/SKILL.md"
+  "$PROJECT_ROOT/assets/skills/fbk-code-review/SKILL.md"
+  "$PROJECT_ROOT/assets/skills/fbk-council/SKILL.md"
+  "$PROJECT_ROOT/assets/skills/fbk-code-review/references/existing-code-review.md"
+  "$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
+  "$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/verify-yml-schema.md"
+  "$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/corrective-workflow.md"
+  "$PROJECT_ROOT/assets/settings.json"
 )
 
 fail_count=0

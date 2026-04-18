@@ -45,13 +45,19 @@ from pathlib import Path
 # Schema version for backward compatibility
 SCHEMA_VERSION = 2
 
-LOG_DIR = Path.home() / '.claude' / 'council-logs'
-PERMISSIONS_LOG = Path.home() / '.claude' / 'council-logs' / 'council-permissions.jsonl'
+def _get_log_dir() -> Path:
+    override = os.environ.get('COUNCIL_LOG_DIR')
+    if override:
+        return Path(override)
+    return Path.home() / '.claude' / 'council-logs'
+
+LOG_DIR = _get_log_dir()
+PERMISSIONS_LOG = LOG_DIR / 'council-permissions.jsonl'
 
 
 def get_log_path(session_id: str) -> Path:
     """Get the log file path for a session."""
-    return LOG_DIR / f"{session_id}.json"
+    return _get_log_dir() / f"{session_id}.json"
 
 
 def load_session(session_id: str) -> dict:

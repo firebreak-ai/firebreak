@@ -60,7 +60,7 @@ fi
 STDOUT=$(python3 "$DISPATCHER" spec-gate /dev/null 2>/tmp/gate-stderr)
 RC=$?
 STDERR=$(cat /tmp/gate-stderr)
-if [ $RC -eq 2 ] && [ -n "$STDERR" ]; then
+if [ $RC -eq 2 ] && echo "$STDERR" | grep -qiE "Missing section|empty|no content|not found|unrecognized"; then
   ok "empty file exits 2 with descriptive error"
 else
   not_ok "empty file exits 2 with descriptive error" "rc=$RC stderr=$STDERR"

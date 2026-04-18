@@ -103,8 +103,9 @@ class TestDispatcherBehavior:
             capture_output=True,
             text=True
         )
-        # stderr should contain available commands
-        assert len(result.stderr) > 0, "stderr should not be empty for unrecognized command"
+        # stderr should list available commands — verify at least one known command name present
+        assert "spec-gate" in result.stderr, \
+            f"stderr should list available commands including 'spec-gate', got: {result.stderr}"
 
 
 class TestDispatcherVersionCheck:
@@ -123,34 +124,19 @@ class TestDispatcherVersionCheck:
                 return path
         pytest.skip("fbk.py dispatcher not found")
 
-    def test_python_version_check_via_mock(self):
-        """Python < 3.11 exits with code 2 (via sys.version_info mock)."""
-        try:
-            import fbk
-        except ImportError:
-            pytest.skip("fbk module not yet implemented")
-
-        # Mock sys.version_info to simulate Python 3.10
-        with mock.patch("sys.version_info", (3, 10)):
-            # The dispatcher should check version and exit early
-            # This test validates the version check logic exists
-            # Actual exit behavior depends on implementation
-            pass
-
-    def test_python_version_check_via_subprocess(self, dispatcher_path):
-        """Python < 3.11 check via subprocess invocation."""
-        # This validates the dispatcher exits with code 2 when version is too old
-        # Requires dispatcher to be runnable (fbk.py exists)
+    @pytest.mark.skipif(
+        sys.version_info >= (3, 11),
+        reason="Version check test requires Python < 3.11 binary; current interpreter is >= 3.11"
+    )
+    def test_python_version_check_rejects_old_python(self, dispatcher_path):
+        """Python < 3.11 exits with code 2."""
         result = subprocess.run(
             [sys.executable, str(dispatcher_path), "spec-gate"],
             capture_output=True,
             text=True,
-            env={**dict(__import__('os').environ), "PYTHON_VERSION_OVERRIDE": "3.10"}
         )
-        # If version check is implemented, should exit with code 2
-        # If not yet implemented, test will skip
-        if sys.version_info < (3, 11):
-            assert result.returncode == 2, "Should exit 2 for Python < 3.11"
+        assert result.returncode == 2, "Should exit 2 for Python < 3.11"
+        assert "3.11" in result.stderr, "Error message should mention required version"
 
 
 class TestDispatcherIntegration:

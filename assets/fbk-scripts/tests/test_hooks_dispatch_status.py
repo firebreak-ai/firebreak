@@ -107,8 +107,8 @@ class TestDispatchStatusFormatting:
         output = format_status(state)
         assert "COMPLETED" in output
 
-    def test_output_is_human_readable_not_json(self):
-        """Test output is human-readable, not JSON format."""
+    def test_output_contains_spec_name_and_state(self):
+        """Test output includes both the spec name and the current state in readable form."""
         state = {
             "spec_name": "queued-spec",
             "current_state": "QUEUED",
@@ -119,8 +119,8 @@ class TestDispatchStatusFormatting:
             "parked_info": {}
         }
         output = format_status(state)
-        # Output should not start with JSON brace
-        assert not output.strip().startswith("{")
+        assert "queued-spec" in output, "Output should contain the spec name"
+        assert "QUEUED" in output, "Output should contain the current state"
 
     def test_error_history_displayed_for_parked_spec(self):
         """Test error history is displayed for parked spec."""

@@ -32,7 +32,13 @@ else:
     def unlock_file(f):
         fcntl.flock(f, fcntl.LOCK_UN)
 
-COUNCIL_LOGS_DIR = Path.home() / '.claude' / 'council-logs'
+def _get_council_dir() -> Path:
+    override = os.environ.get('COUNCIL_LOG_DIR')
+    if override:
+        return Path(override)
+    return Path.home() / '.claude' / 'council-logs'
+
+COUNCIL_LOGS_DIR = _get_council_dir()
 ACTIVE_COUNCIL_FILE = COUNCIL_LOGS_DIR / 'active-council'
 SESSION_ID_FILE = COUNCIL_LOGS_DIR / 'council-session-id'
 ABORT_FILE = COUNCIL_LOGS_DIR / 'council-abort'
@@ -93,8 +99,14 @@ def register_session(session_id: str, tier: str) -> None:
     - tier: quick/full
     - pid: process ID for stale detection
     """
-    # Use file locking to prevent concurrent writes
-    with open(ACTIVE_COUNCIL_FILE, 'r+') as f:
+    # Ensure directory and file exist before locking
+    council_dir = _get_council_dir()
+    council_dir.mkdir(parents=True, exist_ok=True)
+    active_file = council_dir / 'active-council'
+    if not active_file.exists():
+        active_file.write_text(json.dumps({'sessions': {}}))
+
+    with open(active_file, 'r+') as f:
         lock_file(f)
 
         try:
@@ -134,7 +146,11 @@ def unregister_session(session_id: str) -> None:
 
     Called when a session completes normally.
     """
-    with open(ACTIVE_COUNCIL_FILE, 'r+') as f:
+    active_file = _get_council_dir() / 'active-council'
+    if not active_file.exists():
+        return
+
+    with open(active_file, 'r+') as f:
         lock_file(f)
 
         try:

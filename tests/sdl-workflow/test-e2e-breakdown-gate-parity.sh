@@ -39,14 +39,14 @@ else
   not_ok "valid breakdown: expected exit 0" "got exit $EXIT_CODE"
 fi
 
-# Test 2: invalid breakdown exits with error
-python3 "$DISPATCHER" breakdown-gate "$GOLDEN/valid-spec.md" "$GOLDEN/uncovered-ac" >/dev/null 2>&1
+# Test 2: invalid breakdown exits with error and reports the uncovered AC
+STDERR_T2=$(python3 "$DISPATCHER" breakdown-gate "$GOLDEN/valid-spec.md" "$GOLDEN/uncovered-ac" 2>&1 >/dev/null)
 EXIT_CODE=$?
 
-if [[ $EXIT_CODE -eq 2 ]]; then
-  ok "invalid breakdown: exits 2"
+if [[ $EXIT_CODE -eq 2 ]] && echo "$STDERR_T2" | grep -qi "coverage\|AC-"; then
+  ok "invalid breakdown: exits 2, reports AC coverage failure"
 else
-  not_ok "invalid breakdown: expected exit 2" "got exit $EXIT_CODE"
+  not_ok "invalid breakdown: expected exit 2 with AC coverage failure" "exit=$EXIT_CODE stderr=$STDERR_T2"
 fi
 
 echo ""

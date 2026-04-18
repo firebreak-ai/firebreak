@@ -1,0 +1,34 @@
+{
+  "spec": "valid-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Test Alpha",
+      "file": "task-01-test-alpha.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": ["AC-01", "AC-02"],
+      "model": "Haiku",
+      "model_rationale": "bounded",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Impl Alpha",
+      "file": "task-02-impl-alpha.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": ["AC-01", "AC-02"],
+      "model": "Haiku",
+      "model_rationale": "bounded",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    }
+  ]
+}

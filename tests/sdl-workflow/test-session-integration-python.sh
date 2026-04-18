@@ -1,13 +1,16 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # Test suite for session-logger and session-manager integration through dispatcher
 # Verifies that council modules are relocatable and callable through dispatcher
 
 set -euo pipefail
 
-PROJECT_ROOT="/home/rahvin/context-assets"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 TEST_SESSION="test-session-$(date +%s)"
 TMPDIR=$(mktemp -d)
+export COUNCIL_LOG_DIR="$TMPDIR/council-logs"
+mkdir -p "$COUNCIL_LOG_DIR"
 trap 'rm -rf "$TMPDIR"' EXIT
 
 # Test 1: session-logger init creates log file
@@ -24,7 +27,7 @@ test_session_logger_init() {
     fi
 
     # Verify session log file exists at expected location
-    local log_path="$HOME/.claude/council-logs/${TEST_SESSION}.json"
+    local log_path="$COUNCIL_LOG_DIR/${TEST_SESSION}.json"
     if [ ! -f "$log_path" ]; then
         echo "FAIL: session log file not found at $log_path"
         return 1
@@ -59,7 +62,7 @@ test_session_manager_register() {
     fi
 
     # Verify registry file contains test-session
-    local registry_path="$HOME/.claude/council-logs/active-council"
+    local registry_path="$COUNCIL_LOG_DIR/active-council"
     if [ ! -f "$registry_path" ]; then
         echo "FAIL: registry file not found at $registry_path"
         return 1
@@ -88,7 +91,7 @@ test_session_manager_unregister() {
     fi
 
     # Verify registry file does NOT contain test-session
-    local registry_path="$HOME/.claude/council-logs/active-council"
+    local registry_path="$COUNCIL_LOG_DIR/active-council"
     if [ ! -f "$registry_path" ]; then
         echo "FAIL: registry file not found at $registry_path"
         return 1
