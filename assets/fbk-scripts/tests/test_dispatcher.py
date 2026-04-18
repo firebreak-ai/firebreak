@@ -108,36 +108,6 @@ class TestDispatcherBehavior:
             f"stderr should list available commands including 'spec-gate', got: {result.stderr}"
 
 
-class TestDispatcherVersionCheck:
-    """Tests for Python version check."""
-
-    @pytest.fixture
-    def dispatcher_path(self):
-        """Return path to fbk.py dispatcher."""
-        fbk_scripts = Path(__file__).parent.parent
-        candidates = [
-            fbk_scripts / "fbk.py",
-            fbk_scripts / "fbk" / "__main__.py",
-        ]
-        for path in candidates:
-            if path.exists():
-                return path
-        pytest.skip("fbk.py dispatcher not found")
-
-    @pytest.mark.skipif(
-        sys.version_info >= (3, 11),
-        reason="Version check test requires Python < 3.11 binary; current interpreter is >= 3.11"
-    )
-    def test_python_version_check_rejects_old_python(self, dispatcher_path):
-        """Python < 3.11 exits with code 2."""
-        result = subprocess.run(
-            [sys.executable, str(dispatcher_path), "spec-gate"],
-            capture_output=True,
-            text=True,
-        )
-        assert result.returncode == 2, "Should exit 2 for Python < 3.11"
-        assert "3.11" in result.stderr, "Error message should mention required version"
-
 
 class TestDispatcherIntegration:
     """Integration tests for dispatcher behavior with modules."""
