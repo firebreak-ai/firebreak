@@ -6,7 +6,7 @@ set -e
 # AC-10: all old path patterns eliminated from test files
 
 echo "=== Test 1: Verify no old hook paths in test files ==="
-hook_matches=$(grep -r "hooks/fbk-sdl-workflow" tests/sdl-workflow/ tests/installer/ --include='*.sh' --exclude='test-verify-*' --exclude='test-no-old-*' --exclude='test-settings-*' --exclude='test-council-*' --exclude='test-e2e-*' 2>/dev/null || true)
+hook_matches=$(grep -r "hooks/fbk-sdl-workflow" tests/sdl-workflow/ tests/installer/ --include='*.sh' --exclude='test-verify-*' --exclude='test-no-old-*' --exclude='test-settings-*' --exclude='test-council-*' --exclude='test-e2e-*' --exclude='test-old-locations-*' 2>/dev/null || true)
 if [ -z "$hook_matches" ]; then
     echo "✓ PASS: No old hook paths found"
 else

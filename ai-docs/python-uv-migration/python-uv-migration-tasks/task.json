@@ -788,8 +788,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file task with clear instructions",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Old files removed, verification passes",
       "note": null
     },
     {
@@ -804,8 +804,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file task with clear instructions",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Old files removed, verification passes",
       "note": null
     }
   ]
