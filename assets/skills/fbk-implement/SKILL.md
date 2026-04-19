@@ -37,8 +37,6 @@ If exit code is non-zero, report the failures and offer to run `/breakdown` to r
 
 Check that `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is set. If not, stop and inform the user — teammates cannot be spawned without this flag.
 
-Check `.claude/settings.json` for a `TaskCompleted` hook entry. If missing, warn: "Per-task verification will not fire. Failures may only surface at per-wave verification." Ask whether to proceed.
-
 From `task.json`, determine the maximum wave width (the largest number of tasks in any single wave). Create an agent team. Spawn teammates equal to the maximum wave width. Teammates persist for the full run — they claim new tasks as each wave opens.
 
 Task files specify a model (Haiku or Sonnet). Use the `model` parameter when spawning teammates to match the task assignments.
@@ -54,13 +52,15 @@ For each wave, follow the protocol in the implementation guide exactly:
 ```
 Task file: ai-docs/$FEATURE/$FEATURE-tasks/task-NN-name.md
 Read that file as your sole context and execute it.
+
+Before your turn ends, send a work summary message to the team lead describing what you created, what verification you ran, and any caveats. A turn ending without this message is incomplete work.
 ```
 
 Wait for all test-task native tasks to reach completed status. Set each completed task's `status` to `complete` in `task.json` and record the teammate's work summary in the `summary` field.
 
 **Step 2 — Test compilation check**: Verify new tests exist and compile. Tests are expected to fail (no implementation yet) — a compile failure is the problem, not a test failure. If tests do not compile, treat as task failure and invoke the escalation protocol before proceeding.
 
-**Step 3 — Implementation tasks**: Create native tasks for this wave's implementation tasks (tasks with matching `wave_id` and `type: "implementation"`). Set each task's `status` to `in_progress` in `task.json`. Use the same format — full task file path in the description, matching the task's assigned model. Wait for all to complete. Set each completed task's `status` to `complete` and record the `summary`.
+**Step 3 — Implementation tasks**: Create native tasks for this wave's implementation tasks (tasks with matching `wave_id` and `type: "implementation"`). Set each task's `status` to `in_progress` in `task.json`. Use the same format from Step 1 — full task file path in the description, matching the task's assigned model, including the closing summary-requirement clause. Wait for all to complete. Set each completed task's `status` to `complete` and record the `summary`.
 
 **Step 4 — Per-wave verification**: Run the checks specified in the implementation guide (full test suite, lint, no merge conflicts). If any check fails, invoke the escalation protocol. Do not advance to the next wave until the current wave passes.
 

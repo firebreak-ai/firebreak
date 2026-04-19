@@ -97,7 +97,7 @@ def main() -> None:
     task_description = data.get("task_description", "")
     cwd = data.get("cwd", ".")
 
-    match = re.search(r"ai-docs/\S*/tasks/task-\S*\.md", task_description)
+    match = re.search(r"ai-docs/\S+?/\S*tasks/task-\S*\.md", task_description)
     if not match:
         sys.exit(0)
 

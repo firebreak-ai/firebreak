@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- **Council agent personas restructured to activation-focused pattern.** The 6 council agents (architect, analyst, builder, guardian, security, advocate) now use a role activation line, `## Output quality bars`, and optional `## Anti-defaults` / `## Authority` sections. Description-heavy sections (`## Your Identity`, `## Your Expertise`, `## How You Contribute`, `## Your Communication Style`, `## In Council Discussions`, `## Critical Behaviors`) removed. Body length capped at 40 lines per agent.
+- **Test reviewer and improvement analyst gained role-activation personas.** `fbk-test-reviewer` now activates "senior QA engineer with authority to block releases"; `fbk-improvement-analyst` activates "process improvement engineer analyzing production incidents." Existing checkpoint logic, input contract, workflow, and proposal format preserved byte-for-byte.
+
+### Added
+- **Persona authoring guidance** in `assets/fbk-docs/fbk-context-assets/agents.md`: enterprise activation baseline, correctness-vs-maintainability rationale, persona structure (role activation, output quality bars, anti-defaults), personas-and-spawn-prompts precedence, reference implementations (Detector and Challenger), what not to include, and when personas are unnecessary.
+- **Three new agent definitions** for roles previously spawned as anonymous teammates: `fbk-spec-author` (principal engineer writing technical specifications, read-only), `fbk-task-compiler` (tech lead decomposing reviewed specs, read-only), and `fbk-implementer` (senior engineer implementing against reviewed spec, full implementation tools). These agent definitions are not yet wired into their spawning skills — skill integration is a separate spec.
+- **5 new structural test scripts** validating council agent structure, test-reviewer persona section, improvement-analyst persona section, new persona agent files, and agents.md persona guidance subsections (84 new TAP assertions total).
+
+### Fixed
+- `tests/sdl-workflow/test-test-reviewer-agent.sh` — role-word regex expanded to accept `evaluate` as a synonym for `review`, tracking the new QA-engineer persona's verb choice.
+
 ## [0.3.5] — 2026-04-05
 
 ### Changed

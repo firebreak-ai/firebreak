@@ -1,0 +1,18 @@
+{
+  "captured": "2026-04-18",
+  "shell_tests": {
+    "path": "tests/sdl-workflow/*.sh",
+    "total": 56,
+    "passed": 56,
+    "failed": 0,
+    "status": "all_passing"
+  },
+  "python_tests": {
+    "path": "assets/fbk-scripts/tests/",
+    "total": 98,
+    "passed": 98,
+    "failed": 0,
+    "status": "all_passing"
+  },
+  "note": "Baseline captured before agent-personas Wave 1 execution. All shell tests in tests/sdl-workflow/ and all python tests in assets/fbk-scripts/tests/ pass. Inter-wave check: any baseline test that fails after a wave is a regression."
+}
