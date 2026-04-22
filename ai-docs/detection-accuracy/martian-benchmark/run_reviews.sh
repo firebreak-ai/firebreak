@@ -18,7 +18,8 @@ MANIFEST="$SCRIPT_DIR/manifest.json"
 REVIEWS_DIR="$SCRIPT_DIR/reviews"
 DIFFS_DIR="$SCRIPT_DIR/diffs"
 LOGS_DIR="$SCRIPT_DIR/logs"
-PROMPT_FILE="$SCRIPT_DIR/benchmark-prompt.md"
+WORKTREES_DIR="$SCRIPT_DIR/worktrees"
+CLONE_SCRIPT="$SCRIPT_DIR/clone_repos.py"
 
 MODEL="opus"
 LIMIT=0
@@ -30,6 +31,8 @@ MAX_BUDGET=15
 TOOL_NAME="firebreak"
 FULL_PIPELINE=false
 DRY_RUN=false
+MODE="full-repo"   # full-repo (cwd = per-PR worktree) | diff-only (cwd = empty sandbox)
+SANDBOX_DIR="/tmp/firebreak-benchmark-sandbox"   # cwd when mode=diff-only; empty dir isolates from project's ai-docs/
 
 # ── Usage ────────────────────────────────────────────────────────
 
@@ -48,6 +51,12 @@ Flags:
   --max-budget <N>      Per-review USD cap (default: 15)
   --max-retries <N>     Retry attempts per review (default: 2)
   --tool-name <name>    Tool identifier for inject/judge (default: firebreak)
+  --mode <mode>         full-repo (default): cwd = per-PR worktree with diff
+                        applied. Loads benchmark-prompt-fullrepo.md.
+                        diff-only: cwd = empty sandbox; reviewer sees only
+                        the diff file. Loads benchmark-prompt-diff.md.
+  --sandbox-dir <path>  Working dir when --mode diff-only
+                        (default: /tmp/firebreak-benchmark-sandbox)
   --full-pipeline       After reviews, run inject_results.py + judge_anthropic.py
   --dry-run             Print commands without executing
   -h, --help            Show this help
@@ -67,6 +76,8 @@ while [[ $# -gt 0 ]]; do
     --max-budget)  MAX_BUDGET="$2"; shift 2 ;;
     --max-retries) MAX_RETRIES="$2"; shift 2 ;;
     --tool-name)   TOOL_NAME="$2"; shift 2 ;;
+    --mode)        MODE="$2"; shift 2 ;;
+    --sandbox-dir) SANDBOX_DIR="$2"; shift 2 ;;
     --full-pipeline) FULL_PIPELINE=true; shift ;;
     --dry-run)     DRY_RUN=true; shift ;;
     -h|--help)     usage ;;
@@ -82,8 +93,14 @@ if [[ ! -f "$MANIFEST" ]]; then
   exit 1
 fi
 
+case "$MODE" in
+  full-repo) PROMPT_FILE="$SCRIPT_DIR/benchmark-prompt-fullrepo.md" ;;
+  diff-only) PROMPT_FILE="$SCRIPT_DIR/benchmark-prompt-diff.md" ;;
+  *) echo "ERROR: --mode must be 'full-repo' or 'diff-only' (got '$MODE')"; exit 1 ;;
+esac
+
 if [[ ! -f "$PROMPT_FILE" ]]; then
-  echo "ERROR: benchmark-prompt.md not found at $PROMPT_FILE"
+  echo "ERROR: prompt file not found at $PROMPT_FILE"
   exit 1
 fi
 
@@ -99,7 +116,7 @@ fi
 
 # ── Setup ────────────────────────────────────────────────────────
 
-mkdir -p "$REVIEWS_DIR" "$LOGS_DIR"
+mkdir -p "$REVIEWS_DIR" "$LOGS_DIR" "$SANDBOX_DIR"
 
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 TOKEN_LOG="$LOGS_DIR/tokens_${MODEL}_${TIMESTAMP}.jsonl"
@@ -154,6 +171,13 @@ if [[ "$LIMIT" -gt 0 ]]; then
 fi
 echo "  Max budget: \$$MAX_BUDGET per review"
 echo "  Delay:      ${DELAY}s between reviews"
+echo "  Mode:       $MODE"
+if [[ "$MODE" == "diff-only" ]]; then
+  echo "  Sandbox:    $SANDBOX_DIR"
+else
+  echo "  Worktrees:  $WORKTREES_DIR/<instance_id>"
+fi
+echo "  Prompt:     $(basename "$PROMPT_FILE")"
 echo "  Token log:  $TOKEN_LOG"
 if $DRY_RUN; then
   echo "  Mode:       DRY RUN"
@@ -173,8 +197,13 @@ while IFS= read -r entry; do
   PR_TITLE=$(echo "$entry" | jq -r '.pr_title')
   PR_URL=$(echo "$entry" | jq -r '.pr_url')
   SOURCE_REPO=$(echo "$entry" | jq -r '.source_repo')
+  OWNER=$(echo "$entry" | jq -r '.owner')
+  REPO=$(echo "$entry" | jq -r '.repo')
+  PR_NUMBER=$(echo "$entry" | jq -r '.pr_number')
+  BASE_SHA=$(echo "$entry" | jq -r '.base_sha // ""')
   DIFF_PATH="$DIFFS_DIR/${INSTANCE_ID}.diff"
   REVIEW_PATH="$REVIEWS_DIR/${INSTANCE_ID}.md"
+  WORKTREE_DIR="$WORKTREES_DIR/${INSTANCE_ID}"
 
   # Resume safety: skip existing reviews
   if [[ -f "$REVIEW_PATH" ]]; then
@@ -196,6 +225,30 @@ while IFS= read -r entry; do
     continue
   fi
 
+  # Resolve working directory based on mode
+  WORK_DIR="$SANDBOX_DIR"
+  WORKTREE_STATUS=""
+  if [[ "$MODE" == "full-repo" ]]; then
+    if [[ ! -d "$WORKTREE_DIR" || ! -f "$WORKTREE_DIR/.fbk-benchmark-status" ]]; then
+      # Worktree missing — invoke clone_repos.py to build it
+      if ! python3 "$CLONE_SCRIPT" --instance "$INSTANCE_ID" >>"$LOGS_DIR/${INSTANCE_ID}.clone.log" 2>&1; then
+        echo "[$INDEX/$TOTAL] $INSTANCE_ID  WARN worktree build failed — falling back to diff-only"
+      fi
+    fi
+    if [[ -f "$WORKTREE_DIR/.fbk-benchmark-status" ]]; then
+      WORKTREE_STATUS=$(cat "$WORKTREE_DIR/.fbk-benchmark-status")
+    fi
+    # apply:failed-fallback-head means diff didn't apply but head_sha is checked out
+    # — the worktree IS usable for full-repo review. Only reject true failures
+    # (bare "apply:failed" or "apply:failed:<reason>"), not the fallback-head case.
+    if [[ -d "$WORKTREE_DIR" && "$WORKTREE_STATUS" != "apply:failed" && "$WORKTREE_STATUS" != apply:failed:* ]]; then
+      WORK_DIR="$WORKTREE_DIR"
+    else
+      # Fallback: use sandbox, log it
+      echo "[$INDEX/$TOTAL] $INSTANCE_ID  NOTE worktree unavailable ($WORKTREE_STATUS) — using sandbox"
+    fi
+  fi
+
   # Build the claude command
   # Note: --allowedTools is variadic and eats subsequent args.
   # Use -- to separate flags from the positional prompt argument.
@@ -211,11 +264,29 @@ while IFS= read -r entry; do
     --
   )
 
-  USER_PROMPT="Review the PR diff at $DIFF_PATH.
-Instance: $INSTANCE_ID | PR: $PR_TITLE ($PR_URL)
-Write the review report to: $REVIEW_PATH
+  if [[ "$MODE" == "full-repo" && "$WORK_DIR" == "$WORKTREE_DIR" ]]; then
+    USER_PROMPT="Benchmark code review — full-repo mode.
 
-Use the fbk-code-review skill to perform this review."
+You are in a checkout of ${OWNER}/${REPO} at base ${BASE_SHA} with PR #${PR_NUMBER} applied to the working tree. The PR's changes are already in place — read files directly. The PR diff is available at $DIFF_PATH for quick reference to what changed.
+
+Instance: $INSTANCE_ID | PR: $PR_TITLE ($PR_URL)
+Output review report: $REVIEW_PATH
+
+Browse the repo freely: trace callers of changed functions, inspect sibling modules, discover and run project-native linters (eslint, golangci-lint, pylint, rubocop, etc.), read existing tests. Treat this as a real PR review — ground findings in what the code actually does. Use the fbk-code-review skill with the benchmark-prompt-fullrepo overrides (in your system prompt): skip user checkpoint, skip post-implementation routing, take the standalone review path. Focus findings on the PR's changes; do not produce findings unrelated to the PR."
+  else
+    USER_PROMPT="Benchmark code review — diff-only mode.
+
+Target diff: $DIFF_PATH
+Instance: $INSTANCE_ID | PR: $PR_TITLE ($PR_URL)
+Output review report: $REVIEW_PATH
+
+Read the diff file with the Read tool. Do NOT search the working directory
+for specs or documentation — this is an isolated diff with no project
+context. Use the fbk-code-review skill but follow the benchmark-prompt
+overrides (in your system prompt): skip Source of Truth Handling discovery,
+skip post-implementation routing, take the standalone review path with the
+AI failure mode checklist as source of truth."
+  fi
 
   ATTEMPTED=$((ATTEMPTED + 1))
 
@@ -237,7 +308,11 @@ Use the fbk-code-review skill to perform this review."
   SUCCESS=false
 
   for attempt in $(seq 1 "$MAX_RETRIES"); do
-    RESPONSE=$("${CLAUDE_CMD[@]}" "$USER_PROMPT" </dev/null 2>"$LOGS_DIR/${INSTANCE_ID}.stderr") || true
+    # Run claude from WORK_DIR. In full-repo mode this is the per-PR worktree
+    # (checkout at base_sha with PR diff applied). In diff-only mode this is
+    # the empty sandbox, which isolates the orchestrator from project ai-docs/
+    # discovery that would mis-route the review.
+    RESPONSE=$(cd "$WORK_DIR" && "${CLAUDE_CMD[@]}" "$USER_PROMPT" </dev/null 2>"$LOGS_DIR/${INSTANCE_ID}.stderr") || true
 
     # Validate response is valid JSON with a result
     if echo "$RESPONSE" | jq -e '.result' &>/dev/null; then
@@ -277,8 +352,8 @@ Use the fbk-code-review skill to perform this review."
     fi
   fi
 
-  # Also check project root for fbk-code-review-*.md files the skill may have created
-  for stray in "$PROJECT_DIR"/fbk-code-review-*.md; do
+  # Also check worktree + sandbox + project root for fbk-code-review-*.md files the skill may have created
+  for stray in "$WORK_DIR"/fbk-code-review-*.md "$SANDBOX_DIR"/fbk-code-review-*.md "$PROJECT_DIR"/fbk-code-review-*.md; do
     [[ -f "$stray" ]] && mv "$stray" "$REVIEW_PATH" && break
   done
 

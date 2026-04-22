@@ -45,3 +45,19 @@ There are no specs, no project documentation, and no repository to browse.
 Use the AI failure mode checklist and structural detection targets as the
 source of truth. Read the diff file contents using the Read tool.
 
+## Skip Source of Truth Handling discovery
+
+Do not search the working directory or `ai-docs/` for specs. Do not Glob for
+`*-spec.md`, `acceptance-criteria.md`, or any project documentation. The PR
+diff at the path in the user prompt is the ONLY input. If the working
+directory contains unrelated content, ignore it. The fbk-code-review skill's
+"Source of Truth Handling" and "Discover documentation" steps are SKIPPED
+for this benchmark run.
+
+## Skip post-implementation review path
+
+Always take the standalone review path. Do not enter the post-implementation
+review flow regardless of any signals in the working directory (recent
+commits, CHANGELOG entries, passing test suites, completed specs). The user
+did not invoke `/implement` and is not asking for a post-impl review.
+

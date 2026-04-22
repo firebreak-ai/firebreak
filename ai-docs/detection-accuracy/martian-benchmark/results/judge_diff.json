@@ -1,0 +1,342 @@
+[
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR1",
+    "golden_index": "3",
+    "golden_severity": "Medium",
+    "golden_comment": "Passing 80% as the dimensions can fail for animated GIFs when allow_animated_thumbnails is true, since the animated path uses gifsicle --resize-fit wh",
+    "manual": 4,
+    "automated": null,
+    "type": "lost_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/4",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR4",
+    "golden_index": "1",
+    "golden_severity": "Critical",
+    "golden_comment": "SSRF vulnerability using open(url) without validation",
+    "manual": 7,
+    "automated": 3,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/4",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR4",
+    "golden_index": "2",
+    "golden_severity": "Medium",
+    "golden_comment": "The current origin validation using indexOf is insufficient and can be bypassed. An attacker could use a malicious domain like evil-discourseUrl.com t",
+    "manual": 2,
+    "automated": 6,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/4",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR4",
+    "golden_index": "5",
+    "golden_severity": "Medium",
+    "golden_comment": "The TopicEmbed.import method is susceptible to a NoMethodError if the contents parameter is nil when attempting to append a string, and an XSS vulnera",
+    "manual": 6,
+    "automated": 2,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/5",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR5",
+    "golden_index": "1",
+    "golden_severity": "Low",
+    "golden_comment": "Mixing float: left with flexbox causes layout issues. Further this PR removes the float-based right alignment for .d-header .panel, which may cause th",
+    "manual": 2,
+    "automated": null,
+    "type": "lost_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/6",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR6",
+    "golden_index": "1",
+    "golden_severity": "Medium",
+    "golden_comment": "The include_website_name method is missing the required ? suffix. Rails serializers expect include_ methods to end with ? for conditional attribute in",
+    "manual": null,
+    "automated": 1,
+    "type": "new_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/7",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR7",
+    "golden_index": "1",
+    "golden_severity": "Low",
+    "golden_comment": "In .topic-meta-data h5 a, the original code had color: scale-color($primary, $lightness: 30%) but was changed to dark-light-choose(scale-color($primar",
+    "manual": 1,
+    "automated": null,
+    "type": "lost_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/7",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR7",
+    "golden_index": "2",
+    "golden_severity": "Low",
+    "golden_comment": "This change for desktop/user.css changes $primary from 30% to 50% for the light theme; most other changes preserve the original $primary value and mov",
+    "manual": 3,
+    "automated": 4,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/8",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR8",
+    "golden_index": "1",
+    "golden_severity": "High",
+    "golden_comment": " The findMembers() call is now asynchronous and unhandled. The controller may not have member data immediately available, creating a race condition.",
+    "manual": 6,
+    "automated": 7,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/8",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR8",
+    "golden_index": "2",
+    "golden_severity": "Medium",
+    "golden_comment": "In the next action, capping the next offset at user_count can produce an empty page (e.g., total equal to limit results in offset == total, showing 2/",
+    "manual": 3,
+    "automated": 4,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/8",
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR8",
+    "golden_index": "3",
+    "golden_severity": "Medium",
+    "golden_comment": "HTTP method mismatch in .remove_member - test uses PUT but remove_member action expects DELETE",
+    "manual": 8,
+    "automated": 9,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1",
+    "instance_id": "keycloak__ai-code-review-evaluation__keycloak-greptile__PR1",
+    "golden_index": "1",
+    "golden_severity": "Medium",
+    "golden_comment": "ConditionalPasskeysEnabled() called without UserModel parameter",
+    "manual": null,
+    "automated": 1,
+    "type": "new_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1",
+    "instance_id": "keycloak__ai-code-review-evaluation__keycloak-greptile__PR1",
+    "golden_index": "2",
+    "golden_severity": "Medium",
+    "golden_comment": "With isConditionalPasskeysEnabled(UserModel user) requiring user != null, authenticate(...) will not call webauthnAuth.fillContextForm(context) on the",
+    "manual": null,
+    "automated": 2,
+    "type": "new_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/1",
+    "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR1",
+    "golden_index": "1",
+    "golden_severity": "High",
+    "golden_comment": "Django querysets do not support negative slicing",
+    "manual": 2,
+    "automated": 1,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/1",
+    "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR1",
+    "golden_index": "2",
+    "golden_severity": "High",
+    "golden_comment": "When requests are authenticated with API keys or org auth tokens (which have user_id=None), organization_context.member is None. Line 71 attempts to a",
+    "manual": 1,
+    "automated": 3,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/1",
+    "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR1",
+    "golden_index": "3",
+    "golden_severity": "High",
+    "golden_comment": "get_item_key assumes a numeric key, but the paginator is used with order_by=-datetime in the audit logs endpoint; calling math.floor/ceil on a datetim",
+    "manual": 3,
+    "automated": 4,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/1",
+    "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR1",
+    "golden_index": "4",
+    "golden_severity": "?",
+    "golden_comment": "?",
+    "manual": 4,
+    "automated": null,
+    "type": "lost_match"
+  },
+  {
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/5",
+    "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR5",
+    "golden_index": "3",
+    "golden_severity": "Low",
+    "golden_comment": "Using zip(error_ids, events.values()) assumes the get_multi result preserves the input order; dict value order is not guaranteed to match error_ids, s",
+    "manual": null,
+    "automated": 2,
+    "type": "new_match"
+  },
+  {
+    "pr_url": "https://github.com/calcom/cal.com/pull/10600",
+    "instance_id": "cal_dot_com__calcom__cal.com__PR10600",
+    "golden_index": "2",
+    "golden_severity": "Low",
+    "golden_comment": "Error message mentions 'backup code login' but this is a disable endpoint, not login",
+    "manual": 2,
+    "automated": 10,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/calcom/cal.com/pull/10967",
+    "instance_id": "cal_dot_com__calcom__cal.com__PR10967",
+    "golden_index": "4",
+    "golden_severity": "Medium",
+    "golden_comment": "Logic inversion in organization creation: The slug property is now conditionally set when IS_TEAM_BILLING_ENABLED is true, instead of when it's false ",
+    "manual": 8,
+    "automated": 6,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/getsentry/sentry/pull/67876",
+    "instance_id": "sentry__getsentry__sentry__PR67876",
+    "golden_index": "1",
+    "golden_severity": "Medium",
+    "golden_comment": "Null reference if github_authenticated_user state is missing",
+    "manual": null,
+    "automated": 6,
+    "type": "new_match"
+  },
+  {
+    "pr_url": "https://github.com/getsentry/sentry/pull/77754",
+    "instance_id": "sentry__getsentry__sentry__PR77754",
+    "golden_index": "2",
+    "golden_severity": "Low",
+    "golden_comment": "The method name has a typo: test_from_dict_inalid_data should be test_from_dict_invalid_data.",
+    "manual": 7,
+    "automated": null,
+    "type": "lost_match"
+  },
+  {
+    "pr_url": "https://github.com/getsentry/sentry/pull/77754",
+    "instance_id": "sentry__getsentry__sentry__PR77754",
+    "golden_index": "3",
+    "golden_severity": "Low",
+    "golden_comment": "Method name says 'empty_array' but tests empty dict - consider renaming to 'test_from_dict_empty_dict' for clarity.",
+    "manual": null,
+    "automated": 7,
+    "type": "new_match"
+  },
+  {
+    "pr_url": "https://github.com/getsentry/sentry/pull/80528",
+    "instance_id": "sentry__getsentry__sentry__PR80528",
+    "golden_index": "2",
+    "golden_severity": "Low",
+    "golden_comment": "The code fetches MonitorCheckIn objects by ID when the required data already exists in previous_checkins. This creates an unnecessary database query.",
+    "manual": null,
+    "automated": 6,
+    "type": "new_match"
+  },
+  {
+    "pr_url": "https://github.com/getsentry/sentry/pull/93824",
+    "instance_id": "sentry__getsentry__sentry__PR93824",
+    "golden_index": "2",
+    "golden_severity": "Low",
+    "golden_comment": "Fixed sleep in tests can be flaky; wait on condition instead",
+    "manual": 6,
+    "automated": null,
+    "type": "lost_match"
+  },
+  {
+    "pr_url": "https://github.com/getsentry/sentry/pull/95633",
+    "instance_id": "sentry__getsentry__sentry__PR95633",
+    "golden_index": "3",
+    "golden_severity": "Low",
+    "golden_comment": "The test test_thread_queue_parallel_error_handling has a docstring that doesn't match the test implementation.",
+    "manual": null,
+    "automated": 4,
+    "type": "new_match"
+  },
+  {
+    "pr_url": "https://github.com/grafana/grafana/pull/90939",
+    "instance_id": "grafana__grafana__grafana__PR90939",
+    "golden_index": "2",
+    "golden_severity": "High",
+    "golden_comment": "In addition to the missing double-check, the function has a critical flaw in its error handling: it unconditionally assigns the fetch result to the ca",
+    "manual": 1,
+    "automated": null,
+    "type": "lost_match"
+  },
+  {
+    "pr_url": "https://github.com/grafana/grafana/pull/97529",
+    "instance_id": "grafana__grafana__grafana__PR97529",
+    "golden_index": "2",
+    "golden_severity": "High",
+    "golden_comment": "Calling s.search.TotalDocs() here may race with concurrent index creation: TotalDocs iterates b.cache without synchronization, and the event watcher g",
+    "manual": 3,
+    "automated": null,
+    "type": "lost_match"
+  },
+  {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/32918",
+    "instance_id": "keycloak__keycloak__keycloak__PR32918",
+    "golden_index": "1",
+    "golden_severity": "Critical",
+    "golden_comment": "Recursive caching call using session instead of delegate",
+    "manual": 1,
+    "automated": null,
+    "type": "lost_match"
+  },
+  {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/36880",
+    "instance_id": "keycloak__keycloak__keycloak__PR36880",
+    "golden_index": "3",
+    "golden_severity": "High",
+    "golden_comment": "In getClientsWithPermission(String scope), iterating resourceStore.findByType(server, AdminPermissionsSchema.CLIENTS_RESOURCE_TYPE) and returning reso",
+    "manual": 7,
+    "automated": null,
+    "type": "lost_match"
+  },
+  {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/37429",
+    "instance_id": "keycloak__keycloak__keycloak__PR37429",
+    "golden_index": "1",
+    "golden_severity": "Medium",
+    "golden_comment": "The translation is in Italian instead of Lithuanian. This should be translated to Lithuanian to match the file's locale (messages_lt.properties).",
+    "manual": 1,
+    "automated": 6,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/37429",
+    "instance_id": "keycloak__keycloak__keycloak__PR37429",
+    "golden_index": "2",
+    "golden_severity": "Medium",
+    "golden_comment": "The totpStep1 value uses Traditional Chinese terms in the Simplified Chinese file (zh_CN), which is likely incorrect for this locale. Please verify th",
+    "manual": 2,
+    "automated": 7,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/37429",
+    "instance_id": "keycloak__keycloak__keycloak__PR37429",
+    "golden_index": "3",
+    "golden_severity": "Low",
+    "golden_comment": "The anchor sanitization logic has a potential issue where it consumes English matcher groups without proper validation. If the translated text has mor",
+    "manual": 3,
+    "automated": 1,
+    "type": "different_match"
+  },
+  {
+    "pr_url": "https://github.com/keycloak/keycloak/pull/37429",
+    "instance_id": "keycloak__keycloak__keycloak__PR37429",
+    "golden_index": "4",
+    "golden_severity": "Low",
+    "golden_comment": "The method name 'santizeAnchors' should be 'sanitizeAnchors' (missing 'i').",
+    "manual": 8,
+    "automated": null,
+    "type": "lost_match"
+  }
+]

@@ -189,6 +189,8 @@ The pipeline runs with [deterministic verification gates](assets/hooks/fbk-sdl-w
 | Implementation | [implementation-guide.md](assets/fbk-docs/fbk-sdl-workflow/implementation-guide.md) | [task-completed.sh](assets/hooks/fbk-sdl-workflow/task-completed.sh) |
 | Code review | [code-review-guide.md](assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md) | — |
 | AI failure modes | [ai-failure-modes.md](assets/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md) | — |
+| Security patterns | [security-patterns.md](assets/fbk-docs/fbk-sdl-workflow/security-patterns.md) | — |
+| Detection audits | [detection-audits.md](assets/fbk-docs/fbk-sdl-workflow/detection-audits.md) | — |
 | Brownfield work | [brownfield-breakdown.md](assets/fbk-docs/fbk-brownfield-breakdown.md) | — |
 | Retrospective | [retrospective-guide.md](assets/fbk-docs/fbk-sdl-workflow/retrospective-guide.md) | — |
 

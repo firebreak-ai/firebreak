@@ -2,7 +2,7 @@
 
 ## Behavioral Comparison Methodology
 
-Apply behavioral comparison to every code review: describe what the code does, then compare that behavior against the source of truth. The source of truth is the spec's acceptance criteria (ACs), a failure mode checklist, or the user-stated intent that drove the implementation. Start by observing the code's actual behavior, then verify whether that behavior aligns with the intended design. This framing prevents fixation on "bugs" and focuses on behavioral alignment.
+Apply behavioral comparison to every code review: describe what the code does, then compare that behavior against the source of truth. The source of truth is the spec's acceptance criteria (ACs), a failure mode checklist, or the user-stated intent that drove the implementation. Start by observing the code's actual behavior, then test whether that behavior matches the intended design; surface any divergence as a finding. This grounds every finding: a reported mistake traces back to a specific divergence — a failed AC, a failure-mode pattern from the checklist, an architectural mismatch, or a contradiction with user-stated intent.
 
 **Do**: Describe what processOrder() does. Compare that behavior to AC-03.
 
@@ -28,7 +28,7 @@ Sightings are the Detector's output — observations of potential behavioral mis
 
 **Required-with-defaults** (parser fills a default if missing):
 - `origin`: one of `introduced`, `pre-existing`, `unknown` (default: `unknown`)
-- `detection_source`: one of `spec-ac`, `checklist`, `structural-target`, `intent`, `linter` (default: `intent`)
+- `detection_source`: one of `spec-ac`, `checklist`, `structural-target`, `audit-pass`, `intent`, `linter` (default: `intent`)
 - `source_of_truth_ref`: the specific reference compared against, e.g., "AC-03", "intent claim 4" (default: `""`)
 - `pattern`: cross-cutting pattern label (default: `""`)
 - `remediation`: one-line fix direction (default: `""`)
@@ -53,17 +53,24 @@ Classification uses two orthogonal axes. Canonical definitions are here; Detecto
 
 ### Type axis
 
-Assigned by the Detector. Classification is determined by runtime consequence, not pattern shape.
+Code review is adversarial: compare what the code is supposed to do (the feature's purpose, the caller's assumption, the user-facing promise) against what it will actually do in production. You are looking for mistakes — places where the developer's mental model and the code diverge. AI-generated code adds a second pattern worth watching for: plausible-looking code that doesn't fit the architecture.
 
-- `behavioral` — the code produces wrong output, data loss, crash, or security bypass for a **concrete, constructible input** using the codebase as it exists in the diff. Behavioral findings are always critical or major.
-- `structural` — the code has no wrong output under any input, but is harder to maintain than necessary. Removing or renaming the code would not change any observable output. Structural findings are always minor or info.
-- `test-integrity` — a test passes but does not verify what it claims. The test name, docstring, or surrounding context implies coverage that the assertions do not provide. Test-integrity findings are critical, major, or minor.
-- `fragile` — the code produces correct output today, but will break under a **specific, plausible change** you can name. Fragile findings are always major or minor.
+Find the mistake first; classify it second. The primary classification test is the ship decision — would you block or request changes on this PR, or would you merge and flag for follow-up?
+
+- `behavioral` — you would not ship. The code does not do what it is supposed to do under conditions it will actually encounter. Always critical or major.
+
+  Includes (illustrative, not exhaustive): wrong/missing output, crash, hang, data loss, broken feature end-to-end, security bypass, state that should update but doesn't, missing guarantees callers depend on, race conditions, silent failures, code paths that cannot execute as designed. "Conditions it will actually encounter" means concurrent execution, database and network errors, resource limits, and attacker-controlled inputs at trust boundaries — these are normal operation, not hypothetical future changes.
+
+- `fragile` — you would ship but flag for follow-up. Correct today; structure invites a future bug. Behavioral takes precedence when both apply. Always major or minor.
+
+- `structural` — you would ship; flag only on request. No path to user-visible failure. Harder to read or maintain than necessary. Always minor or info.
+
+- `test-integrity` — a test passes but does not verify what it claims. The test name, docstring, or surrounding context implies coverage that the assertions do not provide. Always critical, major, or minor.
 
 **Disambiguation rules:**
-- If a naming issue causes a runtime collision or wrong dispatch, it is `behavioral` — follow the consequence, not the pattern.
-- If the code under review is a test file, a bug in the test's assertion logic is `test-integrity`, not `behavioral`.
-- To distinguish behavioral from fragile: can you construct a failing input using only the current code? Yes → behavioral. No, you need a hypothetical code change → fragile.
+- A naming issue that causes a runtime collision or wrong dispatch is `behavioral` — follow the consequence, not the pattern.
+- A bug in a test file's assertion logic is `test-integrity`, not `behavioral`.
+- The most common misclassification is downgrading to `fragile` because the trigger is runtime state (DB error, concurrent execution, untested path) rather than a constructible input. Runtime conditions are normal operation — these findings are `behavioral`.
 
 **Type-severity validity matrix:**
 
@@ -127,7 +134,7 @@ Only verified findings surface to the user. Rejected sightings and internal sigh
 
 Each code review run produces a retrospective capturing these fields:
 
-- **Sighting counts**: total sightings generated, verified findings at termination, rejections, and nit count (raw count, not categorized by type — nits are excluded from the classification system). Include breakdown by detection source (spec-ac, checklist, structural-target, linter). For structural-type findings, include sub-categorization (duplication, dead code, dead infrastructure, bare literals, composition opacity)
+- **Sighting counts**: total sightings generated, verified findings at termination, rejections, and nit count (raw count, not categorized by type — nits are excluded from the classification system). Include breakdown by detection source (spec-ac, checklist, structural-target, audit-pass, linter). For structural-type findings, include sub-categorization (duplication, dead code, dead infrastructure, bare literals, composition opacity). For audit-pass findings, include sub-categorization by audit (concurrency, logic-inversion, test-integrity, cross-function-api)
 - **Verification rounds**: how many detection/verification iterations before convergence; a measure of code opacity or reviewer uncertainty
 - **Scope assessment**: code scope reviewed (files, modules, lines of code) relative to context usage (tokens, cache efficiency)
 - **Context health**: round count, sightings-per-round trend, rejection rate per round, whether the hard cap (5 rounds) was reached

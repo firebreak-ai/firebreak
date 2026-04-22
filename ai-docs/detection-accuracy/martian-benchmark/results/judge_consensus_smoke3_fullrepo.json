@@ -1,0 +1,168 @@
+{
+  "_metadata": {
+    "judge": "consensus (3x claude-sonnet-4-6, majority vote)",
+    "model": "claude-sonnet-4-6",
+    "judges_per_pair": 3,
+    "aggregation": "majority vote",
+    "tool": "firebreak-v0.4.0-fullrepo",
+    "date": "2026-04-21",
+    "judge_inputs": [
+      "/tmp/judge_smoke3_run_1.json",
+      "/tmp/judge_smoke3_run_2.json",
+      "/tmp/judge_smoke3_run_3.json"
+    ],
+    "notes": "Golden index and candidate index are 1-based. null candidate_index means no match."
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1": {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR1",
+    "source_repo": "discourse",
+    "golden_count": 3,
+    "candidate_count": 5,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "C1 identifies the duplicate downsize method silently overriding the 5-arg version, breaking callers"
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 3,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "3": 3
+        },
+        "reasoning": "C3 identifies the hardcoded 10*1024 replacing the SiteSettings lookup in validateUploadedFile"
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "C2 identifies '80%' failing for animated GIFs via gifsicle --resize-fit"
+      }
+    },
+    "missing_judges": [],
+    "tp": 3,
+    "fp": 2,
+    "fn": 0,
+    "false_positives": [
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      }
+    ]
+  },
+  "https://github.com/grafana/grafana/pull/76186": {
+    "instance_id": "grafana__grafana__grafana__PR76186",
+    "source_repo": "grafana",
+    "golden_count": 2,
+    "candidate_count": 4,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the nil-request panic in ContextualLoggerMiddleware"
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate identifies the missing traceID after the refactor"
+      }
+    },
+    "missing_judges": [],
+    "tp": 0,
+    "fp": 4,
+    "fn": 2,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      }
+    ]
+  },
+  "https://github.com/keycloak/keycloak/pull/32918": {
+    "instance_id": "keycloak__keycloak__keycloak__PR32918",
+    "source_repo": "keycloak",
+    "golden_count": 2,
+    "candidate_count": 1,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "C1 identifies update() calling getById() returning wrapped model instead of raw delegate"
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate mentions the incorrect alias literal in cleanup references"
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 0,
+    "fn": 1,
+    "false_positives": []
+  },
+  "_summary": {
+    "evaluated_prs": 3,
+    "tp": 4,
+    "fp": 6,
+    "fn": 3,
+    "precision": 0.4,
+    "recall": 0.5714,
+    "f1": 0.4706,
+    "avg_findings_per_pr": 3.33
+  },
+  "_per_repo": {
+    "discourse": {
+      "tp": 3,
+      "fp": 2,
+      "fn": 0,
+      "prs": 1,
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1": 0.75
+    },
+    "grafana": {
+      "tp": 0,
+      "fp": 4,
+      "fn": 2,
+      "prs": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "keycloak": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "prs": 1,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667
+    }
+  }
+}

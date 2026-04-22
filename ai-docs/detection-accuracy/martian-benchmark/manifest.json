@@ -17,7 +17,10 @@
         "comment": "The code uses forEach with async callbacks, which causes asynchronous operations (e.g., calendar/video event deletions, payment refunds) to run concurrently without being awaited. This 'fire-and-forget' behavior leads to unhandled promise rejections, race conditions, and incomplete cleanup, as surrounding try-catch blocks cannot properly handle errors from these unawaited promises. Replace forEach with for...of loops or Promise.all() with map() to ensure proper sequential execution and error handling.",
         "severity": "Critical"
       }
-    ]
+    ],
+    "base_sha": "ba9688a04a8398c9a8332ee7061bfae2f2efd524",
+    "head_sha": "820d7fa87e0c824c5dee8082a33efadb1a2566f7",
+    "base_ref": "main"
   },
   {
     "instance_id": "cal_dot_com__calcom__cal.com__PR10600",
@@ -45,7 +48,10 @@
         "comment": "Because backupCodes are decrypted and mutated in memory before being written back, two concurrent login requests using the same backupCode could both pass this check and update, so a single backup code may effectively be accepted more than once if used concurrently, weakening the intended one-time-use semantics.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "efa6d464a38e60ceeeb88f40668c1c4ac4bfaf54",
+    "head_sha": "54486a059cd2032042189bb565646ba4e0f6bd61",
+    "base_ref": "main"
   },
   {
     "instance_id": "cal_dot_com__calcom__cal.com__PR10967",
@@ -74,10 +80,13 @@
         "severity": "Medium"
       },
       {
-        "comment": "The Calendar interface now requires createEvent(event, credentialId), but some implementations (e.g., Lark/Office365) still declare createEvent(event) only\u2014this breaks the interface contract (also applies to other locations in the PR).",
+        "comment": "The Calendar interface now requires createEvent(event, credentialId), but some implementations (e.g., Lark/Office365) still declare createEvent(event) only—this breaks the interface contract (also applies to other locations in the PR).",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "a308075bc39b77ed7059b0cae9d443d669a7bf98",
+    "head_sha": "de628295646d0848226618108a52f2f1e5d04ac0",
+    "base_ref": "main"
   },
   {
     "instance_id": "cal_dot_com__calcom__cal.com__PR22345",
@@ -97,7 +106,10 @@
         "comment": "Fetching userIdsFromOrg only when teamsFromOrg.length > 0 can exclude org-level members for orgs without child teams; consider deriving from teamIds (which includes orgId) or removing the guard so org-only orgs still include member user bookings.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "c9a47dd0cebd121ff73f24e1f8c1829579daf8e3",
+    "head_sha": "da09bc0808e7c6df1bc10e00d5acf764d94c7cc7",
+    "base_ref": "main"
   },
   {
     "instance_id": "cal_dot_com__calcom__cal.com__PR7232",
@@ -117,7 +129,10 @@
         "comment": "When immediateDelete is true, the deleteScheduledEmailReminder function cancels the SendGrid email but fails to delete the corresponding WorkflowReminder record from the database. This creates orphaned database entries and is inconsistent with the immediateDelete: false path, which marks the record as cancelled. The SendGrid DELETE API call is also omitted in this path.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "d1440bb5d2f2190ad7ae1d26c165f970055b5370",
+    "head_sha": "6048e2a86b50e81e1e3b1b467dfea5a895add3dc",
+    "base_ref": "main"
   },
   {
     "instance_id": "cal_dot_com__calcom__cal.com__PR8330",
@@ -137,7 +152,10 @@
         "comment": "Using === for dayjs object comparison will always return false as it compares object references, not values. Use .isSame() method instead: dayjs(date.start).add(utcOffset, 'minutes').isSame(dayjs(date.end).add(utcOffset, minutes))",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "93cb21f55a2a40d9116c014741f5679fbeff5fd9",
+    "head_sha": "ee38fd295fd294b9fc787eba482bde24bbfea69b",
+    "base_ref": "main"
   },
   {
     "instance_id": "cal_dot_com__calcom__cal.com__PR11059",
@@ -166,10 +184,13 @@
         "severity": "High"
       },
       {
-        "comment": "When the sync endpoint path is used, res is a fetch Response and has no .data; res?.data will be undefined and token.access_token will throw at runtime. This relies on a consistent return shape from refreshOAuthTokens, which isn\u2019t guaranteed currently.",
+        "comment": "When the sync endpoint path is used, res is a fetch Response and has no .data; res?.data will be undefined and token.access_token will throw at runtime. This relies on a consistent return shape from refreshOAuthTokens, which isn’t guaranteed currently.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "bc89fe00ea84d20bedcec782f0701b9711dc8201",
+    "head_sha": "9fde0e906897cc0f4f71793f647dd629faba3317",
+    "base_ref": "main"
   },
   {
     "instance_id": "cal_dot_com__calcom__cal.com__PR14943",
@@ -189,7 +210,10 @@
         "comment": "The deletion logic in scheduleSMSReminders.ts incorrectly deletes non-SMS workflow reminders (e.g., Email, WhatsApp) that have retryCount > 1. This occurs because the retryCount condition within the OR clause for deletion lacks a method: WorkflowMethods.SMS filter, causing it to apply to all reminder types instead of only SMS reminders, which is the intended scope of this function.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "917c7b0764f4c6bfdca95db2c5f73dbfdbe11757",
+    "head_sha": "c790227e0cda780e6fea9bb03af27948d9e286b9",
+    "base_ref": "main"
   },
   {
     "instance_id": "cal_dot_com__calcom__cal.com__PR14740",
@@ -221,7 +245,10 @@
         "comment": "Starting with an array containing an empty string may cause validation issues. Consider starting with an empty array [] and handling the empty state in the MultiEmail component instead.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "b004587262e8221083bafbe9a0c515e7becaa7b3",
+    "head_sha": "92f44dcea7ff19e9123a30c63c167a2938df5a55",
+    "base_ref": "main"
   },
   {
     "instance_id": "cal_dot_com__calcom__cal.com__PR22532",
@@ -241,7 +268,10 @@
         "comment": "logic: macOS-specific sed syntax with empty string after -i flag will fail on Linux systems",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "30a92a4d66b417f7c19dee2b343099adc6e88aa6",
+    "head_sha": "5fd11f9faa79c4aefd39975d1b0e963e5034f793",
+    "base_ref": "main"
   },
   {
     "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR1",
@@ -265,7 +295,10 @@
         "comment": "Passing 80% as the dimensions can fail for animated GIFs when allow_animated_thumbnails is true, since the animated path uses gifsicle --resize-fit which expects WxH geometry, not a percentage; downsizing would then silently fail.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "3f71fa15c93bb0b751bb92abae1b5dc9a21bd4ca",
+    "head_sha": "ffbaf8c54269df2ce510de91245760fddce09896",
+    "base_ref": "image-processing-optimization"
   },
   {
     "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR2",
@@ -285,7 +318,10 @@
         "comment": "Typo in property name: 'stopNotificiationsText' should be 'stopNotificationsText' (missing 'n' in 'Notifications')",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "56abd247e1829cb6de82dfcc8ce04deb5f0d1e91",
+    "head_sha": "6669a2d94d76eea3b99b8c476d12b1eb66726b07",
+    "base_ref": "email-notifications-enhancement"
   },
   {
     "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR3",
@@ -305,7 +341,10 @@
         "comment": "Regex pattern @(#{domains}) only matches domain suffixes, not full domains. evil.example.com would match whitelist entry example.com.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "e25638dab0d4b98f99c8fe8976ccaae8f4fb9db3",
+    "head_sha": "5f8a130277dbddc95d133cd2832be639baf89213",
+    "base_ref": "blocked-email-validation-pre"
   },
   {
     "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR4",
@@ -341,7 +380,10 @@
         "comment": "The ERB block closes with end if, which is invalid Ruby/ERB and will raise at render; it should just be end to close the if block.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "62db063e1e1abe691313ab42682a68f796d63769",
+    "head_sha": "4f8aed295a29954023b2849c060ef4fb299d1b5d",
+    "base_ref": "embed-url-handling-pre"
   },
   {
     "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR5",
@@ -361,7 +403,10 @@
         "comment": "-ms-align-items never existed in any version of IE/Edge; the correct legacy property is -ms-flex-align.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "98fa098e6fade3097a11fe7f99a98a4e6ffb4728",
+    "head_sha": "5b229316ee4c661836ed1161139692a3e8527444",
+    "base_ref": "header-layout-optimization-pre"
   },
   {
     "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR6",
@@ -377,7 +422,10 @@
         "comment": "The include_website_name method is missing the required ? suffix. Rails serializers expect include_ methods to end with ? for conditional attribute inclusion, a convention followed by other methods in this serializer. Without it, the website_name attribute may not be conditionally included as intended. Additionally, the '.' << website_host string concatenation should be replaced with '.' + website_host or '.#{website_host}' to avoid mutating string literals, which can lead to issues.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "7a5fbae060bd0d3e29f3a4b5c6f2bfd8b2914dc7",
+    "head_sha": "267d8be1f556ed59639ced396c885bb44586da19",
+    "base_ref": "url-handling-pre"
   },
   {
     "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR7",
@@ -401,7 +449,10 @@
         "comment": "In topic-post.css the original code used $lightness: 70% but the replacement uses $lightness: 30% for the light theme. This makes the text significantly darker than intended.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "7554b5e3c458dc79b591d5e874e79ab10cf30c2f",
+    "head_sha": "d38c4d5f7443223c81529c22470293771baf9f38",
+    "base_ref": "theme-color-scheme-pre"
   },
   {
     "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR8",
@@ -425,7 +476,10 @@
         "comment": "HTTP method mismatch in .remove_member - test uses PUT but remove_member action expects DELETE",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "4975fc28903a84418f546b2809370f19abf10e08",
+    "head_sha": "060cda77729cb1c4a827560e09e89a7b22078ba9",
+    "base_ref": "group-dm-user-addition-pre"
   },
   {
     "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR9",
@@ -445,7 +499,10 @@
         "comment": "Consider normalizing the input locale (e.g., to a symbol) when checking/loading here to avoid double-loading if the same locale is passed as a String vs Symbol (also applies to other locations in the PR).",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "728845d008f06828630a632e5c7d67e11bf15deb",
+    "head_sha": "ecfa17b5a79dfdc91e7a4d50b42ae78a35d0a293",
+    "base_ref": "localization-system-pre"
   },
   {
     "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR10",
@@ -466,14 +523,17 @@
         "severity": "Medium"
       },
       {
-        "comment": "record_for_host compares lower(host) = ? but does not normalize the parameter\u2019s case, so mixed\u2011case referer hosts may fail to match even though comparison intends to be case\u2011insensitive.",
+        "comment": "record_for_host compares lower(host) = ? but does not normalize the parameter’s case, so mixed‑case referer hosts may fail to match even though comparison intends to be case‑insensitive.",
         "severity": "Medium"
       },
       {
-        "comment": "Because this migration inserts embeddable_hosts rows with raw SQL, any existing embeddable_hosts values that include http:// or /https:// or path segments won\u2019t go through the EmbeddableHost model\u2019s normalization, so the new host lookup (which compares only the bare host) may fail for migrated data. Consider ensuring that migrated hosts are normalized to the same format as newly created EmbeddableHost records so existing embedding configurations keep working.",
+        "comment": "Because this migration inserts embeddable_hosts rows with raw SQL, any existing embeddable_hosts values that include http:// or /https:// or path segments won’t go through the EmbeddableHost model’s normalization, so the new host lookup (which compares only the bare host) may fail for migrated data. Consider ensuring that migrated hosts are normalized to the same format as newly created EmbeddableHost records so existing embedding configurations keep working.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "913c3d6f636d02b3dd6c2c022ca1af2bec95d752",
+    "head_sha": "d1c69189f3c90ecf56013a8da904da9bff9a8e19",
+    "base_ref": "rest-serializer-enhancement-pre"
   },
   {
     "instance_id": "grafana__grafana__grafana__PR79265",
@@ -494,7 +554,7 @@
         "severity": "Medium"
       },
       {
-        "comment": "This call won\u2019t compile: dbSession.Exec(args...) is given a []interface{} where the first element is the query, but Exec\u2019s signature requires a first parameter of type string (not an interface{} splat).",
+        "comment": "This call won’t compile: dbSession.Exec(args...) is given a []interface{} where the first element is the query, but Exec’s signature requires a first parameter of type string (not an interface{} splat).",
         "severity": "Medium"
       },
       {
@@ -505,7 +565,10 @@
         "comment": "Time window calculation inconsistency: Using device.UpdatedAt.UTC().Add(-anonymousDeviceExpiration) as the lower bound but device.UpdatedAt as the current time may not match the intended logic. Consider using time.Now().UTC() consistently.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "50f4e78a39914711d0d231a501ba215becf17ebc",
+    "head_sha": "bbd8c507cdf56f6b884373809e0b24abd4a2353d",
+    "base_ref": "main"
   },
   {
     "instance_id": "grafana__grafana__grafana__PR103633",
@@ -525,7 +588,10 @@
         "comment": "The test comment says the cached permissions 'allow access', but the map stores false for dashboards:uid:dash1, so checkPermission will still treat this scope as not allowed.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "5634ca44f799a82161f0401dadc286452f3bdbf8",
+    "head_sha": "7562f37880367411a62304bcdcdc178bced23906",
+    "base_ref": "main"
   },
   {
     "instance_id": "grafana__grafana__grafana__PR76186",
@@ -545,7 +611,10 @@
         "comment": "The traceID is no longer logged for plugin requests. During a refactoring, the tracing import and the logic to extract and add traceID from the context to log parameters were removed from the LoggerMiddleware. The newly introduced ContextualLoggerMiddleware does not add this information, resulting in missing traceID in plugin request logs and impacting debugging and request tracing capabilities.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "58ba11ecbd60863e2bfc6e32f0399ed4feb3927a",
+    "head_sha": "303cdc2caf256aa5df660611120c2e3f7392365d",
+    "base_ref": "main"
   },
   {
     "instance_id": "grafana__grafana__grafana__PR107534",
@@ -561,7 +630,10 @@
         "comment": "The applyTemplateVariables method is called with request.filters as the third parameter, but this parameter is not used in the corresponding test setup.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "d9a8253640464014aa3662c91131278990cfb828",
+    "head_sha": "1cab4143d443c33079566f6ca36931eb8468159f",
+    "base_ref": "main"
   },
   {
     "instance_id": "grafana__grafana__grafana__PR106778",
@@ -581,7 +653,10 @@
         "comment": "RuleActionsButtons is invoked with only promRule, but SilenceGrafanaRuleDrawer inside RuleActionsButtons still depends on a Grafana Ruler rule being present, so for Grafana rules coming from list views the 'Silence notifications' menu entry (now driven by Grafana Prom abilities) will toggle showSilenceDrawer without ever rendering the drawer. This means clicking 'Silence notifications' for these rules has no visible effect, even when abilities indicate silencing is allowed.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "47e5bd23163e6037fc0741068ac78930bba2769f",
+    "head_sha": "8df850371034b73dc4dd9908cc30fa09f12a1f97",
+    "base_ref": "main"
   },
   {
     "instance_id": "grafana__grafana__grafana__PR90045",
@@ -605,7 +680,10 @@
         "comment": "Inconsistency: using name instead of options.Kind for metrics recording differs from other methods.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "66c4dff17e9147b11fb9b14c6ed63089a599da65",
+    "head_sha": "e369f24665ec70e1e3700f457d25ef83301d931a",
+    "base_ref": "main"
   },
   {
     "instance_id": "grafana__grafana__grafana__PR80329",
@@ -621,7 +699,10 @@
         "comment": "The code uses Error log level for what appears to be debugging information. This will pollute error logs in production. Consider using Debug or Info level instead.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "a886bd3c79a417a70b51509384d1f1ec3e87e96b",
+    "head_sha": "04cfa3bfd469c035ff8b35f9a66867c4e8d5dcf4",
+    "base_ref": "main"
   },
   {
     "instance_id": "grafana__grafana__grafana__PR90939",
@@ -641,7 +722,10 @@
         "comment": "In addition to the missing double-check, the function has a critical flaw in its error handling: it unconditionally assigns the fetch result to the cache (line 69: entryPointAssetsCache = result) regardless of whether the fetch succeeded or failed. When an error occurs during asset fetching, result is nil, and this nil value overwrites any previously valid cache entry.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "3ce1a5b0caab215346a51629b0344b90d67e9478",
+    "head_sha": "b1613e320acff00623e6efc59f00ee68c7684a97",
+    "base_ref": "main"
   },
   {
     "instance_id": "grafana__grafana__grafana__PR94942",
@@ -661,7 +745,10 @@
         "comment": "Several methods such as NewInMemoryDB().RunCommands and db.QueryFramesInto return 'not implemented'.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "cbe1e7d63f098e306058c0fbcab2f5c30602fa7d",
+    "head_sha": "f3317b329b4eb8fd96f99dd86525bc4a22d20248",
+    "base_ref": "main"
   },
   {
     "instance_id": "grafana__grafana__grafana__PR97529",
@@ -681,7 +768,10 @@
         "comment": "Calling s.search.TotalDocs() here may race with concurrent index creation: TotalDocs iterates b.cache without synchronization, and the event watcher goroutine started just above could trigger BuildIndex writes concurrently, potentially causing a concurrent map read/write panic.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "871af07203177ce59a24e742107119409274f48a",
+    "head_sha": "26fed312840cd76b766cbd2158e17a7e6c0ec548",
+    "base_ref": "main"
   },
   {
     "instance_id": "keycloak__ai-code-review-evaluation__keycloak-greptile__PR1",
@@ -701,7 +791,10 @@
         "comment": "With isConditionalPasskeysEnabled(UserModel user) requiring user != null, authenticate(...) will not call webauthnAuth.fillContextForm(context) on the initial login page where context.getUser() is still null, so conditional passkey UI will not be set up for first-time passkey login. Consider whether this should also be enabled when no user has been selected yet so ID-less passkey authentication on the initial login form continues to work.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "30f804af450dec523909a52f2a4b97302d27f5cc",
+    "head_sha": "3214b188de808fdb0fff335556b686f1b0a63218",
+    "base_ref": "improve-auth-user-experience"
   },
   {
     "instance_id": "keycloak__keycloak__keycloak__PR32918",
@@ -721,7 +814,10 @@
         "comment": "Cleanup reference uses incorrect alias - should be 'idp-alias-' + i instead of 'alias'.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "272cfc68dcc88615396ae62ed1571918e9c58ad3",
+    "head_sha": "e944e2acf1e64421860a8e827f93ad06c169621b",
+    "base_ref": "main"
   },
   {
     "instance_id": "keycloak__keycloak__keycloak__PR33832",
@@ -741,7 +837,10 @@
         "comment": "Dead code exists where ASN1Encoder instances are created and written to, but their results are immediately discarded. The actual encoding is performed by new ASN1Encoder instances created in the subsequent return statement, rendering the earlier operations useless.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "10aca5552314d6e5c9226f3c6d0107861c38c693",
+    "head_sha": "79d11c4890cc4792e3dc3535af59e4e5f7a2739d",
+    "base_ref": "main"
   },
   {
     "instance_id": "keycloak__keycloak__keycloak__PR36882",
@@ -757,7 +856,10 @@
         "comment": "Incorrect method call for exit codes. The picocli.exit() method calls System.exit() directly, which is problematic:",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "8671f860469d6d95e54df3e13f77ebc401249489",
+    "head_sha": "62bf98939eda58f0d0a1a41a58aa6d4ecdc24dba",
+    "base_ref": "main"
   },
   {
     "instance_id": "keycloak__keycloak__keycloak__PR36880",
@@ -781,7 +883,10 @@
         "comment": "In getClientsWithPermission(String scope), iterating resourceStore.findByType(server, AdminPermissionsSchema.CLIENTS_RESOURCE_TYPE) and returning resource.getName() will only ever consider the type-level 'Clients' resource (per-client resources have no type) and return its name, while AvailableRoleMappingResource#getRoleIdsWithPermissions expects actual client IDs to pass to realm.getClientById, which can lead to incorrect behavior or a null client and subsequent failures.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "b8c1cd410f4499c77a8b372decfe1718b80ccfd2",
+    "head_sha": "1950a511026d520a7329c7b6b9ee60a4af8f8b55",
+    "base_ref": "main"
   },
   {
     "instance_id": "keycloak__keycloak__keycloak__PR37038",
@@ -801,7 +906,10 @@
         "comment": "In getGroupIdsWithViewPermission, hasPermission is called with groupResource.getId() and the same groupResource.getId() is added to granted, but hasPermission resolves resources by name (treating the argument as a group id) and the GroupPermissionEvaluator contract says this method returns group IDs that are later used as UserModel.GROUPS and in getUsersCount group filters. This mismatch means per-group VIEW_MEMBERS/MANAGE_MEMBERS permissions may not yield the expected group IDs for filtering and counts, and evaluation may effectively only look at the type-level 'all-groups' resource; consider revisiting whether this should operate on the underlying group ids (resource names) instead so it aligns with the JPA queries and the interface contract.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "7ea067aae9be56cb2622bce6563864817c3dfeaf",
+    "head_sha": "7355f05e6aafe2a7acc6434fb40c686665416606",
+    "base_ref": "main"
   },
   {
     "instance_id": "keycloak__keycloak__keycloak__PR37429",
@@ -818,7 +926,7 @@
         "severity": "Medium"
       },
       {
-        "comment": "The totpStep1 value uses Traditional Chinese terms in the Simplified Chinese file (zh_CN), which is likely incorrect for this locale. Please verify the locale\u2011appropriate translation.",
+        "comment": "The totpStep1 value uses Traditional Chinese terms in the Simplified Chinese file (zh_CN), which is likely incorrect for this locale. Please verify the locale‑appropriate translation.",
         "severity": "Medium"
       },
       {
@@ -829,7 +937,10 @@
         "comment": "The method name 'santizeAnchors' should be 'sanitizeAnchors' (missing 'i').",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "f3c8e8f3487112f2c99aa78400430cce2d30be39",
+    "head_sha": "02f48f776f43734d1ac8914d3ad6a7115acdcb33",
+    "base_ref": "main"
   },
   {
     "instance_id": "keycloak__keycloak__keycloak__PR37634",
@@ -846,7 +957,7 @@
         "severity": "Critical"
       },
       {
-        "comment": "In isAccessTokenId, the substring for the grant shortcut and the equality check look inverted: the grant shortcut occupies indices 4\u20135 (substring(4,6)), and a match should return true (combined with UUID check), not false.",
+        "comment": "In isAccessTokenId, the substring for the grant shortcut and the equality check look inverted: the grant shortcut occupies indices 4–5 (substring(4,6)), and a match should return true (combined with UUID check), not false.",
         "severity": "High"
       },
       {
@@ -857,7 +968,10 @@
         "comment": " Catching generic RuntimeException is too broad. The implementation throws IllegalArgumentException specifically - catch that instead for more precise testing.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "c22f76867f595f0f7c327376a66a08dca01949e8",
+    "head_sha": "daffb05b5ad091d3ec09933c3c99c2b54f448696",
+    "base_ref": "main"
   },
   {
     "instance_id": "keycloak__keycloak__keycloak__PR38446",
@@ -877,7 +991,10 @@
         "comment": "After creating the RecoveryAuthnCodesCredentialModel, consider setting its id from the stored credential (e.g., myUser.recoveryCodes.getId()); otherwise getId() will be null and downstream removal by id (e.g., removeStoredCredentialById in the authenticator flow) may not work.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "85737f52b59aa2e3403c9b8e48acf71ccc5bfae3",
+    "head_sha": "ce2dcc537b4b1f98a335e88cfe8e0b804483252a",
+    "base_ref": "main"
   },
   {
     "instance_id": "keycloak__keycloak__keycloak__PR40940",
@@ -894,10 +1011,13 @@
         "severity": "Critical"
       },
       {
-        "comment": "The reader thread isn\u2019t waited for; flipping deletedAll to true and asserting immediately can race and miss exceptions added just after the flag change, making this test flaky.",
+        "comment": "The reader thread isn’t waited for; flipping deletedAll to true and asserting immediately can race and miss exceptions added just after the flag change, making this test flaky.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "c834e7473c02f11451216b3fbf355f953cfd95e9",
+    "head_sha": "4def149a50c4b9b2c24fbb753ac60fe4f4df0cac",
+    "base_ref": "main"
   },
   {
     "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR1",
@@ -921,7 +1041,10 @@
         "comment": "get_item_key assumes a numeric key, but the paginator is used with order_by=-datetime in the audit logs endpoint; calling math.floor/ceil on a datetime will raise a TypeError.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "a5d290951def84afdcc4c88d2f1f20023fc36e2a",
+    "head_sha": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17",
+    "base_ref": "master"
   },
   {
     "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR2",
@@ -945,7 +1068,10 @@
         "comment": "OptimizedCursorPaginator.get_item_key uses floor/ceil on a datetime key (order_by='-datetime'), causing TypeError.",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "28e3db2520d4ea28c57b08da57b83917ba7b2e15",
+    "head_sha": "8ab88145113dd23a930e23b9cbbcf8b30e4c0b17",
+    "base_ref": "performance-optimization-baseline"
   },
   {
     "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR3",
@@ -962,14 +1088,17 @@
         "severity": "Low"
       },
       {
-        "comment": "Using Python\u2019s built-in hash() to build cache keys is non-deterministic across processes (hash randomization), so keys won\u2019t match across workers and invalidate_upsampling_cache may fail to delete them. Use a deterministic serialization of project_ids for the cache key.",
+        "comment": "Using Python’s built-in hash() to build cache keys is non-deterministic across processes (hash randomization), so keys won’t match across workers and invalidate_upsampling_cache may fail to delete them. Use a deterministic serialization of project_ids for the cache key.",
         "severity": "Low"
       },
       {
         "comment": "The upsampling eligibility check passes the outer dataset instead of the actual dataset used by scoped_dataset. In paths where the query ultimately runs against discover (e.g., dashboard split) while the original dataset is metrics, upsampling may be skipped even when all projects are allowlisted.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "a5d290951def84afdcc4c88d2f1f20023fc36e2a",
+    "head_sha": "6ad6fe3899f630ccf922ce7ac681147dc7987435",
+    "base_ref": "master"
   },
   {
     "instance_id": "sentry__getsentry__sentry__PR67876",
@@ -993,7 +1122,10 @@
         "comment": "The code attempts to access integration.metadata[sender][login] without checking for the existence of the sender key. This causes a KeyError for integrations where the sender metadata was not set during creation",
         "severity": "High"
       }
-    ]
+    ],
+    "base_sha": "344aa102e7818606e29426ebe69d5a680d8727c6",
+    "head_sha": "bb75657fc8f13923c1d7983f422290908a1e7310",
+    "base_ref": "master"
   },
   {
     "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR5",
@@ -1017,7 +1149,10 @@
         "comment": "Using zip(error_ids, events.values()) assumes the get_multi result preserves the input order; dict value order is not guaranteed to match error_ids, so event data can be paired with the wrong ID (missing nodes also shift alignment).",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "49a275847631e231672d01b5dcd66558c069d25b",
+    "head_sha": "ea188e2d736fd6ed27c1dba8aae63b7268e2a7a9",
+    "base_ref": "replays-delete-vulnerable"
   },
   {
     "instance_id": "sentry__getsentry__sentry__PR93824",
@@ -1042,14 +1177,17 @@
         "severity": "High"
       },
       {
-        "comment": "Sleep in test_consumer.py won\u2019t actually wait because time.sleep was monkeypatched above; consider restoring sleep or using a different sync to ensure the flusher has time to process.",
+        "comment": "Sleep in test_consumer.py won’t actually wait because time.sleep was monkeypatched above; consider restoring sleep or using a different sync to ensure the flusher has time to process.",
         "severity": "Medium"
       },
       {
         "comment": "Breaking out of the loop when the deadline has elapsed can skip terminating remaining flusher processes, potentially leaving them running after shutdown; consider ensuring termination is attempted even if the deadline is exceeded.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "de11fb0166a7244115bb066edd65ec0d6b7e365c",
+    "head_sha": "3162ad68a5c87666788b27a44eb31235025091a9",
+    "base_ref": "master"
   },
   {
     "instance_id": "sentry__getsentry__sentry__PR77754",
@@ -1077,7 +1215,10 @@
         "comment": "to_dict() returns a datetime for queued; if this dict is passed in task kwargs (e.g., via apply_async), JSON serialization may fail depending on the serializer, which can cause enqueue errors.",
         "severity": "Medium"
       }
-    ]
+    ],
+    "base_sha": "bb5a6837cb5b3d8d3b174e17d42ec14486ef8738",
+    "head_sha": "9501091c52ae94e8d916f79b35d21975b3f9cadb",
+    "base_ref": "master"
   },
   {
     "instance_id": "sentry__getsentry__sentry__PR80528",
@@ -1097,7 +1238,10 @@
         "comment": "The code fetches MonitorCheckIn objects by ID when the required data already exists in previous_checkins. This creates an unnecessary database query.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "0cfc28e76ddc986d2d89dd9b9f63ee916a18a5f9",
+    "head_sha": "dcdcadb771128e79259cc9eff9c70c38fc597976",
+    "base_ref": "master"
   },
   {
     "instance_id": "sentry__getsentry__sentry__PR95633",
@@ -1121,7 +1265,10 @@
         "comment": "The test test_thread_queue_parallel_error_handling has a docstring that doesn't match the test implementation.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "fd358e8a388939959369f08f616e29552cdaf96e",
+    "head_sha": "9966ec5a13e331659c3ea00981f9b11b0faf821f",
+    "base_ref": "master"
   },
   {
     "instance_id": "sentry__getsentry__sentry__PR80168",
@@ -1141,6 +1288,9 @@
         "comment": "Docstring says this returns a list of DetectorEvaluationResult, but the method now returns a dict keyed by DetectorGroupKey. Consider updating the docstring to match the new return type.",
         "severity": "Low"
       }
-    ]
+    ],
+    "base_sha": "bdd229e3f22e307fe40b30ef99e92ff3f6723da4",
+    "head_sha": "8422030ef456e3a898415e96475b4d8ddfc7640f",
+    "base_ref": "master"
   }
 ]
