@@ -232,6 +232,69 @@ else
   not_ok "attempts GitHub download when local source is missing" "rc=$RC stderr=$STDERR_OUT"
 fi
 
+# Test 12: Dev artifacts excluded from install (.venv, __pycache__, .pytest_cache, *.pyc, .DS_Store)
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+mkdir -p "$MOCK_SOURCE/fbk-scripts/.venv/lib"
+echo "fake venv" > "$MOCK_SOURCE/fbk-scripts/.venv/lib/fake.py"
+mkdir -p "$MOCK_SOURCE/fbk-scripts/fbk/__pycache__"
+echo "pyc content" > "$MOCK_SOURCE/fbk-scripts/fbk/__pycache__/mod.cpython-311.pyc"
+mkdir -p "$MOCK_SOURCE/fbk-scripts/.pytest_cache"
+echo "pytest" > "$MOCK_SOURCE/fbk-scripts/.pytest_cache/CACHEDIR.TAG"
+echo "osjunk" > "$MOCK_SOURCE/.DS_Store"
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" > /dev/null 2>&1
+EXCLUDED_FOUND=0
+for relpath in fbk-scripts/.venv/lib/fake.py fbk-scripts/fbk/__pycache__/mod.cpython-311.pyc fbk-scripts/.pytest_cache/CACHEDIR.TAG .DS_Store; do
+  if [ -e "$TARGET/$relpath" ]; then
+    EXCLUDED_FOUND=$((EXCLUDED_FOUND + 1))
+  fi
+done
+MANIFEST_BAD=$(python3 -c "
+import json
+d = json.load(open('$TARGET/.firebreak-manifest.json'))
+bad = [f for f in d.get('files', []) if '.venv' in f or '__pycache__' in f or '.pytest_cache' in f or f.endswith('.pyc') or f.endswith('.DS_Store')]
+print(len(bad))
+" 2>/dev/null)
+if [ "$EXCLUDED_FOUND" -eq 0 ] && [ "$MANIFEST_BAD" = "0" ] && [ -f "$TARGET/skills/fbk-spec/prompt.md" ]; then
+  ok "dev artifacts excluded from install (.venv/__pycache__/.pytest_cache/*.pyc/.DS_Store)"
+else
+  not_ok "dev artifacts excluded from install" "excluded_on_disk=$EXCLUDED_FOUND manifest_bad=$MANIFEST_BAD"
+fi
+
+# Test 13: PyYAML missing + non-interactive stdin — install succeeds, instructions on stderr
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+REAL_PYTHON3=$(command -v python3)
+TEMP_BIN=$(mktemp -d)
+TEMP_DIRS+=("$TEMP_BIN")
+cat > "$TEMP_BIN/python3" << EOF
+#!/bin/bash
+if [ "\$1" = "-c" ] && [ "\$2" = "import yaml" ]; then
+  exit 1
+fi
+exec "$REAL_PYTHON3" "\$@"
+EOF
+chmod +x "$TEMP_BIN/python3"
+STDERR_OUT=$(PATH="$TEMP_BIN:$PATH" bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" < /dev/null 2>&1 > /dev/null)
+RC=$?
+if [ $RC -eq 0 ] && [ -f "$TARGET/.firebreak-manifest.json" ] && echo "$STDERR_OUT" | grep -q "Install later with"; then
+  ok "pyyaml missing + non-TTY: install completes, instructions printed"
+else
+  not_ok "pyyaml missing + non-TTY: install completes, instructions printed" "rc=$RC manifest=$([ -f $TARGET/.firebreak-manifest.json ] && echo yes || echo no)"
+fi
+
+# Test 14: PyYAML missing + dry-run — does not prompt, prints dry-run notice
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+DRY_STDERR=$(PATH="$TEMP_BIN:$PATH" bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" --dry-run < /dev/null 2>&1 > /dev/null)
+RC=$?
+FILES_CREATED=$(find "$TARGET" -type f 2>/dev/null | wc -l)
+if [ $RC -eq 0 ] && [ "$FILES_CREATED" -eq 0 ] && echo "$DRY_STDERR" | grep -q "\[dry-run\]"; then
+  ok "pyyaml missing + dry-run: no prompt, no install, dry-run notice printed"
+else
+  not_ok "pyyaml missing + dry-run: no prompt, no install, dry-run notice printed" "rc=$RC files=$FILES_CREATED"
+fi
+
 # Summary
 echo ""
 echo "# $PASS/$TOTAL tests passed"

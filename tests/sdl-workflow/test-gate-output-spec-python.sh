@@ -10,6 +10,10 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/specs"
 
+LOG_DIR="$(mktemp -d)"
+export LOG_DIR
+trap 'rm -rf "$LOG_DIR"' EXIT
+
 ok() {
   TOTAL=$((TOTAL + 1))
   PASS=$((PASS + 1))

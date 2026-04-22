@@ -22,6 +22,10 @@
 
 ### Fixed
 - `tests/sdl-workflow/test-test-reviewer-agent.sh` — role-word regex expanded to accept `evaluate` as a synonym for `review`, tracking the new QA-engineer persona's verb choice.
+- Installer no longer copies Python dev artifacts (`.venv/`, `__pycache__/`, `.pytest_cache/`, `*.pyc`, `.DS_Store`) when installed from a local source tree. `installer/install.sh` `enumerate_assets()` prunes these directories and skips these file patterns. Fixes a bug where a dev checkout install pulled ~1,300 files / 25MB of gitignored Python venv artifacts into `~/.claude/`. Users installing via `curl | bash` were unaffected because the GitHub tarball doesn't ship gitignored files.
+- Installer detects missing PyYAML runtime dependency (required by `fbk/config.py`) and offers to install it via `python3 -m pip install --user pyyaml`. Interactive TTY prompts for install; non-interactive installs (e.g. `curl | bash`) print manual-install instructions instead. Never aborts the install. PEP 668 externally-managed environments get an explicit hint to use pipx or a venv.
+- Shell tests `test-spec-validator.sh`, `test-gate-output-spec-python.sh`, `test-e2e-spec-gate-parity.sh`, and `test-task-reviewer.sh` now isolate audit logs via `LOG_DIR=$(mktemp -d)` with EXIT-trap cleanup. Previously each invocation of `spec-gate` / `task-reviewer-gate` wrote to `$CWD/.claude/automation/logs/`, leaking test artifacts into whatever directory the tests happened to be run from (seen in developer workflows as stray `.log` files under `assets/fbk-scripts/.claude/automation/`).
+- `.gitignore` patterns for `.claude/settings.local.json`, `.claude/automation/`, and `.claude/memory/` now match at any depth via `**/` prefix. Previously they were anchored to the repo root and silently failed to ignore equivalent paths nested under `assets/` or other subdirectories.
 
 ## [0.3.5] — 2026-04-05
 
