@@ -1,0 +1,66 @@
+[
+  {
+    "id": "raw-1",
+    "title": "forEach(async) drops return value in event handler",
+    "location": {"file": "src/handler.ts", "start_line": 42, "end_line": 55},
+    "type": "behavioral",
+    "severity": "critical",
+    "origin": "introduced",
+    "detection_source": "intent",
+    "pattern": "async-in-sync-iterator",
+    "mechanism": "forEach(async callback) discards the Promise returned by each iteration",
+    "consequence": "Callbacks execute concurrently with no error propagation to the caller",
+    "evidence": "Lines 42-48: bookingHandler.forEach(async (booking) => ...)",
+    "remediation": "Replace forEach(async) with for...of loop"
+  },
+  {
+    "id": "raw-2",
+    "title": "Race condition when two requests hit shared counter",
+    "location": {"file": "src/counter.ts", "start_line": 10},
+    "type": "behavioral",
+    "severity": "major",
+    "mechanism": "Shared mutable counter incremented without lock in concurrent path",
+    "consequence": "Under concurrent requests the counter skips values or double-counts",
+    "evidence": "Line 10: requestCount++ without mutex"
+  },
+  {
+    "id": "raw-3",
+    "title": "Duplicated email validation regex across three handlers",
+    "location": {"file": "src/validate.ts", "start_line": 10},
+    "type": "structural",
+    "severity": "minor",
+    "mechanism": "Three handlers each implement the same email validation regex inline",
+    "consequence": "Updating validation requires changing three files with no shared reference",
+    "evidence": "handler-a.ts:15, handler-b.ts:22, handler-c.ts:31"
+  },
+  {
+    "id": "raw-4",
+    "title": "Unused error code constant never referenced anywhere",
+    "location": {"file": "src/constants.ts", "start_line": 55},
+    "type": "structural",
+    "severity": "info",
+    "mechanism": "ERROR_TIMEOUT constant defined at module scope but no import references it",
+    "consequence": "Dead code adds noise to the module without any behavioral impact",
+    "evidence": "grep -r ERROR_TIMEOUT returns only the definition line"
+  },
+  {
+    "id": "raw-5",
+    "title": "INVALID: behavioral with minor severity should be rejected",
+    "location": {"file": "src/invalid.ts", "start_line": 1},
+    "type": "behavioral",
+    "severity": "minor",
+    "mechanism": "This sighting has an invalid type-severity combination for testing",
+    "consequence": "The pipeline should reject this before domain filtering occurs",
+    "evidence": "Intentionally invalid fixture entry"
+  },
+  {
+    "id": "raw-6",
+    "title": "Hardcoded page size will break when API changes",
+    "location": {"file": "src/paginator.ts", "start_line": 22},
+    "type": "fragile",
+    "severity": "major",
+    "mechanism": "Page size hardcoded to 10 matches current API default without contract",
+    "consequence": "When API changes page size the paginator silently returns partial results",
+    "evidence": "Line 22: const PAGE_SIZE = 10"
+  }
+]

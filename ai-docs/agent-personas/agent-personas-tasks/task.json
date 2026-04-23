@@ -1,0 +1,293 @@
+{
+  "spec": "ai-docs/agent-personas/agent-personas-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Structural tests for 6 council agent personas",
+      "file": "task-01-test-council-agent-structure.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file shell test following existing TAP pattern",
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-council-agent-personas.sh with 30 TAP assertions (5 per council agent x 6 agents: existence, valid frontmatter, body <=40 lines, `## Output quality bars` heading, no forbidden description-heavy headings). Script exits 1 pre-impl (12/30 pass; 18 fail as expected).",
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Persona-section structural test for test-reviewer agent",
+      "file": "task-02-test-test-reviewer-persona-section.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-03",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file shell test following existing TAP pattern",
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-test-reviewer-persona.sh with 10 TAP assertions validating persona section header, role activation, output quality bars, persona <=40 lines, and preserved existing checkpoint logic. Script exits 1 pre-impl (7/10 pass; 3 fail as expected).",
+      "note": null
+    },
+    {
+      "id": "task-03",
+      "title": "Persona-section structural test for improvement-analyst agent",
+      "file": "task-03-test-improvement-analyst-persona-section.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-04",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file shell test following existing TAP pattern",
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-improvement-analyst-persona.sh with 11 TAP assertions validating persona section, role activation, output quality bars, persona <=40 lines, and preserved input contract/proposal format/scope discipline sections. Script exits 1 pre-impl (8/11 pass; 3 fail as expected).",
+      "note": null
+    },
+    {
+      "id": "task-04",
+      "title": "Structural tests for three new agent definition files",
+      "file": "task-04-test-new-agent-files.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-05",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file shell test following existing TAP pattern",
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-new-persona-agents.sh with 21 TAP assertions (7 per new agent x 3 agents: fbk-spec-author, fbk-task-compiler, fbk-implementer) checking existence, frontmatter fields (name/description/tools), body <=40 lines, role activation line, output quality bars section, no forbidden patterns. Script exits 1 pre-impl (3/21 pass; 18 fail as expected).",
+      "note": null
+    },
+    {
+      "id": "task-05",
+      "title": "Content validation test for agents.md persona guidance",
+      "file": "task-05-test-agents-md-persona-guidance.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file shell test following existing TAP pattern",
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-agents-md-persona-guidance.sh with 12 TAP assertions for required subsections: enterprise activation baseline, correctness-vs-maintainability rationale, persona structure (role activation, quality bars, anti-defaults), personas-and-spawn-prompts, reference implementations, what-not-to-include, when-unnecessary. Script exits 1 pre-impl (1/12 pass; 11 fail as expected).",
+      "note": null
+    },
+    {
+      "id": "task-06",
+      "title": "Restructure fbk-council-architect to activation-focused persona",
+      "file": "task-06-impl-council-architect.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file rewrite with verbatim content specified in the task",
+      "status": "complete",
+      "summary": "Rewrote assets/agents/fbk-council-architect.md body to activation-focused pattern (principal engineer reviewing system design). Body=24 lines (<=40). All 5 file-specific assertions pass.",
+      "note": null
+    },
+    {
+      "id": "task-07",
+      "title": "Restructure fbk-council-analyst to activation-focused persona",
+      "file": "task-07-impl-council-analyst.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file rewrite with verbatim content specified in the task",
+      "status": "complete",
+      "summary": "Rewrote assets/agents/fbk-council-analyst.md body to activation-focused pattern (observability engineer designing measurement systems). Body <=40 lines. All 5 file-specific assertions pass.",
+      "note": null
+    },
+    {
+      "id": "task-08",
+      "title": "Restructure fbk-council-builder to activation-focused persona",
+      "file": "task-08-impl-council-builder.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file rewrite with verbatim content specified in the task; preserves complexity-watchdog authority",
+      "status": "complete",
+      "summary": "Rewrote assets/agents/fbk-council-builder.md body to activation-focused pattern (staff engineer who ships production systems) with preserved complexity-watchdog authority. Body <=40 lines. All 5 file-specific assertions pass.",
+      "note": null
+    },
+    {
+      "id": "task-09",
+      "title": "Restructure fbk-council-guardian to activation-focused persona",
+      "file": "task-09-impl-council-guardian.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file rewrite with verbatim content specified in the task",
+      "status": "complete",
+      "summary": "Rewrote assets/agents/fbk-council-guardian.md body to activation-focused pattern (QA architect designing testing strategies). Body <=40 lines. All 5 file-specific assertions pass.",
+      "note": null
+    },
+    {
+      "id": "task-10",
+      "title": "Restructure fbk-council-security to activation-focused persona",
+      "file": "task-10-impl-council-security.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file rewrite with verbatim content specified in the task",
+      "status": "complete",
+      "summary": "Rewrote assets/agents/fbk-council-security.md body to activation-focused pattern (application security engineer conducting threat analysis) with risk-rating quality bar. Body <=40 lines. All 5 file-specific assertions pass.",
+      "note": null
+    },
+    {
+      "id": "task-11",
+      "title": "Restructure fbk-council-advocate to activation-focused persona",
+      "file": "task-11-impl-council-advocate.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file rewrite with verbatim content specified in the task; preserves complexity-watchdog (user burden) authority",
+      "status": "complete",
+      "summary": "Rewrote assets/agents/fbk-council-advocate.md body to activation-focused pattern (product manager evaluating feature proposals) with preserved complexity-watchdog (user burden) authority. Body <=40 lines. All 5 file-specific assertions pass.",
+      "note": null
+    },
+    {
+      "id": "task-12",
+      "title": "Add persona to fbk-test-reviewer while preserving existing task logic",
+      "file": "task-12-impl-test-reviewer-persona.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-03",
+        "AC-06"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Prepending persona to a 171-line agent with existing checkpoint logic carries higher regression risk than bounded single-file rewrites; Sonnet avoids breaking existing sections",
+      "status": "complete",
+      "summary": "Prepended persona section to assets/agents/fbk-test-reviewer.md activating \"senior QA engineer with authority to block releases\" with 3 output quality bars. Existing checkpoint logic and evaluation criteria preserved byte-for-byte. All 10 persona assertions pass. Note: pre-existing test tests/sdl-workflow/test-test-reviewer-agent.sh required regex update (authorized by user) to accept \"evaluate\" as a role-word synonym for \"review\".",
+      "note": null
+    },
+    {
+      "id": "task-13",
+      "title": "Add persona to fbk-improvement-analyst while preserving existing workflow",
+      "file": "task-13-impl-improvement-analyst-persona.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-04",
+        "AC-06"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Prepending persona while preserving existing workflow sections (input contract, proposal format, scope discipline) benefits from Sonnet's preservation quality",
+      "status": "complete",
+      "summary": "Prepended persona section to assets/agents/fbk-improvement-analyst.md activating \"process improvement engineer analyzing production incidents\" with 3 output quality bars. Existing input contract, workflow, proposal format, and scope discipline sections preserved byte-for-byte. All 11 persona assertions pass.",
+      "note": null
+    },
+    {
+      "id": "task-14",
+      "title": "Create fbk-spec-author agent definition",
+      "file": "task-14-impl-spec-author-agent.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-05",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "New file with content fully specified verbatim in the task; no architectural decisions",
+      "status": "complete",
+      "summary": "Created assets/agents/fbk-spec-author.md with activation-focused persona (principal engineer writing technical specifications), output quality bars, anti-default against compliant drafting. Read-only tools. All 7 file-specific assertions pass.",
+      "note": null
+    },
+    {
+      "id": "task-15",
+      "title": "Create fbk-task-compiler agent definition",
+      "file": "task-15-impl-task-compiler-agent.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-05",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "New file with content fully specified verbatim in the task; no architectural decisions",
+      "status": "complete",
+      "summary": "Created assets/agents/fbk-task-compiler.md with activation-focused persona (tech lead decomposing reviewed specs), output quality bars (AC traceability, file paths, wave ordering), anti-default against granularity extremes. Read-only tools. All 7 file-specific assertions pass.",
+      "note": null
+    },
+    {
+      "id": "task-16",
+      "title": "Create fbk-implementer agent definition",
+      "file": "task-16-impl-implementer-agent.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-05",
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "New file with content fully specified verbatim in the task; no architectural decisions",
+      "status": "complete",
+      "summary": "Created assets/agents/fbk-implementer.md with activation-focused persona (senior engineer implementing against reviewed spec), output quality bars, maintainability-targeting anti-default. Full implementation tools. All 7 file-specific assertions pass.",
+      "note": null
+    },
+    {
+      "id": "task-17",
+      "title": "Add persona authoring guidance section to agents.md",
+      "file": "task-17-impl-agents-md-persona-guidance.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-subsection authoring with the spec's rationale condensed into 1-2 sentences; Sonnet produces tighter prose than Haiku for this scope",
+      "status": "complete",
+      "summary": "Added \"## Persona authoring\" section to assets/fbk-docs/fbk-context-assets/agents.md between \"## Instruction Design\" and \"## Scope\" with 7 required subsections (enterprise activation, correctness-vs-maintainability, persona structure, spawn prompts, reference implementations, what not to include, when unnecessary). All 12 assertions pass. Reference paths adjusted from assets/agents/ to .claude/agents/ to satisfy reference-integrity test convention (installed-path references).",
+      "note": null
+    }
+  ]
+}

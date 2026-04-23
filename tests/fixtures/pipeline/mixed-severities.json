@@ -1,0 +1,42 @@
+[
+  {
+    "id": "S-01",
+    "title": "forEach(async) drops return value silently",
+    "location": {"file": "src/handler.ts", "start_line": 42},
+    "type": "behavioral",
+    "severity": "critical",
+    "mechanism": "forEach(async callback) discards the Promise returned by each iteration",
+    "consequence": "Callbacks execute concurrently with no error propagation to the caller",
+    "evidence": "Lines 42-48"
+  },
+  {
+    "id": "S-02",
+    "title": "Race condition in concurrent request handler path",
+    "location": {"file": "src/queue.ts", "start_line": 88},
+    "type": "behavioral",
+    "severity": "major",
+    "mechanism": "Shared mutable counter incremented without lock in concurrent handler",
+    "consequence": "Under concurrent requests counter skips values or double-counts",
+    "evidence": "Line 88: requestCount++ without mutex"
+  },
+  {
+    "id": "S-03",
+    "title": "Duplicated validation logic across three handlers",
+    "location": {"file": "src/validate.ts", "start_line": 10},
+    "type": "structural",
+    "severity": "minor",
+    "mechanism": "Three handlers each implement the same email validation regex inline",
+    "consequence": "Updating validation requires changing three files with no shared reference",
+    "evidence": "handler-a.ts:15, handler-b.ts:22, handler-c.ts:31"
+  },
+  {
+    "id": "S-04",
+    "title": "Unused error code constant defined but never referenced",
+    "location": {"file": "src/constants.ts", "start_line": 55},
+    "type": "structural",
+    "severity": "info",
+    "mechanism": "ERROR_TIMEOUT constant defined at module scope but no import references it",
+    "consequence": "Dead code adds noise to the module without any behavioral impact",
+    "evidence": "grep -r ERROR_TIMEOUT returns only the definition line"
+  }
+]

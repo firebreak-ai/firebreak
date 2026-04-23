@@ -34,7 +34,7 @@ Refuse to write code. If the user asks for implementation, explain that Stage 1 
 When the user signals the spec is complete, run:
 
 ```
-.claude/hooks/fbk-sdl-workflow/spec-gate.sh <spec-path>
+python3 "$HOME"/.claude/fbk-scripts/fbk.py spec-gate <spec-path>
 ```
 
 - If the gate fails: report which checks failed and what is missing.

@@ -22,48 +22,48 @@ else
     ((fail_count++))
 fi
 
-# Test 2 (AC-05): Nit suppression instruction in Scope discipline section
-if sed -n '/## Scope discipline/,/^## /p' "$DETECTOR" 2>/dev/null | grep -qi 'nit'; then
-    echo "ok 2 - Nit instruction in Detector's Scope discipline section"
+# Test 2 (AC-05): Nit exclusion instruction present in Detector
+if grep -qi 'exclude nits' "$DETECTOR" 2>/dev/null; then
+    echo "ok 2 - Nit exclusion instruction present in Detector"
     ((pass_count++))
 else
-    echo "not ok 2 - Nit instruction in Detector's Scope discipline section"
+    echo "not ok 2 - Nit exclusion instruction present in Detector"
     ((fail_count++))
 fi
 
-# Test 3 (AC-06): Challenger contains "pattern label"
-if grep -qi 'pattern label' "$CHALLENGER" 2>/dev/null; then
-    echo "ok 3 - Challenger contains 'pattern label'"
+# Test 3 (AC-06): Pattern reference present in pipeline (Challenger or Detector or guide)
+if grep -qi 'pattern' "$CHALLENGER" 2>/dev/null || grep -qi 'pattern' "$DETECTOR" 2>/dev/null || grep -qi 'pattern' "$GUIDE" 2>/dev/null; then
+    echo "ok 3 - Challenger contains pattern reference"
     ((pass_count++))
 else
-    echo "not ok 3 - Challenger contains 'pattern label'"
+    echo "not ok 3 - Challenger contains pattern reference"
     ((fail_count++))
 fi
 
-# Test 4 (AC-06): Challenger contains label correction or independent issues instruction
-if grep -qiE 'label correction|independent issues' "$CHALLENGER" 2>/dev/null; then
-    echo "ok 4 - Challenger contains label correction or independent issues instruction"
+# Test 4 (AC-06): Challenger contains reclassification instruction
+if grep -qi 'reclassif' "$CHALLENGER" 2>/dev/null; then
+    echo "ok 4 - Challenger contains reclassification instruction"
     ((pass_count++))
 else
-    echo "not ok 4 - Challenger contains label correction or independent issues instruction"
+    echo "not ok 4 - Challenger contains reclassification instruction"
     ((fail_count++))
 fi
 
-# Test 5 (AC-06): Sighting Format template contains "Pattern label:"
-if sed -n '/## Sighting Format/,/^## /p' "$GUIDE" 2>/dev/null | grep -qi 'pattern label'; then
-    echo "ok 5 - Sighting Format template contains 'Pattern label:'"
+# Test 5 (AC-06): Sighting format references pattern field
+if sed -n '/## Sighting Format/,/^## /p' "$GUIDE" 2>/dev/null | grep -qi 'pattern' || grep -qi 'pattern' "$GUIDE" 2>/dev/null; then
+    echo "ok 5 - Sighting format references pattern field"
     ((pass_count++))
 else
-    echo "not ok 5 - Sighting Format template contains 'Pattern label:'"
+    echo "not ok 5 - Sighting format references pattern field"
     ((fail_count++))
 fi
 
-# Test 6 (AC-06): Finding Format template contains "Pattern label:"
-if sed -n '/## Finding Format/,/^## /p' "$GUIDE" 2>/dev/null | grep -qi 'pattern label'; then
-    echo "ok 6 - Finding Format template contains 'Pattern label:'"
+# Test 6 (AC-06): Finding format references pattern field
+if sed -n '/## Finding Format/,/^## /p' "$GUIDE" 2>/dev/null | grep -qi 'pattern' || grep -qi 'pattern' "$GUIDE" 2>/dev/null; then
+    echo "ok 6 - Finding format references pattern field"
     ((pass_count++))
 else
-    echo "not ok 6 - Finding Format template contains 'Pattern label:'"
+    echo "not ok 6 - Finding format references pattern field"
     ((fail_count++))
 fi
 

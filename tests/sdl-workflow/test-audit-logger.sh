@@ -5,7 +5,7 @@ PASS=0
 FAIL=0
 TOTAL=0
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-LOGGER="$PROJECT_ROOT/assets/hooks/fbk-sdl-workflow/audit-logger.py"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 
 TMPDIR_BASE="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR_BASE"' EXIT
@@ -26,7 +26,7 @@ not_ok() {
 # --- Test 1: single log event produces valid JSON with correct fields ---
 test_dir="$TMPDIR_BASE/t1"
 mkdir -p "$test_dir"
-LOG_DIR="$test_dir" python3 "$LOGGER" log myspec start '{"key":"val"}'
+LOG_DIR="$test_dir" python3 "$DISPATCHER" audit log myspec start '{"key":"val"}'
 line=$(cat "$test_dir/myspec.log" 2>/dev/null)
 if echo "$line" | python3 -c "
 import sys, json
@@ -44,9 +44,9 @@ fi
 # --- Test 2: multiple sequential log calls produce independent JSON lines ---
 test_dir="$TMPDIR_BASE/t2"
 mkdir -p "$test_dir"
-LOG_DIR="$test_dir" python3 "$LOGGER" log multi ev1 '{"n":1}'
-LOG_DIR="$test_dir" python3 "$LOGGER" log multi ev2 '{"n":2}'
-LOG_DIR="$test_dir" python3 "$LOGGER" log multi ev3 '{"n":3}'
+LOG_DIR="$test_dir" python3 "$DISPATCHER" audit log multi ev1 '{"n":1}'
+LOG_DIR="$test_dir" python3 "$DISPATCHER" audit log multi ev2 '{"n":2}'
+LOG_DIR="$test_dir" python3 "$DISPATCHER" audit log multi ev3 '{"n":3}'
 count=$(wc -l < "$test_dir/multi.log")
 valid=true
 while IFS= read -r l; do
@@ -62,7 +62,7 @@ fi
 test_dir="$TMPDIR_BASE/t3"
 mkdir -p "$test_dir"
 echo '{"timestamp":"pre","spec":"preserve","event_type":"seed","data":{}}' > "$test_dir/preserve.log"
-LOG_DIR="$test_dir" python3 "$LOGGER" log preserve append '{"x":1}'
+LOG_DIR="$test_dir" python3 "$DISPATCHER" audit log preserve append '{"x":1}'
 line1=$(sed -n '1p' "$test_dir/preserve.log")
 line2=$(sed -n '2p' "$test_dir/preserve.log")
 total=$(wc -l < "$test_dir/preserve.log")
@@ -77,7 +77,7 @@ fi
 test_dir="$TMPDIR_BASE/t4"
 mkdir -p "$test_dir"
 [ ! -f "$test_dir/newfile.log" ] || { not_ok "log file created if it doesn't exist" "file pre-existed"; false; }
-LOG_DIR="$test_dir" python3 "$LOGGER" log newfile init '{}'
+LOG_DIR="$test_dir" python3 "$DISPATCHER" audit log newfile init '{}'
 if [ -f "$test_dir/newfile.log" ]; then
   ok "log file created if it doesn't exist"
 else
@@ -87,7 +87,7 @@ fi
 # --- Test 5: log directory created if it doesn't exist ---
 test_dir="$TMPDIR_BASE/t5/nested/deep"
 [ ! -d "$test_dir" ] || { not_ok "log directory created if it doesn't exist" "dir pre-existed"; false; }
-LOG_DIR="$test_dir" python3 "$LOGGER" log dirtest init '{}'
+LOG_DIR="$test_dir" python3 "$DISPATCHER" audit log dirtest init '{}'
 if [ -f "$test_dir/dirtest.log" ]; then
   ok "log directory created if it doesn't exist"
 else
@@ -97,9 +97,9 @@ fi
 # --- Test 6: read returns all events as parseable JSON lines ---
 test_dir="$TMPDIR_BASE/t6"
 mkdir -p "$test_dir"
-LOG_DIR="$test_dir" python3 "$LOGGER" log readtest a '{"v":1}'
-LOG_DIR="$test_dir" python3 "$LOGGER" log readtest b '{"v":2}'
-output=$(LOG_DIR="$test_dir" python3 "$LOGGER" read readtest)
+LOG_DIR="$test_dir" python3 "$DISPATCHER" audit log readtest a '{"v":1}'
+LOG_DIR="$test_dir" python3 "$DISPATCHER" audit log readtest b '{"v":2}'
+output=$(LOG_DIR="$test_dir" python3 "$DISPATCHER" audit read readtest)
 read_count=$(echo "$output" | wc -l)
 read_valid=true
 echo "$output" | while IFS= read -r l; do
@@ -114,7 +114,7 @@ fi
 # --- Test 7: read for non-existent spec ---
 test_dir="$TMPDIR_BASE/t7"
 mkdir -p "$test_dir"
-output=$(LOG_DIR="$test_dir" python3 "$LOGGER" read nosuchspec 2>/dev/null)
+output=$(LOG_DIR="$test_dir" python3 "$DISPATCHER" audit read nosuchspec 2>/dev/null)
 rc=$?
 if [ $rc -ne 0 ] || [ -z "$output" ]; then
   ok "read for non-existent spec returns error or empty"
@@ -125,7 +125,7 @@ fi
 # --- Test 8: nested JSON in data field preserved ---
 test_dir="$TMPDIR_BASE/t8"
 mkdir -p "$test_dir"
-LOG_DIR="$test_dir" python3 "$LOGGER" log nested ev '{"outer":{"inner":[1,2,{"deep":true}]}}'
+LOG_DIR="$test_dir" python3 "$DISPATCHER" audit log nested ev '{"outer":{"inner":[1,2,{"deep":true}]}}'
 line=$(cat "$test_dir/nested.log")
 if echo "$line" | python3 -c "
 import sys, json

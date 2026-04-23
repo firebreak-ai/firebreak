@@ -31,12 +31,12 @@ setup_mock_source() {
 
   mkdir -p "$MOCK_DIR/assets/skills/fbk-spec"
   mkdir -p "$MOCK_DIR/assets/agents"
-  mkdir -p "$MOCK_DIR/assets/hooks/fbk-sdl-workflow"
+  mkdir -p "$MOCK_DIR/assets/fbk-scripts"
   mkdir -p "$MOCK_DIR/assets/fbk-docs/fbk-sdl-workflow"
 
   echo "mock spec prompt" > "$MOCK_DIR/assets/skills/fbk-spec/prompt.md"
   echo "mock agent" > "$MOCK_DIR/assets/agents/fbk-code-review-detector.md"
-  echo -e "#!/usr/bin/env bash\necho done" > "$MOCK_DIR/assets/hooks/fbk-sdl-workflow/task-completed.sh"
+  echo "# mock fbk.py" > "$MOCK_DIR/assets/fbk-scripts/fbk.py"
   echo "mock doc" > "$MOCK_DIR/assets/fbk-docs/fbk-sdl-workflow/guide.md"
 
   cat > "$MOCK_DIR/assets/settings.json" << 'EOF'
@@ -47,7 +47,7 @@ setup_mock_source() {
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME\"/.claude/hooks/fbk-sdl-workflow/task-completed.sh"
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py task-completed"
           }
         ]
       }
@@ -105,7 +105,7 @@ RC=$?
 
 # Test 1: Post-install fbk files exist
 if [ -f "$TARGET/skills/fbk-spec/prompt.md" ] && [ -f "$TARGET/agents/fbk-code-review-detector.md" ] && \
-   [ -f "$TARGET/hooks/fbk-sdl-workflow/task-completed.sh" ] && [ -f "$TARGET/fbk-docs/fbk-sdl-workflow/guide.md" ]; then
+   [ -f "$TARGET/fbk-scripts/fbk.py" ] && [ -f "$TARGET/fbk-docs/fbk-sdl-workflow/guide.md" ]; then
   ok "post-install: fbk-prefixed files exist"
 else
   not_ok "post-install: fbk-prefixed files exist" "not all fbk files found"
@@ -127,7 +127,7 @@ fi
 
 # Test 4: Post-install hooks merged additively
 PRETOOL_HAS_USER=$(python3 -c "import sys, json; data = json.load(open('$TARGET/settings.json')); hooks = data.get('hooks', {}).get('PreToolUse', []); print(any('user-guard.sh' in str(h) for h in hooks))" 2>/dev/null)
-TASK_HAS_FBK=$(python3 -c "import sys, json; data = json.load(open('$TARGET/settings.json')); hooks = data.get('hooks', {}).get('TaskCompleted', []); print(any('fbk-sdl-workflow' in str(h) for h in hooks))" 2>/dev/null)
+TASK_HAS_FBK=$(python3 -c "import sys, json; data = json.load(open('$TARGET/settings.json')); hooks = data.get('hooks', {}).get('TaskCompleted', []); print(any('fbk-scripts/fbk.py' in str(h) for h in hooks))" 2>/dev/null)
 if [ "$PRETOOL_HAS_USER" = "True" ] && [ "$TASK_HAS_FBK" = "True" ]; then
   ok "post-install: hooks merged additively"
 else

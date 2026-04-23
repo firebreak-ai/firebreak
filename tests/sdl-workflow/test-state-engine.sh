@@ -25,13 +25,13 @@ trap 'rm -rf "$TMPDIR_STATE"' EXIT
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-ENGINE="$PROJECT_ROOT/assets/hooks/fbk-sdl-workflow/state-engine.py"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 
 echo "TAP version 13"
 echo "1..15"
 
 # ---- Test 1: create produces valid JSON with QUEUED and correct schema ----
-OUTPUT=$(python3 "$ENGINE" create test-spec-1 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" state create test-spec-1 2>&1)
 if echo "$OUTPUT" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
@@ -62,7 +62,7 @@ else
 fi
 
 # ---- Test 3: valid transition QUEUED->VALIDATING ----
-OUTPUT=$(python3 "$ENGINE" transition test-spec-1 VALIDATING 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" state transition test-spec-1 VALIDATING 2>&1)
 CURRENT=$(echo "$OUTPUT" | python3 -c "import sys, json; print(json.load(sys.stdin)['current_state'])" 2>/dev/null)
 if [ "$CURRENT" = "VALIDATING" ]; then
   ok "valid transition QUEUED->VALIDATING"
@@ -71,12 +71,12 @@ else
 fi
 
 # ---- Test 4: multi-step chain QUEUED->...->BREAKING_DOWN ----
-python3 "$ENGINE" create test-chain >/dev/null 2>&1
-python3 "$ENGINE" transition test-chain VALIDATING >/dev/null 2>&1
-python3 "$ENGINE" transition test-chain VALIDATED >/dev/null 2>&1
-python3 "$ENGINE" transition test-chain REVIEWING >/dev/null 2>&1
-python3 "$ENGINE" transition test-chain REVIEWED >/dev/null 2>&1
-OUTPUT=$(python3 "$ENGINE" transition test-chain BREAKING_DOWN 2>&1)
+python3 "$DISPATCHER" state create test-chain >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-chain VALIDATING >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-chain VALIDATED >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-chain REVIEWING >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-chain REVIEWED >/dev/null 2>&1
+OUTPUT=$(python3 "$DISPATCHER" state transition test-chain BREAKING_DOWN 2>&1)
 CURRENT=$(echo "$OUTPUT" | python3 -c "import sys, json; print(json.load(sys.stdin)['current_state'])" 2>/dev/null)
 if [ "$CURRENT" = "BREAKING_DOWN" ]; then
   ok "multi-step chain QUEUED->...->BREAKING_DOWN"
@@ -85,23 +85,23 @@ else
 fi
 
 # ---- Test 5: invalid transition QUEUED->COMPLETED rejected ----
-python3 "$ENGINE" create test-invalid-1 >/dev/null 2>&1
-if python3 "$ENGINE" transition test-invalid-1 COMPLETED 2>/dev/null; then
+python3 "$DISPATCHER" state create test-invalid-1 >/dev/null 2>&1
+if python3 "$DISPATCHER" state transition test-invalid-1 COMPLETED 2>/dev/null; then
   not_ok "invalid transition QUEUED->COMPLETED rejected" "should have failed"
 else
   ok "invalid transition QUEUED->COMPLETED rejected"
 fi
 
 # ---- Test 6: invalid transition QUEUED->REVIEWED rejected ----
-python3 "$ENGINE" create test-invalid-2 >/dev/null 2>&1
-if python3 "$ENGINE" transition test-invalid-2 REVIEWED 2>/dev/null; then
+python3 "$DISPATCHER" state create test-invalid-2 >/dev/null 2>&1
+if python3 "$DISPATCHER" state transition test-invalid-2 REVIEWED 2>/dev/null; then
   not_ok "invalid transition QUEUED->REVIEWED rejected" "should have failed"
 else
   ok "invalid transition QUEUED->REVIEWED rejected"
 fi
 
 # ---- Test 7: state persists and reads back ----
-READ_OUTPUT=$(python3 "$ENGINE" read test-spec-1 2>&1)
+READ_OUTPUT=$(python3 "$DISPATCHER" state read test-spec-1 2>&1)
 READ_STATE=$(echo "$READ_OUTPUT" | python3 -c "import sys, json; print(json.load(sys.stdin)['current_state'])" 2>/dev/null)
 if [ "$READ_STATE" = "VALIDATING" ]; then
   ok "state persists and reads back"
@@ -110,9 +110,9 @@ else
 fi
 
 # ---- Test 8: PARKED records failed_stage and reason ----
-python3 "$ENGINE" create test-parked >/dev/null 2>&1
-python3 "$ENGINE" transition test-parked VALIDATING >/dev/null 2>&1
-OUTPUT=$(python3 "$ENGINE" transition test-parked PARKED --reason "needs clarification" 2>&1)
+python3 "$DISPATCHER" state create test-parked >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-parked VALIDATING >/dev/null 2>&1
+OUTPUT=$(python3 "$DISPATCHER" state transition test-parked PARKED --reason "needs clarification" 2>&1)
 PARKED_OK=$(echo "$OUTPUT" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
@@ -128,8 +128,8 @@ else
 fi
 
 # ---- Test 9: PARKED->READY->resume lifecycle ----
-python3 "$ENGINE" transition test-parked READY >/dev/null 2>&1
-OUTPUT=$(python3 "$ENGINE" transition test-parked VALIDATING 2>&1)
+python3 "$DISPATCHER" state transition test-parked READY >/dev/null 2>&1
+OUTPUT=$(python3 "$DISPATCHER" state transition test-parked VALIDATING 2>&1)
 RESUME_STATE=$(echo "$OUTPUT" | python3 -c "import sys, json; print(json.load(sys.stdin)['current_state'])" 2>/dev/null)
 if [ "$RESUME_STATE" = "VALIDATING" ]; then
   ok "PARKED->READY->resume lifecycle"
@@ -138,7 +138,7 @@ else
 fi
 
 # ---- Test 10: timestamps are ISO8601 and increasing ----
-READ_OUTPUT=$(python3 "$ENGINE" read test-chain 2>&1)
+READ_OUTPUT=$(python3 "$DISPATCHER" state read test-chain 2>&1)
 TS_OK=$(echo "$READ_OUTPUT" | python3 -c "
 import sys, json
 from datetime import datetime
@@ -161,8 +161,8 @@ else
 fi
 
 # ---- Test 11: get-valid-transitions returns correct states ----
-python3 "$ENGINE" create test-transitions >/dev/null 2>&1
-OUTPUT=$(python3 "$ENGINE" get-valid-transitions test-transitions 2>&1)
+python3 "$DISPATCHER" state create test-transitions >/dev/null 2>&1
+OUTPUT=$(python3 "$DISPATCHER" state get-valid-transitions test-transitions 2>&1)
 TRANS_OK=$(echo "$OUTPUT" | python3 -c "
 import sys, json
 states = json.load(sys.stdin)
@@ -176,8 +176,8 @@ else
 fi
 
 # ---- Test 12: get-valid-transitions for VALIDATING ----
-python3 "$ENGINE" transition test-transitions VALIDATING >/dev/null 2>&1
-OUTPUT=$(python3 "$ENGINE" get-valid-transitions test-transitions 2>&1)
+python3 "$DISPATCHER" state transition test-transitions VALIDATING >/dev/null 2>&1
+OUTPUT=$(python3 "$DISPATCHER" state get-valid-transitions test-transitions 2>&1)
 TRANS_OK=$(echo "$OUTPUT" | python3 -c "
 import sys, json
 states = sorted(json.load(sys.stdin))
@@ -191,25 +191,25 @@ else
 fi
 
 # ---- Test 13: get-valid-transitions for COMPLETED (terminal) ----
-python3 "$ENGINE" create test-terminal >/dev/null 2>&1
+python3 "$DISPATCHER" state create test-terminal >/dev/null 2>&1
 # fast-forward to COMPLETED
-python3 "$ENGINE" transition test-terminal VALIDATING >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal VALIDATED >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal REVIEWING >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal REVIEWED >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal BREAKING_DOWN >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal BROKEN_DOWN >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal TASK_REVIEWING >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal TASKS_READY >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal TESTING >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal TESTS_WRITTEN >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal TEST_REVIEWING >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal TESTS_READY >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal IMPLEMENTING >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal IMPLEMENTED >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal VERIFYING >/dev/null 2>&1
-python3 "$ENGINE" transition test-terminal COMPLETED >/dev/null 2>&1
-OUTPUT=$(python3 "$ENGINE" get-valid-transitions test-terminal 2>&1)
+python3 "$DISPATCHER" state transition test-terminal VALIDATING >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal VALIDATED >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal REVIEWING >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal REVIEWED >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal BREAKING_DOWN >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal BROKEN_DOWN >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal TASK_REVIEWING >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal TASKS_READY >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal TESTING >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal TESTS_WRITTEN >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal TEST_REVIEWING >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal TESTS_READY >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal IMPLEMENTING >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal IMPLEMENTED >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal VERIFYING >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-terminal COMPLETED >/dev/null 2>&1
+OUTPUT=$(python3 "$DISPATCHER" state get-valid-transitions test-terminal 2>&1)
 TRANS_OK=$(echo "$OUTPUT" | python3 -c "
 import sys, json
 states = json.load(sys.stdin)
@@ -223,14 +223,14 @@ else
 fi
 
 # ---- Test 14: get-valid-transitions for READY resolves dynamically ----
-OUTPUT=$(python3 "$ENGINE" get-valid-transitions test-parked 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" state get-valid-transitions test-parked 2>&1)
 # test-parked was READY after test 9, then transitioned to VALIDATING
 # We need a fresh parked spec in READY state
-python3 "$ENGINE" create test-ready-trans >/dev/null 2>&1
-python3 "$ENGINE" transition test-ready-trans VALIDATING >/dev/null 2>&1
-python3 "$ENGINE" transition test-ready-trans PARKED --reason "test" >/dev/null 2>&1
-python3 "$ENGINE" transition test-ready-trans READY >/dev/null 2>&1
-OUTPUT=$(python3 "$ENGINE" get-valid-transitions test-ready-trans 2>&1)
+python3 "$DISPATCHER" state create test-ready-trans >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-ready-trans VALIDATING >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-ready-trans PARKED --reason "test" >/dev/null 2>&1
+python3 "$DISPATCHER" state transition test-ready-trans READY >/dev/null 2>&1
+OUTPUT=$(python3 "$DISPATCHER" state get-valid-transitions test-ready-trans 2>&1)
 TRANS_OK=$(echo "$OUTPUT" | python3 -c "
 import sys, json
 states = json.load(sys.stdin)
@@ -244,7 +244,7 @@ else
 fi
 
 # ---- Test 15: duplicate create fails ----
-if python3 "$ENGINE" create test-spec-1 2>/dev/null; then
+if python3 "$DISPATCHER" state create test-spec-1 2>/dev/null; then
   not_ok "duplicate create fails" "should have failed"
 else
   ok "duplicate create fails"

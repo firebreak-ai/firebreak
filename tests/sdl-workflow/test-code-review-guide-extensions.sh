@@ -32,11 +32,11 @@ else
   not_ok "Guide contains AC verification precision requirement" "precision/individual/each AC/per-AC not found in $GUIDE"
 fi
 
-# --- Test 2: Guide test-integrity definition includes name-scope mismatch (AC-24) ---
-if grep -qiE 'name.scope|scope.mismatch' "$GUIDE"; then
-  ok "Guide test-integrity includes name-scope mismatch"
+# --- Test 2: Guide test-integrity definition includes coverage gap language (AC-24) ---
+if grep -qiE 'name.scope|scope.mismatch|does not verify|implies coverage' "$GUIDE"; then
+  ok "Guide test-integrity includes coverage gap language"
 else
-  not_ok "Guide test-integrity includes name-scope mismatch" "name-scope or scope-mismatch not found in $GUIDE"
+  not_ok "Guide test-integrity includes coverage gap language" "name-scope, scope-mismatch, does not verify, or implies coverage not found in $GUIDE"
 fi
 
 # --- Test 3: quality-detection.md contains dead infrastructure check (AC-25) ---

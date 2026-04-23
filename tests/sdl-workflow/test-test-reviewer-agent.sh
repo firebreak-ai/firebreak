@@ -75,7 +75,7 @@ fi
 # --- Test 5: Body contains agent role ---
 first_10=$(body_lines | head -10)
 has_test=$(echo "$first_10" | grep -ci 'test')
-has_review=$(echo "$first_10" | grep -ciE 'reviewer|review|validate')
+has_review=$(echo "$first_10" | grep -ciE 'reviewer|review|validate|evaluate')
 if [ "$has_test" -gt 0 ] && [ "$has_review" -gt 0 ]; then
   ok "body contains agent role (test + review/validate)"
 else

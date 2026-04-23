@@ -44,7 +44,9 @@ Update `task.json` after every status change. Status transitions:
 4. **Escalation**: Set `status` to `parked` with a `note` explaining the failure when the escalation cap is exhausted.
 5. **Superseded**: Set `status` to `superseded` with a `note` when an escalation replaces the task or the user removes it from scope.
 
-The team lead writes `task.json` after each update — teammates do not modify it directly. The teammate reports its work summary to the team lead, who records it.
+The team lead writes `task.json` after each update — teammates do not modify it directly.
+
+Do not set `status` to `complete` until the teammate has messaged you a work summary. If a teammate goes idle after completing its task without sending a summary, send a follow-up requesting one before recording completion. If the teammate does not respond to the follow-up, treat as unresponsive per the escalation protocol rather than reconstructing the summary from file inspection — the teammate's self-reported summary is the record.
 
 ---
 
@@ -113,29 +115,6 @@ After the last wave, run the full test suite — all tests, not just the baselin
 
 ---
 
-## TaskCompleted Hook
-
-Configure a `TaskCompleted` hook in `.claude/settings.json`. The hook fires on every `TaskCompleted` event.
-
-The hook script scopes itself via context check: parse the task description for an SDL task file path matching `ai-docs/*/tasks/task-*.md`. If no match, exit 0 (pass-through) — the hook applies only to SDL tasks.
-
-**Hook rejection retry cap**: When a hook rejection triggers an in-session retry, cap retries at 3 per task attempt. After 3 hook rejection retries without resolution, the teammate stops retrying and reports the failure to the team lead, who initiates the escalation protocol. This prevents infinite retry loops on systemic failures (e.g., a lint rule the agent cannot satisfy).
-
-For SDL tasks, the hook validates:
-
-- The full test suite passes — not just the task's new tests, but all tests in the project.
-- No new lint errors are introduced.
-
-Run all verification and hook commands in the foreground. Background execution can produce empty stdout/stderr, causing validation to report success when the command never completed or silently failed. Foreground execution ensures the hook captures complete output for feedback to the teammate.
-
-Exit code 2 (reject with feedback) on any failure. This prevents task completion and returns the failure output to the teammate as feedback.
-
-**Escalation from hook rejections**: Hook rejections prompt the teammate to retry in-session using the failure output as feedback. In-session retries do not count toward the 2-attempt escalation cap. When the teammate messages you without resolving the failure, initiate the escalation protocol.
-
-**Unresponsive teammate detection**: If a teammate has not reported progress or completed the task within 10 minutes of assignment, send a status check. Retry the status check every 2 minutes, up to 3 attempts. If no response after 3 status checks, treat the teammate as unresponsive: set `status` to `tests_fail`, record the timeout in `summary`, and assign the task to a different teammate. This counts as one escalation attempt toward the 2-attempt cap.
-
----
-
 ## Per-Wave Verification
 
 Run after all implementation tasks in the wave complete:
@@ -144,6 +123,8 @@ Run after all implementation tasks in the wave complete:
 - No new lint errors introduced.
 - No uncommitted merge conflicts.
 - File scope respected: compare `git diff --name-only` against the union of declared file scopes from all tasks in this wave. Flag any changed file that does not match a declared scope using path-prefix matching. Scope checking runs here (not per-task) because concurrent teammates share git state — per-task diffs cannot isolate individual contributions.
+
+Run all verification commands in the foreground. Background execution can produce empty stdout/stderr, causing validation to report success when the command never completed or silently failed. Foreground execution ensures complete output is captured.
 
 The TaskCompleted hook catches test and lint failures per-task. Per-wave verification adds the aggregate cross-task checks: merge conflicts and file scope.
 
@@ -175,6 +156,10 @@ Initiate when a task fails and the teammate cannot resolve it in-session.
 4. Revise the task file in place. The original is preserved in git history.
 5. Assign the revised task to an idle teammate or spawn a replacement. Set `status` back to `in_progress`. The failing teammate does not retry — you have the external signal (test/lint output) to make a meaningful revision.
 6. Cap: 2 escalation attempts per task. After 2 failures, set `status` to `parked`. Include in the `note`: task ID, attempt count, and last verification output.
+
+**Hook rejection retry cap**: When hook rejection feedback prompts the teammate to retry in-session, cap retries at 3 per task attempt. In-session retries do not count toward the 2-attempt escalation cap. After 3 in-session retries without resolution, the teammate stops retrying and reports the failure to the team lead, who initiates the escalation protocol above. This prevents infinite retry loops on systemic failures (e.g., a lint rule the agent cannot satisfy).
+
+**Unresponsive teammate detection**: If a teammate has not reported progress or completed the task within 10 minutes of assignment, send a status check. Retry the status check every 2 minutes, up to 3 attempts. If no response after 3 status checks, treat the teammate as unresponsive: set `status` to `tests_fail`, record the timeout in `summary`, and assign the task to a different teammate. This counts as one escalation attempt toward the 2-attempt cap.
 
 ---
 

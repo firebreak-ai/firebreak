@@ -1,0 +1,53 @@
+[
+  {
+    "id": "S-01",
+    "finding_id": "F-01",
+    "title": "forEach(async) drops return value silently",
+    "location": {"file": "src/handler.ts", "start_line": 42, "end_line": 55},
+    "type": "behavioral",
+    "severity": "critical",
+    "origin": "introduced",
+    "detection_source": "intent",
+    "pattern": "async-in-sync-iterator",
+    "mechanism": "forEach(async callback) discards the Promise returned by each iteration",
+    "consequence": "Callbacks execute concurrently with no error propagation to the caller",
+    "evidence": "Lines 42-48",
+    "remediation": "Replace forEach(async) with for...of loop",
+    "status": "verified",
+    "verification_evidence": "Traced caller chain from router.ts:18 to handler.ts:42",
+    "reclassified_from": {},
+    "adjacent_observations": []
+  },
+  {
+    "id": "S-02",
+    "finding_id": "F-02",
+    "title": "Race condition in shared counter without lock",
+    "location": {"file": "src/counter.ts", "start_line": 10},
+    "type": "behavioral",
+    "severity": "major",
+    "origin": "introduced",
+    "mechanism": "Shared mutable counter incremented without lock in concurrent path",
+    "consequence": "Under concurrent requests counter skips values or double-counts",
+    "evidence": "Line 10: requestCount++",
+    "status": "verified",
+    "verification_evidence": "Confirmed two request handlers call increment without synchronization",
+    "reclassified_from": {"type": "fragile", "severity": "minor"},
+    "adjacent_observations": []
+  },
+  {
+    "id": "S-03",
+    "finding_id": "F-03",
+    "title": "Duplicated validation logic across handlers",
+    "location": {"file": "src/validate.ts", "start_line": 10},
+    "type": "structural",
+    "severity": "minor",
+    "origin": "pre-existing",
+    "mechanism": "Three handlers each implement the same email validation regex inline",
+    "consequence": "Updating validation requires changing three files with no shared reference",
+    "evidence": "handler-a.ts:15, handler-b.ts:22, handler-c.ts:31",
+    "status": "verified",
+    "verification_evidence": "Confirmed identical regex in all three files",
+    "reclassified_from": {},
+    "adjacent_observations": []
+  }
+]

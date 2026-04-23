@@ -56,8 +56,33 @@ Assert on specific expected values, not truthiness or type alone. `expect(result
 Weak assertion: `assert result is not None`
 Specific assertion: `assert result.status_code == 200 and result.body["user_id"] == expected_id`
 
+Pair every upper-bound or ceiling assertion with a corresponding presence or lower-bound assertion. A ceiling check (`length ≤ 40`) passes trivially when the target content is absent; a presence check (`length ≥ 5` or required-marker grep) fails when content is absent. Both together give regression protection in both directions.
+
+## Structural assertions on text artifacts
+
+When tests grep for content in text files (config, markdown, structured docs, logs), assert on anchored structural markers — section headings, frontmatter keys, config keys — rather than vocabulary or verb choices within body text.
+
+Prefer: `grep -q '^## Section Name$'` or `grep -q '^key: value'` (structural marker)
+Avoid: `grep -q 'review\|approve'` (body vocabulary)
+
+Structural markers change only when the document's structure changes. Vocabulary inside a section changes on normal editing passes (synonyms, rephrasing). A test asserting on vocabulary breaks when wording is updated even though the structure the test meant to verify is intact.
+
+## Anchored section extraction
+
+When a test measures a subsection of a text file, anchor both the start and the end of the extraction range. A helper that stops at the first matching delimiter will silently measure only the preamble if that delimiter also terminates a different section.
+
+After writing an extraction helper, verify the extracted range covers the full target section — not just its opening lines. Upper-bound assertions on a truncated range pass trivially for content that exceeds the real bound.
+
 ## Test name accuracy
 
 Name tests after the behavior they verify, not the implementation mechanism they exercise. A test named "calls the database query function" describes an implementation detail; "returns user by email" describes the behavior. When the implementation changes but the behavior remains the same, implementation-named tests appear broken even though the behavior is intact.
 
 When reviewing test names, check that the name would remain accurate if the implementation were rewritten to produce the same behavior through a different mechanism.
+
+## Assertion label accuracy
+
+When an assertion uses a regex or compound check, write the label to match the full scope of what the check asserts — not a subset. Update labels when the regex is expanded.
+
+If the regex is `'reviewer|review|approve'`, the label must not read "checks for 'review' keyword" — write "checks for review/approve synonyms" instead.
+
+A label describing a narrower check than the regex performs makes failures misleading: a reader diagnoses the wrong condition and may fix the wrong thing.

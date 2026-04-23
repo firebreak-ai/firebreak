@@ -19,7 +19,7 @@ Verify both the spec and review files exist. If either is missing, report which 
 
 Run the Stage 2 gate:
 ```
-.claude/hooks/fbk-sdl-workflow/review-gate.sh \
+python3 "$HOME"/.claude/fbk-scripts/fbk.py review-gate \
   "ai-docs/$FEATURE/$FEATURE-review.md" \
   "<perspectives>" \
   ["ai-docs/$FEATURE/$FEATURE-threat-model.md"]
@@ -72,7 +72,7 @@ Set the top-level `spec` field to `"ai-docs/$FEATURE/$FEATURE-spec.md"`.
 
 ## Task review
 
-Run the task reviewer's deterministic layer: `.claude/hooks/fbk-sdl-workflow/task-reviewer-gate.sh "ai-docs/$FEATURE/$FEATURE-spec.md" "ai-docs/$FEATURE/$FEATURE-tasks"`. If it fails, report each failure. Return to the test task agent step with specific feedback.
+Run the task reviewer's deterministic layer: `python3 "$HOME"/.claude/fbk-scripts/fbk.py task-reviewer-gate "ai-docs/$FEATURE/$FEATURE-spec.md" "ai-docs/$FEATURE/$FEATURE-tasks"`. If it fails, report each failure. Return to the test task agent step with specific feedback.
 
 Invoke the test reviewer agent (`test-reviewer`) as an Agent Teams teammate with checkpoint 2 context. Pass the spec file and the task files as artifacts. If it fails, add the test reviewer's findings to the feedback. Return to the test task agent step.
 
@@ -80,7 +80,7 @@ If both pass, proceed to the existing breakdown gate.
 
 Run the Stage 3 gate:
 ```
-.claude/hooks/fbk-sdl-workflow/breakdown-gate.sh \
+python3 "$HOME"/.claude/fbk-scripts/fbk.py breakdown-gate \
   "ai-docs/$FEATURE/$FEATURE-spec.md" \
   "ai-docs/$FEATURE/$FEATURE-tasks"
 ```

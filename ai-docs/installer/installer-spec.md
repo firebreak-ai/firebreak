@@ -160,9 +160,16 @@ Both must carry the `fbk-` prefix after renaming.
 
 **Prerequisite checking** (computation): Verifies Python 3 is available, validates target directory is writable. Returns a structured result (pass/fail with reasons).
 
+Also performs a non-fatal runtime-dependency check for PyYAML (required by `fbk/config.py`). Behavior:
+- If `python3 -c "import yaml"` succeeds: silent.
+- If missing and stdin is a TTY: prompt `Install pyyaml now via python3 -m pip install --user pyyaml? [Y/n]`. On yes/default, run the pip install; on failure, print manual-install instructions (including a PEP 668 hint). On no, print manual-install instructions.
+- If missing and stdin is not a TTY (e.g. `curl ... | bash`): print manual-install instructions and continue without prompting.
+- If missing and `--dry-run`: print a dry-run notice and continue without prompting.
+- The check never aborts the install — a fresh user can finish installing firebreak even without PyYAML and handle the runtime dependency separately.
+
 **Target selection** (orchestration): Prompts user for global vs project install. Resolves the target path. Detects existing installation by checking for the manifest file. Routes to install or upgrade path.
 
-**Asset enumeration** (computation): Walks the source `home/dot-claude/` directory tree and produces a list of source-to-destination path mappings. Excludes `CLAUDE.md` and `settings.json` (not installed as files — settings.json is merged, not copied). All destination paths carry the `fbk-` prefix.
+**Asset enumeration** (computation): Walks the source `home/dot-claude/` directory tree and produces a list of source-to-destination path mappings. Excludes `CLAUDE.md` and `settings.json` (not installed as files — settings.json is merged, not copied). Skips development artifacts that leak in when installing from a local dev checkout: directories named `.venv`, `__pycache__`, `.pytest_cache` are pruned; files matching `*.pyc` or `.DS_Store` are skipped. All destination paths carry the `fbk-` prefix.
 
 **File installation** (orchestration): For each mapped file:
 1. Creates the destination directory if needed.
@@ -284,6 +291,9 @@ Uninstallation reads the manifest first. It then removes files, then surgically 
 - **Integration test**: Python 3 JSON merge script does not touch `permissions` — covers AC-01.
 - **Integration test**: Python 3 JSON merge script records only actually-added env keys (skips pre-existing) — covers AC-02, seam: JSON merging -> Manifest.
 - **Integration test**: Asset enumeration excludes CLAUDE.md and settings.json from the file list — covers AC-03.
+- **Integration test**: Asset enumeration excludes dev artifacts (`.venv/`, `__pycache__/`, `.pytest_cache/`, `*.pyc`, `.DS_Store`) seeded into a mock source — covers AC-03.
+- **Integration test**: Missing PyYAML + non-TTY stdin: install completes successfully and prints manual-install instructions to stderr — covers AC-09 (non-fatal prerequisite check).
+- **Integration test**: Missing PyYAML + `--dry-run`: no prompt, no install, dry-run notice on stderr — covers AC-09, AC-11.
 - **Integration test**: Asset enumeration applies `fbk-` prefix to all destination paths — covers AC-04.
 - **Integration test**: Fresh install into empty target directory creates all expected `fbk-`-prefixed files and a valid manifest — covers AC-04, AC-06, UV-1.
 - **Integration test**: Fresh install into a project-level `.claude/` directory creates files at the correct project-relative path — covers AC-10, UV-1.

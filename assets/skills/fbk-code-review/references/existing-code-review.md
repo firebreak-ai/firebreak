@@ -26,7 +26,7 @@ Periodically present draft spec sections for user confirmation before moving to 
 
 ## Spec Output
 
-The remediation spec uses the standard 9-section template defined in `.claude/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md`. When complete, run the spec through `spec-gate.sh` to validate structure. The spec enters the existing SDL pipeline: `/spec-review` → `/breakdown` → `/implement`.
+The remediation spec uses the standard 9-section template defined in `.claude/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md`. When complete, run the spec through `python3 "$HOME"/.claude/fbk-scripts/fbk.py spec-gate` to validate structure. The spec enters the existing SDL pipeline: `/spec-review` → `/breakdown` → `/implement`.
 
 ## Scope Recognition
 

@@ -1,0 +1,18 @@
+{
+  "behavioral-only": {
+    "allowed_types": ["behavioral"],
+    "default_severity_threshold": "minor"
+  },
+  "structural": {
+    "allowed_types": ["structural"],
+    "default_severity_threshold": "minor"
+  },
+  "test-only": {
+    "allowed_types": ["test-integrity"],
+    "default_severity_threshold": "minor"
+  },
+  "full": {
+    "allowed_types": ["behavioral", "structural", "test-integrity", "fragile"],
+    "default_severity_threshold": "minor"
+  }
+}

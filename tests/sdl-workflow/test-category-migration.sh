@@ -27,14 +27,14 @@ not_ok() {
 echo "TAP version 13"
 
 # --- Test 1: Guide sighting format contains Type field (AC-55) ---
-if grep -q 'Type:' "$GUIDE"; then
+if grep -qE 'Type:|`type`' "$GUIDE"; then
   ok "Guide sighting format contains Type field"
 else
   not_ok "Guide sighting format contains Type field"
 fi
 
 # --- Test 2: Guide sighting format contains Severity field (AC-55) ---
-if grep -q 'Severity:' "$GUIDE"; then
+if grep -qE 'Severity:|`severity`' "$GUIDE"; then
   ok "Guide sighting format contains Severity field"
 else
   not_ok "Guide sighting format contains Severity field"

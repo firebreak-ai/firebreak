@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-CMD="$PROJECT_ROOT/assets/hooks/fbk-sdl-workflow/dispatch-status.sh"
+DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/state"
 
 TMPDIR_BASE="$(mktemp -d)"
@@ -32,7 +32,7 @@ not_ok() {
 }
 
 # --- Test 1: queued spec shows spec name, QUEUED, and timestamp ---
-OUTPUT=$(bash "$CMD" queued-spec 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" dispatch-status queued-spec 2>&1)
 RC=$?
 if [ $RC -eq 0 ] && echo "$OUTPUT" | grep -q "queued-spec" && echo "$OUTPUT" | grep -q "QUEUED" && echo "$OUTPUT" | grep -q "2026-03-14"; then
   ok "queued spec shows spec name, QUEUED, and timestamp"
@@ -41,7 +41,7 @@ else
 fi
 
 # --- Test 2: reviewing spec shows REVIEWING and stage history ---
-OUTPUT=$(bash "$CMD" reviewing-spec 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" dispatch-status reviewing-spec 2>&1)
 RC=$?
 if [ $RC -eq 0 ] && echo "$OUTPUT" | grep -q "REVIEWING" && echo "$OUTPUT" | grep -q "QUEUED" && echo "$OUTPUT" | grep -q "VALIDATING" && echo "$OUTPUT" | grep -q "VALIDATED"; then
   ok "reviewing spec shows REVIEWING and stage history"
@@ -50,7 +50,7 @@ else
 fi
 
 # --- Test 3: parked spec shows PARKED, failed stage, and reason ---
-OUTPUT=$(bash "$CMD" parked-spec 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" dispatch-status parked-spec 2>&1)
 RC=$?
 if [ $RC -eq 0 ] && echo "$OUTPUT" | grep -q "PARKED" && echo "$OUTPUT" | grep -q "VALIDATING" && echo "$OUTPUT" | grep -q "missing required section"; then
   ok "parked spec shows PARKED, failed stage, and reason"
@@ -59,7 +59,7 @@ else
 fi
 
 # --- Test 4: completed spec shows COMPLETED ---
-OUTPUT=$(bash "$CMD" completed-spec 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" dispatch-status completed-spec 2>&1)
 RC=$?
 if [ $RC -eq 0 ] && echo "$OUTPUT" | grep -q "COMPLETED"; then
   ok "completed spec shows COMPLETED"
@@ -68,7 +68,7 @@ else
 fi
 
 # --- Test 5: non-existent spec exits 1 with not-found message ---
-OUTPUT=$(bash "$CMD" does-not-exist 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" dispatch-status does-not-exist 2>&1)
 RC=$?
 if [ $RC -eq 1 ] && echo "$OUTPUT" | grep -qi "not found\|no pipeline state"; then
   ok "non-existent spec exits 1 with not-found message"
@@ -77,7 +77,7 @@ else
 fi
 
 # --- Test 6: output is human-readable, not JSON ---
-OUTPUT=$(bash "$CMD" queued-spec 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" dispatch-status queued-spec 2>&1)
 FIRST_CHAR=$(echo "$OUTPUT" | head -c1)
 if [ "$FIRST_CHAR" != "{" ] && echo "$OUTPUT" | grep -qE "^[A-Za-z]+:"; then
   ok "output is human-readable with labeled fields, not JSON"
@@ -86,7 +86,7 @@ else
 fi
 
 # --- Test 7: error history displayed for parked spec ---
-OUTPUT=$(bash "$CMD" parked-spec 2>&1)
+OUTPUT=$(python3 "$DISPATCHER" dispatch-status parked-spec 2>&1)
 if echo "$OUTPUT" | grep -q "spec validation failed"; then
   ok "error history displayed for parked spec"
 else

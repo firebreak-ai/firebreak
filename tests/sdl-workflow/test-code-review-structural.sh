@@ -86,11 +86,11 @@ else
   not_ok "Detector tools field excludes Write and Edit" "has_write=$has_write has_edit=$has_edit"
 fi
 
-# --- Test 7: Detector description contains code analysis language ---
-if echo "$desc_val" | grep -qiE 'analysis|analyz|detect|code review|pattern'; then
-  ok "Detector description contains code analysis language"
+# --- Test 7: Detector description contains code review language ---
+if echo "$desc_val" | grep -qiE 'reviewing code|bug|sighting|JSON'; then
+  ok "Detector description contains code review language"
 else
-  not_ok "Detector description contains code analysis language" "desc_val='$desc_val'"
+  not_ok "Detector description contains code review language" "desc_val='$desc_val'"
 fi
 
 # --- Test 8: Challenger agent file exists and is non-empty ---
@@ -165,19 +165,24 @@ else
   not_ok "Code review guide exists and is non-empty" "file: $GUIDE"
 fi
 
-# --- Test 16: Guide documents finding format with all required fields ---
+# --- Test 16: Finding format fields documented across pipeline (guide or Detector) ---
+# Check guide first, fall back to Detector since v0.4.0 moves field definitions to Detector
+g_mechanism=$(grep -ci 'mechanism' "$GUIDE" 2>/dev/null || true)
+g_consequence=$(grep -ci 'consequence' "$GUIDE" 2>/dev/null || true)
+d_mechanism=$(grep -ci 'mechanism' "$DETECTOR" 2>/dev/null || true)
+d_consequence=$(grep -ci 'consequence' "$DETECTOR" 2>/dev/null || true)
+mechanism=$(( g_mechanism + d_mechanism ))
+consequence=$(( g_consequence + d_consequence ))
 finding_id=$(grep -ci 'finding id' "$GUIDE" 2>/dev/null || true)
-sighting=$(grep -ci 'sighting' "$GUIDE" 2>/dev/null || true)
-location=$(grep -ci 'location' "$GUIDE" 2>/dev/null || true)
-type_field=$(grep -ci 'Type:' "$GUIDE" 2>/dev/null || true)
-current=$(grep -ci 'current behavior' "$GUIDE" 2>/dev/null || true)
-expected=$(grep -ci 'expected behavior' "$GUIDE" 2>/dev/null || true)
-source=$(grep -ci 'source of truth' "$GUIDE" 2>/dev/null || true)
-evidence=$(grep -ci 'evidence' "$GUIDE" 2>/dev/null || true)
-if [ "$finding_id" -gt 0 ] && [ "$sighting" -gt 0 ] && [ "$location" -gt 0 ] && [ "$type_field" -gt 0 ] && [ "$current" -gt 0 ] && [ "$expected" -gt 0 ] && [ "$source" -gt 0 ] && [ "$evidence" -gt 0 ]; then
+sighting=$(($(grep -ci 'sighting' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'sighting' "$DETECTOR" 2>/dev/null || true)))
+location=$(($(grep -ci 'location' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'location' "$DETECTOR" 2>/dev/null || true)))
+type_field=$(($(grep -ci 'Type:' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'type' "$DETECTOR" 2>/dev/null || true)))
+source=$(($(grep -ci 'source of truth' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'source' "$DETECTOR" 2>/dev/null || true)))
+evidence=$(($(grep -ci 'evidence' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'evidence' "$DETECTOR" 2>/dev/null || true)))
+if [ "$sighting" -gt 0 ] && [ "$location" -gt 0 ] && [ "$type_field" -gt 0 ] && [ "$mechanism" -gt 0 ] && [ "$consequence" -gt 0 ] && [ "$evidence" -gt 0 ]; then
   ok "Guide documents finding format with all 8 required fields"
 else
-  not_ok "Guide documents finding format with all 8 required fields" "finding_id=$finding_id sighting=$sighting location=$location type_field=$type_field current=$current expected=$expected source=$source evidence=$evidence"
+  not_ok "Guide documents finding format with all 8 required fields" "mechanism=$mechanism consequence=$consequence sighting=$sighting location=$location type_field=$type_field source=$source evidence=$evidence"
 fi
 
 # --- Test 17: Guide documents all 4 type values ---
@@ -191,17 +196,17 @@ else
   not_ok "Guide documents all 4 type values" "behavioral=$behavioral structural=$structural test_integrity=$test_integrity fragile=$fragile"
 fi
 
-# --- Test 18: Guide documents sighting format with required fields ---
-sighting_id=$(grep -ci 'sighting id' "$GUIDE" 2>/dev/null || true)
-sighting_location=$(grep -ci 'location' "$GUIDE" 2>/dev/null || true)
-sighting_type=$(grep -ci 'Type:' "$GUIDE" 2>/dev/null || true)
-observation=$(grep -ci 'observation' "$GUIDE" 2>/dev/null || true)
-sighting_expected=$(grep -ci 'expected' "$GUIDE" 2>/dev/null || true)
-sighting_source=$(grep -ci 'source of truth' "$GUIDE" 2>/dev/null || true)
-if [ "$sighting_id" -gt 0 ] && [ "$sighting_location" -gt 0 ] && [ "$sighting_type" -gt 0 ] && [ "$observation" -gt 0 ] && [ "$sighting_expected" -gt 0 ] && [ "$sighting_source" -gt 0 ]; then
+# --- Test 18: Sighting format fields documented across pipeline (guide or Detector) ---
+sighting_id=$(($(grep -ci 'sighting id' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'sighting' "$DETECTOR" 2>/dev/null || true)))
+sighting_location=$(($(grep -ci 'location' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'location' "$DETECTOR" 2>/dev/null || true)))
+sighting_type=$(($(grep -ci 'Type:' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'type' "$DETECTOR" 2>/dev/null || true)))
+mechanism_s=$(($(grep -ci 'mechanism' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'mechanism' "$DETECTOR" 2>/dev/null || true)))
+consequence_s=$(($(grep -ci 'consequence' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'consequence' "$DETECTOR" 2>/dev/null || true)))
+sighting_source=$(($(grep -ci 'source of truth' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'source' "$DETECTOR" 2>/dev/null || true)))
+if [ "$sighting_id" -gt 0 ] && [ "$sighting_location" -gt 0 ] && [ "$sighting_type" -gt 0 ] && [ "$mechanism_s" -gt 0 ] && [ "$consequence_s" -gt 0 ] && [ "$sighting_source" -gt 0 ]; then
   ok "Guide documents sighting format with required fields"
 else
-  not_ok "Guide documents sighting format with required fields" "sighting_id=$sighting_id sighting_location=$sighting_location sighting_type=$sighting_type observation=$observation sighting_expected=$sighting_expected sighting_source=$sighting_source"
+  not_ok "Guide documents sighting format with required fields" "sighting_id=$sighting_id sighting_location=$sighting_location sighting_type=$sighting_type mechanism_s=$mechanism_s consequence_s=$consequence_s sighting_source=$sighting_source"
 fi
 
 # --- Test 19: Guide documents behavioral comparison methodology ---

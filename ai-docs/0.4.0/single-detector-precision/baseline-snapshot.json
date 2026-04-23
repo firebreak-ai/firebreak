@@ -1,0 +1,2633 @@
+{
+  "baseline_tests": [
+    {
+      "file": "test-audit-logger.sh",
+      "test_num": 1,
+      "name": "single log event produces valid JSON with correct fields",
+      "status": "pass"
+    },
+    {
+      "file": "test-audit-logger.sh",
+      "test_num": 2,
+      "name": "multiple sequential log calls produce independent JSON lines",
+      "status": "pass"
+    },
+    {
+      "file": "test-audit-logger.sh",
+      "test_num": 3,
+      "name": "existing entries preserved when appending",
+      "status": "pass"
+    },
+    {
+      "file": "test-audit-logger.sh",
+      "test_num": 4,
+      "name": "log file created if it doesn't exist",
+      "status": "pass"
+    },
+    {
+      "file": "test-audit-logger.sh",
+      "test_num": 5,
+      "name": "log directory created if it doesn't exist",
+      "status": "pass"
+    },
+    {
+      "file": "test-audit-logger.sh",
+      "test_num": 6,
+      "name": "read returns all events as parseable JSON lines",
+      "status": "pass"
+    },
+    {
+      "file": "test-audit-logger.sh",
+      "test_num": 7,
+      "name": "read for non-existent spec returns error or empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-audit-logger.sh",
+      "test_num": 8,
+      "name": "nested JSON in data field preserved correctly",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 1,
+      "name": "skill file exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 2,
+      "name": "skill file has valid YAML frontmatter with description",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 3,
+      "name": "skill specifies sequential agent execution",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 4,
+      "name": "skill defines test task agent",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 5,
+      "name": "test task agent receives only the spec",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 6,
+      "name": "skill defines implementation task agent",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 7,
+      "name": "implementation task agent receives spec plus test task output",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 8,
+      "name": "skill specifies Agent Teams invocation (7 references)",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 9,
+      "name": "implementation agent receives artifacts not reasoning",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 10,
+      "name": "test task agent ordered before implementation task agent",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 11,
+      "name": "skill preserves existing breakdown-gate invocation",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 12,
+      "name": "skill references task reviewer",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 13,
+      "name": "skill references test reviewer checkpoint 2",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 14,
+      "name": "brownfield doc exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 15,
+      "name": "brownfield doc contains search-for-related-functionality instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 16,
+      "name": "brownfield doc contains reference-files-by-path instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 17,
+      "name": "brownfield doc contains follow-established-patterns instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 18,
+      "name": "brownfield doc contains avoid-new-dependencies instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-breakdown-integration.sh",
+      "test_num": 19,
+      "name": "brownfield doc contains search-for-existing-equivalents instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-category-migration.sh",
+      "test_num": 1,
+      "name": "Guide sighting format contains Type field",
+      "status": "pass"
+    },
+    {
+      "file": "test-category-migration.sh",
+      "test_num": 2,
+      "name": "Guide sighting format contains Severity field",
+      "status": "pass"
+    },
+    {
+      "file": "test-category-migration.sh",
+      "test_num": 3,
+      "name": "Guide format templates do not contain Category field",
+      "status": "pass"
+    },
+    {
+      "file": "test-category-migration.sh",
+      "test_num": 4,
+      "name": "Guide does not contain Category Values section heading",
+      "status": "pass"
+    },
+    {
+      "file": "test-category-migration.sh",
+      "test_num": 5,
+      "name": "Guide contains all four type axis values",
+      "status": "pass"
+    },
+    {
+      "file": "test-category-migration.sh",
+      "test_num": 6,
+      "name": "Guide contains all four severity axis values",
+      "status": "pass"
+    },
+    {
+      "file": "test-category-migration.sh",
+      "test_num": 7,
+      "name": "Guide contains type disambiguation rule",
+      "status": "pass"
+    },
+    {
+      "file": "test-category-migration.sh",
+      "test_num": 8,
+      "name": "Detector output uses type and severity, not category",
+      "status": "pass"
+    },
+    {
+      "file": "test-category-migration.sh",
+      "test_num": 9,
+      "name": "Challenger rejects nits instead of downgrading",
+      "status": "pass"
+    },
+    {
+      "file": "test-challenger-extensions.sh",
+      "test_num": 1,
+      "name": "Challenger includes adjacent observation channel",
+      "status": "pass"
+    },
+    {
+      "file": "test-challenger-extensions.sh",
+      "test_num": 2,
+      "name": "Adjacent observations documented as informational",
+      "status": "pass"
+    },
+    {
+      "file": "test-challenger-extensions.sh",
+      "test_num": 3,
+      "name": "Challenger includes caller tracing requirement",
+      "status": "pass"
+    },
+    {
+      "file": "test-challenger-extensions.sh",
+      "test_num": 4,
+      "name": "Caller tracing scoped to behavioral type",
+      "status": "pass"
+    },
+    {
+      "file": "test-challenger-extensions.sh",
+      "test_num": 5,
+      "name": "Challenger includes verified-pending-execution status",
+      "status": "pass"
+    },
+    {
+      "file": "test-challenger-extensions.sh",
+      "test_num": 6,
+      "name": "Verified-pending-execution scoped to test-integrity type",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 1,
+      "name": "Detector tools list does not contain Bash",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 2,
+      "name": "Detector tools list contains Read, Grep, Glob",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 3,
+      "name": "Detector body does not contain linter discovery section",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 4,
+      "name": "Detector sighting output includes type field",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 5,
+      "name": "Detector sighting output includes severity field",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 6,
+      "name": "Detector sighting output includes pattern label field",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 7,
+      "name": "Challenger validates both type and severity",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 8,
+      "name": "Detector references all four type values",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 9,
+      "name": "Challenger references all four type values",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 10,
+      "name": "Detector references all four severity values",
+      "status": "pass"
+    },
+    {
+      "file": "test-classification-system.sh",
+      "test_num": 11,
+      "name": "Challenger references all four severity values",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-guide-extensions.sh",
+      "test_num": 1,
+      "name": "Guide contains AC verification precision requirement",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-guide-extensions.sh",
+      "test_num": 2,
+      "name": "Guide test-integrity includes name-scope mismatch",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-guide-extensions.sh",
+      "test_num": 3,
+      "name": "quality-detection.md contains dead infrastructure check",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-guide-extensions.sh",
+      "test_num": 4,
+      "name": "Guide contains nit exclusion instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-guide-extensions.sh",
+      "test_num": 5,
+      "name": "Guide contains structural sub-categorization in retrospective",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-guide-extensions.sh",
+      "test_num": 6,
+      "name": "Guide contains origin guidance for codebase-wide reviews",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-guide-extensions.sh",
+      "test_num": 7,
+      "name": "Guide no-spec section references quality-detection.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 1,
+      "name": "all fixture files exist",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 2,
+      "name": "skill defines the detection-verification loop",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 3,
+      "name": "detector agent defines sighting output",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 4,
+      "name": "challenger agent defines verification output",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 5,
+      "name": "challenger agent includes rejection capability",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 6,
+      "name": "fixture spec contains intentional deviation deferral note",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 7,
+      "name": "detector and challenger both reference sighting ID format (S-)",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 8,
+      "name": "guide defines the orchestration loop protocol",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 9,
+      "name": "existing-code-review reference includes spec drafting guidance",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 10,
+      "name": "existing-code-review reference references spec-gate",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 11,
+      "name": "existing-code-review reference references the 9-section template",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 12,
+      "name": "skill handles the no-spec scenario",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 13,
+      "name": "skill references AI failure mode checklist for no-spec mode",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 14,
+      "name": "checklist items contain detection heuristics (16 matches)",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 15,
+      "name": "checklist items are numbered and referenceable (14 items)",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 16,
+      "name": "all 7 context assets exist",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 17,
+      "name": "skill references agents by correct name (code-review-detector, code-review-challenger)",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 18,
+      "name": "skill references guide by correct path",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 19,
+      "name": "skill references checklist by correct path",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 20,
+      "name": "finding format consistency: detector uses S- sighting IDs, challenger uses F- finding IDs",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-integration.sh",
+      "test_num": 21,
+      "name": "skill includes /fbk-improve transition instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 1,
+      "name": "SKILL.md exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 2,
+      "name": "SKILL.md has valid YAML frontmatter with description",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 3,
+      "name": "SKILL.md frontmatter contains allowed-tools field",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 4,
+      "name": "SKILL.md allowed-tools includes Agent",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 5,
+      "name": "SKILL.md references existing-code-review reference file",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 6,
+      "name": "SKILL.md references post-impl-review reference file",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 7,
+      "name": "SKILL.md loads shared code-review-guide",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 8,
+      "name": "SKILL.md loads shared ai-failure-modes checklist",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 9,
+      "name": "SKILL.md implements path routing between modes",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 10,
+      "name": "existing-code-review.md reference file exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 11,
+      "name": "existing-code-review.md contains conversational review guidance",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 12,
+      "name": "post-impl-review.md reference file exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 13,
+      "name": "post-impl-review.md contains findings-only guidance",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 14,
+      "name": "post-impl-review.md excludes spec co-authoring",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 15,
+      "name": "/implement skill contains post-implementation review prompt",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-skill.sh",
+      "test_num": 16,
+      "name": "/implement skill's review prompt follows stage-transition pattern",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 1,
+      "name": "Detector agent file exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 2,
+      "name": "Detector has YAML frontmatter",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 3,
+      "name": "Detector name field contains 'detector'",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 4,
+      "name": "Detector description field is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 5,
+      "name": "Detector tools field lists Read, Grep, Glob without Bash",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 6,
+      "name": "Detector tools field excludes Write and Edit",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 7,
+      "name": "Detector description contains code analysis language",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 8,
+      "name": "Challenger agent file exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 9,
+      "name": "Challenger has YAML frontmatter",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 10,
+      "name": "Challenger name field contains 'challenger'",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 11,
+      "name": "Challenger description field is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 12,
+      "name": "Challenger tools field lists exactly Read, Grep, Glob",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 13,
+      "name": "Challenger tools field excludes Bash, Write, and Edit",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 14,
+      "name": "Challenger description contains adversarial verification language",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 15,
+      "name": "Code review guide exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 16,
+      "name": "Guide documents finding format with all 8 required fields",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 17,
+      "name": "Guide documents all 4 type values",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 18,
+      "name": "Guide documents sighting format with required fields",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 19,
+      "name": "Guide documents behavioral comparison methodology",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 20,
+      "name": "Guide does not use defect-detection framing as instructions",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 21,
+      "name": "Guide documents all required retrospective fields",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 22,
+      "name": "AI failure mode checklist exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 23,
+      "name": "Checklist contains at least 14 numbered items",
+      "status": "pass"
+    },
+    {
+      "file": "test-code-review-structural.sh",
+      "test_num": 24,
+      "name": "Checklist contains key failure mode keywords (updated for 0.3.3)",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "test_num": 1,
+      "name": "defaults returned when no config files exist",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "test_num": 2,
+      "name": "project config.yml overrides defaults",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "test_num": 3,
+      "name": "spec frontmatter overrides project config",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "test_num": 4,
+      "name": "spec without frontmatter returns defaults",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "test_num": 5,
+      "name": "cold-start detects missing test runner",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "test_num": 6,
+      "name": "cold-start detects missing linting config",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "test_num": 7,
+      "name": "cold-start detects missing CLAUDE.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "test_num": 8,
+      "name": "cold-start passes when prerequisites exist",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "test_num": 9,
+      "name": "verify.yml loads correctly",
+      "status": "pass"
+    },
+    {
+      "file": "test-config-loader.sh",
+      "test_num": 10,
+      "name": "malformed config.yml produces error",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 1,
+      "name": "ai-failure-modes.md checklist item count >= 14",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 2,
+      "name": "ai-failure-modes.md contains \"bare literal\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 3,
+      "name": "ai-failure-modes.md contains \"dead infrastructure\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 4,
+      "name": "ai-failure-modes.md contains \"non-enforcing\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 5,
+      "name": "ai-failure-modes.md contains \"comment-code drift\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 6,
+      "name": "ai-failure-modes.md contains \"sentinel\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 7,
+      "name": "ai-failure-modes.md contains \"context bypass\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 8,
+      "name": "ai-failure-modes.md contains \"string-based error\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 9,
+      "name": "quality-detection.md detection target count >= 11",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 10,
+      "name": "quality-detection.md contains \"parallel collection\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 11,
+      "name": "quality-detection.md contains \"dead infrastructure\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 12,
+      "name": "quality-detection.md contains \"semantic drift\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 13,
+      "name": "quality-detection.md contains \"silent error\" or \"context discard\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 14,
+      "name": "quality-detection.md contains \"string-based type\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 15,
+      "name": "quality-detection.md contains \"dual-path\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 16,
+      "name": "quality-detection.md contains \"string alignment\" or \"test-production\" keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-detection-scope.sh",
+      "test_num": 17,
+      "name": "existing-code-review.md contains severity ordering keyword",
+      "status": "pass"
+    },
+    {
+      "file": "test-execution-paths.sh",
+      "test_num": 1,
+      "name": "SKILL.md routes to references/ in skills/fbk-code-review",
+      "status": "pass"
+    },
+    {
+      "file": "test-execution-paths.sh",
+      "test_num": 2,
+      "name": "terminal section 'Retrospective' present in skills/fbk-code-review/references/existing-code-review.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-execution-paths.sh",
+      "test_num": 3,
+      "name": "skill invocation '/fbk-improve' present in skills/fbk-code-review/references/existing-code-review.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-execution-paths.sh",
+      "test_num": 4,
+      "name": "terminal section 'Retrospective' present in skills/fbk-code-review/references/post-impl-review.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-execution-paths.sh",
+      "test_num": 5,
+      "name": "skill invocation '/fbk-improve' present in skills/fbk-code-review/references/post-impl-review.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-hash-gate.sh",
+      "test_num": 1,
+      "name": "first run creates manifest with correct JSON",
+      "status": "pass"
+    },
+    {
+      "file": "test-hash-gate.sh",
+      "test_num": 2,
+      "name": "subsequent run with no changes exits 0",
+      "status": "pass"
+    },
+    {
+      "file": "test-hash-gate.sh",
+      "test_num": 3,
+      "name": "modified file detected: exit 2, stderr names file",
+      "status": "pass"
+    },
+    {
+      "file": "test-hash-gate.sh",
+      "test_num": 4,
+      "name": "deleted file detected: exit 2, stderr names file",
+      "status": "pass"
+    },
+    {
+      "file": "test-hash-gate.sh",
+      "test_num": 5,
+      "name": "new file detected: exit 2, stderr names file",
+      "status": "pass"
+    },
+    {
+      "file": "test-hash-gate.sh",
+      "test_num": 6,
+      "name": "manifest JSON structure uses relative paths",
+      "status": "pass"
+    },
+    {
+      "file": "test-hash-gate.sh",
+      "test_num": 7,
+      "name": "empty test directory handled gracefully (exit 0)",
+      "status": "pass"
+    },
+    {
+      "file": "test-implementation-pipeline.sh",
+      "test_num": 1,
+      "name": "Implementation guide contains hook retry cap",
+      "status": "pass"
+    },
+    {
+      "file": "test-implementation-pipeline.sh",
+      "test_num": 2,
+      "name": "Implementation guide contains fresh agent per task rule",
+      "status": "pass"
+    },
+    {
+      "file": "test-implementation-pipeline.sh",
+      "test_num": 3,
+      "name": "Implementation guide contains foreground execution rule",
+      "status": "pass"
+    },
+    {
+      "file": "test-implementation-pipeline.sh",
+      "test_num": 4,
+      "name": "Task compilation contains E2E harness exception",
+      "status": "pass"
+    },
+    {
+      "file": "test-implementation-pipeline.sh",
+      "test_num": 5,
+      "name": "Task compilation contains per-site completion conditions",
+      "status": "pass"
+    },
+    {
+      "file": "test-implementation-pipeline.sh",
+      "test_num": 6,
+      "name": "Test authoring contains assertion specificity rule",
+      "status": "pass"
+    },
+    {
+      "file": "test-implementation-pipeline.sh",
+      "test_num": 7,
+      "name": "Test authoring contains test name accuracy rule",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 1,
+      "name": "agent file exists at expected path",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 2,
+      "name": "frontmatter contains name: improvement-analyst or fbk-improvement-analyst",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 3,
+      "name": "frontmatter contains description field",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 4,
+      "name": "tools field lists only read-only tools (Read, Grep, Glob)",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 5,
+      "name": "body contains instruction referencing authoring rules (fbk-context-assets)",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 6,
+      "name": "body contains instruction about sub-agent spawning for per-asset analysis",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 7,
+      "name": "body contains scope discipline restricting to read-only analysis and proposal output",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 8,
+      "name": "body contains proposal output format specification",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 9,
+      "name": "body prohibits speculative improvements disconnected from retrospective observations",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 10,
+      "name": "body contains instruction about cross-cutting proposals",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-agent.sh",
+      "test_num": 11,
+      "name": "body does not contain references to spec/impl/review content",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 1,
+      "name": "code review skill retrospective section invokes /fbk-improve",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 2,
+      "name": "code review skill passes <feature-name> argument to /fbk-improve",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 3,
+      "name": "SDL workflow doc references /fbk-improve or fbk-improve or self-improvement",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 4,
+      "name": "self-improvement reference appears after code review stage reference",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 5,
+      "name": "improve skill file exists",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 6,
+      "name": "improve agent file exists",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 7,
+      "name": "improve skill references agent name fbk-improvement-analyst",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 8,
+      "name": "improve agent references authoring rules path fbk-context-assets",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 9,
+      "name": "improve skill references Glob-based asset discovery",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 10,
+      "name": "code review skill references /fbk-improve",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-integration.sh",
+      "test_num": 11,
+      "name": "improve skill contains Edit in allowed-tools (needed to apply diffs)",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 1,
+      "name": "skill file exists at expected path",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 2,
+      "name": "frontmatter contains description field",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 3,
+      "name": "frontmatter allowed-tools includes Read, Grep, Glob, Edit, Agent",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 4,
+      "name": "body contains instruction to search ai-docs for retrospective files",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 5,
+      "name": "body contains instruction to report when no retrospective is found",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 6,
+      "name": "body contains Glob-based discovery instruction for .claude/skills",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 7,
+      "name": "body contains instruction to search ~/.claude/skills/",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 8,
+      "name": "body contains instruction to prefer project-level when both locations have results",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 9,
+      "name": "body contains instruction to enumerate fbk-* prefixed files",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 10,
+      "name": "body references spawning fbk-improvement-analyst agent",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 11,
+      "name": "body specifies passing paths to the agent",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 12,
+      "name": "body specifies agent does NOT receive spec, implementation, or review content",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 13,
+      "name": "body contains proposal format with target, change, observation, necessity fields",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 14,
+      "name": "body contains accept/discuss/skip flow instructions",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 15,
+      "name": "body contains opt-out prompt (skip or proceed)",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 16,
+      "name": "body contains instruction for no-actionable-observations exit message",
+      "status": "pass"
+    },
+    {
+      "file": "test-improvement-skill.sh",
+      "test_num": 17,
+      "name": "body contains instruction permitting proposals to target any Firebreak asset regardless of phase",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-agents.sh",
+      "test_num": 1,
+      "name": "Detector contains 'Exclude nits'",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-agents.sh",
+      "test_num": 2,
+      "name": "Nit instruction in Detector's Scope discipline section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-agents.sh",
+      "test_num": 3,
+      "name": "Challenger contains 'pattern label'",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-agents.sh",
+      "test_num": 4,
+      "name": "Challenger contains label correction or independent issues instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-agents.sh",
+      "test_num": 5,
+      "name": "Sighting Format template contains 'Pattern label:'",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-agents.sh",
+      "test_num": 6,
+      "name": "Finding Format template contains 'Pattern label:'",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 1,
+      "name": "detection target present: bare literal",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 2,
+      "name": "detection target present: hardcoded coupling",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 3,
+      "name": "detection target present: never connected",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 4,
+      "name": "detection target present: name-assertion mismatch",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 5,
+      "name": "detection target present: surface-level fix",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 6,
+      "name": "detection target present: non-enforcing test",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 7,
+      "name": "detection target present: dead infrastructure",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 8,
+      "name": "detection target present: comment-code drift",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 9,
+      "name": "detection target present: sentinel",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 10,
+      "name": "detection target present: context bypass",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 11,
+      "name": "detection target present: string-based error",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 12,
+      "name": "detection target present: semantically incoherent",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 13,
+      "name": "detection target present: mock permissiveness",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 14,
+      "name": "detection target present: dead conditional",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 15,
+      "name": "detection target present: mixed logic and side effects",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 16,
+      "name": "detection target present: ambient state",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 17,
+      "name": "detection target present: non-importable",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 18,
+      "name": "detection target present: multi-responsibility",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 19,
+      "name": "detection target present: caller re-implementation",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 20,
+      "name": "detection target present: composition opacity",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 21,
+      "name": "detection target present: parallel collection",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 22,
+      "name": "detection target present: dead infrastructure",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 23,
+      "name": "detection target present: semantic drift",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 24,
+      "name": "detection target present: silent error discard",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 25,
+      "name": "detection target present: context discard",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 26,
+      "name": "detection target present: string-based type discrimination",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 27,
+      "name": "detection target present: dual-path verification",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 28,
+      "name": "detection target present: test-production string",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 29,
+      "name": "detection target present: dead code after field",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-coverage.sh",
+      "test_num": 30,
+      "name": "AC-08: token volume reduction verified by inspection (not automatable per spec)",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-heuristics.sh",
+      "test_num": 1,
+      "name": "quality-detection.md contains 'Dual-path verification' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-heuristics.sh",
+      "test_num": 2,
+      "name": "quality-detection.md contains 'Test-production string alignment' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-heuristics.sh",
+      "test_num": 3,
+      "name": "quality-detection.md contains 'Dead code after field' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-heuristics.sh",
+      "test_num": 4,
+      "name": "quality-detection.md contains 'Detect this when' at least 11 times (found 13)",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-heuristics.sh",
+      "test_num": 5,
+      "name": "existing-code-review.md does not contain 'Dual-path verification' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-heuristics.sh",
+      "test_num": 6,
+      "name": "existing-code-review.md does not contain 'Sentinel value confusion' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-heuristics.sh",
+      "test_num": 7,
+      "name": "existing-code-review.md does not contain 'Test-production string alignment' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-heuristics.sh",
+      "test_num": 8,
+      "name": "existing-code-review.md does not contain 'String-based error classification' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-heuristics.sh",
+      "test_num": 9,
+      "name": "existing-code-review.md does not contain 'Dead infrastructure detection' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-heuristics.sh",
+      "test_num": 10,
+      "name": "existing-code-review.md does not contain 'Dead code after field' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-orchestration.sh",
+      "test_num": 1,
+      "name": "AC-07 SKILL.md step 1 contains content-first ordering language",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-orchestration.sh",
+      "test_num": 2,
+      "name": "AC-07 SKILL.md step 3 (Spawn Challenger) contains content-first ordering language",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-orchestration.sh",
+      "test_num": 3,
+      "name": "AC-12 SKILL.md initial read instructions reference ai-failure-modes",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-orchestration.sh",
+      "test_num": 4,
+      "name": "AC-12 SKILL.md initial read instructions reference quality-detection",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-orchestration.sh",
+      "test_num": 5,
+      "name": "AC-13 code-review-guide.md Source of Truth Handling does NOT contain 'Supplement with' hierarchy language",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-orchestration.sh",
+      "test_num": 6,
+      "name": "AC-13 code-review-guide.md Orchestration Protocol step 1 contains content-first ordering language",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-scope.sh",
+      "test_num": 1,
+      "name": "AC-03: ai-failure-modes.md line 1 contains 'Apply these detection targets'",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-scope.sh",
+      "test_num": 2,
+      "name": "AC-03: ai-failure-modes.md does NOT contain conditional scope instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-scope.sh",
+      "test_num": 3,
+      "name": "AC-01: ai-failure-modes.md item 7 references quality-detection.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-scope.sh",
+      "test_num": 4,
+      "name": "AC-02: ai-failure-modes.md item 11 references quality-detection.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-scope.sh",
+      "test_num": 5,
+      "name": "AC-11: ai-failure-modes.md item 10 references quality-detection.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-scope.sh",
+      "test_num": 6,
+      "name": "AC-09: ai-failure-modes.md contains exactly 14 numbered items",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-scope.sh",
+      "test_num": 7,
+      "name": "AC-09: ai-failure-modes.md item 12 contains 'Semantically incoherent'",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-scope.sh",
+      "test_num": 8,
+      "name": "AC-09: ai-failure-modes.md item 13 contains 'Mock permissiveness'",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-scope.sh",
+      "test_num": 9,
+      "name": "AC-11: quality-detection.md contains 'Silent error discard' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-instruction-hygiene-scope.sh",
+      "test_num": 10,
+      "name": "AC-11: quality-detection.md contains 'Context discard' section",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "test_num": 1,
+      "name": "SKILL.md contains linter execution instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "test_num": 2,
+      "name": "SKILL.md linter instruction specifies truncation",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "test_num": 3,
+      "name": "SKILL.md linter output described as supplementary context",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "test_num": 4,
+      "name": "SKILL.md contains parallel spawning instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "test_num": 5,
+      "name": "SKILL.md contains stuck-agent recovery instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "test_num": 6,
+      "name": "Stuck-agent recovery escalates instead of substituting",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "test_num": 7,
+      "name": "SKILL.md contains pattern deduplication instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "test_num": 8,
+      "name": "SKILL.md Detector spawn references quality-detection.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "test_num": 9,
+      "name": "SKILL.md Detector spawn includes detection source tagging",
+      "status": "pass"
+    },
+    {
+      "file": "test-orchestration-extensions.sh",
+      "test_num": 10,
+      "name": "Guide detection source values include linter",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 1,
+      "name": "Leaf doc referenced: fbk-docs/fbk-context-assets/agents.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 2,
+      "name": "Leaf doc referenced: fbk-docs/fbk-context-assets/claude-md.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 3,
+      "name": "Leaf doc referenced: fbk-docs/fbk-context-assets/hooks.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 4,
+      "name": "Leaf doc referenced: fbk-docs/fbk-context-assets/referenced-docs.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 5,
+      "name": "Leaf doc referenced: fbk-docs/fbk-context-assets/rules.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 6,
+      "name": "Leaf doc referenced: fbk-docs/fbk-context-assets/skills.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 7,
+      "name": "Leaf doc referenced: fbk-docs/fbk-design-guidelines/composition-patterns.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 8,
+      "name": "Leaf doc referenced: fbk-docs/fbk-design-guidelines/function-design.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 9,
+      "name": "Leaf doc referenced: fbk-docs/fbk-design-guidelines/quality-detection.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 10,
+      "name": "Leaf doc referenced: fbk-docs/fbk-design-guidelines/spec-design-thinking.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 11,
+      "name": "Leaf doc referenced: fbk-docs/fbk-design-guidelines/test-authoring.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 12,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/ai-failure-modes.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 13,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/code-review-guide.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 14,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/config-yml-schema.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 15,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/corrective-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 16,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/feature-spec-guide.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 17,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/implementation-guide.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 18,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/retrospective-guide.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 19,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/review-perspectives.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 20,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/task-compilation.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 21,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/threat-modeling.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 22,
+      "name": "Leaf doc referenced: fbk-docs/fbk-sdl-workflow/verify-yml-schema.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 23,
+      "name": "Leaf doc referenced: fbk-docs/fbk-brownfield-breakdown.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 24,
+      "name": "Leaf doc referenced: fbk-docs/fbk-brownfield-spec.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 25,
+      "name": "Leaf doc referenced: skills/fbk-code-review/references/existing-code-review.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 26,
+      "name": "Leaf doc referenced: skills/fbk-code-review/references/post-impl-review.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 27,
+      "name": "Path resolves: fbk-context-assets.md in agents/fbk-improvement-analyst.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 28,
+      "name": "Path resolves: fbk-context-assets/claude-md.md in fbk-docs/fbk-context-assets.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 29,
+      "name": "Path resolves: fbk-context-assets/rules.md in fbk-docs/fbk-context-assets.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 30,
+      "name": "Path resolves: fbk-context-assets/skills.md in fbk-docs/fbk-context-assets.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 31,
+      "name": "Path resolves: fbk-context-assets/hooks.md in fbk-docs/fbk-context-assets.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 32,
+      "name": "Path resolves: fbk-context-assets/agents.md in fbk-docs/fbk-context-assets.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 33,
+      "name": "Path resolves: fbk-context-assets/referenced-docs.md in fbk-docs/fbk-context-assets.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 34,
+      "name": "Path resolves: fbk-design-guidelines/function-design.md in fbk-docs/fbk-design-guidelines/composition-patterns.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 35,
+      "name": "Path resolves: fbk-design-guidelines/spec-design-thinking.md in fbk-docs/fbk-design-guidelines.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 36,
+      "name": "Path resolves: fbk-design-guidelines/quality-detection.md in fbk-docs/fbk-design-guidelines.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 37,
+      "name": "Path resolves: fbk-design-guidelines/test-authoring.md in fbk-docs/fbk-design-guidelines.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 38,
+      "name": "Path resolves: fbk-design-guidelines/function-design.md in fbk-docs/fbk-design-guidelines.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 39,
+      "name": "Path resolves: fbk-design-guidelines/composition-patterns.md in fbk-docs/fbk-design-guidelines.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 40,
+      "name": "Path resolves: fbk-design-guidelines/function-design.md in fbk-docs/fbk-design-guidelines/spec-design-thinking.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 41,
+      "name": "Path resolves: fbk-docs/fbk-design-guidelines/quality-detection.md in fbk-docs/fbk-sdl-workflow/code-review-guide.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 42,
+      "name": "Path resolves: fbk-docs/fbk-sdl-workflow/ai-failure-modes.md in fbk-docs/fbk-sdl-workflow/code-review-guide.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 43,
+      "name": "Path resolves: .claude/agents/fbk-test-reviewer.md in fbk-docs/fbk-sdl-workflow/corrective-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 44,
+      "name": "Path resolves: fbk-docs/fbk-design-guidelines/spec-design-thinking.md in fbk-docs/fbk-sdl-workflow/feature-spec-guide.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 45,
+      "name": "Path resolves: fbk-docs/fbk-design-guidelines.md in fbk-docs/fbk-sdl-workflow/implementation-guide.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 46,
+      "name": "Path resolves: fbk-sdl-workflow/retrospective-guide.md in fbk-docs/fbk-sdl-workflow/implementation-guide.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 47,
+      "name": "Path resolves: fbk-sdl-workflow/feature-spec-guide.md in fbk-docs/fbk-sdl-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 48,
+      "name": "Path resolves: fbk-sdl-workflow/review-perspectives.md in fbk-docs/fbk-sdl-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 49,
+      "name": "Path resolves: fbk-sdl-workflow/threat-modeling.md in fbk-docs/fbk-sdl-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 50,
+      "name": "Path resolves: fbk-sdl-workflow/config-yml-schema.md in fbk-docs/fbk-sdl-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 51,
+      "name": "Path resolves: fbk-sdl-workflow/verify-yml-schema.md in fbk-docs/fbk-sdl-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 52,
+      "name": "Path resolves: fbk-sdl-workflow/task-compilation.md in fbk-docs/fbk-sdl-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 53,
+      "name": "Path resolves: fbk-sdl-workflow/implementation-guide.md in fbk-docs/fbk-sdl-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 54,
+      "name": "Path resolves: fbk-sdl-workflow/code-review-guide.md in fbk-docs/fbk-sdl-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 55,
+      "name": "Path resolves: fbk-sdl-workflow/corrective-workflow.md in fbk-docs/fbk-sdl-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 56,
+      "name": "Path resolves: fbk-sdl-workflow/retrospective-guide.md in fbk-docs/fbk-sdl-workflow.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 57,
+      "name": "Path resolves: fbk-sdl-workflow/threat-modeling.md in fbk-docs/fbk-sdl-workflow/review-perspectives.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 58,
+      "name": "Path resolves: fbk-docs/fbk-design-guidelines/test-authoring.md in fbk-docs/fbk-sdl-workflow/task-compilation.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 59,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/task-compilation.md in skills/fbk-breakdown/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 60,
+      "name": "Path resolves: .claude/fbk-docs/fbk-brownfield-breakdown.md in skills/fbk-breakdown/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 61,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md in skills/fbk-breakdown/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 62,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md in skills/fbk-code-review/references/existing-code-review.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 63,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md in skills/fbk-code-review/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 64,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md in skills/fbk-code-review/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 65,
+      "name": "Path resolves: .claude/fbk-docs/fbk-design-guidelines/quality-detection.md in skills/fbk-code-review/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 66,
+      "name": "Path resolves: .claude/fbk-docs/fbk-context-assets.md in skills/fbk-context-asset-authoring/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 67,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/implementation-guide.md in skills/fbk-implement/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 68,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/task-compilation.md in skills/fbk-implement/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 69,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md in skills/fbk-implement/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 70,
+      "name": "Path resolves: fbk-context-assets.md in skills/fbk-improve/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 71,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/review-perspectives.md in skills/fbk-spec-review/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 72,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/threat-modeling.md in skills/fbk-spec-review/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 73,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md in skills/fbk-spec-review/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 74,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md in skills/fbk-spec/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 75,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/corrective-workflow.md in skills/fbk-spec/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 76,
+      "name": "Path resolves: .claude/fbk-docs/fbk-brownfield-spec.md in skills/fbk-spec/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-reference-integrity.sh",
+      "test_num": 77,
+      "name": "Path resolves: .claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md in skills/fbk-spec/SKILL.md",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 1,
+      "name": "skill file exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 2,
+      "name": "skill file has valid YAML frontmatter with description",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 3,
+      "name": "skill references test reviewer agent",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 4,
+      "name": "skill specifies checkpoint 1 context (testing strategy evaluation)",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 5,
+      "name": "skill specifies Agent Teams invocation for context isolation",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 6,
+      "name": "skill preserves existing council invocation",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 7,
+      "name": "skill preserves existing gate invocation",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 8,
+      "name": "test strategy review positioned between council and gate",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 9,
+      "name": "brownfield doc exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 10,
+      "name": "brownfield doc contains search-for-overlapping-code instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 11,
+      "name": "brownfield doc contains identify-patterns instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 12,
+      "name": "brownfield doc contains distinguish-new-from-extended instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 13,
+      "name": "brownfield doc contains replace-existing-functionality instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-review-integration.sh",
+      "test_num": 14,
+      "name": "brownfield doc contains avoid-duplication instruction",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "test_num": 1,
+      "name": "valid feature spec passes with exit 0, correct JSON, no stderr",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "test_num": 2,
+      "name": "missing sections rejected with exit 2",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "test_num": 3,
+      "name": "bad AC format rejected with exit 2",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "test_num": 4,
+      "name": "missing AC traceability rejected with exit 2",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "test_num": 5,
+      "name": "injection patterns detected: exit 0 with 7 warnings",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "test_num": 6,
+      "name": "legitimate HTML passes without false-positive warnings",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "test_num": 7,
+      "name": "unicode spec passes without false-positive warnings",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "test_num": 8,
+      "name": "overview spec passes with project scope",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "test_num": 9,
+      "name": "non-existent file rejected with exit 2",
+      "status": "pass"
+    },
+    {
+      "file": "test-spec-validator.sh",
+      "test_num": 10,
+      "name": "unrecognized filename pattern rejected with exit 2",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 1,
+      "name": "create produces valid JSON with QUEUED and correct schema",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 2,
+      "name": "create persists to file",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 3,
+      "name": "valid transition QUEUED->VALIDATING",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 4,
+      "name": "multi-step chain QUEUED->...->BREAKING_DOWN",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 5,
+      "name": "invalid transition QUEUED->COMPLETED rejected",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 6,
+      "name": "invalid transition QUEUED->REVIEWED rejected",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 7,
+      "name": "state persists and reads back",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 8,
+      "name": "PARKED records failed_stage and reason",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 9,
+      "name": "PARKED->READY->resume lifecycle",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 10,
+      "name": "timestamps are ISO8601 and increasing",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 11,
+      "name": "get-valid-transitions returns correct states for QUEUED",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 12,
+      "name": "get-valid-transitions returns correct states for VALIDATING",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 13,
+      "name": "get-valid-transitions returns empty for COMPLETED (terminal)",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 14,
+      "name": "get-valid-transitions for READY resolves dynamically",
+      "status": "pass"
+    },
+    {
+      "file": "test-state-engine.sh",
+      "test_num": 15,
+      "name": "duplicate create fails",
+      "status": "pass"
+    },
+    {
+      "file": "test-status-command.sh",
+      "test_num": 1,
+      "name": "queued spec shows spec name, QUEUED, and timestamp",
+      "status": "pass"
+    },
+    {
+      "file": "test-status-command.sh",
+      "test_num": 2,
+      "name": "reviewing spec shows REVIEWING and stage history",
+      "status": "pass"
+    },
+    {
+      "file": "test-status-command.sh",
+      "test_num": 3,
+      "name": "parked spec shows PARKED, failed stage, and reason",
+      "status": "pass"
+    },
+    {
+      "file": "test-status-command.sh",
+      "test_num": 4,
+      "name": "completed spec shows COMPLETED",
+      "status": "pass"
+    },
+    {
+      "file": "test-status-command.sh",
+      "test_num": 5,
+      "name": "non-existent spec exits 1 with not-found message",
+      "status": "pass"
+    },
+    {
+      "file": "test-status-command.sh",
+      "test_num": 6,
+      "name": "output is human-readable with labeled fields, not JSON",
+      "status": "pass"
+    },
+    {
+      "file": "test-status-command.sh",
+      "test_num": 7,
+      "name": "error history displayed for parked spec",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 1,
+      "name": "valid task set passes with exit 0",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 2,
+      "name": "missing required fields rejected with exit 2",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 3,
+      "name": "implementation task without test_tasks rejected",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 4,
+      "name": "overlapping file boundaries rejected with exit 2",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 5,
+      "name": "uncovered AC rejected with exit 2, mentions AC-03",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 6,
+      "name": "invalid test_tasks reference rejected",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 7,
+      "name": "missing file lists rejected",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 8,
+      "name": "files_to_modify with non-existent path rejected",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 9,
+      "name": "valid task set with full AC coverage passes without false rejections",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 10,
+      "name": "corrective category passes with test-only AC coverage",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 11,
+      "name": "corrective category rejects AC covered by neither test nor impl",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 12,
+      "name": "testing-infrastructure category passes with test-only ACs",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 13,
+      "name": "feature category rejects test-only AC coverage",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 14,
+      "name": "absent category defaults to feature behavior and rejects test-only AC",
+      "status": "pass"
+    },
+    {
+      "file": "test-task-reviewer.sh",
+      "test_num": 15,
+      "name": "unrecognized category rejected with error listing valid categories",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 1,
+      "name": "agent file exists and is non-empty",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 2,
+      "name": "file has YAML frontmatter",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 3,
+      "name": "frontmatter contains name: with non-empty value",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 4,
+      "name": "frontmatter contains description: with non-empty value",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 5,
+      "name": "body contains agent role (test + review/validate)",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 6,
+      "name": "checkpoint 1 mentions spec, schema, and testing strategy/AC",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 7,
+      "name": "checkpoint 2 mentions task files and testing strategy/breakdown",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 8,
+      "name": "checkpoint 3 mentions test code and compile/fail/trace",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 9,
+      "name": "checkpoint 4 mentions implementation and quality/coverage/weaken",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 10,
+      "name": "checkpoint 5 mentions implementation, mutation, detection/hash/kill, no test code input",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 11,
+      "name": "pipeline-blocking authority specified",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 12,
+      "name": "context isolation specified",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 13,
+      "name": "output format specifies pass/fail with findings",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 14,
+      "name": "each checkpoint specifies artifact set",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 15,
+      "name": "brownfield mode mentioned",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-agent.sh",
+      "test_num": 16,
+      "name": "on-demand invocation pattern (test-review) mentioned",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-extensions.sh",
+      "test_num": 1,
+      "name": "Test reviewer Tier 1 contains stale failure annotation criterion",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-extensions.sh",
+      "test_num": 2,
+      "name": "Test reviewer Tier 1 contains empty gate test criterion",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-extensions.sh",
+      "test_num": 3,
+      "name": "Test reviewer Tier 1 contains advisory assertion criterion",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-extensions.sh",
+      "test_num": 4,
+      "name": "Test reviewer contains unconditionally skipped test criterion",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-extensions.sh",
+      "test_num": 5,
+      "name": "Test reviewer contains phantom assertion string criterion",
+      "status": "pass"
+    },
+    {
+      "file": "test-test-reviewer-extensions.sh",
+      "test_num": 6,
+      "name": "Test reviewer contains build-tag consistency criterion",
+      "status": "pass"
+    }
+  ],
+  "total": 438
+}
