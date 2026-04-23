@@ -52,7 +52,7 @@ cp "$FIXTURES/settings-empty.json" "$TEST_TMPDIR/settings.json"
 OUTPUT=$(python3 "$MERGE_SCRIPT" "$TEST_TMPDIR/settings.json" "$FIXTURES/firebreak-settings.json" 2>/dev/null)
 RC=$?
 TASK_COMPLETED_COUNT=$(settings_block "$OUTPUT" | python3 -c "import sys, json; data = json.load(sys.stdin); print(len(data.get('hooks', {}).get('TaskCompleted', [])))" 2>/dev/null)
-COMMAND_MATCH=$(settings_block "$OUTPUT" | python3 -c "import sys, json; data = json.load(sys.stdin); cmd = data.get('hooks', {}).get('TaskCompleted', [{}])[0].get('hooks', [{}])[0].get('command', ''); print('fbk-sdl-workflow/task-completed.sh' in cmd)" 2>/dev/null)
+COMMAND_MATCH=$(settings_block "$OUTPUT" | python3 -c "import sys, json; data = json.load(sys.stdin); cmd = data.get('hooks', {}).get('TaskCompleted', [{}])[0].get('hooks', [{}])[0].get('command', ''); print('fbk-scripts/fbk.py task-completed' in cmd)" 2>/dev/null)
 if [ "$TASK_COMPLETED_COUNT" = "1" ] && [ "$COMMAND_MATCH" = "True" ]; then
   ok "merge hooks into empty settings produces correct hooks structure"
 else
@@ -97,7 +97,7 @@ cat > "$TEST_TMPDIR/settings.json" << 'EOF'
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME\"/.claude/hooks/fbk-sdl-workflow/task-completed.sh"
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py task-completed"
           }
         ]
       }

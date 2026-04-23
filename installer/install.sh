@@ -139,6 +139,40 @@ if [ -n "$TARGET_DIR" ]; then
 fi
 
 # --- Prerequisite checking ---
+check_pyyaml() {
+  if python3 -c "import yaml" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  echo "Firebreak requires Python's pyyaml package at runtime (used by fbk/config.py)." >&2
+
+  if [ "$DRY_RUN" = "1" ]; then
+    echo "[dry-run] Would prompt to install pyyaml; skipping in dry-run." >&2
+    return 0
+  fi
+
+  if [ ! -t 0 ]; then
+    echo "  Install later with:  python3 -m pip install --user pyyaml" >&2
+    return 0
+  fi
+
+  printf 'Install pyyaml now via python3 -m pip install --user pyyaml? [Y/n] ' >&2
+  read -r answer
+  case "$answer" in
+    ""|y|Y|yes|YES)
+      if python3 -m pip install --user pyyaml >&2; then
+        echo "pyyaml installed." >&2
+      else
+        echo "Warning: pip install failed. Install manually: python3 -m pip install --user pyyaml" >&2
+        echo "  (If your system uses PEP 668 externally-managed Python, use pipx or a venv.)" >&2
+      fi
+      ;;
+    *)
+      echo "Skipped. Install manually before running firebreak: python3 -m pip install --user pyyaml" >&2
+      ;;
+  esac
+}
+
 check_prerequisites() {
   if ! command -v python3 >/dev/null 2>&1; then
     echo "Error: Requires Python 3 for JSON merging. Install Python 3 and retry." >&2
@@ -166,6 +200,8 @@ check_prerequisites() {
       exit 1
     fi
   fi
+
+  check_pyyaml
 }
 
 # --- Interactive target selection ---
@@ -214,7 +250,9 @@ enumerate_assets() {
     local dst_file="$TARGET_DIR/$rel_path"
     SRC_FILES+=("$src_file")
     DST_FILES+=("$dst_file")
-  done < <(find "$SOURCE_DIR" -type f)
+  done < <(find "$SOURCE_DIR" \
+    \( -type d \( -name .venv -o -name __pycache__ -o -name .pytest_cache \) -prune \) \
+    -o \( -type f ! -name '*.pyc' ! -name '.DS_Store' -print \))
 }
 
 # --- File installation ---

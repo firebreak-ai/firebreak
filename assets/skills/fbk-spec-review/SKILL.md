@@ -18,7 +18,7 @@ Read `ai-docs/<feature-name>/<feature-name>-spec.md`. If the file does not exist
 
 ## Prior stage gate
 
-Run: `.claude/hooks/fbk-sdl-workflow/spec-gate.sh ai-docs/<feature-name>/<feature-name>-spec.md`
+Run: `python3 "$HOME"/.claude/fbk-scripts/fbk.py spec-gate ai-docs/<feature-name>/<feature-name>-spec.md`
 
 If it exits non-zero, report the failures from stderr and offer: "Run `/spec <feature-name>` to address the missing sections." Do not proceed to review.
 
@@ -66,7 +66,7 @@ Ask the user: "Does this feature need a threat model?" Record the decision and r
 Run the review gate with the classified perspectives as a comma-separated list:
 
 ```
-.claude/hooks/fbk-sdl-workflow/review-gate.sh \
+python3 "$HOME"/.claude/fbk-scripts/fbk.py review-gate \
   ai-docs/<feature-name>/<feature-name>-review.md \
   "<perspective1>,<perspective2>,..." \
   [ai-docs/<feature-name>/<feature-name>-threat-model.md]

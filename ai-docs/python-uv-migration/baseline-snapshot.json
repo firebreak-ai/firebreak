@@ -1,0 +1,254 @@
+{
+  "baseline": [
+    {
+      "file": "tests/installer/test-e2e-lifecycle.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/installer/test-install.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/installer/test-json-merge-env.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/installer/test-json-merge-hooks.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/installer/test-upgrade-uninstall.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-audit-logger.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-benchmark-infrastructure.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-breakdown-integration.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-category-migration.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-challenger-extensions.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-challenger-persona.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-classification-system.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-code-review-guide-extensions.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-code-review-integration.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-code-review-skill.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-code-review-structural.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-config-loader.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-detection-scope.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-detector-persona.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-execution-paths.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-guide-precision-alignment.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-hash-gate.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-implementation-pipeline.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-improvement-agent.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-improvement-integration.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-improvement-skill.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-inject-script.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-instruction-hygiene-agents.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-instruction-hygiene-coverage.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-instruction-hygiene-heuristics.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-instruction-hygiene-orchestration.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-instruction-hygiene-scope.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-orchestration-extensions.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-orchestrator-pipeline-integration.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-pipeline-domain-filter.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-pipeline-integration.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-pipeline-run.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-pipeline-severity-filter.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-pipeline-to-markdown.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-pipeline-validate.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-preset-config.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-reference-integrity.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-review-integration.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-spec-validator.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-state-engine.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-status-command.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-task-reviewer.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-test-reviewer-agent.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-test-reviewer-extensions.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sdl-workflow/test-type-severity-matrix.sh",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ]
+}

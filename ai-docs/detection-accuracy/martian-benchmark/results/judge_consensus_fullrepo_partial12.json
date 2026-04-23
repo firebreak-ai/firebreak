@@ -1,0 +1,618 @@
+{
+  "_metadata": {
+    "judge": "consensus (3x claude-sonnet-4-6, majority vote)",
+    "model": "claude-sonnet-4-6",
+    "judges_per_pair": 3,
+    "aggregation": "majority vote",
+    "tool": "firebreak-v0.4.0-fullrepo",
+    "date": "2026-04-21",
+    "judge_inputs": [
+      "/tmp/judge_partial12_run_1.json",
+      "/tmp/judge_partial12_run_2.json",
+      "/tmp/judge_partial12_run_3.json"
+    ],
+    "notes": "Golden index and candidate index are 1-based. null candidate_index means no match."
+  },
+  "https://github.com/calcom/cal.com/pull/8087": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR8087",
+    "source_repo": "cal_dot_com",
+    "golden_count": 2,
+    "candidate_count": 5,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses try-catch around dynamic import"
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "C1 identifies forEach(async) fire-and-forget"
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 4,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/10600": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR10600",
+    "source_repo": "cal_dot_com",
+    "golden_count": 4,
+    "candidate_count": 7,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate on naming inconsistency"
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate on disable endpoint error message wording"
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "C2 identifies case-sensitive indexOf comparison"
+      },
+      "4": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "C1 identifies TOCTOU race on backup code consumption"
+      }
+    },
+    "missing_judges": [],
+    "tp": 2,
+    "fp": 5,
+    "fn": 2,
+    "false_positives": [
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      },
+      {
+        "candidate_index": 6
+      },
+      {
+        "candidate_index": 7
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/10967": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR10967",
+    "source_repo": "cal_dot_com",
+    "golden_count": 5,
+    "candidate_count": 9,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "C1 identifies mainHostDestinationCalendar null deref"
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate on redundant optional chaining"
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "C2 identifies self-referential find always undefined"
+      },
+      "4": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate on IS_TEAM_BILLING_ENABLED logic inversion"
+      },
+      "5": {
+        "match": true,
+        "candidate_index": 5,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "5": 3
+        },
+        "reasoning": "C5 identifies Calendar interface contract break"
+      }
+    },
+    "missing_judges": [],
+    "tp": 3,
+    "fp": 6,
+    "fn": 2,
+    "false_positives": [
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 6
+      },
+      {
+        "candidate_index": 7
+      },
+      {
+        "candidate_index": 8
+      },
+      {
+        "candidate_index": 9
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/22345": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR22345",
+    "source_repo": "cal_dot_com",
+    "golden_count": 2,
+    "candidate_count": 3,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "C2 identifies dead else-if branches in getBaseConditions"
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate on userIdsFromOrg guard excluding org-level members"
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 2,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 3
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/7232": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR7232",
+    "source_repo": "cal_dot_com",
+    "golden_count": 2,
+    "candidate_count": 5,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 3,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "3": 3
+        },
+        "reasoning": "C3 identifies forEach async fire-and-forget"
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "C1 identifies immediateDelete orphan DB row"
+      }
+    },
+    "missing_judges": [],
+    "tp": 2,
+    "fp": 3,
+    "fn": 0,
+    "false_positives": [
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/8330": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR8330",
+    "source_repo": "cal_dot_com",
+    "golden_count": 2,
+    "candidate_count": 0,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidates produced for this PR"
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidates produced for this PR"
+      }
+    },
+    "missing_judges": [],
+    "tp": 0,
+    "fp": 0,
+    "fn": 2,
+    "false_positives": []
+  },
+  "https://github.com/calcom/cal.com/pull/11059": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR11059",
+    "source_repo": "cal_dot_com",
+    "golden_count": 5,
+    "candidate_count": 10,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 3,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "3": 3
+        },
+        "reasoning": "C3 identifies hardcoded 'refresh_token' placeholder"
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "C2 identifies invalid Zod computed key syntax"
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "C1 identifies SafeParseReturnType returned instead of data"
+      },
+      "4": {
+        "match": true,
+        "candidate_index": 4,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "4": 3
+        },
+        "reasoning": "C4 identifies refreshOAuthTokens Response vs expected token object"
+      },
+      "5": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "C4 already matched G4; no other candidate covers res.data undefined"
+      }
+    },
+    "missing_judges": [],
+    "tp": 4,
+    "fp": 6,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 5
+      },
+      {
+        "candidate_index": 6
+      },
+      {
+        "candidate_index": 7
+      },
+      {
+        "candidate_index": 8
+      },
+      {
+        "candidate_index": 9
+      },
+      {
+        "candidate_index": 10
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/14943": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR14943",
+    "source_repo": "cal_dot_com",
+    "golden_count": 2,
+    "candidate_count": 3,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate on stale retryCount read / atomic increment"
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "C1 identifies deleteMany OR clause over-broad deletion"
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 2,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/14740": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR14740",
+    "source_repo": "cal_dot_com",
+    "golden_count": 5,
+    "candidate_count": 5,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 4,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "4": 3
+        },
+        "reasoning": "C4 identifies case-sensitivity blacklist bypass"
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "C1 identifies AND instead of OR for admin/owner"
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 5,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "5": 3
+        },
+        "reasoning": "C5 identifies wrong guests array to email sender"
+      },
+      "4": {
+        "match": true,
+        "candidate_index": 3,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "3": 3
+        },
+        "reasoning": "C3 identifies no intra-input deduplication"
+      },
+      "5": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate on empty string array initial state"
+      }
+    },
+    "missing_judges": [],
+    "tp": 4,
+    "fp": 1,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 2
+      }
+    ]
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1": {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR1",
+    "source_repo": "discourse",
+    "golden_count": 3,
+    "candidate_count": 5,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "C1 identifies duplicate downsize definition override"
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 3,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "3": 3
+        },
+        "reasoning": "C3 identifies hardcoded maxSizeKB ignoring SiteSettings"
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "C2 identifies 80% failing for animated GIFs via gifsicle"
+      }
+    },
+    "missing_judges": [],
+    "tp": 3,
+    "fp": 2,
+    "fn": 0,
+    "false_positives": [
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      }
+    ]
+  },
+  "https://github.com/grafana/grafana/pull/76186": {
+    "instance_id": "grafana__grafana__grafana__PR76186",
+    "source_repo": "grafana",
+    "golden_count": 2,
+    "candidate_count": 4,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses nil request panic"
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate on traceID missing after refactor"
+      }
+    },
+    "missing_judges": [],
+    "tp": 0,
+    "fp": 4,
+    "fn": 2,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      }
+    ]
+  },
+  "https://github.com/keycloak/keycloak/pull/32918": {
+    "instance_id": "keycloak__keycloak__keycloak__PR32918",
+    "source_repo": "keycloak",
+    "golden_count": 2,
+    "candidate_count": 1,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "1/3",
+        "reasoning": "Sole candidate's wrapped-isEnabled mechanism differs from session-vs-delegate recursive call"
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate mentions incorrect alias literal"
+      }
+    },
+    "missing_judges": [],
+    "tp": 0,
+    "fp": 1,
+    "fn": 2,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      }
+    ]
+  },
+  "_summary": {
+    "evaluated_prs": 12,
+    "tp": 21,
+    "fp": 36,
+    "fn": 15,
+    "precision": 0.3684,
+    "recall": 0.5833,
+    "f1": 0.4516,
+    "avg_findings_per_pr": 4.75
+  },
+  "_per_repo": {
+    "cal_dot_com": {
+      "tp": 18,
+      "fp": 29,
+      "fn": 11,
+      "prs": 9,
+      "precision": 0.383,
+      "recall": 0.6207,
+      "f1": 0.4737
+    },
+    "discourse": {
+      "tp": 3,
+      "fp": 2,
+      "fn": 0,
+      "prs": 1,
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1": 0.75
+    },
+    "grafana": {
+      "tp": 0,
+      "fp": 4,
+      "fn": 2,
+      "prs": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "keycloak": {
+      "tp": 0,
+      "fp": 1,
+      "fn": 2,
+      "prs": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  }
+}

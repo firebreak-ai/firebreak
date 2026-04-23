@@ -32,7 +32,7 @@ checks:
     required: true
 
   - name: test-hash-immutability
-    command: "bash .claude/hooks/fbk-sdl-workflow/test-hash-gate.sh ai-docs/$FEATURE/"
+    command: "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py test-hash-gate ai-docs/$FEATURE/"
     required: true
 ```
 

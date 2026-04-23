@@ -1,0 +1,37 @@
+[
+  {
+    "id": "X-99",
+    "title": "forEach(async) drops return value silently",
+    "location": {"file": "src/handler.ts", "start_line": 42, "end_line": 55},
+    "type": "behavioral",
+    "severity": "critical",
+    "origin": "introduced",
+    "detection_source": "intent",
+    "source_of_truth_ref": "intent claim 3",
+    "pattern": "async-in-sync-iterator",
+    "mechanism": "forEach(async callback) discards the Promise returned by each iteration",
+    "consequence": "Callbacks execute concurrently with no error propagation to the caller",
+    "evidence": "Lines 42-48: bookingHandler.forEach(async (booking) => { await sendReminder(booking); })",
+    "remediation": "Replace forEach(async) with for...of loop"
+  },
+  {
+    "id": "ignored",
+    "title": "Duplicated validation logic across three handlers",
+    "location": {"file": "src/validate.ts", "start_line": 10},
+    "type": "structural",
+    "severity": "minor",
+    "mechanism": "Three handlers each implement the same email validation regex inline",
+    "consequence": "Updating validation requires changing three files with no shared reference",
+    "evidence": "src/handler-a.ts:15, src/handler-b.ts:22, src/handler-c.ts:31 all contain /^[a-z]+@/"
+  },
+  {
+    "id": "also-ignored",
+    "title": "Test name claims full CRUD coverage but only tests create",
+    "location": {"file": "tests/crud.test.ts", "start_line": 5},
+    "type": "test-integrity",
+    "severity": "major",
+    "mechanism": "Test suite named 'CRUD operations' contains only a single test for the create path",
+    "consequence": "Coverage report shows the suite as passed, implying read/update/delete are tested",
+    "evidence": "Only one it() block: it('should create record'). No tests for read, update, or delete."
+  }
+]

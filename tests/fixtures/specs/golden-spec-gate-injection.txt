@@ -1,0 +1,7 @@
+WARNING: [injection] control character U+0001 detected (line 5)
+WARNING: [injection] zero-width space (U+200B) detected (line 23)
+WARNING: [injection] BOM/zero-width no-break space in non-BOM position (line 27)
+WARNING: [injection] HTML comment contains instruction-like phrase 'ignore' (line 25)
+WARNING: [injection] embedded instruction pattern 'you are now' (line 6)
+WARNING: [injection] embedded instruction pattern 'disregard above' (line 17)
+WARNING: [injection] embedded instruction pattern 'ignore previous instructions' (line 25)

@@ -7,7 +7,7 @@ argument-hint: "[target-path or feature-name]"
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash, Agent
 ---
 
-Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral comparison methodology, finding format, sighting format, orchestration protocol, and retrospective fields. Read `.claude/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md` for the AI failure mode checklist used when no specs are available. Read `.claude/fbk-docs/fbk-design-guidelines/quality-detection.md` for structural detection targets applicable to all code reviews.
+Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral comparison methodology, finding format, sighting format, orchestration protocol, and retrospective fields. Read `.claude/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md` for the AI failure mode checklist used when no specs are available. Read `.claude/fbk-docs/fbk-sdl-workflow/security-patterns.md` for security detection targets applied to all code reviews. Read `.claude/fbk-docs/fbk-sdl-workflow/detection-audits.md` for procedural audit passes the Detector runs before emitting sightings. Read `.claude/fbk-docs/fbk-design-guidelines/quality-detection.md` for structural detection targets applicable to all code reviews.
 
 ## Entry and Path Routing
 
@@ -25,7 +25,7 @@ Check for existing specs — provided by the user or discovered in `ai-docs/`. I
 Spawn agents as a team with fresh context per invocation. Use two agents:
 
 - **Detector** (`code-review-detector`): Reads code, produces sightings with type and severity classification. Tools: Read, Grep, Glob.
-- **Challenger** (`code-review-challenger`): Verifies or rejects sightings. Tools: Read, Grep, Glob.
+- **Challenger** (`code-review-challenger`): Verifies or rejects sightings using JSON verdict format. Tools: Read, Grep, Glob.
 
 Inject the behavioral comparison methodology from `code-review-guide.md` and the relevant source of truth into each agent's spawn prompt. Agents do not inherit skills.
 
@@ -33,9 +33,9 @@ Inject the behavioral comparison methodology from `code-review-guide.md` and the
 
 Create a review report file at the start of every review: `fbk-code-review-<YYYY-MM-DD>-<HHMM>.md` in the project's working directory. Write the intent register, verified findings, and retrospective to this file as the review progresses. The user opens this file to see rendered diagrams and review results.
 
-## Pre-Spawn Linter Execution
+## Pre-Spawn Tool Execution
 
-Before spawning Detectors, discover and run project-native linters and static analysis tools. Search for lint configurations (`.eslintrc`, `eslint.config.*`, `.pylintrc`, `pyproject.toml`, `golangci-lint` configs) and run available tools. Capture raw text output, truncated to the first 100 findings if output is large. Include the linter output as supplementary context in each Detector's spawn prompt. Linter output is context, not pre-formed sightings — the Detector reads it to understand what mechanical issues the linter already caught and focuses on issues linters miss. Tag any sightings derived from linter output with detection source `linter`.
+Before spawning Detectors, discover and run project-native linters, typecheckers, and static analysis tools. Search for lint and typecheck configurations (`.eslintrc`, `eslint.config.*`, `tsconfig.json`, `.pylintrc`, `pyproject.toml`, `mypy.ini`, `go.mod`, `golangci-lint` configs, `build.gradle`, `pom.xml`) and run available tools. When the project has a typechecker for the language being reviewed, run it — examples: `tsc --noEmit`, `go build ./...`, `go vet ./...`, `mypy --strict`, `javac -Xlint`. Capture raw text output, truncated to the first 100 findings if output is large. Include the combined linter and typechecker output as supplementary context in each Detector's spawn prompt. Tool output is context, not pre-formed sightings — the Detector reads it to understand what mechanical issues were already caught and focuses on issues these tools miss. Tag any sightings derived from tool output with detection source `linter`.
 
 ## Intent Extraction
 
@@ -74,18 +74,23 @@ Where the intent register has gaps (modules with no documentation coverage), der
 
 ## Detection-Verification Loop
 
+Resolve the active preset and severity threshold at the start of the review. Defaults: preset=`behavioral-only`, severity=`minor`. Both are overridable by user instruction.
+
 Run the iterative detection and verification loop:
 
-1. Spawn Detector with: target code file contents first, then linter output (if available), then intent register (from Intent Extraction), then source of truth + behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` last. Instruct the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, `intent`, or `linter`).
-2. Collect sightings
-3. Spawn Challenger with: target code file contents first, then sightings to verify, then verification instructions last.
-4. Collect verified findings and rejections
-4a. After each verification round, append verified findings to the review report file.
-5. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
-6. Run additional rounds for weakened but unrejected sightings
-7. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds
+1. Spawn Detector with: target code file contents first, then tool output (if available), then intent register (from Intent Extraction), then source of truth + behavioral comparison instructions from `code-review-guide.md` + AI failure mode checklist from `ai-failure-modes.md` + security detection targets from `security-patterns.md` + procedural audit passes from `detection-audits.md` + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` + the JSON sighting schema and type/severity definitions last. Instruct the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, `audit-pass`, `intent`, or `linter`) and to output sightings as a JSON array.
+2. Collect sightings as JSON.
+3. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline run --preset <preset> --min-severity <threshold>` to validate, domain-filter, and severity-filter the sightings in a single invocation. If >30% of sightings are rejected during validation, log a warning about prompt compliance.
+4. Spawn Challenger with: target code file contents first, then the filtered JSON sightings to verify, then verification instructions + type/severity definitions + the type-severity validity matrix last. The Challenger receives and produces JSON — no format translation between agents.
+5. Validate Challenger output by piping the JSON through `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate` — this enforces required fields, enum values, and the type-severity matrix on any reclassified combinations. Also verify status and evidence fields are present (status is `verified`, `verified-pending-execution`, `rejected`, or `rejected-as-nit`; evidence required for verified statuses).
+6. Filter to `status: verified` or `verified-pending-execution`. Assign sequential finding IDs (F-01, F-02...).
+7. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline to-markdown` to convert verified findings to markdown once for the review report. Adjacent observations from the Challenger are rendered at the end of each finding and accumulated into the retrospective.
+7a. After each verification round, append verified findings to the review report file.
+8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
+9. Run additional rounds for weakened but unrejected sightings.
+10. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds.
 
-Only verified findings surface to the user. Rejected sightings are excluded.
+Only verified findings surface to the user. Rejected sightings are excluded. JSON is the working format throughout the pipeline. Markdown conversion happens once for the human-facing review report.
 
 ## Post-Fix Verification
 
