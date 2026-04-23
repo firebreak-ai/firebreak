@@ -1,2 +1,6 @@
 repos/
 worktrees/
+diffs/
+logs/
+reviews/
+reviews-*/

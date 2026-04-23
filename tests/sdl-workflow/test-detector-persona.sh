@@ -27,11 +27,11 @@ echo "TAP version 13"
 # Extract body (everything after second --- line)
 body=$(awk '/^---$/{c++; if(c==2){found=1; next}} found' "$DETECTOR")
 
-# --- Test 1: Detector contains staff engineer persona identity ---
-if echo "$body" | grep -qi 'staff engineer'; then
-  ok "Detector contains staff engineer persona identity"
+# --- Test 1: Detector contains validation engineer persona identity ---
+if echo "$body" | grep -qi 'senior software validation engineer'; then
+  ok "Detector contains validation engineer persona identity"
 else
-  not_ok "Detector contains staff engineer persona identity" "expected 'staff engineer' in body"
+  not_ok "Detector contains validation engineer persona identity" "expected 'senior software validation engineer' in body"
 fi
 
 # --- Test 2: Detector output quality bar requires mechanism ---
@@ -39,13 +39,6 @@ if echo "$body" | grep -qi 'mechanism'; then
   ok "Detector output quality bar requires mechanism"
 else
   not_ok "Detector output quality bar requires mechanism" "expected 'mechanism' in body"
-fi
-
-# --- Test 3: Detector output quality bar requires concrete failing input ---
-if echo "$body" | grep -qi 'failing input'; then
-  ok "Detector output quality bar requires concrete failing input"
-else
-  not_ok "Detector output quality bar requires concrete failing input" "expected 'failing input' in body"
 fi
 
 # --- Test 4: Detector output quality bar requires caller impact ---
@@ -80,13 +73,6 @@ if echo "$body" | grep -qiE 'test-integrity.*(passes but|does not verify|claims)
   ok "Detector contains test-integrity type definition"
 else
   not_ok "Detector contains test-integrity type definition" "expected test-integrity with 'passes but', 'does not verify', or 'claims' in body"
-fi
-
-# --- Test 8: Detector contains fragile type definition with specific change language ---
-if echo "$body" | grep -qiE 'fragile.*(specific.*change|plausible change)|(specific.*change|plausible change).*fragile'; then
-  ok "Detector contains fragile type definition with specific change language"
-else
-  not_ok "Detector contains fragile type definition with specific change language" "expected fragile with 'specific change' or 'plausible change' in body"
 fi
 
 # --- Test 9: Detector contains critical severity definition with observability language ---

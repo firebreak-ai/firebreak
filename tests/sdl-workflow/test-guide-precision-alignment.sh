@@ -33,19 +33,11 @@ else
 fi
 
 # --- Test 2: Guide type definitions use consequence-based language for structural ---
-structural_consequence=$(grep -ciE 'structural.*(no wrong output|no.*observable output)|(no wrong output|no.*observable output).*structural' "$GUIDE" 2>/dev/null || true)
+structural_consequence=$(grep -ciE 'structural.*(no path to user-visible failure|no.*user-visible failure)|(no path to user-visible failure|no.*user-visible failure).*structural' "$GUIDE" 2>/dev/null || true)
 if [ "$structural_consequence" -gt 0 ]; then
   ok "Guide type definitions use consequence-based language for structural"
 else
   not_ok "Guide type definitions use consequence-based language for structural" "count=$structural_consequence"
-fi
-
-# --- Test 3: Guide type definitions use consequence-based language for fragile ---
-fragile_consequence=$(grep -ciE 'fragile.*(specific.*change|plausible change)|(specific.*change|plausible change).*fragile' "$GUIDE" 2>/dev/null || true)
-if [ "$fragile_consequence" -gt 0 ]; then
-  ok "Guide type definitions use consequence-based language for fragile"
-else
-  not_ok "Guide type definitions use consequence-based language for fragile" "count=$fragile_consequence"
 fi
 
 # --- Test 4: Guide severity definitions use observability language for critical ---

@@ -1,7 +1,9 @@
 # Project-local Claude settings and state (match at any depth)
 **/.claude/settings.local.json
+**/.claude/settings.json
 **/.claude/automation/
 **/.claude/memory/
+**/.claude/scheduled_tasks.lock
 
 # Test projects
 space-invaders/

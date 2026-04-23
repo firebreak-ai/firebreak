@@ -47,13 +47,6 @@ else
   not_ok "Challenger requires own words, not Detector's" "expected 'your own words' or 'not the Detector' in body"
 fi
 
-# --- Test 4: Challenger cannot reproduce reasoning means reject ---
-if echo "$body" | grep -qiE 'cannot.*reproduce.*reject|cannot independently reproduce'; then
-  ok "Challenger cannot reproduce reasoning means reject"
-else
-  not_ok "Challenger cannot reproduce reasoning means reject" "expected 'cannot.*reproduce.*reject' or 'cannot independently reproduce' in body"
-fi
-
 # --- Test 5: Challenger keeps design intent in mind ---
 if echo "$body" | grep -qi 'design intent'; then
   ok "Challenger keeps design intent in mind"

@@ -75,11 +75,11 @@ else
   not_ok "diffs directory exists and contains diff files" "diffs_count=$diff_count dir: $BENCHMARK_DIR/diffs"
 fi
 
-# --- Test 8: benchmark-prompt.md exists and is non-empty ---
-if [ -s "$BENCHMARK_DIR/benchmark-prompt.md" ]; then
-  ok "benchmark-prompt.md exists and is non-empty"
+# --- Test 8: benchmark prompt files (full-repo + diff-only) exist and are non-empty ---
+if [ -s "$BENCHMARK_DIR/benchmark-prompt-fullrepo.md" ] && [ -s "$BENCHMARK_DIR/benchmark-prompt-diff.md" ]; then
+  ok "benchmark-prompt-fullrepo.md and benchmark-prompt-diff.md exist and are non-empty"
 else
-  not_ok "benchmark-prompt.md exists and is non-empty" "file: $BENCHMARK_DIR/benchmark-prompt.md"
+  not_ok "benchmark-prompt-fullrepo.md and benchmark-prompt-diff.md exist and are non-empty" "files: $BENCHMARK_DIR/benchmark-prompt-{fullrepo,diff}.md"
 fi
 
 # --- Test 9: results directory exists or can be created ---

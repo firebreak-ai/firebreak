@@ -10,6 +10,14 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 DISPATCHER="$PROJECT_ROOT/assets/fbk-scripts/fbk.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/config"
 
+# Prefer the fbk-scripts venv python (has PyYAML); fall back to system python3.
+VENV_PY="$PROJECT_ROOT/assets/fbk-scripts/.venv/bin/python3"
+if [[ -x "$VENV_PY" ]]; then
+  PYTHON="$VENV_PY"
+else
+  PYTHON="python3"
+fi
+
 TMPDIR_BASE="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR_BASE"' EXIT
 
@@ -37,7 +45,7 @@ echo "TAP version 13"
 
 # --- Test 1: defaults when no config files exist ---
 PR=$(make_project t1)
-OUTPUT=$(python3 "$DISPATCHER" config load "$PR" 2>&1)
+OUTPUT=$("$PYTHON" "$DISPATCHER" config load "$PR" 2>&1)
 RESULT=$(echo "$OUTPUT" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
@@ -56,7 +64,7 @@ fi
 # --- Test 2: project config.yml overrides defaults ---
 PR=$(make_project t2)
 cp "$FIXTURES/valid-config.yml" "$PR/.claude/automation/config.yml"
-OUTPUT=$(python3 "$DISPATCHER" config load "$PR" 2>&1)
+OUTPUT=$("$PYTHON" "$DISPATCHER" config load "$PR" 2>&1)
 RESULT=$(echo "$OUTPUT" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
@@ -75,7 +83,7 @@ fi
 # --- Test 3: spec frontmatter overrides project config ---
 PR=$(make_project t3)
 cp "$FIXTURES/valid-config.yml" "$PR/.claude/automation/config.yml"
-OUTPUT=$(python3 "$DISPATCHER" config load "$PR" "$FIXTURES/spec-with-frontmatter.md" 2>&1)
+OUTPUT=$("$PYTHON" "$DISPATCHER" config load "$PR" "$FIXTURES/spec-with-frontmatter.md" 2>&1)
 RESULT=$(echo "$OUTPUT" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
@@ -95,7 +103,7 @@ PR=$(make_project t4)
 SPEC="$TMPDIR_BASE/no-fm.md"
 echo "## Problem" > "$SPEC"
 echo "No frontmatter here." >> "$SPEC"
-OUTPUT=$(python3 "$DISPATCHER" config load "$PR" "$SPEC" 2>&1)
+OUTPUT=$("$PYTHON" "$DISPATCHER" config load "$PR" "$SPEC" 2>&1)
 RESULT=$(echo "$OUTPUT" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
@@ -111,7 +119,7 @@ fi
 
 # --- Test 5: cold-start detects missing test runner ---
 PR=$(make_project t5)
-STDERR=$(python3 "$DISPATCHER" config cold-start-check "$PR" 2>&1 >/dev/null)
+STDERR=$("$PYTHON" "$DISPATCHER" config cold-start-check "$PR" 2>&1 >/dev/null)
 if echo "$STDERR" | grep -qi "test runner"; then
   ok "cold-start detects missing test runner"
 else
@@ -137,7 +145,7 @@ PR=$(make_project t8)
 echo '{}' > "$PR/package.json"
 echo '{}' > "$PR/.eslintrc.json"
 echo "# Project" > "$PR/CLAUDE.md"
-STDERR=$(python3 "$DISPATCHER" config cold-start-check "$PR" 2>&1 >/dev/null)
+STDERR=$("$PYTHON" "$DISPATCHER" config cold-start-check "$PR" 2>&1 >/dev/null)
 if [ -z "$STDERR" ]; then
   ok "cold-start passes when prerequisites exist"
 else
@@ -147,7 +155,7 @@ fi
 # --- Test 9: verify.yml loads correctly ---
 PR=$(make_project t9)
 cp "$FIXTURES/valid-verify.yml" "$PR/.claude/automation/verify.yml"
-OUTPUT=$(python3 "$DISPATCHER" config load-verify "$PR" 2>&1)
+OUTPUT=$("$PYTHON" "$DISPATCHER" config load-verify "$PR" 2>&1)
 RESULT=$(echo "$OUTPUT" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
@@ -166,7 +174,7 @@ fi
 # --- Test 10: malformed config.yml produces error ---
 PR=$(make_project t10)
 cp "$FIXTURES/malformed-config.yml" "$PR/.claude/automation/config.yml"
-OUTPUT=$(python3 "$DISPATCHER" config load "$PR" 2>&1)
+OUTPUT=$("$PYTHON" "$DISPATCHER" config load "$PR" 2>&1)
 RC=$?
 if [ $RC -ne 0 ]; then
   ok "malformed config.yml produces error"
