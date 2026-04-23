@@ -7,11 +7,6 @@ description: Assembles the development council - a team of 6 specialized agents 
 
 You are facilitating a **Development Council** - a team of 6 specialized agents who will collaboratively discuss the user's task. Your role is to orchestrate the discussion, manage turn-taking, and synthesize outcomes.
 
-## Important Implementation Note
-Due to Claude Code's permission system, compound bash commands with && operators may trigger 
-permission prompts. Always execute session initialization commands separately rather than 
-combining them with && or ; operators.
-
 ## The Council Members
 
 | Agent | Role | Subagent Type | Research Domains |
@@ -69,29 +64,23 @@ When in doubt, start with Quick Council - it can escalate if needed.
 
 **Compaction Recovery Check** (FIRST): Before initializing a new session, check if we're resuming from compaction:
 ```bash
-# Check for recovery indicators
-if [ -f ~/.claude/council-logs/council-state.json ] && [ -f ~/.claude/council-logs/council-session-id ]; then
-    SESSION_ID=$(cat ~/.claude/council-logs/council-session-id)
-    CURRENT_PHASE=$(python3 -c "import json; print(json.load(open('$HOME/.claude/council-logs/council-state.json')).get('current_phase', 'unknown'))")
-    echo "RECOVERY MODE: Resuming session $SESSION_ID from $CURRENT_PHASE"
-    # Skip to the appropriate phase based on state
-fi
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-state recovery-check
 ```
+The command emits a JSON object: `{"recovering": bool, "session_id": str|null, "current_phase": str|null, "completed_phases": [...], "key_decisions": [...], "transcript_summary": str}`.
 
-If recovery is detected, read `council-state.json` for:
-- `completed_phases`: Skip these phases
-- `transcript_summary`: Context for agents
-- `key_decisions`: Decisions not to re-litigate
+If `recovering` is true:
+- Adopt the returned `session_id` as `$SESSION_ID` for the remainder of the session
+- Skip every phase listed in `completed_phases`
+- Seed agent context with `transcript_summary` and `key_decisions`
 - Resume from `current_phase`
 
 **Session Initialization** (new sessions only): Create the council session marker file and initialize logging:
 ```bash
-# Run each command separately - DO NOT combine with && as this breaks permissions
 SESSION_ID="council-$(date +%Y%m%d-%H%M%S)"
 python3 "$HOME"/.claude/fbk-scripts/fbk.py session-manager register "$SESSION_ID" [quick|full]
 python3 "$HOME"/.claude/fbk-scripts/fbk.py session-logger init "$SESSION_ID" --tier [quick|full] --task "Task summary"
 ```
-This enables context-aware auto-approval of research tools during the council session.
+`session-manager register` writes the session-id marker file that recovery relies on; no additional echo/redirect is needed.
 
 **Logging**: Session logging is **automatic by default**. Use `/fbk-council --no-log` to disable logging for a session. The SESSION_ID should be maintained throughout the session for phase timing and contribution tracking.
 
@@ -108,13 +97,9 @@ At the START of each session, check for continuation state:
 **Escape Hatch Check**:
 Before proceeding, check for abort signal:
 ```bash
-ABORT_CONTENT=$(cat ~/.claude/council-logs/council-abort 2>/dev/null || echo "{}")
-if [ "$ABORT_CONTENT" != "{}" ] && [ "$ABORT_CONTENT" != "" ]; then
-  echo "Council abort requested by user"
-  echo "{}" > ~/.claude/council-logs/council-abort  # Clear abort signal
-  exit 0
-fi
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-state check-abort
 ```
+Exit code 0 means continue. Exit code 2 means the user requested abort — the command has already cleared the abort file; announce "Council abort requested by user" and stop.
 
 If the user hasn't provided a substantial task in this message, ask them to describe:
 - What they want the council to review or design
@@ -437,47 +422,23 @@ Long council sessions may trigger auto-compaction. To survive context loss:
 
 **Phase-Level Checkpointing**: After EACH phase completes, update `~/.claude/council-logs/council-state.json`:
 ```bash
-python3 -c "
-import json
-from pathlib import Path
-from datetime import datetime
-
-state_file = Path.home() / '.claude' / 'council-logs' / 'council-state.json'
-state = json.loads(state_file.read_text()) if state_file.exists() else {}
-state.update({
-    'session_id': '$SESSION_ID',
-    'current_phase': 'Phase-3-Discussion',
-    'completed_phases': ['Phase-0', 'Phase-1', 'Phase-2'],
-    'transcript_summary': 'Architect proposed X, Builder raised concern Y, Guardian flagged risk Z',
-    'key_decisions': ['Decision 1', 'Decision 2'],
-    'last_checkpoint': datetime.now().isoformat()
-})
-state_file.write_text(json.dumps(state, indent=2))
-"
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-state checkpoint \
+  "Phase-3-Discussion" \
+  --session-id "$SESSION_ID" \
+  --completed "Phase-0,Phase-1,Phase-2" \
+  --summary "Architect proposed X, Builder raised concern Y, Guardian flagged risk Z" \
+  --decisions "Decision 1,Decision 2"
 ```
+The checkpoint command merges the supplied fields into the state file atomically; unspecified fields are preserved. `last_checkpoint` is stamped automatically.
 
-**Session ID Persistence**: Store session ID in a recoverable location:
-```bash
-# Run each command separately - DO NOT combine with &&
-echo "$SESSION_ID" > ~/.claude/council-logs/council-session-id
-```
+**Session ID Persistence**: `session-manager register` writes the session-id marker file as part of registration, so no separate step is required here.
 
-**Compaction Detection**: At the START of any council activity, check for recovery state:
-```python
-# Check if this is a recovery from compaction
-if "conversation is summarized below" in context or "continued from a previous conversation" in context:
-    # We've been compacted - read state from disk
-    state = json.loads(Path.home().joinpath('.claude/council-logs/council-state.json').read_text())
-    session_id = Path.home().joinpath('.claude/council-logs/council-session-id').read_text().strip()
-    # Resume from state['current_phase']
-```
+**Compaction Detection**: At the START of any council activity, run `session-state recovery-check`. If the returned payload has `recovering: true`, you've been compacted — adopt its `session_id` and resume from its `current_phase`.
 
 **Recovery Protocol**:
-1. Detect compaction via context summary indicators
-2. Read `~/.claude/council-logs/council-state.json` for phase progress and key decisions
-3. Read `~/.claude/council-logs/council-session-id` for session continuity
-4. Resume from the last checkpointed phase (don't re-run completed phases)
-5. Acknowledge recovery in output: "Resumed from checkpoint after context compaction"
+1. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py session-state recovery-check`
+2. If `recovering: true`, resume from the returned `current_phase` and skip any phase listed in `completed_phases`
+3. Acknowledge recovery in output: "Resumed from checkpoint after context compaction"
 
 **Session State Footer** (for Ralph Wiggum integration):
 At the END of every council output, include a structured state block:
@@ -530,7 +491,7 @@ This removes the session from the active sessions tracker.
 
 **On Task Completion**: When outputting `COUNCIL_COMPLETE`, also clean up state:
 ```bash
-rm -f ~/.claude/council-logs/council-state.json
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-state cleanup
 python3 "$HOME"/.claude/fbk-scripts/fbk.py session-manager unregister "$SESSION_ID"
 ```
 
@@ -971,7 +932,7 @@ The council will complete current work and wait for the file to be removed.
 
 Check current state:
 ```bash
-cat ~/.claude/council-logs/council-state.json | jq .
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-state show
 ```
 
 View iteration history:
@@ -979,7 +940,8 @@ View iteration history:
 ls -la ~/.claude/council-logs/
 ```
 
-Quick status:
+Quick status (pipes the JSON emitted by `show` through `jq`):
 ```bash
-jq -r '"Iteration \(.iteration): \(.current_phase) - \(.status)"' ~/.claude/council-logs/council-state.json
+python3 "$HOME"/.claude/fbk-scripts/fbk.py session-state show \
+  | jq -r '"Iteration \(.iteration): \(.current_phase) - \(.status)"'
 ```

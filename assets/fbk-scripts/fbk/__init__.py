@@ -14,5 +14,6 @@ COMMAND_MAP = {
     "state": "fbk.state",
     "session-logger": "fbk.council.session_logger",
     "session-manager": "fbk.council.session_manager",
+    "session-state": "fbk.council.session_state",
     "ralph": "fbk.council.ralph",
 }
