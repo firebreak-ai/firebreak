@@ -67,12 +67,11 @@ else
   not_ok "manifest.json contains 50 PR entries" "count=$count"
 fi
 
-# --- Test 7: diffs directory exists and contains diff files ---
-if [ -d "$BENCHMARK_DIR/diffs" ] && [ "$(ls "$BENCHMARK_DIR/diffs/" 2>/dev/null | wc -l)" -gt 0 ]; then
-  ok "diffs directory exists and contains diff files"
+# --- Test 7: fetch_pr_shas.py and clone_repos.py exist (diff/worktree generators) ---
+if [ -s "$BENCHMARK_DIR/fetch_pr_shas.py" ] && [ -s "$BENCHMARK_DIR/clone_repos.py" ]; then
+  ok "fetch_pr_shas.py and clone_repos.py exist (diff/worktree generators)"
 else
-  diff_count=$(ls "$BENCHMARK_DIR/diffs/" 2>/dev/null | wc -l || echo "0")
-  not_ok "diffs directory exists and contains diff files" "diffs_count=$diff_count dir: $BENCHMARK_DIR/diffs"
+  not_ok "fetch_pr_shas.py and clone_repos.py exist (diff/worktree generators)" "files: $BENCHMARK_DIR/{fetch_pr_shas,clone_repos}.py"
 fi
 
 # --- Test 8: benchmark prompt files (full-repo + diff-only) exist and are non-empty ---

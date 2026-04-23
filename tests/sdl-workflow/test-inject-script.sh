@@ -10,6 +10,16 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 INJECT="$PROJECT_ROOT/ai-docs/detection-accuracy/martian-benchmark/inject_results.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/pipeline"
 
+# Prefer the fbk-scripts venv python (parity with other tests); fall back to
+# system python3. inject_results.py is stdlib-only so either works — this
+# pattern just avoids needing `uv` on the CI runner.
+VENV_PY="$PROJECT_ROOT/assets/fbk-scripts/.venv/bin/python3"
+if [[ -x "$VENV_PY" ]]; then
+  PYTHON="$VENV_PY"
+else
+  PYTHON="python3"
+fi
+
 ok() {
   TOTAL=$((TOTAL + 1))
   PASS=$((PASS + 1))
@@ -35,7 +45,7 @@ else
 fi
 
 # --- Run dry-run once and reuse output for tests 2-8 ---
-uv run "$INJECT" --dry-run --input "$FIXTURES/verified-findings.json" --tool-name firebreak \
+"$PYTHON" "$INJECT" --dry-run --input "$FIXTURES/verified-findings.json" --tool-name firebreak \
   > /tmp/test-inject-out.json 2>/dev/null || true
 
 # --- Test 2: inject script maps location.file to path field ---
@@ -103,7 +113,7 @@ else
 fi
 
 # --- Test 9: inject script --min-severity filters output ---
-uv run "$INJECT" --dry-run --input "$FIXTURES/verified-findings.json" \
+"$PYTHON" "$INJECT" --dry-run --input "$FIXTURES/verified-findings.json" \
   --tool-name firebreak --min-severity major \
   > /tmp/test-inject-filtered.json 2>/dev/null || true
 if python3 -c "
