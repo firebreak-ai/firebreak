@@ -32,7 +32,7 @@ Complex findings from the code review feed into the spec-driven pipeline as reme
 
 Structured [retrospectives](ai-docs/research/harness-patterns-analysis.md) from every pipeline run classify failures as spec gaps, compilation gaps, or implementation errors. This data drives specific, actionable revisions to the layers above. The cycle is human-approved — the pipeline produces actionable data, the human decides what to act on.
 
-Five self-improvement cycles have shipped: [v0.3.1](CHANGELOG.md) fixed terminology that obscured friction, [v0.3.2](CHANGELOG.md) caught a routing dead-end in the pipeline's own code review skill, [v0.3.3](CHANGELOG.md) expanded detection scope from AI-specific failure modes to standard engineering concerns, [v0.3.4](CHANGELOG.md) hardened verification gates, added call-site completeness checks, and introduced rolling retrospectives across all pipeline stages, and [v0.3.5](CHANGELOG.md) made intent extraction mandatory — evaluation against a TypeScript project showed intent-sourced findings drove both critical findings and nearly tripled issue overlap with independently filed bugs.
+Six self-improvement cycles have shipped: [v0.3.1](CHANGELOG.md) fixed terminology that obscured friction, [v0.3.2](CHANGELOG.md) caught a routing dead-end in the pipeline's own code review skill, [v0.3.3](CHANGELOG.md) expanded detection scope from AI-specific failure modes to standard engineering concerns, [v0.3.4](CHANGELOG.md) hardened verification gates, added call-site completeness checks, and introduced rolling retrospectives across all pipeline stages, [v0.3.5](CHANGELOG.md) made intent extraction mandatory — evaluation against a TypeScript project showed intent-sourced findings drove both critical findings and nearly tripled issue overlap with independently filed bugs, and [v0.4.0](CHANGELOG.md) migrated the pipeline to a structured Python package with pytest coverage, added full-repo benchmark methodology against a 50-PR Martian evaluation set, and lifted detection recall through procedural audit passes (concurrency, logic-inversion branch enumeration, test-integrity, cross-function API trace) motivated by the benchmark's false-negative retrospective.
 
 ## Quick Start
 
@@ -50,6 +50,8 @@ curl -fsSL https://raw.githubusercontent.com/firebreak-ai/firebreak/main/install
 ```
 
 Or clone the repo and run `installer/install.sh` directly.
+
+Firebreak's automation ships as a small Python package at `~/.claude/fbk-scripts/`. Skills and hooks invoke commands via `python3 ~/.claude/fbk-scripts/fbk.py <command>` — the installer handles placement and the PyYAML dependency check. You don't normally call these directly; they're the machinery behind the review pipeline, gates, and hooks.
 
 Firebreak works with any language Claude Code supports. The brownfield test data in the results is Go because that's what the test project uses. Expect a code review to take around 30 minutes (measured for a full-repo test scan of a small/medium project); a full software development lifecycle (SDL) pipeline run takes around 3 hours (measured for a 26-task remediation phase). Not every finding needs the full pipeline — trivial fixes can be resolved immediately during the code review session. The pipeline is for complex findings where structured remediation prevents creating new debt. See [token usage and cost](results.md#token-usage-and-cost) for measured data and important notes on how API caching affects cost.
 
