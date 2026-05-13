@@ -23,9 +23,9 @@ A **task escalation** is a task rewrite assigned to a different teammate after i
 
 ## Stage Guides
 
-When co-authoring a feature specification → `/spec` skill loads `fbk-sdl-workflow/feature-spec-guide.md`
+When co-authoring a feature specification → `/fbk-spec` skill loads `fbk-sdl-workflow/feature-spec-guide.md`
 
-When performing a specification review → `/spec-review` skill loads `fbk-sdl-workflow/review-perspectives.md`
+When performing a specification review → `/fbk-spec-review` skill loads `fbk-sdl-workflow/review-perspectives.md`
 
 When creating a threat model during spec review → Load on demand: `fbk-sdl-workflow/threat-modeling.md`
 
@@ -33,11 +33,11 @@ When creating or modifying `.claude/automation/config.yml` → `fbk-sdl-workflow
 
 When creating or modifying `.claude/automation/verify.yml` → `fbk-sdl-workflow/verify-yml-schema.md`
 
-When compiling a specification into tasks → `/breakdown` skill loads `fbk-sdl-workflow/task-compilation.md`
+When compiling a specification into tasks → `/fbk-breakdown` skill loads `fbk-sdl-workflow/task-compilation.md`
 
-When implementing tasks from a breakdown → `/implement` skill loads `fbk-sdl-workflow/implementation-guide.md`
+When implementing tasks from a breakdown → `/fbk-implement` skill loads `fbk-sdl-workflow/implementation-guide.md`
 
-When reviewing code or running post-implementation review → `/code-review` skill loads `fbk-sdl-workflow/code-review-guide.md`
+When reviewing code or running post-implementation review → `/fbk-code-review` skill loads `fbk-sdl-workflow/code-review-guide.md`
 
 When following a corrective or diagnostic workflow → `fbk-sdl-workflow/corrective-workflow.md`
 

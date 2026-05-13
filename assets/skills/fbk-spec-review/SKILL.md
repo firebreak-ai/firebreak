@@ -6,7 +6,7 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
-Read `.claude/fbk-docs/fbk-sdl-workflow/review-perspectives.md` before proceeding — it defines classification signals, SDL concerns, invocation modes, and review document structure.
+Read `.claude/fbk-docs/fbk-sdl-workflow/review-perspectives.md` before proceeding — it defines classification signals, SDL concerns, invocation modes, threat-model determination, review document structure, and the verification gate.
 
 ## Argument
 
@@ -14,7 +14,7 @@ If `$ARGUMENTS` is empty, ask: "Which feature would you like to review?" Use the
 
 ## Load spec
 
-Read `ai-docs/<feature-name>/<feature-name>-spec.md`. If the file does not exist, report: "No spec found at that path. Run `/spec <feature-name>` to create one."
+Read `ai-docs/<feature-name>/<feature-name>-spec.md`. If the file does not exist, report: "No spec found at that path. Run `/fbk-spec <feature-name>` to create one."
 
 ## Prior stage gate
 
@@ -26,23 +26,13 @@ If it exits non-zero, report the failures from stderr and offer: "Run `/spec <fe
 
 If `ai-docs/<feature-name>/<feature-name>-review.md` already exists, warn the user it will be replaced entirely, then proceed.
 
-## Classification
-
-Analyze the spec and project context using the classification signals and SDL concerns table from `review-perspectives.md`. Determine which agents to invoke and in which mode (solo / discussion / full council). Present the selection with a one-line rationale per agent. Proceed unless the user adjusts.
-
 ## Council invocation
 
-Invoke `/fbk-council` with the classified agents. For each agent, frame the prompt with:
-- The SDL concern that agent owns
-- The exact prompt framing from the SDL concerns table
-- Relevant spec sections scoped to that agent's focus
-- For any spec that removes, renames, or changes a symbol's signature: instruct the Architect agent to grep for all callers of the changed symbol and flag any the spec does not enumerate.
+Classify which agents to invoke and in which mode per `review-perspectives.md` §"Classification process"; present the classification rationale before proceeding. Invoke `/fbk-council` with the classified agents per §"Invoking the council". For any spec that removes, renames, or changes a symbol's signature, additionally instruct the Architect agent to grep for all callers of the changed symbol and flag any the spec does not enumerate.
 
 ## Finding synthesis
 
-Write `ai-docs/<feature-name>/<feature-name>-review.md`. Start the file with a `Perspectives:` metadata line listing the invoked perspectives as a comma-separated list. Organize findings by SDL concern, not by agent. Tag each finding with severity: `blocking`, `important`, or `informational`. Findings must be specific and actionable — omit generic observations.
-
-Include a testing strategy section covering: new tests needed, existing tests impacted, and test infrastructure changes. Mark any category with "none" and justification if empty.
+Write `ai-docs/<feature-name>/<feature-name>-review.md` per `review-perspectives.md` §"Review document structure" before invoking the test-reviewer. The required testing strategy coverage entries are enumerated in §"Verification gate" of the same guide.
 
 ## Test strategy review
 
@@ -54,12 +44,7 @@ If the test reviewer returns PASS: add "Test strategy review: pass" to the revie
 
 ## Threat model determination
 
-Summarize the feature's security-relevant characteristics: data touched, trust boundaries crossed, new entry points, auth/access control changes.
-
-Ask the user: "Does this feature need a threat model?" Record the decision and rationale in the review document regardless of the answer.
-
-- **If yes**: Read `.claude/fbk-docs/fbk-sdl-workflow/threat-modeling.md`. Guide creation of `ai-docs/<feature-name>/<feature-name>-threat-model.md`.
-- **If no**: Record decision and rationale (e.g., "No new trust boundaries, no data handling changes"). Security findings from the Security agent still appear in the review.
+Run threat-model determination per `review-perspectives.md` §"Threat model determination" before invoking the gate. If a threat model is created, its path becomes the gate's third argument; otherwise omit the third argument.
 
 ## Gate invocation
 
@@ -80,10 +65,4 @@ After the review completes, write the Stage 2 section to `ai-docs/<feature-name>
 
 ## Transition
 
-If blocking findings exist: "There are N blocking findings. Would you like to revise the spec to address them, or accept with documented rationale?"
-
-If the user accepts blocking findings, record the rationale and risk owner in the review document before advancing.
-
-If all resolved: "The review is structurally complete. Would you like to proceed to task breakdown?"
-
-Before invoking the next stage: confirm all artifacts are written to disk, then summarize (feature name, number of findings by severity, threat model decision, gate result). Compact context before invoking the next skill. Then invoke `/breakdown <feature-name>`.
+If the user agrees to proceed (per the guide's transition flow), invoke `/fbk-breakdown <feature-name>`.

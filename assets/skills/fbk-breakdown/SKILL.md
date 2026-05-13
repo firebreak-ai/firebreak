@@ -24,7 +24,7 @@ python3 "$HOME"/.claude/fbk-scripts/fbk.py review-gate \
   "<perspectives>" \
   ["ai-docs/$FEATURE/$FEATURE-threat-model.md"]
 ```
-Read the `Perspectives:` metadata line from the first line of the review file and pass its value as the comma-separated perspectives string. If the gate fails, report which checks failed and offer to run `/spec-review $FEATURE`.
+Read the `Perspectives:` metadata line from the first line of the review file and pass its value as the comma-separated perspectives string. If the gate fails, report which checks failed and offer to run `/fbk-spec-review $FEATURE`.
 
 ## Test task agent
 
@@ -94,4 +94,4 @@ After the breakdown gate passes, write the Stage 3 section to `ai-docs/$FEATURE/
 
 Summarize completed work before offering next steps: total task count, wave count, any council recommendation. Offer: review individual tasks, invoke council, or proceed.
 
-Before invoking the next stage: confirm all artifacts are written to disk, then compact context. If the user agrees to proceed, invoke `/implement $FEATURE`.
+Before invoking the next stage: confirm all artifacts are written to disk, then compact context. If the user agrees to proceed, invoke `/fbk-implement $FEATURE`.

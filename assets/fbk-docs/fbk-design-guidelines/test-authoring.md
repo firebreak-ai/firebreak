@@ -49,6 +49,14 @@ Each test asserts on one behavior.
 
 Receive test dependencies as setup, not as ambient state. Use beforeEach/setUp to create fresh state for each test.
 
+## Real collaborators where fast
+
+When a test depends on a collaborator (a function, class, service, or module the production code calls), use the real implementation when the real collaborator runs fast and deterministically. Introduce a mock or stub only when the real collaborator is too slow (network I/O, filesystem operations beyond test data, expensive computation), non-deterministic (current time, random generation, external service responses), or unavailable (paid third-party service, hardware not present in the test environment).
+
+Each mock added raises the cost of refactoring — production-code changes break tests on mock interaction patterns rather than on behavioral regressions.
+
+See `fbk-sdl-workflow/feature-spec-guide.md` §5 "Mocking justifications" for the spec-time counterpart.
+
 ## Assertion specificity
 
 Assert on specific expected values, not truthiness or type alone. `expect(result).toBe(42)` catches regressions that `expect(result).toBeTruthy()` misses — any non-zero value would pass the truthiness check. When the expected value is not a fixed literal (e.g., it depends on input), assert on a derived property that is specific enough to catch behavioral changes: length, key presence, substring, or structural shape.

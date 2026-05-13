@@ -26,6 +26,12 @@ Describe all composition explicitly — which function calls which, what each ca
 
 When the technical approach threads a value from one component to another (a context, a lifecycle signal, a configuration reference), identify the concrete source of that value at the outermost wiring point. State which component creates or obtains the value and passes it inward.
 
+## Abstraction timing
+
+When the technical approach proposes a shared abstraction (a base class, an interface, a generic helper, a parameterized utility) over fewer than two concrete call sites, justify the abstraction explicitly or defer it until the second call site appears. Name the call sites that would consume the abstraction and state what each call site would lose if the logic were inlined instead.
+
+Single-use abstractions encode predictions; wrong predictions block each call site's evolution. Extract abstractions from observed duplication, not from anticipated cases.
+
 ## Brownfield considerations
 
 When the feature modifies existing code, read the existing code before designing. Identify behaviors that are currently embedded in monolithic functions. Design toward the target structure, not the current structure — the target location of a behavior is where it should live after implementation, which may require extraction from where it currently lives.

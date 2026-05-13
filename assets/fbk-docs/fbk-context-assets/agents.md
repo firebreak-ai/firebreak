@@ -26,7 +26,9 @@ Place agent files in `.claude/agents/<name>.md` (project-level) or `~/.claude/ag
 
 The Markdown body below the frontmatter becomes the agent's system prompt.
 
-Focus the body on what makes this agent different from the default: its role, constraints, and behavioral boundaries. Avoid duplicating general project knowledge the agent can read from CLAUDE.md or discover from the codebase.
+Focus the body on what makes this agent different from the default: its role, constraints, and behavioral boundaries. Place critical constraints first. Avoid duplicating general project knowledge the agent can read from CLAUDE.md or discover from the codebase.
+
+For body-content structure (role activation, quality bars, anti-defaults), see `## Persona authoring` below — the Detector and Challenger agents are canonical examples.
 
 ## When to Use an Agent vs. Alternatives
 
@@ -69,36 +71,11 @@ Use `permissionMode: plan` for agents that should only explore and plan, with no
 
 For conditional tool restrictions (allow some uses of a tool but block others), use `hooks` with `PreToolUse` validators instead of blanket allowlists.
 
-## Instruction Design
-
-State the agent's role and scope in the first lines of the body. Place critical constraints before detailed instructions.
-
-Tell the agent what to do when invoked -- provide a clear workflow or checklist of steps.
+## Description field
 
 Write the `description` field using specific, matchable language that mirrors how users phrase relevant tasks.
 
 Include "use proactively" in the description if the agent should be invoked automatically for relevant tasks.
-
-Personas belong in the body; see `## Persona authoring` for activation-focused structure.
-
-### Example structure
-
-```markdown
----
-name: test-runner
-description: Runs tests and reports failures. Use proactively after code changes.
-tools: Read, Bash, Grep, Glob
-model: sonnet
----
-
-Run the project test suite and report results.
-
-1. Run the full test suite using the project's test command.
-2. If tests fail, identify root causes by reading failing test files and related source.
-3. Report only failing tests with error messages and suggested fixes.
-
-Report findings only. Leave source and test files unmodified.
-```
 
 ## Persona authoring
 

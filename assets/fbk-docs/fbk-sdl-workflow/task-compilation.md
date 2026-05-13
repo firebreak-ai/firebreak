@@ -16,6 +16,15 @@ When compiling interface contracts for existing files:
 - **When a task removes, renames, or changes the signature of any symbol** (struct field, function, type), grep the codebase for all call sites of that symbol. Do not rely solely on the spec's impact analysis. Create a task for each call site not already covered. Spec impact sections are a starting point, not a complete enumeration.
 - **When a task instruction requires passing or using a specific value** (a context object, a reference, a constructed instance), verify that value is reachable in the target file at compilation time. If the value does not yet exist — because it must be threaded through constructors or other files not yet modified — create a prerequisite task that establishes it and add it as a dependency. State the intended final value in the task instruction, even when a prerequisite must deliver it first.
 
+## Preparatory Refactor Compilation
+
+When the spec's "Module touch policy" declares a module as *refactor-then-extend*, compile two distinct tasks:
+
+1. A preparatory refactor task that performs only the structural change named in the spec, with no new feature behavior. Assign it to an earlier wave than the dependent feature task.
+2. The dependent feature task, listing the preparatory refactor task in its `dependencies` field.
+
+The preparatory refactor task's acceptance criteria reference the existing tests for the module — the refactor must preserve current behavior, verified by the existing test suite passing unchanged. When the existing test suite does not cover the affected behavior, compile a characterization-test task in an even earlier wave to capture current behavior before the refactor begins.
+
 ## Interface Contracts
 
 When a task references files created or modified by other tasks, the task instructions must specify cross-task interface contracts. At minimum: import/export convention (default vs. named), module type (ESM/CJS), key string or enum conventions used by the referenced module, and any rendering or update-loop wiring patterns the task must follow. Extend this list with any additional cross-task assumptions specific to the project's technology stack — these are a floor, not an exhaustive set.
@@ -176,7 +185,7 @@ Name paired tasks consistently: `task-NN-test-<behavior>.md` and `task-MM-impl-<
 
 ## Task Manifest (task.json)
 
-`task.json` is the machine-readable manifest for the task directory. The gate script and the `/implement` team lead both consume it. The `/breakdown` skill produces it; the `/implement` skill updates `status` and `summary` fields during execution.
+`task.json` is the machine-readable manifest for the task directory. The gate script and the `/fbk-implement` team lead both consume it. The `/fbk-breakdown` skill produces it; the `/fbk-implement` skill updates `status` and `summary` fields during execution.
 
 ### Schema
 
@@ -227,11 +236,11 @@ Name paired tasks consistently: `task-NN-test-<behavior>.md` and `task-MM-impl-<
 
 | Status | Meaning | Set by |
 |---|---|---|
-| `not_started` | Initial state after breakdown | `/breakdown` |
-| `in_progress` | Agent is actively working on this task | `/implement` on assignment |
-| `complete` | Task verified done | `/implement` after verification |
-| `tests_fail` | Implementation done but tests don't pass | `/implement` (triggers escalation) |
-| `parked` | Needs human intervention (escalation cap exhausted) | `/implement` on escalation |
+| `not_started` | Initial state after breakdown | `/fbk-breakdown` |
+| `in_progress` | Agent is actively working on this task | `/fbk-implement` on assignment |
+| `complete` | Task verified done | `/fbk-implement` after verification |
+| `tests_fail` | Implementation done but tests don't pass | `/fbk-implement` (triggers escalation) |
+| `parked` | Needs human intervention (escalation cap exhausted) | `/fbk-implement` on escalation |
 | `superseded` | Task no longer needed | Human or escalation |
 
 ### Invariants
@@ -240,7 +249,7 @@ The gate script validates these properties from task.json:
 
 - Every spec AC ID appears in `covers` across at least one test task and one implementation task.
 - No circular dependencies in the task DAG.
-- Wave assignments respect dependency ordering — no task depends on a task in a later wave.
+- Wave assignments respect dependency ordering — every declared dependency must be in a strictly earlier wave (lower `wave_id`). A dependency on a task in the same wave fails the gate.
 - Within each wave, test tasks are ordered before corresponding implementation tasks.
 - Every `file` value references an existing task file in the same directory.
 - No task may be unlinked from an AC. No AC may be uncovered.
@@ -259,7 +268,7 @@ Report the specific ambiguity: quote the ambiguous spec text, describe the two o
 
 ## Verification Gate
 
-**Structural prerequisites** (deterministic — the `/breakdown` skill calls a gate script against `task.json`):
+**Structural prerequisites** (deterministic — the `/fbk-breakdown` skill calls a gate script against `task.json`):
 
 - `task.json` is valid JSON and conforms to the schema above
 - Every spec AC ID appears in `covers` across at least one test task and one implementation task
@@ -281,4 +290,4 @@ Report the specific ambiguity: quote the ambiguous spec text, describe the two o
 
 ## Transition
 
-After producing `task.json` and all task files, run structural prerequisites against `task.json`. If they pass, offer: "The task breakdown covers all spec requirements across N tasks in M waves. Structural checks pass. Would you like to review individual tasks, invoke council for validation, or proceed to implementation?" If the user agrees, invoke `/implement <feature-name>`.
+After producing `task.json` and all task files, run structural prerequisites against `task.json`. If they pass, offer: "The task breakdown covers all spec requirements across N tasks in M waves. Structural checks pass. Would you like to review individual tasks, invoke council for validation, or proceed to implementation?" If the user agrees, invoke `/fbk-implement <feature-name>`.

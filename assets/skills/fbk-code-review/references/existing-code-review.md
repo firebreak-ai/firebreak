@@ -26,11 +26,11 @@ Periodically present draft spec sections for user confirmation before moving to 
 
 ## Spec Output
 
-The remediation spec uses the standard 9-section template defined in `.claude/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md`. When complete, run the spec through `python3 "$HOME"/.claude/fbk-scripts/fbk.py spec-gate` to validate structure. The spec enters the existing SDL pipeline: `/spec-review` → `/breakdown` → `/implement`.
+The remediation spec uses the standard 9-section template defined in `.claude/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md`. When complete, run the spec through `python3 "$HOME"/.claude/fbk-scripts/fbk.py spec-gate` to validate structure. The spec enters the existing SDL pipeline: `/fbk-spec-review` → `/fbk-breakdown` → `/fbk-implement`.
 
 ## Scope Recognition
 
-A focused review produces a feature-level spec. A broad review may produce a project overview with child feature specs. Follow the same scope recognition used by the `/spec` skill.
+A focused review produces a feature-level spec. A broad review may produce a project overview with child feature specs. Follow the same scope recognition used by the `/fbk-spec` skill.
 
 ## When Only Structural Issues Surface
 
