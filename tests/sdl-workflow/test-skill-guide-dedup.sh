@@ -115,10 +115,10 @@ else
 fi
 
 # --- T9b (AC-04) — fbk-implement/SKILL.md contains operational exit-prompt sentinel ---
-if grep -qF 'review the implementation with /code-review' "$IMPL_SKILL"; then
-  ok "T9b (AC-04) — fbk-implement/SKILL.md contains 'review the implementation with /code-review'"
+if grep -qF 'review the implementation with /fbk-code-review' "$IMPL_SKILL"; then
+  ok "T9b (AC-04) — fbk-implement/SKILL.md contains 'review the implementation with /fbk-code-review'"
 else
-  not_ok "T9b (AC-04) — fbk-implement/SKILL.md contains 'review the implementation with /code-review'" "file: $IMPL_SKILL"
+  not_ok "T9b (AC-04) — fbk-implement/SKILL.md contains 'review the implementation with /fbk-code-review'" "file: $IMPL_SKILL"
 fi
 
 # --- T10 (AC-04) — each skill contains its respective gate-script command substring ---
