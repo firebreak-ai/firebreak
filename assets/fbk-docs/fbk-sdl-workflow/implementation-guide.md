@@ -6,8 +6,6 @@ If any tasks have `status` other than `not_started`, a prior session was interru
 
 Create an agent team. You (main thread) are the team lead — you coordinate and do not execute tasks. Teammates execute tasks.
 
-Require the `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` flag before spawning any teammates. If the flag is not set, stop and inform the user.
-
 Spawn teammates equal to the maximum wave width across all waves. Teammates persist across waves — after completing a wave's tasks, they claim the next wave's tasks when you unblock them.
 
 ---
@@ -66,7 +64,7 @@ Resume at the earliest incomplete wave. A wave is incomplete if any of its tasks
 
 ## Task Isolation
 
-Each teammate reads its task file as its sole instruction context, plus `fbk-docs/fbk-design-guidelines.md` and the matching leaf for its task type (test authoring, function implementation, or composition). The teammate does not read the spec, other task files, or the task overview.
+Each teammate reads its task file as its sole instruction context, plus `fbk-docs/fbk-design-guidelines.md`, `fbk-docs/fbk-design-guidelines/pre-authoring-investigation.md`, and the matching leaf for its task type (test authoring, function implementation, or composition). The teammate does not read the spec, other task files, or the task overview.
 
 Spawn a fresh agent for each task. Do not reuse workers across tasks — context pollution from a prior task's code, errors, or partial reasoning can cause the agent to make incorrect assumptions about the current task's codebase state. Each task execution starts with a clean agent context containing only the task file and the designated reference files.
 
@@ -86,6 +84,14 @@ Before writing code, each implementation agent performs a lightweight readiness 
 If any check fails, the agent reports the specific mismatch without attempting implementation. This saves token spend and gives the team lead a precise failure to diagnose.
 
 **Sequencing**: The inter-wave regression check (below) runs between waves as a wave-advancement gate. The readiness check runs per-task within a wave as a pre-implementation gate. Sequence: Wave N completes → baseline regression check → Wave N+1 starts → each task in N+1 runs readiness check before coding.
+
+---
+
+## Pause on Scope Discrepancy
+
+When implementing a task reveals that the declared scope is insufficient (the work to satisfy the AC requires modifying files outside the task's `files_to_create` or `files_to_modify` list) or incorrect (the declared files do not contain the code the task instructions reference), the teammate halts implementation, reports the discrepancy to the team lead, and waits for direction. The teammate does not silently expand scope to make the task succeed — silent scope expansion produces a working task whose changes are invisible to the per-wave file-scope verification gate.
+
+The team lead either revises the task scope (counting as one escalation attempt under the escalation protocol) or decomposes the discovered work into additional tasks for a later wave.
 
 ---
 

@@ -24,7 +24,7 @@ Present the classification with rationale and proceed. The user can intervene to
 |-------------|---------|-----------|----------------------|
 | Architectural soundness | Architect | Builder | "Evaluate the technical approach for integration risks, performance implications, and conflicts with existing architecture. When the spec describes integrating with or extending existing modules, also verify: (1) Pattern consistency — does the proposed approach follow the existing pattern or introduce a parallel path? (2) Integration point existence — do the integration points referenced actually exist in the code? (3) Convention visibility — are there conventions in existing code that the spec doesn't mention but tasks will need? Flag these for breakdown discovery." |
 | Over-engineering / pragmatism | Builder | Advocate | "Identify areas where the design is more complex than the requirements justify" |
-| Testing strategy and impact | Guardian | Analyst | "Validate that the testing strategy covers all acceptance criteria at the appropriate level (unit, integration, e2e). Verify that impacted existing tests are identified — search the test suite for coverage of affected files and functions. Flag any acceptance criteria that lack a corresponding test plan." |
+| Quality: testing strategy and impact | Guardian | Analyst | "Validate that the testing strategy covers all acceptance criteria at the appropriate level (unit, integration, e2e). Verify that impacted existing tests are identified — search the test suite for coverage of affected files and functions. Flag any acceptance criteria that lack a corresponding test plan." |
 | Threat modeling | Security | Architect | "Identify trust boundaries, data flows, entry points, and threats; compare against project threat model" |
 | User impact / scope creep | Advocate | Builder | "Evaluate whether each requirement serves the stated user need without unnecessary scope expansion" |
 | Measurability | Analyst | Guardian | "Verify that acceptance criteria are quantifiable and that success can be measured, not just asserted" |
@@ -87,6 +87,8 @@ Perspectives: Security, Architecture, Quality
 
 Organize findings by SDL concern, not by agent.
 
+When titling a finding-grouping section with an SDL concern name, use the exact concern name from the table above. Do not paraphrase or shorten it to a form that begins with the word "Testing" — the gate parser reserves `## Test*` headings for the canonical testing-strategy section.
+
 Each finding includes:
 - **Severity**: `blocking` (must resolve before Stage 3), `important` (should address), or `informational` (note for awareness)
 - **Category**: which SDL concern from the table above
@@ -118,4 +120,5 @@ After presenting findings:
 2. If blocking findings exist: "There are N blocking findings. Would you like to revise the spec to address them, or accept with documented rationale?"
 3. If the user accepts blocking findings: record the rationale and risk owner in the review document before advancing.
 4. If all resolved: "The review is structurally complete. Would you like to proceed to task breakdown?"
-5. If agreed: invoke `/breakdown <feature-name>`.
+5. Before invoking `/fbk-breakdown`: confirm all artifacts are written to disk; summarize (feature name, number of findings by severity, threat model decision, gate result); compact context.
+6. If agreed: invoke `/fbk-breakdown <feature-name>`.

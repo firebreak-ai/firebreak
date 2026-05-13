@@ -31,7 +31,11 @@ Use declarative rules for unambiguous constraints — naming conventions, requir
 
 Use 2-3 concrete examples for style, format, and tone guidance that resists articulation as rules. Examples are effective for demonstrating desired output format; rules are better for binary constraints.
 
-Cap examples at 5 per document. Beyond that, additional examples degrade rather than improve compliance.
+Cap examples at 5 per document — additional examples degrade compliance rather than improve it.
+
+Diversify examples across the category. Homogeneous clusters anchor the agent on those specific instances rather than the broader pattern.
+
+*Backed by `tang-2025-few-shot-dilemma` (cap) and `huang-2026-anchoring-effect-llm` (diversity).*
 
 ## Routing Instruction Clarity
 

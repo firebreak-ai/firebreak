@@ -1,3 +1,5 @@
+For any code-authoring task (function, composition, or test), also load `fbk-design-guidelines/pre-authoring-investigation.md` for pre-authoring discipline — search before write, verify imports, read callers before changing unfamiliar code.
+
 Load the leaf that matches the current task.
 
 | When you are... | Load |

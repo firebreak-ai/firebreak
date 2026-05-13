@@ -24,6 +24,12 @@ Flag code where a caller re-implements logic that exists as an importable functi
 
 Detect duplication of behavioral logic across call sites, not duplication of data or configuration.
 
+## Premature abstraction
+
+Flag shared abstractions (base classes, interfaces, generic helpers, parameterized utilities) that have only one concrete consumer in the codebase. Detect this when a base class, abstract interface, or generic helper is referenced by exactly one subclass, implementer, or specialized instantiation. Single-use abstractions add an indirection layer without amortizing it across consumers — each evolution of the single consumer requires updating both the consumer and the abstraction it uses.
+
+When a tracked work item explicitly schedules a second consumer for the abstraction, note the work item ID rather than producing a sighting.
+
 ## Composition opacity
 
 Flag orchestration code where no test verifies the composition as a unit. Detect this when changing the order of calls, adding a new result type, or removing an error handler would not be caught by any test. If the composition is only exercised through end-to-end tests or not tested at all, produce a sighting.

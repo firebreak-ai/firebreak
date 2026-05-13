@@ -49,6 +49,34 @@ else
   not_ok "assets/skills/fbk-council/SKILL.md retained" "file missing"
 fi
 
+# Test 6: assets/fbk-docs/fbk-council/ directory exists
+if [ -d "$PROJECT_ROOT/assets/fbk-docs/fbk-council/" ]; then
+  ok "assets/fbk-docs/fbk-council/ directory exists"
+else
+  not_ok "assets/fbk-docs/fbk-council/ directory exists" "directory missing"
+fi
+
+# Test 7: consensus-failure.md exists and is non-empty
+if [ -s "$PROJECT_ROOT/assets/fbk-docs/fbk-council/consensus-failure.md" ]; then
+  ok "consensus-failure.md exists"
+else
+  not_ok "consensus-failure.md exists" "file missing or empty"
+fi
+
+# Test 8: compaction-recovery.md exists and is non-empty
+if [ -s "$PROJECT_ROOT/assets/fbk-docs/fbk-council/compaction-recovery.md" ]; then
+  ok "compaction-recovery.md exists"
+else
+  not_ok "compaction-recovery.md exists" "file missing or empty"
+fi
+
+# Test 9: ralph-integration.md exists and is non-empty
+if [ -s "$PROJECT_ROOT/assets/fbk-docs/fbk-council/ralph-integration.md" ]; then
+  ok "ralph-integration.md exists"
+else
+  not_ok "ralph-integration.md exists" "file missing or empty"
+fi
+
 echo ""
 echo "$PASS/$TOTAL tests passed"
 [[ $FAIL -eq 0 ]] && exit 0 || exit 1

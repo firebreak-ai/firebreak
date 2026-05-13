@@ -29,11 +29,17 @@ Write each section. Do not skip or combine sections.
 
 - **Runtime value precision**: When a spec references runtime values — key codes, event names, API paths, configuration keys, enum values, string constants — use the exact runtime representation, not conceptual shorthand. When the value must be resolved at implementation time (e.g., a context obtained from a parent constructor, a reference threaded through a call chain), name the concrete source and the resolution path. Conventions that cross module boundaries should be documented once in the spec and used consistently. Example: "The InputHandler stores `event.key` values: `' '` for spacebar, `'Enter'` for enter, `'ArrowLeft'`/`'ArrowRight'` for movement."
 
+- **Module touch policy** (required when the feature modifies existing code): For each existing module the feature touches, declare one of three policies — *extend* (add new code without modifying existing code), *refactor-then-extend* (restructure existing code first, then add new code), or *leave alone* (no changes to this module). When the policy is refactor-then-extend, name the structural change required. The task compiler creates a separate preparatory refactor task in an earlier wave for each refactor-then-extend module. Example:
+  > - [ ] InputHandler: extend (add `Escape` key handling)
+  > - [ ] WeaponSystem: refactor-then-extend (extract projectile lifecycle into separate module before adding multi-projectile support)
+  > - [ ] InvaderGrid: leave alone
+
 **5. Testing strategy** — Three required subsections. Generic phrases like "add unit tests" are not acceptable; fail any draft that contains them.
 
 - **New tests needed**: For each test, state what behavior it validates, at what level (unit / integration / e2e), and which AC it covers. Before listing a test, verify the code path produces a testable return value or observable state change — code paths that only write to a logger require test infrastructure changes or an AC revision. Example: "Unit test: `parseToken()` returns null for expired JWTs — covers AC-03."
 - **Existing tests impacted**: In brownfield, search the test suite for tests that cover the files and functions this feature modifies. When the feature removes or renames a symbol, grep for all call sites of that symbol across test files — not just the definition site — and include every caller in this list. List each test file or test name, the affected code path, and the expected change (update assertions / fixtures / mocks). In greenfield, write: "None — no existing test suite."
 - **Test infrastructure changes**: List new fixtures, mocks, test utilities, or test data needed. In greenfield, include bootstrapping the test framework if no test infrastructure exists.
+- **Mocking justifications**: For each mock listed under "Test infrastructure changes," name the property of the real collaborator that justifies the mock — slowness (network I/O, expensive computation), non-determinism (current time, random generation, external service responses), or unavailability (paid third-party service, hardware not present in the test environment). Default to using the real collaborator. Example: "Mock for `PaymentGateway` — justified by external network call (real gateway requires sandbox credentials and 2-3s latency per test)." See `fbk-design-guidelines/test-authoring.md` "Real collaborators where fast" for the implementation-side counterpart.
 - **User verification steps**: "How would a human verify this feature works?" Numbered steps, each following a structured **action → observable outcome** format:
   > UV-1: Press spacebar → projectile fires and moves upward
   > UV-2: Projectile hits invader → invader is destroyed and explosion particles appear
@@ -50,6 +56,20 @@ Write each section. Do not skip or combine sections.
 **7. Acceptance criteria** — List independently verifiable conditions for "done." Use short identifiers: AC-01, AC-02, ... Each AC must be testable by a single automated check or a reproducible manual step. Avoid vague qualities ("fast," "easy to use").
 
 **8. Open questions** — List unresolved decisions the user or stakeholders must answer before Stage 2. Before approving the gate, every item must either be resolved or have explicit rationale for deferral. When a question is resolved, move its conclusion into the relevant spec section and remove it from this list. An empty list is valid and expected when the spec is complete.
+
+The gate checks every bullet in this section and demands rationale per item. Do not accumulate resolved decisions here as bullets — the gate cannot distinguish a resolved decision from a pending one. When all questions are resolved, write `None.` in §8. Place any resolved-decisions summary in a separate section after §9, for example:
+
+```
+**8. Open questions** — None.
+
+**9. Dependencies** — [...]
+
+---
+
+## Decisions resolved during scoping
+
+- **Decision label.** [resolution summary and rationale]
+```
 
 **9. Dependencies** — List external systems, libraries, APIs, and other features this feature requires. Include version constraints when relevant.
 
@@ -144,6 +164,7 @@ When the user signals the spec is complete:
 2. If the gate fails: report which checks failed and what is missing.
 3. If the gate passes: confirm structural completeness and present the semantic criteria for the user to assess.
 4. If the user is satisfied: ask "Would you like to move to spec review?"
-5. If agreed: invoke `/spec-review <feature-name>`.
+5. Before invoking `/fbk-spec-review`: confirm all artifacts are written to disk; summarize the completed spec (feature name, artifact path, key decisions); compact context.
+6. If agreed: invoke `/fbk-spec-review <feature-name>`.
 
-For project-level: after the user agrees on the overview and feature decomposition, ask which feature to spec first. Do not invoke `/spec-review` until a complete feature-level spec passes the gate.
+For project-level: after the user agrees on the overview and feature decomposition, ask which feature to spec first. Do not invoke `/fbk-spec-review` until a complete feature-level spec passes the gate.

@@ -1,0 +1,168 @@
+{
+  "spec": "ai-docs/progressive-disclosure-refactor/council-decomposition/council-decomposition-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Author tests/sdl-workflow/test-council-skill-structure.sh \u2014 structural smoke test (~66 assertions covering all active ACs)",
+      "file": "task-01-test-skill-structure.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-03",
+        "AC-04",
+        "AC-06",
+        "AC-07",
+        "AC-09",
+        "AC-10",
+        "AC-11",
+        "AC-12",
+        "AC-13",
+        "AC-14"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-concern test authoring with ~66 enumerated assertions; requires comprehending the spec's structural contract across SKILL + 3 leaves + modified existing tests + downstream callers + CHANGELOG/README and translating into TAP-format shell assertions. Sonnet is safer than Haiku given assertion-correctness matters and the assertion list spans many ACs.",
+      "status": "complete",
+      "summary": "Authored tests/sdl-workflow/test-council-skill-structure.sh (247 lines, 68 assertions). Run against current main: exit 1, 21 ok, 47 not ok. Completion gate satisfied \u2014 test catches the missing implementation deterministically and will pass once Wave 2+3 land.",
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Extend tests/sdl-workflow/test-old-locations-empty.sh \u2014 assert assets/fbk-docs/fbk-council/ + 3 leaves exist",
+      "file": "task-02-impl-old-locations-extension.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file mechanical extension; add 4 assertions (directory + 3 leaf files) to an existing shell test following established pattern. Implementation work on test infrastructure files.",
+      "status": "complete",
+      "summary": "Extended tests/sdl-workflow/test-old-locations-empty.sh with 4 new assertions (directory + 3 leaf files exist). Test exits 1 against current main as expected; assertions 6-9 fail until leaves land. Tests 1-5 byte-identical to original.",
+      "note": null
+    },
+    {
+      "id": "task-03",
+      "title": "Extend tests/sdl-workflow/test-no-old-path-patterns.sh \u2014 add 3 leaf paths to files=() array; delete test-council-skill-references.sh after assertion migration",
+      "file": "task-03-impl-no-old-path-patterns-extension.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded mechanical changes to two files (extend array + delete companion file); depends on task-01 for assertion migration. Implementation work on test infrastructure files.",
+      "status": "complete",
+      "summary": "Added 3 new leaf paths to tests/sdl-workflow/test-no-old-path-patterns.sh files=() array. Deleted tests/sdl-workflow/test-council-skill-references.sh after verifying assertions 1+2 ported to test-council-skill-structure.sh. Test exits 0 (all 4 path-pattern checks pass).",
+      "note": null
+    },
+    {
+      "id": "task-04",
+      "title": "Create assets/fbk-docs/fbk-council/consensus-failure.md (merged decision-protocol + conflict-resolution)",
+      "file": "task-04-impl-consensus-failure-leaf.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-04"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single new file; content migration with verbatim source line ranges (current SKILL 500\u2013613); concatenation with light leading paragraph.",
+      "status": "complete",
+      "summary": "Created assets/fbk-docs/fbk-council/consensus-failure.md (116 lines). Migrated SKILL.md lines 500-554 (Decision Protocol) and 558-613 (Conflict Resolution) verbatim with leading paragraph. All 9 content terms (assertions 34-42) verified present.",
+      "note": null
+    },
+    {
+      "id": "task-05",
+      "title": "Create assets/fbk-docs/fbk-council/compaction-recovery.md (READ-side only; WRITE-side stays inline in SKILL \u00a74.2 item 5a)",
+      "file": "task-05-impl-compaction-recovery-leaf.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Single new file but requires careful selective migration \u2014 must preserve READ-side content (recovery protocol, state schema, cleanup) while excluding WRITE-side checkpoint trigger that lives inline in SKILL. Mistake here breaks the recovery cycle.",
+      "status": "complete",
+      "summary": "Created assets/fbk-docs/fbk-council/compaction-recovery.md (71 lines). Migrated READ-side content (recovery protocol, Session State Footer, state schema, cleanup) from SKILL.md lines 438-496. WRITE-side session-state checkpoint invocation explicitly NOT included (verified by grep). All 4 content terms (assertions 43-46) pass.",
+      "note": null
+    },
+    {
+      "id": "task-06",
+      "title": "Create assets/fbk-docs/fbk-council/ralph-integration.md",
+      "file": "task-06-impl-ralph-integration-leaf.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-07"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Single new file but ~177 lines of content migration with diagram and YAML schema preservation; Sonnet handles formatting fidelity better than Haiku at this length.",
+      "status": "complete",
+      "summary": "Created assets/fbk-docs/fbk-council/ralph-integration.md (175 lines). Migrated SKILL.md lines 773-947 (Ralph Wiggum Integration) verbatim. ### subsection headers promoted to ## since the outer container no longer exists. All 4 content terms (assertions 47-50) pass.",
+      "note": null
+    },
+    {
+      "id": "task-07",
+      "title": "Rewrite assets/skills/fbk-council/SKILL.md per spec \u00a74.2 nineteen-item structure (orchestrator file)",
+      "file": "task-07-impl-skill-rewrite.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-03",
+        "AC-09",
+        "AC-11",
+        "AC-12",
+        "AC-13"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Orchestrator file (per task-compilation orchestrator-task rule, Sonnet minimum). Largest single task \u2014 ~400 lines new content, 19-item structural assembly, multiple verbatim spec quotes, wiring checklist. The integration risk is highest for this task (it wires everything together).",
+      "status": "complete",
+      "summary": "Rewrote assets/skills/fbk-council/SKILL.md from 947 lines to 431 lines (~54% reduction). Wiring checklist all checked. Banned headers absent; dispatch references to all 3 leaves; trigger phrases verbatim; --tier full literal; per-phase checkpoint trigger inline; 9 facilitator instructions. test-review-integration.sh and test-council-agent-personas.sh both pass (caller integrity preserved). SCOPE NOTE: also added grep -F -- separator to smoke test assertions 17 and 68 (test-correctness bug fix; transparently disclosed). README finding (line 99 still says 6 agents) surfaced for task-08.",
+      "note": null
+    },
+    {
+      "id": "task-08",
+      "title": "Add CHANGELOG entry + update README line 99 (drops literal \"6 agents\")",
+      "file": "task-08-impl-changelog-entry.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-04",
+        "task-05",
+        "task-06",
+        "task-07"
+      ],
+      "covers": [
+        "AC-14"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Two-file mechanical text edits with verbatim content specified in spec \u00a76.1 and AC-14. CHANGELOG entry + README line replacement, both grep-verifiable. No design decisions.",
+      "status": "complete",
+      "summary": "Added CHANGELOG bullet under [0.4.0] ### Changed leading with Decomposed; replaced README.md line 99 with user-approved soft-default wording. Smoke test now exits 0 with 68/68 ok.",
+      "note": null
+    }
+  ]
+}
