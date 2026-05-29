@@ -185,13 +185,13 @@ Remove bias-sources by restructuring the asset rather than instructing the agent
 
 | When you are... | Read |
 |-----------------|------|
-| Writing or modifying a CLAUDE.md file | `fbk-context-assets/claude-md.md` |
-| Writing or modifying a rule | `fbk-context-assets/rules.md` |
-| Writing or modifying a skill | `fbk-context-assets/skills.md` |
-| Writing or modifying a hook | `fbk-context-assets/hooks.md` |
-| Writing or modifying an agent | `fbk-context-assets/agents.md` |
-| Writing or modifying a docs/ file (index or leaf) | `fbk-context-assets/referenced-docs.md` |
-| Reviewing the always-on authoring disciplines | `fbk-context-assets/always-on-disciplines.md` |
+| Writing or modifying a CLAUDE.md file | `.claude/fbk-docs/fbk-context-assets/claude-md.md` |
+| Writing or modifying a rule | `.claude/fbk-docs/fbk-context-assets/rules.md` |
+| Writing or modifying a skill | `.claude/fbk-docs/fbk-context-assets/skills.md` |
+| Writing or modifying a hook | `.claude/fbk-docs/fbk-context-assets/hooks.md` |
+| Writing or modifying an agent | `.claude/fbk-docs/fbk-context-assets/agents.md` |
+| Writing or modifying a docs/ file (index or leaf) | `.claude/fbk-docs/fbk-context-assets/referenced-docs.md` |
+| Reviewing the always-on authoring disciplines | `.claude/fbk-docs/fbk-context-assets/always-on-disciplines.md` |
 
 ---
 

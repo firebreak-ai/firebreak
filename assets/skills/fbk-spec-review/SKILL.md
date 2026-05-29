@@ -6,6 +6,8 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
+This skill is phase three of the six-phase SDL; its review artifact serves as the semantic anchor that the spec gate reads to determine whether the spec is ready to advance.
+
 Read `.claude/fbk-docs/fbk-sdl-workflow/review-perspectives.md` before proceeding — it defines classification signals, SDL concerns, invocation modes, threat-model determination, review document structure, and the verification gate.
 
 ## Argument

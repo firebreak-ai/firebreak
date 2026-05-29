@@ -30,7 +30,7 @@ description: Assembles the development council — a team of specialized agents 
 
 ### Phase 0: Task Intake
 
-Before initializing a new session, run `python3 "$HOME"/.claude/fbk-scripts/fbk.py session-state recovery-check`. If `recovering` is `true` in the JSON output, read `assets/fbk-docs/fbk-council/compaction-recovery.md` and resume from the returned `current_phase`.
+Before initializing a new session, run `python3 "$HOME"/.claude/fbk-scripts/fbk.py session-state recovery-check`. If `recovering` is `true` in the JSON output, read `.claude/fbk-docs/fbk-council/compaction-recovery.md` and resume from the returned `current_phase`.
 
 **Session Initialization** (new sessions only): Create the council session marker file and initialize logging:
 ```bash
@@ -209,7 +209,7 @@ Format:
 
 After each round, briefly summarize the state of discussion before proceeding. If an agent has nothing new to add, they should explicitly pass rather than repeat prior points.
 
-When Round 1 of Phase 3 ends without consensus, read `assets/fbk-docs/fbk-council/consensus-failure.md` and apply the decision protocol for the task type; if the decision protocol surfaces an unresolved conflict between agents, apply the resolution-by-conflict-type rules in the same leaf.
+When Round 1 of Phase 3 ends without consensus, read `.claude/fbk-docs/fbk-council/consensus-failure.md` and apply the decision protocol for the task type; if the decision protocol surfaces an unresolved conflict between agents, apply the resolution-by-conflict-type rules in the same leaf.
 
 ### Phase 4: Final Questions (Team → User)
 
@@ -408,7 +408,7 @@ The structured fields are parsed by `recovery-check` if a future session resumes
 
 ## Ralph Integration
 
-When invoked inside a Ralph loop, read `assets/fbk-docs/fbk-council/ralph-integration.md` and follow its checkpointing and exit-marker protocol. Detection: state file `~/.claude/council-logs/council-state.json` exists AND its `status` field equals `CONTINUE` AND `iteration` < `max_iterations`, OR explicit invocation via `/ralph-loop`. A stale state file with `status: COUNCIL_COMPLETE` or with `iteration` >= `max_iterations` does NOT activate Ralph mode — those are leftover artifacts from prior completed sessions and the orchestrator should clean them via `session-state cleanup` before proceeding with a normal `/fbk-council` session.
+When invoked inside a Ralph loop, read `.claude/fbk-docs/fbk-council/ralph-integration.md` and follow its checkpointing and exit-marker protocol. Detection: state file `~/.claude/council-logs/council-state.json` exists AND its `status` field equals `CONTINUE` AND `iteration` < `max_iterations`, OR explicit invocation via `/ralph-loop`. A stale state file with `status: COUNCIL_COMPLETE` or with `iteration` >= `max_iterations` does NOT activate Ralph mode — those are leftover artifacts from prior completed sessions and the orchestrator should clean them via `session-state cleanup` before proceeding with a normal `/fbk-council` session.
 
 Use Ralph mode for multi-phase implementation, complex refactoring requiring deliberation at decision points, or exploratory work where scope may evolve across iterations. Avoid for quick one-off questions, time-sensitive work, or tasks with unclear success criteria.
 

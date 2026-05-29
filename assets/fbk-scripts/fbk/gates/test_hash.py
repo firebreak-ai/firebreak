@@ -113,9 +113,20 @@ def verify_manifest(feature_dir, manifest_path=None) -> list[dict]:
     # For outside-feature_dir entries (last-two-components keys), we use feature_dir / relpath
     # as a best-effort resolution; callers using truly external locked files should verify
     # via their own mechanism.
+    # Fallback: when the manifest was created with a subdirectory as scope (so relpaths are
+    # bare filenames), but verify is called with a parent dir, search the subtree by filename.
     actual_paths = {}
     for relpath, entry in old.items():
         actual = base / relpath
+        if not actual.exists():
+            # Fallback: search subtree for the bare filename.
+            fname = Path(relpath).name
+            candidates = sorted(
+                p for p in base.rglob(fname)
+                if p.is_file() and _is_test_file(p)
+            )
+            if candidates:
+                actual = candidates[0]
         actual_paths[relpath] = actual
 
         if not actual.exists():
@@ -127,6 +138,11 @@ def verify_manifest(feature_dir, manifest_path=None) -> list[dict]:
 
     # Shadow-test detection scoped to locked set's directories only.
     # scope_dirs = parent dirs of actual files for every recorded relpath.
+    known_actual_paths = {
+        actual_paths[relpath].resolve()
+        for relpath in old
+        if actual_paths[relpath].exists()
+    }
     scope_dirs = {
         actual_paths[relpath].parent
         for relpath in old
@@ -138,8 +154,8 @@ def verify_manifest(feature_dir, manifest_path=None) -> list[dict]:
             continue
         for path in scope_dir.iterdir():
             if path.is_file() and _is_test_file(path):
-                rel = _relpath_for(path, base)
-                if rel not in old:
+                if path.resolve() not in known_actual_paths:
+                    rel = _relpath_for(path, base)
                     discrepancies.append({"kind": "unexpected", "path": rel})
 
     return discrepancies
