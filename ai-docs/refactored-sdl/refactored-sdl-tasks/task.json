@@ -607,8 +607,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "verify_manifest-delegation + non-blocking cases",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/tests/test_gates_code_review.py: 12 tests / 6 classes \u2014 passes-full, missing artifacts (quality-scan, severity field, test-review verdict), hash mismatch (modified locked + shadow), non-failing conditions (critical severity, missing kind, drift verdict), verify_manifest delegation (single-call monkeypatched), path guard (subprocess exit 2, binary scan graceful). Uses list-driven lock mode via create_manifest(tests_dir, locked_files=...). Pre-impl: 12 tests skip via module-level pytestmark guard.",
       "note": null
     },
     {
@@ -627,8 +627,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "New gate branching on structured discrepancies",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/fbk/gates/code_review.py: validate_code_review(feature_dir) -> dict; checks quality-scan.md with Severity: field, test-review-final.md (glob fallback to test-review-*.md), delegates hash/shadow via test_hash.verify_manifest(feature_dir). missing kind = non-blocking finding; modified/unexpected fail. argparse main with is_dir guard, errors='replace', JSON stdout. Also patched test_hash.verify_manifest: fallback filename search when base/relpath doesn't exist (needed because manifests created with tests/ scope verified at parent); shadow detection migrated to absolute-path membership to avoid false flag on fallback-resolved files. 22/22 code_review+test_hash tests pass; full suite 217/217 pass.",
       "note": null
     },
     {
@@ -643,8 +643,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Install/uninstall + grep assertions",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/installer/test-refactored-sdl-install.sh: 16 TAP assertions for AC-22 \u2014 installer success, fbk-scripts tree, 6 new skills installed (intent, design, grilling, fresh-eyes, quality-scan, test-review), 3 new agents installed, 3 routed docs installed, adversarial assets/ leak grep, uninstall removes tree. Modified tests/sdl-workflow/test-reference-integrity.sh adding Part 3: adversarial assets/ prefix grep across asset .md files (refined regex avoids context-assets/ false positives). Fixed 10 path leaks: 7 in assets/fbk-docs/fbk-context-assets.md routing table, 3 in assets/skills/fbk-council/SKILL.md. Red state: installer test exits 1 (2/16 pass) because new assets not installed yet; reference-integrity passes 111/111 with Part 3 forward guard.",
       "note": null
     },
     {
@@ -659,8 +659,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Integration wiring of the assembled chain",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified assets/fbk-docs/fbk-sdl-workflow.md: updated pipeline description from 4-stage to six-phase (Intent \u2192 Design \u2192 Spec \u2192 Breakdown \u2192 Code Review \u2192 Implement); expanded iteration cap table with stages 1-6; added 4 routing rows for intent-guide, design-guide, slice-shapes, capability-entry. Modified assets/skills/fbk-spec-review/SKILL.md: added phase-3-of-six + semantic-anchor framing one-liner. Modified assets/skills/fbk-implement/SKILL.md: added phase-six framing one-liner (initially 'phase five' per spec gate; team-lead corrected to 'phase six' to match six-phase numbering). Modified tests/sdl-workflow/test-no-old-path-patterns.sh: added fbk-intent and fbk-design SKILL.md to enumerated file list. Verification: 4 routing greps pass; framing greps pass; no assets/ prefix anywhere; test-reference-integrity.sh 115/115; test-no-old-path-patterns.sh 4/4.",
       "note": null
     }
   ]

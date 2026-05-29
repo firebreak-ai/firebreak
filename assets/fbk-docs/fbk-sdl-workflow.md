@@ -1,4 +1,4 @@
-Use a 4-stage pipeline for complex features: Spec → Review → Breakdown → Implement. Require external feedback at every iteration — valid sources: human judgment, test results, lint passes, council agents with distinct perspectives. Self-refinement without external signals is counterproductive.
+Use a six-phase pipeline for complex features: Intent → Design → Spec → Breakdown → Code Review → Implement. Intent and design precede spec — intent captures what and why, design resolves how before any spec is authored. Require external feedback at every iteration — valid sources: human judgment, test results, lint passes, council agents with distinct perspectives. Self-refinement without external signals is counterproductive.
 
 ## Pipeline Principles
 
@@ -10,10 +10,12 @@ Use a 4-stage pipeline for complex features: Spec → Review → Breakdown → I
 
 | Stage | Iteration Cap | Notes |
 |-------|---------------|-------|
-| 1: Feature Spec | Human-driven, no hard cap | User drives iteration frequency |
-| 2: Spec Review | 1 thorough review + 1 revision if blocking findings | Escalate if blocking findings persist |
-| 3: Task Breakdown | 2 compilation attempts | Escalate if compilation fails twice |
-| 4: Implementation | 2 task escalations per task, then escalate to user | Escalate to user if escalation limit reached. After the final wave, run the full test suite before offering any commit. |
+| 1: Intent | Human-driven, no hard cap | User drives iteration frequency |
+| 2: Design | Human-driven, no hard cap | User drives iteration frequency |
+| 3: Feature Spec | Human-driven, no hard cap | User drives iteration frequency |
+| 4: Spec Review | 1 thorough review + 1 revision if blocking findings | Escalate if blocking findings persist |
+| 5: Task Breakdown | 2 compilation attempts | Escalate if compilation fails twice |
+| 6: Implementation | 2 task escalations per task, then escalate to user | Escalate to user if escalation limit reached. After the final wave, run the full test suite before offering any commit. |
 
 A **task escalation** is a task rewrite assigned to a different teammate after in-session resolution fails. **In-session retries** — TaskCompleted hook rejections resolved by the teammate without escalation — are not task escalations. Track both metrics separately in the retrospective.
 
@@ -22,6 +24,10 @@ A **task escalation** is a task rewrite assigned to a different teammate after i
 **Mid-pipeline entry**: If the user invokes a stage directly, check the immediately prior stage's structural gate first. Report what failed and offer to run the prior stage to resolve it.
 
 ## Stage Guides
+
+When co-authoring intent → `/fbk-intent` skill loads `fbk-sdl-workflow/intent-guide.md`
+
+When co-authoring a design → `/fbk-design` skill loads `fbk-sdl-workflow/design-guide.md`
 
 When co-authoring a feature specification → `/fbk-spec` skill loads `fbk-sdl-workflow/feature-spec-guide.md`
 
@@ -34,6 +40,10 @@ When creating or modifying `.claude/automation/config.yml` → `fbk-sdl-workflow
 When creating or modifying `.claude/automation/verify.yml` → `fbk-sdl-workflow/verify-yml-schema.md`
 
 When compiling a specification into tasks → `/fbk-breakdown` skill loads `fbk-sdl-workflow/task-compilation.md`
+
+When identifying slices during breakdown → `fbk-sdl-workflow/slice-shapes.md` (routes to the four shape leaves)
+
+When a phase is invoked directly (mid-pipeline entry) → `fbk-sdl-workflow/capability-entry.md`
 
 When implementing tasks from a breakdown → `/fbk-implement` skill loads `fbk-sdl-workflow/implementation-guide.md`
 
