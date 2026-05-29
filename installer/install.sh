@@ -129,6 +129,22 @@ if [ "$MODE" != "uninstall" ] && [ "$SOURCE_EXPLICIT" = "0" ] && { [ -z "$SOURCE
   download_source
 fi
 
+# Normalize SOURCE_DIR: strip trailing slash and resolve to absolute path.
+# Without this, --source "assets/" leaves SOURCE_DIR with a trailing slash, which
+# breaks the rel_path strip in enumerate_assets (the prefix pattern stops matching),
+# causing all files to be copied to $TARGET_DIR/assets/... instead of $TARGET_DIR/...
+if [ -n "$SOURCE_DIR" ] && [ -d "$SOURCE_DIR" ]; then
+  SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
+fi
+# Same normalization for TARGET_DIR so dst paths are predictable.
+if [ -n "$TARGET_DIR" ]; then
+  # Strip trailing slash; absolutify only if the directory already exists.
+  TARGET_DIR="${TARGET_DIR%/}"
+  if [ -d "$TARGET_DIR" ]; then
+    TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
+  fi
+fi
+
 # Determine install mode from target path
 if [ -n "$TARGET_DIR" ]; then
   if [ "$TARGET_DIR" = "$HOME/.claude" ]; then
