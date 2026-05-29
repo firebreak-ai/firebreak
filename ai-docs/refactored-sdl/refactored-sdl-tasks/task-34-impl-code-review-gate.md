@@ -27,7 +27,7 @@ def validate_code_review(feature_dir: str) -> dict
 Checks (read the task-12 test for exact fixtures and failure substrings):
 
 1. **Quality-scan artifact present with severity field**: `<feature_dir>/quality-scan.md` exists AND contains a `Severity:` line somewhere. Absent file → failure mentioning "quality-scan"/"quality scan". File present but no `Severity:` field → failure.
-2. **Final test-review verdict artifact present**: `<feature_dir>/test-review-final.md` exists (or any file matching `test-review-*.md` for the final-pass artifact — the test uses `test-review-final.md`). Absent → failure.
+2. **Final test-review verdict artifact present**: the canonical (primary) lookup is `<feature_dir>/test-review-final.md` — the name task-20's `fbk-test-review` skill writes for the final pass (the `<checkpoint>` value is `final`). The gate reads `test-review-final.md` first; it may fall back to any file matching `test-review-*.md` for the final-pass artifact, but `test-review-final.md` is the pinned canonical name and is what the test uses. Absent → failure.
 3. **Hash + shadow-test check via delegation**: call `verify_manifest(feature_dir)` imported from `fbk.gates.test_hash` (the restructured version from task-26 returning `list[dict]`). Do NOT implement a second hash-comparison path. Branch on the structured discrepancy kinds (Interface contract #4):
    - any item `kind == "modified"` → gate FAILS (hash mismatch / tampered locked test).
    - any item `kind == "unexpected"` → gate FAILS (shadow test).
@@ -53,7 +53,7 @@ Result JSON shape: `{"gate": "code-review", "result": "pass"|"fail", "failures":
 
 3. Implement `def validate_code_review(feature_dir: str) -> dict`:
    - Quality-scan present + `Severity:` field check (read with `errors="replace"`).
-   - Final test-review verdict artifact present check (`test-review-final.md` or `test-review-*.md` glob).
+   - Final test-review verdict artifact present check: look up the canonical `test-review-final.md` first (the pinned final-checkpoint name task-20 writes), falling back to a `test-review-*.md` glob for the final-pass artifact.
    - Call `test_hash.verify_manifest(feature_dir)` exactly once. Iterate the returned list: collect `modified` and `unexpected` items into `failures` (each a string naming the kind + path); collect `missing` items into `findings` (non-blocking).
    - Do not treat any quality-scan severity value as a failure.
    - Return `{"gate": "code-review", "result": "pass" if not failures else "fail", "failures": failures, "findings": findings}`.
