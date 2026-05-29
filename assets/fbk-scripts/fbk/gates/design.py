@@ -29,7 +29,14 @@ def _has_decomposition_rationale(text: str) -> bool:
 
 
 def _critical_section_has_content(fresh_eyes_text: str) -> bool:
-    """Return True if the ## Critical section has non-blank list items."""
+    """Return True if the ## Critical section has bullet-list observation items.
+
+    Observations in fresh-eyes reports are list items (lines starting with '-').
+    Prose paragraphs or section text do not count as open observations — they
+    are dedup notes, summaries, or "no observations" notes. This matches the
+    intent gate's _check_fresh_eyes semantics so both gates apply the same
+    contract.
+    """
     lines = fresh_eyes_text.splitlines()
     in_critical = False
     for line in lines:
@@ -39,7 +46,7 @@ def _critical_section_has_content(fresh_eyes_text: str) -> bool:
         if in_critical:
             if line.startswith("## "):
                 break
-            if line.strip().startswith("-") or (line.strip() and not line.strip().startswith("#")):
+            if line.strip().startswith("-"):
                 return True
     return False
 

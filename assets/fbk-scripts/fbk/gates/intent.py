@@ -185,6 +185,8 @@ def validate_intent(feature_dir: str) -> dict:
     injection_warnings += detect_injections(inventory_text)
     if grilling_text is not None:
         injection_warnings += detect_injections(grilling_text)
+    if fresh_eyes_text is not None:
+        injection_warnings += detect_injections(fresh_eyes_text)
 
     return {
         "gate": "intent",

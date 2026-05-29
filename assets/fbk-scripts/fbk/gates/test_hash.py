@@ -102,7 +102,9 @@ def verify_manifest(feature_dir, manifest_path=None) -> list[dict]:
     base = Path(feature_dir)
     if manifest_path is None:
         manifest_path = base / "test-hashes.json"
-    with open(manifest_path) as f:
+    if not Path(manifest_path).is_file():
+        return [{"kind": "missing", "path": str(manifest_path)}]
+    with open(manifest_path, encoding="utf-8", errors="replace") as f:
         manifest = json.load(f)
 
     old = manifest.get("files", {})
