@@ -85,15 +85,21 @@ All new tests must be added as new methods to new classes, not modifying the exi
 
 5. Write class `TestSliceShapeAwareness` with these tests:
 
-   - `test_cross_cutting_test_only_slice_passes()`: Use `make_minimal_spec(["AC-01"])`, `make_cross_cutting_manifest("AC-01")`, task files `{"task-01.md": "## Files to create\n- `test_ac01.py`"}`. Call `validate_breakdown`. Assert `result["result"] == "pass"`. (This was previously failing because check #1 required an impl task for every AC — cross-cutting exempts it.)
+   Note on the manifest-present signal: because the gate's pre-lock-verdict check fires whenever slice metadata is present, every slices-bearing breakdown that is meant to PASS must also carry the manifest-present signal — a `"test-hashes.json"` key in `task_files` (value can be a minimal manifest JSON string such as `'{"files": {}, "computed_at": "2026-01-01T00:00:00Z"}'`). Add this key to the `task_files` of every passing slice-shape fixture below. A module-level constant like `MANIFEST_ENTRY = {"test-hashes.json": '{"files": {}, "computed_at": "2026-01-01T00:00:00Z"}'}` merged into each passing fixture's `task_files` keeps these readable.
 
-   - `test_contract_preserving_impl_without_new_test_passes()`: Use `make_minimal_spec(["AC-01"])`, `make_contract_preserving_manifest("AC-01")`, task files `{"task-01.md": "## Files to create\n- `impl.py`\n\nLocks existing tests; no new test task needed (contract-preserving slice)."}`. Assert `result["result"] == "pass"`. (Was previously failing because check #8 required a test task for every code-modifying impl.)
+   - `test_cross_cutting_test_only_slice_passes()`: Use `make_minimal_spec(["AC-01"])`, `make_cross_cutting_manifest("AC-01")`, task files `{"task-01.md": "## Files to create\n- `test_ac01.py`", **MANIFEST_ENTRY}`. Call `validate_breakdown`. Assert `result["result"] == "pass"`. (This was previously failing because check #1 required an impl task for every AC — cross-cutting exempts it.)
 
-   - `test_contract_evolving_missing_retired_tests_list_fails()`: Build manifest with a `contract-evolving` slice task (impl type) but no `"retired_tests"` field. Assert `result["result"] == "fail"` and at least one failure mentioning "retired" or "contract-evolving".
+   - `test_contract_preserving_impl_without_new_test_passes()`: Use `make_minimal_spec(["AC-01"])`, `make_contract_preserving_manifest("AC-01")`, task files `{"task-01.md": "## Files to create\n- `impl.py`\n\nLocks existing tests; no new test task needed (contract-preserving slice).", **MANIFEST_ENTRY}`. Assert `result["result"] == "pass"`. (Was previously failing because check #8 required a test task for every code-modifying impl.)
 
-   - `test_contract_evolving_with_retired_tests_passes()`: Same as above but add `"retired_tests": [{"file": "test_old.py", "rationale": "API changed"}]` to the task. Assert pass (assuming AC coverage is otherwise complete — provide a matching test task in the manifest or use `category: "testing-infrastructure"` to avoid check #8).
+   - `test_contract_evolving_missing_retired_tests_list_fails()`: Build manifest with a `contract-evolving` slice task (impl type) but no `"retired_tests"` field. Assert `result["result"] == "fail"` and at least one failure mentioning "retired" or "contract-evolving". (Include `MANIFEST_ENTRY` so the only failure under test is the missing retired-tests list, not the manifest-presence check.)
+
+   - `test_contract_evolving_with_retired_tests_passes()`: Same as above but add `"retired_tests": [{"file": "test_old.py", "rationale": "API changed"}]` to the task. Include `MANIFEST_ENTRY` in `task_files`. Assert pass (assuming AC coverage is otherwise complete — provide a matching test task in the manifest or use `category: "testing-infrastructure"` to avoid check #8).
 
    - `test_cross_cutting_with_impl_task_fails()`: Build a cross-cutting manifest that also includes an impl task for the same AC. Assert fail — cross-cutting ⇒ no impl task is the invariant.
+
+   - `test_slices_breakdown_missing_test_lock_manifest_fails()`: Build a slices-bearing breakdown (any slice metadata present — reuse `make_cross_cutting_manifest("AC-01")` with task file `{"task-01.md": "## Files to create\n- `test_ac01.py`"}`) but supply NO `test-hashes.json` entry in `task_files`. Call `validate_breakdown`. Assert `result["result"] == "fail"` and at least one failure mentioning "test-lock manifest" or "test-hashes.json" or "pre-lock". (The pre-lock test-review verdict is verified by manifest presence; a slices breakdown with no manifest means the pre-lock verdict was not accepted.)
+
+   - `test_slices_breakdown_with_test_lock_manifest_passes()`: Same slices-bearing breakdown, but add the manifest-present signal: include a `"test-hashes.json"` key in `task_files` (e.g. `{"task-01.md": "## Files to create\n- `test_ac01.py`", "test-hashes.json": '{"files": {}, "computed_at": "2026-01-01T00:00:00Z"}'}`). Call `validate_breakdown`. Assert `result["result"] == "pass"` (cross-cutting AC needs no impl task; manifest present satisfies the pre-lock-verdict check). This pairs with the missing-manifest test to prove the presence check is load-bearing.
 
 6. Write class `TestBounceBackMarkerDetection`:
 
@@ -113,15 +119,15 @@ All new tests must be added as new methods to new classes, not modifying the exi
 
 ## 5. Test requirements
 
-9 new test methods across 3 new classes. Existing class `TestBreakdownGateValidation` (6 tests) is unchanged.
+11 new test methods across 3 new classes (7 in `TestSliceShapeAwareness`, 2 in `TestBounceBackMarkerDetection`, 2 in `TestLegacyBreakdownUnchanged`). Existing class `TestBreakdownGateValidation` (6 tests) is unchanged.
 
-Failing before implementation: cross-cutting pass test (`test_cross_cutting_test_only_slice_passes`) will fail because the current check #1 rejects the test-only case; contract-preserving pass test will fail because check #8 rejects the no-new-test case; contract-evolving retired-tests check is new code not yet present; bounce-back check is new code.
+Failing before implementation: cross-cutting pass test (`test_cross_cutting_test_only_slice_passes`) will fail because the current check #1 rejects the test-only case; contract-preserving pass test will fail because check #8 rejects the no-new-test case; contract-evolving retired-tests check is new code not yet present; the missing-manifest test (`test_slices_breakdown_missing_test_lock_manifest_fails`) will not yet fail-for-the-right-reason because the manifest-presence check is new code; bounce-back check is new code.
 
 The two legacy-behavior tests pass immediately (the existing behavior is unchanged for no-slice-metadata manifests).
 
 ## 6. Acceptance criteria
 
-Covers AC-05 (cross-cutting and contract-preserving shape cases pass; contract-evolving retired-tests enforcement), AC-06 (bounce-back marker detection), and verifies backward compat for no-slice-metadata manifests.
+Covers AC-05 (cross-cutting and contract-preserving shape cases pass; contract-evolving retired-tests enforcement; pre-lock test-review verdict verified by test-lock manifest presence — a slices breakdown missing its manifest fails, one with it passes), AC-06 (bounce-back marker detection), and verifies backward compat for no-slice-metadata manifests.
 
 ## 7. Model
 

@@ -7,6 +7,7 @@ files_to_create:
   - assets/skills/fbk-test-review/SKILL.md
 files_to_modify:
   - assets/agents/fbk-test-reviewer.md
+  - tests/sdl-workflow/test-test-reviewer-agent.sh
 test_tasks: [task-03]
 dependencies: []
 completion_gate: "the referenced test tasks pass"
@@ -44,17 +45,20 @@ The paired test (`tests/sdl-workflow/test-technique-skills.sh`) asserts for the 
 
 5. In the skill body, document: it routes the test-reviewer agent in either pre-lock or final mode (the caller or the operator selects the mode); it reviews the full set of tests covering the changed module; it writes `ai-docs/<feature>/test-review-<checkpoint>.md` with a verdict line that is exactly `accepted` or `needs-revision`. State explicitly that the final pass writes `ai-docs/<feature>/test-review-final.md` (the `<checkpoint>` value is `final`) — this is the canonical final-checkpoint artifact name the code-review gate reads. State that only an `accepted` pre-lock verdict triggers lock application downstream. Completion: `grep -qE 'accepted|needs-revision' assets/skills/fbk-test-review/SKILL.md`, `grep -q 'test-review-final.md' assets/skills/fbk-test-review/SKILL.md`, and the body documents both modes and the artifact path.
 
-6. Run the paired test: `bash tests/sdl-workflow/test-technique-skills.sh` (T10–T12 for the skill; T23–T24 for the agent).
+6. Re-sentinel the agent's structural prose test `tests/sdl-workflow/test-test-reviewer-agent.sh` to match the rewritten heading model. This task owns the agent rewrite, so it owns the re-sentinel. The existing Tests 6–10 in that file grep the five `## Checkpoint N` headings (and Test 10 / Test 14 use an awk range anchored on `## Checkpoint 5`); the rewrite removes those headings, which would leave the test asserting against headings that no longer exist. Rewrite those assertions to target the two new sections: replace the five per-checkpoint heading greps and awk ranges with assertions over `## Pre-lock mode` and `## Final mode`. Keep the assertions load-bearing — assert the substantive content each section must carry (e.g. Pre-lock mode mentions test-task translation / AC traceability / Tier-1 checks / fail-before-implementation; Final mode mentions implementation, weakened/trivially-passing assertions, widened scope, and contract-evolving retired-tests awareness), and remove the now-defunct Checkpoint-5 mutation-testing assertion rather than weakening it to trivially pass. Do not loosen Tests that still apply (frontmatter, persona, pipeline-blocking authority, context isolation, output format, brownfield, on-demand invocation). Completion: `bash tests/sdl-workflow/test-test-reviewer-agent.sh` exits 0 against the rewritten agent, `grep -q '## Pre-lock mode' tests/sdl-workflow/test-test-reviewer-agent.sh` and `grep -q '## Final mode' tests/sdl-workflow/test-test-reviewer-agent.sh` succeed, and `grep -c 'Checkpoint 5' tests/sdl-workflow/test-test-reviewer-agent.sh` returns 0.
+
+7. Run the paired test: `bash tests/sdl-workflow/test-technique-skills.sh` (T10–T12 for the skill; T23–T24 for the agent), and the re-sentineled `bash tests/sdl-workflow/test-test-reviewer-agent.sh`.
 
 ## 4. Files to create/modify
 
 - `assets/skills/fbk-test-review/SKILL.md` (create)
 - `assets/agents/fbk-test-reviewer.md` (modify)
+- `tests/sdl-workflow/test-test-reviewer-agent.sh` (modify — re-sentinel to the new heading model)
 
 ## 5. Test requirements
 
 - New tests: none authored here. Make `tests/sdl-workflow/test-technique-skills.sh` assertions T10–T12 and T23–T24 pass.
-- Existing tests impacted: search `tests/sdl-workflow/` for any test that greps the test-reviewer agent's checkpoint names (`Checkpoint 1`..`Checkpoint 5`). If such a sentinel test exists and references checkpoints removed by the rewire, that test belongs to the phase-skill-modifications slice (task-31/task-32 re-sentinel prose tests) — do NOT modify it here; instead confirm with the implementing context whether a sentinel update is needed. The technique-skills test (task-03) does not assert checkpoint names, so this task's paired test is unaffected.
+- Existing tests impacted (re-sentineled here): `tests/sdl-workflow/test-test-reviewer-agent.sh` greps the five `## Checkpoint N` headings (Tests 6–10) and does an awk range on `## Checkpoint 5` (Tests 10, 14). The agent rewrite removes those headings, so this task re-sentinels that test to assert the new `## Pre-lock mode` / `## Final mode` headings and their substantive content (see instruction 6). The re-sentinel belongs here because this task owns the agent rewrite. Keep the assertions load-bearing — do not weaken them to trivially pass. The technique-skills test (task-03) does not assert checkpoint names, so this task's paired test is unaffected.
 
 ## 6. Acceptance criteria
 
