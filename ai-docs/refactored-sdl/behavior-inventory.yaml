@@ -1,0 +1,1057 @@
+# Behavior inventory for the refactored SDL — the new Firebreak
+# software development lifecycle flow that absorbs disciplines proven out
+# during the remediation cycle and applies them to greenfield and
+# brownfield-on-firm-foundation work.
+#
+# - `agent-facing:` is what downstream stages (design authoring, spec
+#   authoring, breakdown, implementation) render. Domain language only;
+#   no references to current skill names or current implementation shapes.
+# - `operator-facing:` is the author's traceability into the existing
+#   skills and docs so the implementation of this project can find the
+#   right code to modify. It stays out of any prompt that crosses into
+#   downstream consumer agents.
+#
+# Scope: behaviors of the new SDL flow as a system. The flow has six
+# phases (intent, design, spec, breakdown, implementation, code-review)
+# entered as invocable capabilities at the point that fits the work.
+# Four reusable technique skills
+# (grilling, fresh-eyes check, top-five quality scan, test-review) are
+# invoked by phase skills and out-of-ceremony by the operator.
+# Always-on authoring disciplines (simple language, descriptions over
+# identifiers, capability framing) live in CLAUDE.md and the asset
+# authoring rules.
+
+# --- Phase behaviors -------------------------------------------------
+
+- id: B-001
+  type: external-interaction
+  short-handle: intent-phase-produces-prd-and-behavior-inventory
+  agent-facing:
+    triggering-event: >
+      An operator wants to add, change, or fix something in a software
+      project and brings that desire to the development flow for the
+      first time.
+    actor: external-caller
+    observable-outcome: >
+      The intent phase opens an interview conversation with the operator
+      and, by the end of it, produces a product requirements document and
+      a structured behavior inventory. When the work has to honor existing
+      schemas, those schemas appear in the product requirements document
+      as constraints referenced from the existing code. New schemas the
+      work introduces are not designed here; their shape is the design
+      phase's job.
+    invariants:
+      - >
+        Nothing about the work's structural shape or implementation
+        approach is decided during intent. The intent artifacts describe
+        what capability is wanted and why, with shape only where existing
+        schemas constrain the work.
+      - >
+        The intent phase composes the grilling technique skill whenever
+        the operator's answer leaves a gap.
+      - >
+        The intent phase composes the fresh-eyes comprehension check at
+        its completion gate before handing off to design.
+      - >
+        The intent phase reads the project's durable architecture/intent
+        overview to inherit existing project intent rather than
+        re-deriving it; for an established project most intent is
+        inherited and only the delta is captured. When a feature shifts
+        project intent, the durable overview is updated in the feature
+        branch so it merges with the change.
+      - >
+        The intent artifacts are written in plain language a non-coder
+        technical lead could follow.
+      - >
+        The intent phase produces exactly the artifact set downstream
+        phases need to do their work — no more, no less.
+  operator-facing:
+    current-impl-trace: >
+      New skill being introduced by this project. Lives upstream of the
+      modified spec skill in the SDL. Draws heavily on the remediation
+      intent-alignment instructions at
+      ai-docs/remediation-flow/validation-experiment/intent-alignment-instructions.md.
+
+- id: B-002
+  type: external-interaction
+  short-handle: design-phase-produces-architecture-artifacts-in-the-feature-directory
+  agent-facing:
+    triggering-event: >
+      The intent artifacts for a piece of work are complete and the
+      operator is ready to decide how the work will be structured.
+    actor: external-caller
+    observable-outcome: >
+      The design phase opens a conversation with the operator and produces
+      architecture artifacts: a list of modules, a graph of dependencies
+      between them, prose and typed contracts for each module's boundary,
+      and a decomposition rationale. New schemas the work introduces are
+      designed here. Enduring decisions are appended to the project's
+      durable decisions log, and any shift in project shape is reflected
+      in the durable architecture/intent overview. The design pages
+      themselves are written into the feature directory under a design/
+      subdirectory, with a design manifest indexing every design page
+      produced. Drafting is delegated to a context-isolated
+      general-purpose senior architect agent.
+    invariants:
+      - >
+        Design reads the intent artifacts and treats them as the source
+        of truth for what capability is being built. It does not
+        rediscover or rewrite intent.
+      - >
+        The architecture artifacts describe structure. They do not
+        contain implementation direction — those decisions belong to the
+        spec phase.
+      - >
+        Modules are loosely coupled and each carries a single
+        responsibility. When the design includes a tightly coupled pair,
+        the rationale records why the tighter coupling was preferred.
+      - >
+        Modules expose narrow interfaces and hide their internals. Deep
+        modules are preferred to thin pass-through layers.
+      - >
+        New schemas for new interfaces are produced here. Existing
+        schemas appear in the upstream product requirements document as
+        constraints, not as design output.
+      - >
+        Design artifacts live in the feature directory as ephemeral
+        working memory. A design manifest indexes every design page the
+        design phase produced, with paths and a short description each,
+        so the design gate can verify the produced artifacts. All of it
+        is deleted at squash-merge.
+      - >
+        The design phase composes the grilling technique skill on
+        structural choices and the fresh-eyes comprehension check at its
+        completion gate.
+    related-domain-concepts:
+      - module
+      - module graph
+      - interface contract
+      - decomposition rationale
+      - decision record
+      - design manifest
+      - decisions log
+      - architecture/intent overview
+      - general-purpose architect
+  operator-facing:
+    current-impl-trace: >
+      New skill being introduced by this project. Drafting uses a new
+      general-purpose senior architect agent (authoring mode). Design
+      pages and the manifest are ephemeral; enduring decisions and shape
+      changes land in the durable decisions log and architecture/intent
+      overview.
+
+- id: B-003
+  type: external-interaction
+  short-handle: spec-phase-translates-intent-and-design-into-implementation-direction
+  agent-facing:
+    triggering-event: >
+      The intent artifacts and the architecture artifacts for a piece of
+      work are complete and the operator is ready to decide how the work
+      will be implemented.
+    actor: external-caller
+    observable-outcome: >
+      The spec phase produces a specification carrying the
+      implementation-direction decisions the upstream artifacts deliberately
+      did not make: technology and library choices, file and directory
+      organization, integration approach, testing strategy, module-touch
+      policy, declared seams and interface contracts at those seams, the
+      test discipline mode for each anticipated slice, and acceptance
+      criteria mapped back to upstream requirements.
+    invariants:
+      - >
+        The specification does not restate what the intent or design
+        artifacts already say. A reader who has the upstream artifacts in
+        hand finds new content in the specification, not a summary.
+      - >
+        Every acceptance criterion in the specification traces to a
+        specific requirement or behavior expressed upstream.
+      - >
+        The specification respects the boundaries the design set. When
+        the spec author finds the design isn't decisive enough, the work
+        returns to the design phase rather than absorbing the decisions
+        into the spec.
+      - >
+        The specification names which existing modules in the codebase
+        the work is allowed to modify and which it must leave untouched.
+      - >
+        The testing strategy section declares each anticipated slice's
+        test discipline mode — new-contract, contract-preserving,
+        contract-evolving, or cross-cutting. This signal flows to the
+        breakdown phase.
+      - >
+        The spec phase composes the grilling technique skill, but
+        narrowed to "how" questions. It does not re-grill the intent or
+        the structural shape.
+      - >
+        The specification names module seams and interface contracts
+        precisely enough that the breakdown phase can carve the work into
+        vertical slices and write executable work units along them.
+    related-domain-concepts:
+      - specification
+      - acceptance criterion
+      - testing strategy
+      - module-touch policy
+      - test discipline mode
+      - vertical slice seam
+  operator-facing:
+    current-impl-trace: >
+      /fbk-spec — modified. The spec skill's role shifts from consolidated
+      authoring to translation/decision-recording. The internal grilling
+      step is narrowed to "how" questions and reimplemented as a
+      composition of the grilling technique skill.
+
+- id: B-004
+  type: system-invariant
+  short-handle: phases-are-invocable-capabilities-entered-at-scope-appropriate-point
+  agent-facing:
+    triggering-event: >
+      An operator brings work of some scope to the flow and has to decide
+      where to enter.
+    actor: external-caller
+    observable-outcome: >
+      The six phases are independently invocable. The operator enters the
+      chain at the point that fits the work: a large or unfamiliar change
+      starts at intent and walks the whole chain; a change that adds or
+      bends some intent can start at design or spec, inheriting the rest
+      from the durable docs; a small change that establishes no new intent
+      can start at the spec or go lighter still, conversationally, never
+      formally invoking the upstream phase skills. Nothing forces the full
+      chain.
+    invariants:
+      - >
+        There is no complexity-classification eval and no recorded tier
+        tag. The six-tier definitions remain in the glossary as shared
+        vocabulary, but no skill or gate in this cycle acts on them.
+      - >
+        When a phase is invoked directly, it follows the mid-pipeline-entry
+        protocol: it checks that its prerequisites hold and, if not,
+        reports what is missing and offers to run the upstream phase
+        rather than blocking.
+      - >
+        The amount of intent and design work a piece of work warrants
+        scales with how much project intent it changes, not with a
+        classifier output. This is the same shape as the existing
+        corrective/fast-track workflow, where a bugfix enters downstream.
+      - >
+        Firebreak suggests the next step; the operator decides whether to
+        take it. Depth is human judgment about scope.
+    related-domain-concepts:
+      - capability-entry
+      - mid-pipeline entry
+      - corrective workflow
+      - scope-appropriate use
+  operator-facing:
+    current-impl-trace: >
+      Replaces the earlier tier-classification eval, which is cut. Builds
+      on the existing mid-pipeline-entry protocol, generalized so any
+      phase can be a direct entry point.
+
+- id: B-005
+  type: external-interaction
+  short-handle: breakdown-carves-spec-into-slices-with-shape-matching-test-discipline-mode
+  agent-facing:
+    triggering-event: >
+      A reviewed spec with declared slice shapes is ready to be carved
+      into work units.
+    actor: external-caller
+    observable-outcome: >
+      The breakdown phase reads the spec and the design and produces a
+      set of vertical slices. Each slice's work-unit structure depends on
+      its test discipline mode (declared in the spec):
+
+      - New-contract slice: a test-creation unit and an implementation
+        unit (a test+impl pair), with a test-review checkpoint between
+        them. Tests fail until implementation lands.
+      - Contract-preserving slice: the implementation change, bracketed
+        by the existing test-review (run over all tests covering the
+        module, validating and locking them) and verification. A coverage
+        gap found by the review is resolved by adding tests; the slice
+        stays contract-preserving.
+      - Contract-evolving slice: test-creation for new behavior plus a
+        retired-tests list, followed by implementation. The existing
+        test-review (over all tests covering the module) validates
+        surviving and new tests and confirms retirements.
+      - Cross-cutting test slice: a test-creation work unit with a
+        test-review checkpoint; no paired implementation (implementation
+        already exists across other slices).
+    invariants:
+      - >
+        Every slice exercises a test discipline pass before implementation.
+        The pass shape varies by mode, but every slice has one.
+      - >
+        Slice boundaries follow the seams declared in the spec and the
+        contracts declared in the design. Breakdown does not invent a
+        different decomposition.
+      - >
+        The test discipline mode is declared in the spec, not chosen at
+        breakdown time. Breakdown reads the declared mode and produces
+        the matching work-unit shape.
+      - >
+        Cross-cutting test slices are a recognized exception to the
+        test/implementation pairing rule. A slice without a paired
+        implementation is only valid when its test discipline mode is
+        cross-cutting.
+      - >
+        Work units are sized so a less-familiar agent could execute them.
+        This is a check on spec completeness, not a model-tier constraint.
+      - >
+        Per-slice work-unit authoring is parallelizable. The breakdown
+        phase is internally split into a slice-identification step
+        followed by per-slice work-unit authoring; the second step
+        produces independent outputs.
+      - >
+        The number of slices and work units follows the work's actual
+        scope, not a complexity classification.
+    related-domain-concepts:
+      - vertical slice
+      - work unit
+      - test discipline mode
+      - new-contract slice
+      - contract-preserving slice
+      - contract-evolving slice
+      - cross-cutting test slice
+      - parallel authoring
+  operator-facing:
+    current-impl-trace: >
+      /fbk-breakdown — significantly reshaped. The slice-then-pair-per-slice
+      flow with four test discipline modes is new. The pairing of
+      test-creation and implementation is structural for most slices but
+      not universal.
+
+- id: B-006
+  type: system-invariant
+  short-handle: breakdown-bounces-back-to-spec-when-work-units-cannot-be-written-executably
+  agent-facing:
+    triggering-event: >
+      The breakdown phase is writing work units for a slice and finds it
+      cannot produce a work unit in a form a less-familiar agent could
+      reliably execute.
+    actor: orchestrator
+    observable-outcome: >
+      Breakdown does not push the unclear work unit forward into
+      implementation. It surfaces what is missing in the spec — which
+      contract, which boundary, which module-touch policy, which test
+      discipline declaration is too vague — and returns to the spec
+      phase to sharpen the gap before continuing.
+    invariants:
+      - >
+        Inability to write an executable work unit is treated as a spec
+        gap, not a breakdown limitation.
+      - >
+        The bounce-back names the gap specifically. A general "spec needs
+        more work" is not sufficient.
+      - >
+        The spec phase resumes from the named gap rather than restarting.
+    related-domain-concepts:
+      - spec completeness
+      - work-unit executability
+      - bounce-back
+      - phase feedback edge
+  operator-facing:
+    current-impl-trace: >
+      New behavior introduced by this project.
+
+- id: B-007
+  type: system-invariant
+  short-handle: tests-accepted-at-review-are-hash-locked-and-protected-during-implementation
+  agent-facing:
+    triggering-event: >
+      The test-review checkpoint accepts a set of tests (newly written
+      or pre-existing) for a slice.
+    actor: system
+    observable-outcome: >
+      Each accepted test file's path and sha256 hash are recorded in the
+      test-lock manifest in the feature directory. Implementation work
+      units that follow cannot modify the locked test files. At the end
+      of the implementation work unit, hash verification confirms no
+      locked test has changed; a mismatch fails the work unit and the
+      implementation is redone without test modifications. The same
+      verification runs at the code-review gate to catch any tampering
+      that crossed boundaries.
+    invariants:
+      - >
+        The test-lock manifest is the source of truth for which tests
+        are protected during implementation. Tests not in the manifest
+        are not locked.
+      - >
+        Hash verification at the end of the implementation work unit is
+        mandatory. The work unit's completion check includes the hash
+        comparison.
+      - >
+        The lock applies whether the tests are newly written or
+        pre-existing. Contract-preserving slices lock their existing
+        tests in the same way new-contract slices lock newly-written
+        ones.
+      - >
+        The test-lock manifest lives in the feature directory and is
+        deleted at squash-merge with other ceremony products. Its job
+        is to enforce discipline during the feature's life, not
+        afterward.
+    related-domain-concepts:
+      - test-lock manifest
+      - sha256 hash
+      - test protection
+      - implementation discipline
+  operator-facing:
+    current-impl-trace: >
+      Preserves the existing Firebreak test hash-locking mechanism. The
+      manifest format and the verification step are existing; this
+      project extends the consumers (now applies to all test discipline
+      modes, not only new-test creation).
+
+- id: B-008
+  type: system-invariant
+  short-handle: tests-must-demonstrate-catching-power
+  agent-facing:
+    triggering-event: >
+      The test-review technique skill is reviewing a set of tests at a
+      slice's test-review checkpoint or at the code-review final pass.
+    actor: system
+    observable-outcome: >
+      The reviewer judges, by reading, whether the tests actually
+      exercise the behavior they claim — catching inlined
+      implementations, weak or tautological assertions, and mocked
+      dependencies that bypass the behavior under test. Gaps are surfaced
+      and the test set is revised before tests are accepted. New-contract
+      slices additionally use the plain red check: the tests must fail
+      against an empty implementation.
+    invariants:
+      - >
+        Catching power is judged by reading at the test-review
+        checkpoint; it is the property the reviewer checks across all
+        slice shapes. New-contract slices additionally use the plain red
+        check.
+      - >
+        Programmatic mutation sampling — applying mutations and verifying
+        tests fail — was considered as an empirical catching-power proof
+        and deferred as its own future feature. It is not part of this
+        cycle.
+      - >
+        At the code-review final pass, the reviewer re-reads the locked
+        tests against the final implementation to confirm they still
+        exercise the claimed behavior (the drift check). Drift is surfaced
+        as a finding rather than a hard gate failure; the operator decides
+        whether to strengthen the tests now or defer.
+    related-domain-concepts:
+      - catching power
+      - test quality
+      - trivial test
+      - weak assertion
+      - drift check
+  operator-facing:
+    current-impl-trace: >
+      New invariant the test-review technique skill's invocation contract
+      must implement. Existing /test-review behavior is extended; catching
+      power is judged by reading (programmatic mutation sampling is
+      deferred — see the decision spine).
+
+- id: B-009
+  type: external-interaction
+  short-handle: code-review-runs-bug-finding-pass
+  agent-facing:
+    triggering-event: >
+      An implementation has produced code changes that the operator wants
+      reviewed.
+    actor: external-caller
+    observable-outcome: >
+      The flow surfaces a list of correctness, safety, and AI-failure-mode
+      concerns in the changed code, each one tied to the location it was
+      found in and described well enough that the operator can decide
+      what to do about it.
+    invariants:
+      - >
+        The review covers the change's diff, not the whole codebase.
+      - >
+        Findings carry enough context that the operator can act on them
+        without re-deriving why they matter.
+    related-domain-concepts:
+      - code review
+      - bug finding
+      - AI failure mode
+      - finding
+  operator-facing:
+    current-impl-trace: >
+      /fbk-code-review — bug-finding pass is the existing behavior.
+
+- id: B-010
+  type: external-interaction
+  short-handle: code-review-invokes-quality-scan-and-final-test-review
+  agent-facing:
+    triggering-event: >
+      The bug-finding pass on a code change has completed.
+    actor: external-caller
+    observable-outcome: >
+      The code-review phase invokes the top-five quality-scan technique
+      skill on the change and the test-review technique skill for a
+      final pass. The quality scan returns a ranked list of five
+      code-quality opportunities; surface-only, no auto-fix. The final
+      test-review pass verifies the test-lock manifest's hashes are
+      intact, no shadow tests have been added, and the locked tests still
+      exercise the behavior they claim given the final implementation
+      (the drift check). Both outputs are surfaced to the operator for
+      triage.
+    invariants:
+      - >
+        Both the quality scan and the final test-review pass run on every
+        code review.
+      - >
+        Quality scan is surface-only at this boundary; fixing decisions
+        live with the operator.
+      - >
+        Hash drift in the test-lock manifest fails the code-review gate;
+        the work returns to implementation without test modifications.
+      - >
+        Drift found at the final test-review pass surfaces as a finding,
+        not a gate failure. The operator decides whether to strengthen
+        tests in this cycle or defer.
+    related-domain-concepts:
+      - quality scan
+      - final test review
+      - hash drift
+      - drift check
+  operator-facing:
+    current-impl-trace: >
+      /fbk-code-review — modified. New invocations appended after the
+      existing bug-finding pass.
+
+# --- Technique skill behaviors --------------------------------------
+
+- id: B-011
+  type: external-interaction
+  short-handle: grilling-technique-skill-surfaces-and-resolves-ambiguity-through-reflect-back
+  agent-facing:
+    triggering-event: >
+      A phase skill or the operator directly invokes the grilling
+      technique skill with an unresolved decision or unclear input.
+    actor: external-caller
+    observable-outcome: >
+      The grilling agent asks one focused question at a time in plain
+      language. When the user answers a substantive question, the agent
+      restates the answer back in its own words before recording it as a
+      decision or moving to the next question. The user either confirms
+      the restatement matches what they meant or corrects it.
+    invariants:
+      - >
+        Reflect-back is not optional. Every substantive user answer goes
+        through restatement before it lands in a recorded decision.
+      - >
+        The restatement is in the agent's own words, not a literal quote.
+      - >
+        The grilling skill has multiple real consumers — the intent,
+        design, and spec phase skills as ceremony invokers, and the
+        operator directly for out-of-ceremony decision work.
+      - >
+        The grilling skill does not embed phase-specific topic guidance.
+        The invoking phase hands in the topic and context; the technique
+        is uniform across callers.
+    related-domain-concepts:
+      - grilling
+      - reflect-back
+      - confirmation loop
+      - technique skill
+  operator-facing:
+    current-impl-trace: >
+      Existing /grill-me skill, modified to make reflect-back-to-confirm
+      explicit.
+
+- id: B-012
+  type: external-interaction
+  short-handle: fresh-eyes-comprehension-check-technique-skill-surfaces-cold-reader-gaps
+  agent-facing:
+    triggering-event: >
+      A phase gate, or the operator directly, invokes the fresh-eyes
+      comprehension check on an artifact.
+    actor: external-caller
+    observable-outcome: >
+      A reviewer with no shared history of how the artifact was produced
+      reads it from scratch and lists every place where a downstream
+      consumer or fresh reader would have to stop and ask a question.
+      The list is returned to the invoking caller, who decides whether to
+      amend the artifact, record gaps as accepted downstream-resolvable
+      details, or escalate.
+    invariants:
+      - >
+        The reviewer has no shared context with the artifact's authoring
+        session.
+      - >
+        The reviewer reads only the artifact in question and any
+        artifacts it explicitly references.
+      - >
+        The check is invokable both inside ceremony (intent, design, and
+        spec gates as the semantic anchor) and outside ceremony
+        (operator running it on a README, proposal, or any document).
+      - >
+        The skill returns observations, not decisions.
+    related-domain-concepts:
+      - fresh-eyes review
+      - context-clear reviewer
+      - downstream comprehension
+      - technique skill
+  operator-facing:
+    current-impl-trace: >
+      New technique skill introduced by this project.
+
+- id: B-013
+  type: external-interaction
+  short-handle: top-five-quality-scan-technique-skill-surfaces-ranked-opportunities
+  agent-facing:
+    triggering-event: >
+      The code-review phase, another phase, or the operator directly
+      invokes the top-five quality-scan technique skill on a diff or
+      scope of code.
+    actor: external-caller
+    observable-outcome: >
+      The scan returns a ranked list of exactly five code-quality
+      opportunities the target code reveals. Each opportunity is
+      described well enough that the caller can decide what to do about
+      it.
+    invariants:
+      - >
+        The list is bounded to five. Scans that return ten or twenty
+        items are not the right shape.
+      - >
+        Opportunities are ranked, and the ranking is visible.
+      - >
+        The scan is surface-only. It does not fix any opportunity.
+      - >
+        The scan is invokable both inside ceremony (the code-review
+        phase) and outside ceremony (operator running it ad hoc on any
+        diff or scope of code).
+    related-domain-concepts:
+      - code quality
+      - quality opportunity
+      - ranked findings
+      - Pocock pattern
+      - technique skill
+  operator-facing:
+    current-impl-trace: >
+      New technique skill introduced by this project.
+
+- id: B-014
+  type: external-interaction
+  short-handle: test-review-technique-skill-validates-test-quality-at-pipeline-checkpoints
+  agent-facing:
+    triggering-event: >
+      A phase skill (breakdown's mid-slice checkpoint or code-review's
+      final pass), or the operator directly, invokes the test-review
+      technique skill on a set of tests.
+    actor: external-caller
+    observable-outcome: >
+      The reviewer reads the test set and validates quality across
+      multiple dimensions: tests are not inlining the implementation,
+      assertions are meaningful rather than trivial, coverage matches the
+      contract under test, and no shadow tests have been added to bypass
+      locked ones. The skill returns a structured report: accepted tests
+      (which get hash-locked by the invoking phase) and surfaced gaps that
+      require revision before acceptance.
+    invariants:
+      - >
+        The skill handles multiple invocation modes — reviewing
+        tests-being-created (new-contract and contract-evolving slices),
+        reviewing tests-being-covered (contract-preserving slices), and
+        final-pass review on the integrated change.
+      - >
+        Validation is by reading — the skill judges catching power by
+        inspecting the tests, not by running mutations. (Programmatic
+        mutation sampling is deferred to a future feature.)
+      - >
+        Outputs are structured: accepted tests and surfaced gaps. This
+        gives the invoking gate something concrete to anchor on.
+      - >
+        The skill is invokable both inside ceremony (breakdown's
+        test-review checkpoint, code-review's final pass) and outside
+        ceremony (operator running it ad hoc via /test-review on any
+        code).
+    related-domain-concepts:
+      - test review
+      - catching power
+      - shadow tests
+      - technique skill
+  operator-facing:
+    current-impl-trace: >
+      Existing /test-review skill and test-reviewer agent persona. This
+      project widens the invocation contract to handle the new SDL's
+      checkpoints (pre-lock and final-pass), keeping validation
+      reading-based.
+
+# --- Phase gates -----------------------------------------------------
+
+- id: B-015
+  type: system-invariant
+  short-handle: phase-gates-apply-hybrid-mechanical-plus-semantic-anchor-pattern
+  agent-facing:
+    triggering-event: >
+      A phase has completed its artifacts and is about to hand off to
+      the next phase.
+    actor: orchestrator
+    observable-outcome: >
+      A gate closes out the phase. Every gate combines mechanical
+      structural checks with a semantic anchor on a verifiable artifact.
+      The mechanical checks run as scripts; the semantic anchor reads a
+      technique skill's output (fresh-eyes, test-review, quality scan)
+      or a manifest (design manifest, test-lock manifest) and
+      surfaces operator-confirmation steps where needed.
+    invariants:
+      - >
+        Every gate has both mechanical and semantic components. No gate
+        is purely operator-confirmation; no gate is purely mechanical
+        either (in the current SDL state — future hook infrastructure
+        will migrate more semantic checks to mechanical enforcement).
+      - >
+        The semantic anchor reads a verifiable artifact rather than
+        asking the operator to re-do the check. Fresh-eyes output,
+        test-review output, manifest contents, and quality scan lists
+        are the typical anchors.
+      - >
+        Per-gate variations:
+
+        - Intent gate: structure checks plus fresh-eyes semantic anchor.
+        - Design gate: structure checks plus bidirectional manifest
+          verification (manifest entries resolve to design pages in the
+          feature directory; design pages in the directory appear in the
+          manifest) plus fresh-eyes scoped to next-phase comprehension.
+        - Spec gate: structure checks (declared seams, contracts,
+          per-slice test discipline modes, every inventory behavior
+          covered by at least one slice, grilling log present) plus the
+          council review scoped to "could breakdown carve from this?"
+        - Breakdown gate: structure checks (per-slice work-unit shape
+          matches declared test discipline mode, cross-references
+          resolve, no unresolved bounce-back markers) plus operator
+          confirmation. No fresh-eyes pass — bounce-back is the
+          executability check.
+        - Implementation gate: structure checks (per-task TaskCompleted
+          hook runs tests + linter, test-lock hashes unchanged per task,
+          per-wave verification passes). No dedicated semantic anchor —
+          the locked tests are the contract; semantic review happens at
+          code-review.
+        - Code-review gate: structure checks (bug-finding pass complete,
+          quality scan complete, final test-review pass complete,
+          test-lock manifest hashes intact, no shadow tests added) plus
+          operator triage of findings and quality opportunities. Heaviest
+          gate in the SDL.
+      - >
+        The hybrid pattern is designed for migration. As hook
+        infrastructure is built out, the operator-confirmation portions
+        of semantic anchors move to hook-enforced checks. Gates become
+        more deterministic over time without changing their position in
+        the flow.
+    related-domain-concepts:
+      - phase gate
+      - mechanical check
+      - semantic anchor
+      - hybrid pattern
+      - hook readiness
+  operator-facing:
+    current-impl-trace: >
+      Today's gate infrastructure is a Python script invoked at the close
+      of each phase. The pattern this behavior describes is the design
+      target; concrete gate scripts are part of the implementation work
+      this PRD will produce.
+
+# --- Cross-cutting interactions and disciplines ---------------------
+
+- id: B-016
+  type: system-invariant
+  short-handle: every-phase-appends-its-section-to-the-retrospective
+  agent-facing:
+    triggering-event: >
+      A phase of the flow — new or reshaped — completes its work for a
+      feature.
+    actor: system
+    observable-outcome: >
+      The phase appends its own section to the feature retrospective,
+      following the existing retrospective guide, so the record of what
+      worked and what didn't spans the whole flow. The self-improvement
+      loop reads the retrospective to propose improvements to the SDL's
+      own assets; a new phase that didn't append would be invisible to
+      self-improvement.
+    invariants:
+      - >
+        Every new and reshaped phase (intent, design, the narrowed spec,
+        the reshaped breakdown and code-review) appends a stage section to
+        the feature retrospective, reading before writing to preserve
+        prior stages' content.
+      - >
+        The retrospective stays a throwaway feature-directory artifact; it
+        is consumed by the self-improvement loop at feature close, before
+        the squash-merge cleans the feature directory.
+    related-domain-concepts:
+      - retrospective
+      - self-improvement loop
+      - stage section
+  operator-facing:
+    current-impl-trace: >
+      Existing retrospective plus the /fbk-improve self-improvement loop.
+      The new and reshaped phase skills must each append a section per the
+      existing retrospective guide so the self-improvement cycle sees the
+      new flow. (The deferred architectural-review-meeting that previously
+      occupied this id is recorded in the decision spine.)
+
+- id: B-017
+  type: external-interaction
+  short-handle: operator-can-resume-mid-flow-across-sessions
+  agent-facing:
+    triggering-event: >
+      An operator who started a piece of work in an earlier session
+      comes back to continue it.
+    actor: external-caller
+    observable-outcome: >
+      The flow reads the artifacts that already exist for the work, tells
+      the operator which phase the work is in and what is left to do in
+      that phase, and resumes from the next step without asking the
+      operator to re-narrate context the artifacts already hold.
+    invariants:
+      - >
+        The flow's resumption point is determined by the artifacts on
+        disk.
+      - >
+        Each phase's artifacts are self-describing enough that resumption
+        does not require the prior session's transcript.
+      - >
+        Resumption preserves the disciplines of the phase being re-entered.
+    related-domain-concepts:
+      - cross-session resumption
+      - self-describing artifact
+      - phase state
+  operator-facing:
+    current-impl-trace: >
+      Builds on the existing spec-skill resumption behavior.
+
+- id: B-018
+  type: system-invariant
+  short-handle: phase-handoffs-occur-without-information-loss
+  agent-facing:
+    triggering-event: >
+      A phase has completed its artifacts and the next phase is starting
+      work from them.
+    actor: orchestrator
+    observable-outcome: >
+      The next phase begins with the upstream artifacts in hand and does
+      not need to re-derive their content from the operator's memory or
+      the prior session's transcript.
+    invariants:
+      - >
+        Phase handoffs travel through written artifacts, not through
+        shared conversational context.
+      - >
+        When the next phase finds a gap in upstream artifacts that
+        prevents it from proceeding, it surfaces the gap and returns to
+        the upstream phase rather than guessing. Breakdown's bounce-back
+        to spec is the canonical example.
+      - >
+        Each phase's outputs are sufficient inputs for the next phase.
+    related-domain-concepts:
+      - phase handoff
+      - artifact sufficiency
+      - upstream gap
+      - context-clear consumption
+  operator-facing:
+    current-impl-trace: >
+      Cross-cutting principle absorbed into the asset-authoring rules.
+
+- id: B-019
+  type: system-invariant
+  short-handle: outputs-use-plain-language-throughout
+  agent-facing:
+    triggering-event: >
+      Any phase of the flow is producing an artifact, a review summary, a
+      question to the operator, or any other written output.
+    actor: system
+    observable-outcome: >
+      The output reads as if it were written for a smart, busy non-engineer.
+      Sentences that require implementation context to parse get
+      rewritten before the output ships.
+    invariants:
+      - >
+        The standard applies to every phase's outputs.
+      - >
+        Plain language is not measured by sentence length but by whether
+        the reader has to decode jargon to follow the meaning.
+      - >
+        When a technical term is genuinely load-bearing, the artifact
+        either explains the term in place or references the glossary.
+    related-domain-concepts:
+      - plain language
+      - clarity discipline
+  operator-facing:
+    current-impl-trace: >
+      Always-on authoring rule in CLAUDE.md and assets/fbk-docs/.
+
+- id: B-020
+  type: system-invariant
+  short-handle: agent-human-dialogue-prefers-descriptions-over-identifiers
+  agent-facing:
+    triggering-event: >
+      The flow needs to refer to a specific item while talking with the
+      operator.
+    actor: system
+    observable-outcome: >
+      The flow names the item by a short human description rather than
+      by its identifier. Identifiers stay in artifacts for traceability;
+      descriptions carry the conversation.
+    invariants:
+      - >
+        Identifiers continue to exist on artifacts. The discipline applies
+        to dialogue and prose.
+      - >
+        When the operator references an identifier, the flow translates
+        it into the corresponding description before responding.
+    related-domain-concepts:
+      - descriptions over identifiers
+      - dialogue register
+  operator-facing:
+    current-impl-trace: >
+      Always-on authoring rule in CLAUDE.md and assets/fbk-docs/.
+
+- id: B-021
+  type: system-invariant
+  short-handle: capability-framing-survives-every-phase-boundary
+  agent-facing:
+    triggering-event: >
+      An artifact produced upstream is being read by a downstream phase.
+    actor: system
+    observable-outcome: >
+      Statements about what the system is supposed to do are written in
+      a way that does not bias the next phase toward any particular
+      implementation shape.
+    invariants:
+      - >
+        The discipline applies across every phase boundary.
+      - >
+        Where shape information is genuinely needed, it is named as such
+        — "this is an implementation choice, not a capability statement."
+      - >
+        Capability framing is checked, not assumed. The fresh-eyes
+        comprehension check picks up failures of this rule.
+    related-domain-concepts:
+      - capability not shape
+      - phase boundary
+      - downstream bias
+  operator-facing:
+    current-impl-trace: >
+      Always-on authoring rule. The remediation shape-audit and lexical-audit
+      disciplines are operationalized as this rule plus the fresh-eyes
+      check rather than as separate audit steps.
+
+# --- Decision-record and ceremony-product behaviors ------------------
+
+- id: B-022
+  type: system-invariant
+  short-handle: decision-records-accumulate-in-a-durable-decisions-log
+  agent-facing:
+    triggering-event: >
+      A decision that meaningfully constrains future work is made during
+      any phase of the flow.
+    actor: system
+    observable-outcome: >
+      The decision is written up — what was decided, what alternatives
+      were considered, why this one was chosen, what it constrains — and
+      appended to the project's durable decisions log: a single
+      append-only chronological file, updated in the feature branch and
+      merged with the change, so the decisions are navigable as a timeline
+      and survive past the feature.
+    invariants:
+      - >
+        Decision records are named and stable. They do not get rewritten
+        when the underlying choice is revised; a new record supersedes
+        the old one and the chain is visible.
+      - >
+        Each record states the alternatives considered, not just the
+        choice made.
+      - >
+        Records carry a status (current, superseded, withdrawn) visible
+        at the top.
+      - >
+        The decisions log is durable, not throwaway — one of the few
+        artifacts that outlives the feature directory. It is plain
+        git-tracked markdown, updated in the feature branch and merged
+        with the change it records.
+    related-domain-concepts:
+      - decision record
+      - decisions log
+      - supersession
+      - chronological log
+      - durable artifact
+  operator-facing:
+    current-impl-trace: >
+      New pattern introduced by this project. The durable decisions log is
+      produced by the design phase and any other phase that makes a
+      constraining decision; it lives in the repo, not the throwaway
+      feature directory.
+
+- id: B-023
+  type: system-invariant
+  short-handle: ceremony-products-live-in-feature-directory-and-are-deleted-at-squash-merge
+  agent-facing:
+    triggering-event: >
+      A feature is being worked on through the SDL and is approaching
+      merge back to the main branch.
+    actor: system
+    observable-outcome: >
+      The ceremony products produced during the feature — the product
+      requirements document, the spec, the design pages, the design
+      manifest, the breakdown task list, the retrospective, the test-lock
+      manifest — live in the feature directory while the feature is in
+      flight and are deleted as part of the squash-merge back to main. A
+      small curated set of durable artifacts is the exception: the
+      glossary, the decisions log, and the architecture/intent overview
+      persist in the repo, updated in the feature branch and merged with
+      the change.
+    invariants:
+      - >
+        Design pages are ephemeral working memory, deleted at squash-merge
+        with the rest of the feature directory. What persists is the
+        durable set — glossary, decisions log, architecture/intent
+        overview — plain git-tracked markdown governed by a
+        comprehensibility discipline (bounded length, simple language,
+        intuitive names), not a memory system or wiki.
+      - >
+        The cleanup is part of the squash-merge operation, not a separate
+        step the operator has to remember.
+    related-domain-concepts:
+      - feature directory
+      - ceremony product
+      - squash-merge
+      - durable-artifact discipline
+      - architecture/intent overview
+  operator-facing:
+    current-impl-trace: >
+      New discipline introduced by this project. Spent scaffolding is
+      cleaned at squash-merge; the durable docs ride the same git flow as
+      the code. A heavier cross-feature memory system is out of scope.
+
+- id: B-024
+  type: system-invariant
+  short-handle: the-sdl-does-not-silently-skip-phases-within-a-chain
+  agent-facing:
+    triggering-event: >
+      Feature work is in progress, having entered the flow at whatever
+      phase fit its scope.
+    actor: orchestrator
+    observable-outcome: >
+      From the entry point the operator chose (capability-entry), the
+      chain runs forward without the SDL silently omitting phases. Where
+      to enter is the operator's scope judgment; but the SDL itself does
+      not drop a phase the chain reached. A phase that doesn't run cannot
+      catch what it would have caught — so skipping is a human entry
+      decision, never a silent SDL behavior.
+    invariants:
+      - >
+        The SDL does not skip a phase the chain reached based on any
+        automatic classification — there is no tier that omits phases.
+      - >
+        How much work each phase does scales with the work's actual scope
+        (more modules, more decisions, more slices), not with a classifier
+        output.
+      - >
+        Architectural-replace work is not routed to a separate flow; it
+        runs the same phases as any other work, entered at intent.
+    related-domain-concepts:
+      - capability-entry
+      - phase completeness
+      - scope scaling
+  operator-facing:
+    current-impl-trace: >
+      Cross-cutting principle that constrains the design of every phase
+      skill. Pairs with B-004 (capability-entry): the human chooses the
+      entry point; the SDL doesn't silently drop phases from there.
