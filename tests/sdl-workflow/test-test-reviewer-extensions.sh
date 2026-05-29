@@ -49,26 +49,9 @@ else
   not_ok "Test reviewer Tier 1 contains advisory assertion criterion" "has_advisory=$has_advisory"
 fi
 
-# --- Test 4: Test reviewer checkpoints contain unconditionally skipped test criterion (AC-52) ---
-if grep -qiE 'unconditionally.*skip|skip.*unconditional' "$REVIEWER" 2>/dev/null; then
-  ok "Test reviewer contains unconditionally skipped test criterion"
-else
-  not_ok "Test reviewer contains unconditionally skipped test criterion"
-fi
-
-# --- Test 5: Test reviewer checkpoints contain phantom assertion string criterion (AC-53) ---
-if grep -qiE 'phantom|assert.*absent.*production|string.*not.*production' "$REVIEWER" 2>/dev/null; then
-  ok "Test reviewer contains phantom assertion string criterion"
-else
-  not_ok "Test reviewer contains phantom assertion string criterion"
-fi
-
-# --- Test 6: Test reviewer checkpoints contain build-tag consistency criterion (AC-54) ---
-if grep -qiE 'build.tag|infrastructure.dependent' "$REVIEWER" 2>/dev/null; then
-  ok "Test reviewer contains build-tag consistency criterion"
-else
-  not_ok "Test reviewer contains build-tag consistency criterion"
-fi
+# Tests 4-6 (CP5 mutation-testing criteria: unconditionally-skipped, phantom assertion,
+# build-tag consistency) retired by the refactored-sdl Wave 1 work — task-20 removed CP5
+# from fbk-test-reviewer.md per the spec, so these sentinels no longer apply.
 
 # --- Summary ---
 echo ""

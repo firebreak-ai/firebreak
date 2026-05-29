@@ -22,8 +22,8 @@ class TestDispatcherCommandMap:
         except ImportError:
             pytest.skip("fbk module not yet implemented")
 
-    def test_command_map_contains_all_14_commands(self):
-        """COMMAND_MAP contains all 14 commands from spec."""
+    def test_command_map_contains_all_18_commands(self):
+        """COMMAND_MAP contains all 18 commands from spec."""
         try:
             import fbk
         except ImportError:
@@ -44,11 +44,49 @@ class TestDispatcherCommandMap:
             "session-logger",
             "session-manager",
             "ralph",
+            "intent-gate",
+            "design-gate",
+            "code-review-gate",
         }
 
         actual_commands = set(fbk.COMMAND_MAP.keys())
         assert expected_commands.issubset(actual_commands), \
             f"Missing commands: {expected_commands - actual_commands}"
+        assert len(fbk.COMMAND_MAP) == 18, \
+            f"Expected COMMAND_MAP to have exactly 18 entries, got {len(fbk.COMMAND_MAP)}"
+
+    def test_intent_gate_maps_to_exact_module(self):
+        """COMMAND_MAP["intent-gate"] == "fbk.gates.intent"."""
+        try:
+            import fbk
+        except ImportError:
+            pytest.skip("fbk module not yet implemented")
+        assert "intent-gate" in fbk.COMMAND_MAP, \
+            "intent-gate missing from COMMAND_MAP"
+        assert fbk.COMMAND_MAP["intent-gate"] == "fbk.gates.intent", \
+            f"Expected 'fbk.gates.intent', got '{fbk.COMMAND_MAP.get('intent-gate')}'"
+
+    def test_design_gate_maps_to_exact_module(self):
+        """COMMAND_MAP["design-gate"] == "fbk.gates.design"."""
+        try:
+            import fbk
+        except ImportError:
+            pytest.skip("fbk module not yet implemented")
+        assert "design-gate" in fbk.COMMAND_MAP, \
+            "design-gate missing from COMMAND_MAP"
+        assert fbk.COMMAND_MAP["design-gate"] == "fbk.gates.design", \
+            f"Expected 'fbk.gates.design', got '{fbk.COMMAND_MAP.get('design-gate')}'"
+
+    def test_code_review_gate_maps_to_exact_module(self):
+        """COMMAND_MAP["code-review-gate"] == "fbk.gates.code_review" (underscore)."""
+        try:
+            import fbk
+        except ImportError:
+            pytest.skip("fbk module not yet implemented")
+        assert "code-review-gate" in fbk.COMMAND_MAP, \
+            "code-review-gate missing from COMMAND_MAP"
+        assert fbk.COMMAND_MAP["code-review-gate"] == "fbk.gates.code_review", \
+            f"Expected 'fbk.gates.code_review', got '{fbk.COMMAND_MAP.get('code-review-gate')}'"
 
 
 class TestDispatcherModuleResolution:

@@ -9,6 +9,10 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash, Agent
 
 Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral comparison methodology, finding format, sighting format, orchestration protocol, and retrospective fields. Read `.claude/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md` for the AI failure mode checklist used when no specs are available. Read `.claude/fbk-docs/fbk-sdl-workflow/security-patterns.md` for security detection targets applied to all code reviews. Read `.claude/fbk-docs/fbk-sdl-workflow/detection-audits.md` for procedural audit passes the Detector runs before emitting sightings. Read `.claude/fbk-docs/fbk-design-guidelines/quality-detection.md` for structural detection targets applicable to all code reviews.
 
+## Mid-Pipeline Entry: Prerequisite Check
+
+Read `.claude/fbk-docs/fbk-sdl-workflow/capability-entry.md` for the prerequisite-probe contract this section implements. When invoked directly (not as part of the post-implementation pipeline), call `fbk.precheck.check_prerequisites("code-review", <feature_dir>)` before running. If the implementation artifact is missing (no `implementation/` directory under the feature dir), name what is missing and offer to run the upstream phase (implement) first — non-blocking, never a hard block. Proceed if the user confirms or if the artifact is present.
+
 ## Entry and Path Routing
 
 Determine the invocation context:
@@ -95,6 +99,18 @@ Only verified findings surface to the user. Rejected sightings are excluded. JSO
 ## Post-Fix Verification
 
 After all fixes from a review session are applied, run the full test suite and confirm zero failures before closing the review.
+
+## Quality scan, final test-review, and gate
+
+After the detection-verification loop terminates and all fixes are applied, run the following passes in order:
+
+1. **Quality scan**: Invoke `fbk-quality-scan` on the change set. It produces a surface-level top-five quality analysis and writes its output to `ai-docs/<feature>/quality-scan.md`.
+
+2. **Final test-review**: Invoke `fbk-test-review` in its final mode over the tests covering the changed module. It flags drifted tests and writes the final test-review verdict artifact.
+
+3. **Gate**: Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>` to evaluate whether the review meets the threshold for promotion. The gate receives the feature directory path and writes a pass/fail verdict.
+
+Do not run the gate until both fbk-quality-scan and fbk-test-review have completed.
 
 ## Broad-Scope Reviews
 

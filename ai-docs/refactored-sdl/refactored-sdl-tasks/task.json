@@ -9,11 +9,15 @@
       "type": "test",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-17", "AC-18", "AC-19"],
+      "covers": [
+        "AC-17",
+        "AC-18",
+        "AC-19"
+      ],
       "model": "Haiku",
       "model_rationale": "Presence/grep shell assertions, no judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-always-on-and-durable-docs.sh with 15 TAP assertions for AC-17, AC-18, AC-19. Red state verified: 1/15 passing (T6 routing already present), T1-T5 and T7-T15 fail as expected pre-implementation. No caveats.",
       "note": null
     },
     {
@@ -23,11 +27,13 @@
       "type": "test",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-23"],
+      "covers": [
+        "AC-23"
+      ],
       "model": "Haiku",
       "model_rationale": "Bounded imports + per-pattern assertions",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/tests/test_injection.py with 9 pytest tests across 8 classes covering import contract, control char/zero-width/HTML-comment/embedded-instruction detection, clean inputs, code-fence exemption, and file-path input. Red state: tests fail with ModuleNotFoundError for fbk.injection (expected). Follows test_gates_spec_injection.py pattern.",
       "note": null
     },
     {
@@ -37,11 +43,17 @@
       "type": "test",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-10", "AC-13", "AC-14", "AC-15", "AC-16"],
+      "covers": [
+        "AC-10",
+        "AC-13",
+        "AC-14",
+        "AC-15",
+        "AC-16"
+      ],
       "model": "Haiku",
       "model_rationale": "Frontmatter/body presence assertions",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-technique-skills.sh with 24 TAP assertions: 12 for skill files+frontmatter (AC-14), 2 for fbk-grilling Pocock attribution+URL (AC-16), 2 for fbk-grilling behavioral contract (AC-13), 2 for fbk-quality-scan five-finding cap (AC-10), 6 for observe/scan agent no-Write/Edit (AC-15). Red state: 4/24 pass (existing detector+test-reviewer agents already lack Write/Edit), 20/24 fail as expected.",
       "note": null
     },
     {
@@ -51,11 +63,14 @@
       "type": "test",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-01", "AC-03"],
+      "covers": [
+        "AC-01",
+        "AC-03"
+      ],
       "model": "Haiku",
       "model_rationale": "Single-assertion map check",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified assets/fbk-scripts/tests/test_dispatcher.py to require 18 commands (was 14), added expected_commands entries for intent-gate, design-gate, code-review-gate, and added three new exact-module-path assertions: intent-gate \u2192 fbk.gates.intent, design-gate \u2192 fbk.gates.design, code-review-gate \u2192 fbk.gates.code_review. py_compile passes; tests fail pre-implementation.",
       "note": null
     },
     {
@@ -65,11 +80,14 @@
       "type": "test",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-08", "AC-20"],
+      "covers": [
+        "AC-08",
+        "AC-20"
+      ],
       "model": "Haiku",
       "model_rationale": "Ordering grep + two-section presence",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-code-review-ordering.sh (6 TAP assertions: skill exists, bug-finding sentinel, quality-scan ordering, test-review ordering, gate ordering, check_prerequisites wired) and assets/fbk-scripts/tests/test_retro.py (test_second_append_preserves_first verifying read-before-write across stages). Red state: T3-T6 fail in shell test, pytest skips with fbk.retro not implemented.",
       "note": null
     },
     {
@@ -79,11 +97,13 @@
       "type": "test",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-12"],
+      "covers": [
+        "AC-12"
+      ],
       "model": "Sonnet",
       "model_rationale": "Structured-return assertions across four cases",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/tests/test_precheck.py with 10 pytest methods across 5 classes: TestPrerequisiteCheckNonBlocking (sys.exit monkeypatch), 4 phase-specific absent/present test classes (intent at design, design at spec, spec at breakdown, impl at code-review), TestReturnStructure (dict shape: phase, ready, missing[].artifact/upstream_phase). Uses feature_dir tmp_path fixture, no business mocks. Red state confirmed: ModuleNotFoundError for fbk.precheck.",
       "note": null
     },
     {
@@ -93,11 +113,14 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-17", "AC-18"],
+      "covers": [
+        "AC-17",
+        "AC-18"
+      ],
       "model": "Sonnet",
       "model_rationale": "Multi-file context-asset authoring",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-docs/fbk-context-assets/always-on-disciplines.md leaf; added Always-on disciplines section + routing row to fbk-context-assets.md; added Always-on disciplines section to .claude/CLAUDE.md with route. T1-T11 of always-on shell test now pass.",
       "note": null
     },
     {
@@ -107,11 +130,13 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-19"],
+      "covers": [
+        "AC-19"
+      ],
       "model": "Sonnet",
       "model_rationale": "Seeded doc authoring + glossary edits",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created docs/architecture-overview.md (six-phase pipeline + hybrid-gate pattern + technique skills + durable-doc governing conventions including 'plain markdown', 'bounded length', 'in-branch'). Created docs/decisions-log.md (append-only with header, seeded with two 2026-05-29 entries: fbk-architect author-only this cycle; code-review gate in new code_review.py). Added GLOSSARY.md cross-reference stubs for fresh-eyes and quality scan. test-always-on-and-durable-docs.sh: 15/15 pass.",
       "note": null
     },
     {
@@ -121,11 +146,13 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-23"],
+      "covers": [
+        "AC-23"
+      ],
       "model": "Sonnet",
       "model_rationale": "Code move + import rewiring across files",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/fbk/injection.py (detect_injections moved verbatim from spec.py, parameter renamed to path_or_text, os import hoisted). Created assets/fbk-scripts/fbk/slices.py with TEST_DISCIPLINES constant. Modified assets/fbk-scripts/fbk/gates/spec.py: removed inline detect_injections block (~127 lines), added from fbk.injection import detect_injections. Call site in main() unchanged. test_injection.py + test_gates_spec_injection.py: 14 pass.",
       "note": null
     },
     {
@@ -135,11 +162,14 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-13", "AC-16"],
+      "covers": [
+        "AC-13",
+        "AC-16"
+      ],
       "model": "Sonnet",
       "model_rationale": "Skill-body authoring with behavioral contract",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/skills/fbk-grilling/SKILL.md with frontmatter description+argument-hint, body credits Matt Pocock with source URL, documents one-question-at-a-time + reflect-back + Confirmed: sentinel. All six grilling assertions (T1, T2, T3, T13, T14, T15, T16) of technique-skills shell test pass.",
       "note": null
     },
     {
@@ -149,11 +179,14 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-14", "AC-15"],
+      "covers": [
+        "AC-14",
+        "AC-15"
+      ],
       "model": "Sonnet",
       "model_rationale": "Skill + agent persona authoring",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/agents/fbk-fresh-eyes-reviewer.md (tools: Read, Grep, Glob; model sonnet; observe-only) and assets/skills/fbk-fresh-eyes/SKILL.md (spawns isolated cold reviewer, writes ai-docs/<feature>/fresh-eyes-<artifact>.md with Critical/Substantive/Minor sections, no-fix rule). T4-T6, T19-T20 of technique-skills test pass.",
       "note": null
     },
     {
@@ -163,11 +196,15 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-10", "AC-14", "AC-15"],
+      "covers": [
+        "AC-10",
+        "AC-14",
+        "AC-15"
+      ],
       "model": "Sonnet",
       "model_rationale": "Skill authoring + careful agent reframe",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/skills/fbk-quality-scan/SKILL.md (description, argument-hint, at-most-5 findings, ranked+Severity, quality-opportunity mode, scan-only). Reframed assets/agents/fbk-code-review-detector.md description to mode-neutral (mode set by orchestrator spawn prompt), body opens with mode framing before bug-detection branch. tools/name/model unchanged. T7-T9, T17-T18, T21-T22 of technique-skills test pass; test-code-review-structural.sh remains 24/24.",
       "note": null
     },
     {
@@ -177,11 +214,14 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-14", "AC-15"],
+      "covers": [
+        "AC-14",
+        "AC-15"
+      ],
       "model": "Sonnet",
       "model_rationale": "Checkpoint-model rewire of large agent",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/skills/fbk-test-review/SKILL.md (description + argument-hint, pre-lock and final modes, widened scope, artifact path test-review-final.md, only accepted pre-lock verdict triggers lock). Rewired assets/agents/fbk-test-reviewer.md from 5 CP sections to two modes (Pre-lock mode, Final mode), CP5 mutation testing removed, tools Read/Grep/Glob/Bash preserved. Resentineled tests/sdl-workflow/test-test-reviewer-agent.sh with 19 load-bearing tests. Verification: 19/19 pass, technique-skills 24/24 pass.",
       "note": null
     },
     {
@@ -191,11 +231,13 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-15"],
+      "covers": [
+        "AC-15"
+      ],
       "model": "Sonnet",
       "model_rationale": "Agent persona authoring",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/agents/fbk-product-author.md and assets/agents/fbk-architect.md following fbk-spec-author shape. Both: tools Read/Grep/Glob (no Write/Edit), model sonnet, persona + output quality bars + anti-defaults. AC-15 structural criterion met (no Write/Edit on tools line, verified by grep).",
       "note": null
     },
     {
@@ -205,11 +247,14 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-01", "AC-03"],
+      "covers": [
+        "AC-01",
+        "AC-03"
+      ],
       "model": "Haiku",
       "model_rationale": "Three bounded dict entries",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added three COMMAND_MAP entries to assets/fbk-scripts/fbk/__init__.py: intent-gate \u2192 fbk.gates.intent, design-gate \u2192 fbk.gates.design, code-review-gate \u2192 fbk.gates.code_review. COMMAND_MAP now 18 entries. test_dispatcher.py tests pass (8 pass, 1 skip).",
       "note": null
     },
     {
@@ -219,11 +264,13 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-12"],
+      "covers": [
+        "AC-12"
+      ],
       "model": "Sonnet",
       "model_rationale": "New module with structured-result logic",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/fbk/precheck.py with check_prerequisites(phase, feature_dir) -> dict. Four phase mappings (design/spec/breakdown/code-review), feature name from Path(feature_dir).name, no sys.exit in check_prerequisites, non-blocking main() that exits 0. Return shape: {phase, ready, missing[{artifact, upstream_phase}]}. All 10 tests in test_precheck.py pass.",
       "note": null
     },
     {
@@ -233,11 +280,13 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-08"],
+      "covers": [
+        "AC-08"
+      ],
       "model": "Sonnet",
       "model_rationale": "Skill + guide change preserving ordering",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified assets/skills/fbk-code-review/SKILL.md: added Mid-Pipeline Entry prerequisite check (calls fbk.precheck.check_prerequisites('code-review', ...) non-blocking) and Quality scan/final test-review/gate section in order (fbk-quality-scan \u2192 fbk-test-review final \u2192 code-review-gate). Modified assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md adding Quality Scan/Test-Review/Gate section. Tests: test-code-review-ordering.sh 6/6, test-code-review-skill.sh 16/16, test-code-review-guide-extensions.sh 7/7, test-code-review-integration.sh 21/21 \u2014 all pass.",
       "note": null
     },
     {
@@ -247,11 +296,14 @@
       "type": "implementation",
       "wave_id": 1,
       "dependencies": [],
-      "covers": ["AC-20", "AC-12"],
+      "covers": [
+        "AC-20",
+        "AC-12"
+      ],
       "model": "Sonnet",
       "model_rationale": "Doc authoring with append-preservation contract",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/fbk/retro.py with append_section(retrospective_path, stage_name, content) that reads before writing. Modified assets/fbk-docs/fbk-sdl-workflow/retrospective-guide.md inserting Intent (Stage 1) and Design (Stage 2) sections, renumbering to 7 stages, documenting append-reads-before-write convention. Created assets/fbk-docs/fbk-sdl-workflow/capability-entry.md with all four upstream-missing cases (design\u2190prd/intent, spec\u2190design-manifest/design, breakdown\u2190spec/spec, code-review\u2190implementation/implement) and no assets/ path prefix. test_retro.py 1 pass, test_precheck.py 10 pass, all completion-gate checks pass.",
       "note": null
     },
     {
@@ -261,7 +313,9 @@
       "type": "test",
       "wave_id": 2,
       "dependencies": [],
-      "covers": ["AC-07"],
+      "covers": [
+        "AC-07"
+      ],
       "model": "Sonnet",
       "model_rationale": "Schema-change fixtures + shadow negative case",
       "status": "not_started",
@@ -275,7 +329,12 @@
       "type": "test",
       "wave_id": 2,
       "dependencies": [],
-      "covers": ["AC-01", "AC-02", "AC-13", "AC-24"],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-13",
+        "AC-24"
+      ],
       "model": "Sonnet",
       "model_rationale": "Multi-failure-case gate fixtures",
       "status": "not_started",
@@ -289,7 +348,10 @@
       "type": "test",
       "wave_id": 2,
       "dependencies": [],
-      "covers": ["AC-03", "AC-24"],
+      "covers": [
+        "AC-03",
+        "AC-24"
+      ],
       "model": "Sonnet",
       "model_rationale": "Bidirectional drift fixtures",
       "status": "not_started",
@@ -303,7 +365,10 @@
       "type": "test",
       "wave_id": 2,
       "dependencies": [],
-      "covers": ["AC-04", "AC-21"],
+      "covers": [
+        "AC-04",
+        "AC-21"
+      ],
       "model": "Sonnet",
       "model_rationale": "Full-path regression + adversarial-prose case",
       "status": "not_started",
@@ -317,7 +382,10 @@
       "type": "test",
       "wave_id": 2,
       "dependencies": [],
-      "covers": ["AC-05", "AC-06"],
+      "covers": [
+        "AC-05",
+        "AC-06"
+      ],
       "model": "Sonnet",
       "model_rationale": "Per-shape pass/fail fixtures",
       "status": "not_started",
@@ -331,7 +399,10 @@
       "type": "test",
       "wave_id": 2,
       "dependencies": [],
-      "covers": ["AC-01", "AC-03"],
+      "covers": [
+        "AC-01",
+        "AC-03"
+      ],
       "model": "Haiku",
       "model_rationale": "Frontmatter/routing presence assertions",
       "status": "not_started",
@@ -344,8 +415,12 @@
       "file": "task-26-impl-test-hash.md",
       "type": "implementation",
       "wave_id": 2,
-      "dependencies": ["task-16"],
-      "covers": ["AC-07"],
+      "dependencies": [
+        "task-16"
+      ],
+      "covers": [
+        "AC-07"
+      ],
       "model": "Sonnet",
       "model_rationale": "Schema rewrite + structured return",
       "status": "not_started",
@@ -358,8 +433,15 @@
       "file": "task-27-impl-intent-gate.md",
       "type": "implementation",
       "wave_id": 2,
-      "dependencies": ["task-16"],
-      "covers": ["AC-01", "AC-02", "AC-13", "AC-24"],
+      "dependencies": [
+        "task-16"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-13",
+        "AC-24"
+      ],
       "model": "Sonnet",
       "model_rationale": "New gate module + injection import",
       "status": "not_started",
@@ -372,8 +454,13 @@
       "file": "task-28-impl-design-gate.md",
       "type": "implementation",
       "wave_id": 2,
-      "dependencies": ["task-16"],
-      "covers": ["AC-03", "AC-24"],
+      "dependencies": [
+        "task-16"
+      ],
+      "covers": [
+        "AC-03",
+        "AC-24"
+      ],
       "model": "Sonnet",
       "model_rationale": "New gate module + bidirectional check",
       "status": "not_started",
@@ -386,8 +473,13 @@
       "file": "task-29-impl-spec-gate.md",
       "type": "implementation",
       "wave_id": 2,
-      "dependencies": ["task-16"],
-      "covers": ["AC-04", "AC-21"],
+      "dependencies": [
+        "task-16"
+      ],
+      "covers": [
+        "AC-04",
+        "AC-21"
+      ],
       "model": "Sonnet",
       "model_rationale": "Additive checks preserving legacy path",
       "status": "not_started",
@@ -400,8 +492,13 @@
       "file": "task-30-impl-breakdown-gate.md",
       "type": "implementation",
       "wave_id": 2,
-      "dependencies": ["task-16"],
-      "covers": ["AC-05", "AC-06"],
+      "dependencies": [
+        "task-16"
+      ],
+      "covers": [
+        "AC-05",
+        "AC-06"
+      ],
       "model": "Sonnet",
       "model_rationale": "Modify checks #1/#8 + bounce-back",
       "status": "not_started",
@@ -415,7 +512,9 @@
       "type": "implementation",
       "wave_id": 2,
       "dependencies": [],
-      "covers": ["AC-04"],
+      "covers": [
+        "AC-04"
+      ],
       "model": "Sonnet",
       "model_rationale": "Skill + guide reshape",
       "status": "not_started",
@@ -429,7 +528,9 @@
       "type": "implementation",
       "wave_id": 2,
       "dependencies": [],
-      "covers": ["AC-05"],
+      "covers": [
+        "AC-05"
+      ],
       "model": "Sonnet",
       "model_rationale": "Skill + guide reshape",
       "status": "not_started",
@@ -443,7 +544,9 @@
       "type": "implementation",
       "wave_id": 2,
       "dependencies": [],
-      "covers": ["AC-05"],
+      "covers": [
+        "AC-05"
+      ],
       "model": "Sonnet",
       "model_rationale": "Cohesive doc-set authoring (progressive disclosure)",
       "status": "not_started",
@@ -456,8 +559,13 @@
       "file": "task-37-impl-fbk-intent.md",
       "type": "implementation",
       "wave_id": 2,
-      "dependencies": ["task-21", "task-23"],
-      "covers": ["AC-01"],
+      "dependencies": [
+        "task-21",
+        "task-23"
+      ],
+      "covers": [
+        "AC-01"
+      ],
       "model": "Sonnet",
       "model_rationale": "Phase-skill authoring",
       "status": "not_started",
@@ -470,8 +578,14 @@
       "file": "task-38-impl-fbk-design.md",
       "type": "implementation",
       "wave_id": 2,
-      "dependencies": ["task-21", "task-23"],
-      "covers": ["AC-03", "AC-12"],
+      "dependencies": [
+        "task-21",
+        "task-23"
+      ],
+      "covers": [
+        "AC-03",
+        "AC-12"
+      ],
       "model": "Sonnet",
       "model_rationale": "Phase-skill authoring + prereq wiring",
       "status": "not_started",
@@ -485,7 +599,12 @@
       "type": "test",
       "wave_id": 3,
       "dependencies": [],
-      "covers": ["AC-08", "AC-09", "AC-11", "AC-24"],
+      "covers": [
+        "AC-08",
+        "AC-09",
+        "AC-11",
+        "AC-24"
+      ],
       "model": "Sonnet",
       "model_rationale": "verify_manifest-delegation + non-blocking cases",
       "status": "not_started",
@@ -498,8 +617,14 @@
       "file": "task-34-impl-code-review-gate.md",
       "type": "implementation",
       "wave_id": 3,
-      "dependencies": ["task-26"],
-      "covers": ["AC-09", "AC-11", "AC-24"],
+      "dependencies": [
+        "task-26"
+      ],
+      "covers": [
+        "AC-09",
+        "AC-11",
+        "AC-24"
+      ],
       "model": "Sonnet",
       "model_rationale": "New gate branching on structured discrepancies",
       "status": "not_started",
@@ -513,7 +638,9 @@
       "type": "test",
       "wave_id": 4,
       "dependencies": [],
-      "covers": ["AC-22"],
+      "covers": [
+        "AC-22"
+      ],
       "model": "Haiku",
       "model_rationale": "Install/uninstall + grep assertions",
       "status": "not_started",
@@ -527,7 +654,9 @@
       "type": "implementation",
       "wave_id": 4,
       "dependencies": [],
-      "covers": ["AC-22"],
+      "covers": [
+        "AC-22"
+      ],
       "model": "Sonnet",
       "model_rationale": "Integration wiring of the assembled chain",
       "status": "not_started",
