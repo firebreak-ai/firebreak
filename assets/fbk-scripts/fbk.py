@@ -1,11 +1,20 @@
 """fbk.py — single entry point dispatcher for all context asset invocations."""
 
+import glob
 import importlib
 import os
 import sys
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(1, script_dir)
+
+# Inject the project-local venv's site-packages onto sys.path so third-party deps
+# (pyyaml) resolve without requiring system-wide installation. The installer
+# creates this venv via `uv venv` at install time. Falls through silently if the
+# venv is absent — system-installed packages or a dev-mode venv on PYTHONPATH still work.
+for _site_pkg in glob.glob(os.path.join(script_dir, ".venv", "lib", "python*", "site-packages")):
+    if _site_pkg not in sys.path:
+        sys.path.insert(0, _site_pkg)
 
 if sys.version_info < (3, 11):
     print(f"Error: Python 3.11+ required (found {sys.version})", file=sys.stderr)

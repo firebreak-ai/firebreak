@@ -139,38 +139,53 @@ if [ -n "$TARGET_DIR" ]; then
 fi
 
 # --- Prerequisite checking ---
-check_pyyaml() {
-  if python3 -c "import yaml" >/dev/null 2>&1; then
+check_uv() {
+  if command -v uv >/dev/null 2>&1; then
     return 0
   fi
+  echo "Error: Firebreak requires 'uv' for Python dependency management." >&2
+  echo "  uv creates a project-local virtualenv so Firebreak's Python deps (pyyaml)" >&2
+  echo "  do not depend on system-wide packages — which is incompatible with PEP 668" >&2
+  echo "  (externally-managed) Python installations on recent Arch/Debian/Ubuntu/macOS." >&2
+  echo "" >&2
+  echo "Install uv: https://docs.astral.sh/uv/getting-started/installation/" >&2
+  echo "Then re-run this installer." >&2
+  exit 1
+}
 
-  echo "Firebreak requires Python's pyyaml package at runtime (used by fbk/config.py)." >&2
+# Create a project-local venv inside the install target and populate it with
+# Firebreak's Python deps. Called after install_files copies pyproject.toml to
+# the target. The dispatcher (fbk.py) discovers this venv via sys.path injection.
+setup_python_venv() {
+  local fbk_scripts_dir="$TARGET_DIR/fbk-scripts"
+  local venv_dir="$fbk_scripts_dir/.venv"
+
+  if [ ! -d "$fbk_scripts_dir" ]; then
+    echo "Warning: $fbk_scripts_dir does not exist; skipping venv setup." >&2
+    return 0
+  fi
 
   if [ "$DRY_RUN" = "1" ]; then
-    echo "[dry-run] Would prompt to install pyyaml; skipping in dry-run." >&2
+    echo "[dry-run] Would create venv at $venv_dir and install pyyaml via uv." >&2
     return 0
   fi
 
-  if [ ! -t 0 ]; then
-    echo "  Install later with:  python3 -m pip install --user pyyaml" >&2
-    return 0
+  # Create venv if it doesn't already exist (idempotent for upgrades).
+  if [ ! -d "$venv_dir" ]; then
+    echo "Creating Python venv at $venv_dir..." >&2
+    if ! uv venv "$venv_dir" --python ">=3.11" --quiet 2>&1; then
+      echo "Error: failed to create venv at $venv_dir." >&2
+      echo "  Run 'uv venv $venv_dir --python \">=3.11\"' manually to diagnose." >&2
+      exit 1
+    fi
   fi
 
-  printf 'Install pyyaml now via python3 -m pip install --user pyyaml? [Y/n] ' >&2
-  read -r answer
-  case "$answer" in
-    ""|y|Y|yes|YES)
-      if python3 -m pip install --user pyyaml >&2; then
-        echo "pyyaml installed." >&2
-      else
-        echo "Warning: pip install failed. Install manually: python3 -m pip install --user pyyaml" >&2
-        echo "  (If your system uses PEP 668 externally-managed Python, use pipx or a venv.)" >&2
-      fi
-      ;;
-    *)
-      echo "Skipped. Install manually before running firebreak: python3 -m pip install --user pyyaml" >&2
-      ;;
-  esac
+  echo "Installing Firebreak Python dependencies into venv..." >&2
+  if ! uv pip install --python "$venv_dir/bin/python" --quiet "pyyaml>=6.0" 2>&1; then
+    echo "Error: failed to install pyyaml into $venv_dir." >&2
+    echo "  Run 'uv pip install --python $venv_dir/bin/python pyyaml>=6.0' to diagnose." >&2
+    exit 1
+  fi
 }
 
 check_prerequisites() {
@@ -201,7 +216,7 @@ check_prerequisites() {
     fi
   fi
 
-  check_pyyaml
+  check_uv
 }
 
 # --- Interactive target selection ---
@@ -585,6 +600,7 @@ done
 
 write_manifest
 install_files
+setup_python_venv
 
 # Build summary counts
 hooks_added_count=0
