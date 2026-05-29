@@ -54,7 +54,15 @@ def validate_breakdown(spec_text: str, manifest: dict, task_files: Dict[str, str
             fails.append(f"AC coverage: {ac} not covered by any task")
             continue
         covering_shapes = {t.get("slice_shape") for t in ac_tasks[ac]}
-        has_slice_shape = any(s for s in covering_shapes)
+        # Hinge activates only when EVERY covering task carries a shape.
+        # Mixed ACs (some shaped, some legacy-unshaped) fall back to legacy checks
+        # because the shape invariants alone cannot guarantee the missing legacy guarantees.
+        has_slice_shape = bool(covering_shapes) and None not in covering_shapes
+        # Reject any shape value not in the canonical taxonomy.
+        unknown_shapes = covering_shapes - set(TEST_DISCIPLINES) - {None}
+        if unknown_shapes:
+            for s in sorted(unknown_shapes):
+                fails.append(f"Slice shape: unknown shape {s!r} on tasks covering {ac}")
         has_test = any(t["type"] == "test" for t in ac_tasks[ac])
         has_impl = any(t["type"] == "implementation" for t in ac_tasks[ac])
         if has_slice_shape:
@@ -236,17 +244,17 @@ def main() -> None:
         print(f"Error: task.json missing from {tasks_dir}", file=sys.stderr)
         sys.exit(2)
 
-    spec_text = spec_path.read_text()
-    manifest = json.loads(manifest_path.read_text())
+    spec_text = spec_path.read_text(encoding="utf-8", errors="replace")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8", errors="replace"))
 
     task_files: Dict[str, str] = {}
     for f in sorted(tasks_dir.glob("task-*.md")):
-        task_files[f.name] = f.read_text()
+        task_files[f.name] = f.read_text(encoding="utf-8", errors="replace")
 
     # Include test-hashes.json when present — used as the pre-lock manifest signal.
     manifest_file = tasks_dir / "test-hashes.json"
     if manifest_file.is_file():
-        task_files["test-hashes.json"] = manifest_file.read_text()
+        task_files["test-hashes.json"] = manifest_file.read_text(encoding="utf-8", errors="replace")
 
     result = validate_breakdown(spec_text, manifest, task_files)
 
