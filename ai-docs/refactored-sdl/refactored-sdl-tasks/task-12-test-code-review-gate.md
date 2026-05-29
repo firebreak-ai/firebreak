@@ -2,7 +2,7 @@
 id: task-12
 type: test
 wave: 3
-covers: [AC-08, AC-09, AC-10, AC-11, AC-24]
+covers: [AC-08, AC-09, AC-11, AC-24]
 files_to_create:
   - assets/fbk-scripts/tests/test_gates_code_review.py
 completion_gate: "tests compile and fail before implementation"
@@ -10,13 +10,13 @@ completion_gate: "tests compile and fail before implementation"
 
 ## 1. Objective
 
-Creates `assets/fbk-scripts/tests/test_gates_code_review.py`, a pytest unit test verifying that the code-review gate fails on missing/malformed quality-scan or test-review artifacts, flags a quality-scan carrying more than five ranked findings (the ≤5 contract), fails on hash mismatches and shadow tests, passes when all are present and hashes intact, does not fail on a critical-severity quality finding or a drifted-but-unmodified locked test, and delegates hash/shadow checking to `test_hash.verify_manifest` (single-call delegation, per its `verify_manifest(feature_dir, manifest_path=None) -> list[dict]` signature).
+Creates `assets/fbk-scripts/tests/test_gates_code_review.py`, a pytest unit test verifying that the code-review gate fails on missing/malformed quality-scan or test-review artifacts, fails on hash mismatches and shadow tests, passes when all are present and hashes intact, does not fail on a critical-severity quality finding or a drifted-but-unmodified locked test, and delegates hash/shadow checking to `test_hash.verify_manifest` (single-call delegation, per its `verify_manifest(feature_dir, manifest_path=None) -> list[dict]` signature).
 
 ## 2. Context
 
 The `code_review.py` gate (new module, subcommand `code-review-gate`) runs after the bug-finding loop and checks:
 
-1. **Quality-scan artifact present and within the findings cap**: `ai-docs/<feature>/quality-scan.md` exists with a `Severity:` field somewhere in the file, and carries at MOST five ranked findings. The gate enforces the ≤5-ranked-findings contract when it reads the artifact (AC-10): a quality-scan with more than five ranked findings is rejected/flagged by the gate.
+1. **Quality-scan artifact present with a populated severity field**: `ai-docs/<feature>/quality-scan.md` exists with a `Severity:` field somewhere in the file. The gate only checks the artifact is present and carries the severity field — it does NOT enforce the ≤5-ranked-findings cap. That cap is the `fbk-quality-scan` SKILL's contract (AC-10, tested by task-03 and implemented by task-19), not a code-review-gate check.
 2. **Test-review verdict artifact present**: `ai-docs/<feature>/test-review-final.md` exists (or matching the pattern `test-review-*.md` for the final-pass artifact).
 3. **Hash + shadow-test check**: calls `test_hash.verify_manifest(feature_dir)` — imported from `fbk.gates.test_hash`. The signature is `verify_manifest(feature_dir, manifest_path=None) -> list[dict]`; calling it with the single `feature_dir` argument is valid (the manifest path defaults). Each returned item is a dict shaped `{"kind": ..., "path": ...}` where `kind` is one of `modified` / `unexpected` / `missing`. Branches on the structured discrepancy list:
    - Any item with `kind == "modified"` → gate FAILS
@@ -66,11 +66,6 @@ No mocks for `verify_manifest`. Use real temp files so that `verify_manifest` ru
    - `test_quality_scan_missing_severity_field_fails(tmp_path)`: write `quality-scan.md` without any `Severity:` line. Assert fail.
    - `test_missing_test_review_verdict_fails(tmp_path)`: delete `test-review-final.md` (or the matching test-review artifact). Assert fail.
 
-5a. Write class `TestQualityScanFindingsCap` (AC-10):
-
-   - `test_quality_scan_over_five_findings_is_flagged(tmp_path)`: build helper, then overwrite `quality-scan.md` with a quality-scan artifact carrying a ranked list of SIX findings (more than five), each with a `Severity:` field. Call `validate_code_review`. Assert the gate rejects/flags it — `result["result"] == "fail"` (or the failures/findings list records the over-cap condition), with a message referencing the findings count or the five-finding cap. This is the gate-level enforcement of the ≤5 ranked-findings contract.
-   - `test_quality_scan_with_five_findings_passes(tmp_path)`: keep the helper's quality-scan within the cap (the default helper writes 3) or write exactly five ranked findings. Assert `result["result"] == "pass"` (the ≤5 case is accepted).
-
 6. Write class `TestHashMismatch`:
 
    - `test_modified_locked_test_fails(tmp_path)`: build helper (creates manifest). Modify `tests/test_module.py` content. Call `validate_code_review`. Assert fail, failure mentions "modified" or "hash mismatch".
@@ -104,7 +99,7 @@ Failing before implementation: all tests that call `validate_code_review` (skipp
 
 ## 6. Acceptance criteria
 
-Covers AC-08 (the gate's hash/shadow check delegates to `test_hash.verify_manifest` — the single-call delegation contract — rather than a second hash-comparison path), AC-09 (quality-scan and test-review artifact checks), AC-10 (the gate enforces the ≤5-ranked-findings contract when it reads the quality-scan artifact — more than five findings is rejected/flagged), AC-11 (critical severity and drifted-but-unmodified do not fail; only modified or unexpected fails), AC-24 (exits 2 on missing path, degrades on binary).
+Covers AC-08 (the gate's hash/shadow check delegates to `test_hash.verify_manifest` — the single-call delegation contract — rather than a second hash-comparison path), AC-09 (quality-scan and test-review artifact checks — the gate verifies the quality-scan is present with a populated `Severity:` field, not the ≤5-findings cap), AC-11 (critical severity and drifted-but-unmodified do not fail; only modified or unexpected fails), AC-24 (exits 2 on missing path, degrades on binary). The ≤5-ranked-findings cap is the `fbk-quality-scan` SKILL's contract (AC-10), covered by task-03 and implemented by task-19 — not a code-review-gate check.
 
 ## 7. Model
 

@@ -325,6 +325,20 @@
       "note": null
     },
     {
+      "id": "task-36",
+      "title": "Shell test: fbk-intent + fbk-design skills exist with required structure",
+      "file": "task-36-test-phase-skills-intent-design.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": ["AC-01", "AC-03"],
+      "model": "Haiku",
+      "model_rationale": "Frontmatter/routing presence assertions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
       "id": "task-26",
       "title": "Restructure test_hash to per-entry manifest + list-lock + shadow",
       "file": "task-26-impl-test-hash.md",
@@ -437,13 +451,41 @@
       "note": null
     },
     {
+      "id": "task-37",
+      "title": "Author fbk-intent phase skill",
+      "file": "task-37-impl-fbk-intent.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": ["task-21", "task-23"],
+      "covers": ["AC-01"],
+      "model": "Sonnet",
+      "model_rationale": "Phase-skill authoring",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-38",
+      "title": "Author fbk-design phase skill",
+      "file": "task-38-impl-fbk-design.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": ["task-21", "task-23"],
+      "covers": ["AC-03", "AC-12"],
+      "model": "Sonnet",
+      "model_rationale": "Phase-skill authoring + prereq wiring",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
       "id": "task-12",
       "title": "Unit test: code-review-gate artifacts + non-blocking severity + path guards",
       "file": "task-12-test-code-review-gate.md",
       "type": "test",
       "wave_id": 3,
       "dependencies": [],
-      "covers": ["AC-08", "AC-09", "AC-10", "AC-11", "AC-24"],
+      "covers": ["AC-08", "AC-09", "AC-11", "AC-24"],
       "model": "Sonnet",
       "model_rationale": "verify_manifest-delegation + non-blocking cases",
       "status": "not_started",

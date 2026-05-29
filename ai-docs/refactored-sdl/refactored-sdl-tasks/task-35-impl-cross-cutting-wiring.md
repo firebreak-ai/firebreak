@@ -5,6 +5,8 @@ wave: 4
 covers: [AC-22]
 files_to_modify:
   - assets/fbk-docs/fbk-sdl-workflow.md
+  - assets/skills/fbk-spec-review/SKILL.md
+  - assets/skills/fbk-implement/SKILL.md
 test_tasks: [task-13]
 dependencies: []
 completion_gate: "the referenced test tasks pass"
@@ -27,6 +29,10 @@ What to add (read the current `assets/fbk-docs/fbk-sdl-workflow.md` first):
    - When a phase is invoked directly (mid-pipeline entry) → `fbk-sdl-workflow/capability-entry.md`
 3. Keep the existing rows (spec, review, breakdown, implement, code-review, corrective, retrospective) intact.
 
+**Doc-only reframes (NO behavioral change).** Two existing skills are reframed in docs only — one-line framing notes, no change to their behavior, gates, agents, or routing:
+- `assets/skills/fbk-spec-review/SKILL.md` — add a one-line framing note that it produces the spec gate's semantic anchor (its review artifact is the semantic-anchor input the spec gate reads). This is purely a framing note; do NOT change what the skill does. The spec keeps `review.py`/`review-gate`/`validate_review` untouched (the code-review gate is a separate new module), so this reframe must not touch any gate call, agent spawn, or routing line.
+- `assets/skills/fbk-implement/SKILL.md` — add a one-line framing note that it is phase five of the six-phase refactored SDL (intent → design → spec → breakdown → code-review → implement). Framing note only; no behavioral change.
+
 Use installed path forms throughout (the index is an installed asset — AC-22 path class 1; no `assets/` prefix in its body). The per-asset installed-path compliance of the new leaves themselves is honored by the authoring tasks (task-25, task-27, task-28, task-33) — this task wires the index and must not introduce an `assets/` prefix.
 
 The paired test (task-13, wave 4) is the cross-cutting verification: the installer e2e (`test-refactored-sdl-install.sh`) asserts the new skills/agents/docs install under `~/.claude/` (including `intent-guide.md`, `design-guide.md`, `capability-entry.md`), and the reference-integrity extension (`test-reference-integrity.sh`) asserts no installed-asset body contains the `assets/` path prefix. This index-wiring task ensures the new leaves are reachable from the index (reference-integrity routed-paths-resolve check) and that the index itself carries no `assets/` prefix.
@@ -39,13 +45,23 @@ The paired test (task-13, wave 4) is the cross-cutting verification: the install
 
 3. Add the four new routing rows to the "Stage Guides" section (intent-guide, design-guide, slice-shapes, capability-entry) using installed path forms (`fbk-sdl-workflow/...`). Keep all existing rows. Completion: `grep -q 'intent-guide.md' assets/fbk-docs/fbk-sdl-workflow.md`, `grep -q 'design-guide.md' ...`, `grep -q 'slice-shapes.md' ...`, and `grep -q 'capability-entry.md' ...` all succeed.
 
-4. Confirm the index body carries no `assets/` path prefix: `grep -c '\bassets/' assets/fbk-docs/fbk-sdl-workflow.md` returns 0.
+4. In `assets/skills/fbk-spec-review/SKILL.md`, add a one-line framing note that the skill produces the spec gate's semantic anchor (its review artifact is the semantic-anchor input the spec gate reads). Doc-only: do NOT change any behavior, gate call, agent spawn, or routing line. Completion: `grep -qi 'semantic anchor' assets/skills/fbk-spec-review/SKILL.md` succeeds and no gate/agent/routing line was modified.
 
-5. Run the paired tests: `bash tests/installer/test-refactored-sdl-install.sh` (requires all new skills/agents/docs to exist — they are produced by waves 1–2 tasks; this index wiring makes the docs reachable and T12–T14 for the routed docs pass once those leaves exist and install) and `bash tests/sdl-workflow/test-reference-integrity.sh` (routed paths resolve; no `assets/` prefix). Both must pass once all upstream slices are complete.
+5. In `assets/skills/fbk-implement/SKILL.md`, add a one-line framing note that the skill is phase five of the six-phase refactored SDL (intent → design → spec → breakdown → code-review → implement). Doc-only: no behavioral change. Completion: `grep -qi 'phase five' assets/skills/fbk-implement/SKILL.md` succeeds and no behavioral line was modified.
+
+6. Confirm both reframed skill bodies carry no `assets/` path prefix: `grep -c '\bassets/' assets/skills/fbk-spec-review/SKILL.md` and `grep -c '\bassets/' assets/skills/fbk-implement/SKILL.md` each return 0.
+
+7. Confirm the index body carries no `assets/` path prefix: `grep -c '\bassets/' assets/fbk-docs/fbk-sdl-workflow.md` returns 0.
+
+8. Run the paired tests: `bash tests/installer/test-refactored-sdl-install.sh` (requires all new skills/agents/docs to exist — they are produced by waves 1–2 tasks; this index wiring makes the docs reachable and T12–T14 for the routed docs pass once those leaves exist and install) and `bash tests/sdl-workflow/test-reference-integrity.sh` (routed paths resolve; no `assets/` prefix). Both must pass once all upstream slices are complete.
 
 ## 4. Files to create/modify
 
 - `assets/fbk-docs/fbk-sdl-workflow.md` (modify)
+- `assets/skills/fbk-spec-review/SKILL.md` (modify — one-line doc-only framing note; no behavioral change)
+- `assets/skills/fbk-implement/SKILL.md` (modify — one-line doc-only framing note; no behavioral change)
+
+File-scope justification (three files): this is the cross-cutting integration-wiring task. The two skill edits are each a single one-line framing note (no behavioral change, no new hunks of logic), so they sit naturally alongside the index wiring rather than warranting their own tasks — splitting a one-line doc note into a separate task would be an artificial boundary. Total change is well under the lines/hunks budget.
 
 ## 5. Test requirements
 
