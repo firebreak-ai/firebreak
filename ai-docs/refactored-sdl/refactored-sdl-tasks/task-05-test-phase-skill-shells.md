@@ -64,7 +64,12 @@ Follow the TAP pattern from `test-code-review-structural.sh` for the shell test.
    - T4: `[ -n "$line_test_review" ] && [ "$line_test_review" -gt "$line_quality_scan" ]` — `fbk-test-review` (final pass) follows quality scan
    - T5: `[ -n "$line_gate" ] && [ "$line_gate" -gt "$line_test_review" ]` — `code-review-gate` follows test-review
 
-7. Add TAP summary.
+7. Add a sixth assertion (T6) in the same shell test file: the capability-entry prerequisite probe is wired into the code-review skill body. This is the impl-missing-at-code-review case task-24 wires (AC-12 — the four upstream-missing prerequisite cases). Anchor on the verbatim probe-call name:
+   ```bash
+   grep -q 'check_prerequisites' "$CODE_REVIEW_SKILL" && ok "fbk-code-review/SKILL.md references check_prerequisites (capability-entry probe wired by task-24)" || not_ok "..."
+   ```
+
+8. Add TAP summary.
 
 **File 2: `assets/fbk-scripts/tests/test_retro.py`**
 
@@ -107,9 +112,10 @@ Multiple files created by one task: these two tests are logically one AC-08 + AC
 
 ## 5. Test requirements
 
-`test-code-review-ordering.sh` — 5 TAP assertions:
+`test-code-review-ordering.sh` — 6 TAP assertions:
 - T1: skill file exists
 - T2–T5: the four ordered sentinels appear in the required sequence, with the bug-finding sentinel anchored on the real detector-invocation string (`Spawn Detector with:`), not a bare word. T3–T5 fail before implementation because the quality-scan, test-review, and gate invocations do not yet exist in the skill body.
+- T6: `check_prerequisites` appears in the skill body — the capability-entry probe wired by task-24 (the impl-missing-at-code-review case of AC-12). Fails before task-24 wires the probe call.
 
 `test_retro.py` — 1 pytest unit test:
 - `test_second_append_preserves_first`: appends two stage sections via `fbk.retro.append_section` and asserts both survive (read-before-write preservation). Fails before implementation via the ImportError/`skipif` guard until `fbk.retro.append_section` exists.

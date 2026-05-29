@@ -7,6 +7,11 @@ files_to_modify:
   - assets/fbk-docs/fbk-sdl-workflow.md
   - assets/skills/fbk-spec-review/SKILL.md
   - assets/skills/fbk-implement/SKILL.md
+  # Plus any tests/sdl-workflow/ files surfaced by the step-8 enumeration audit
+  # (likely candidates: test-no-old-path-patterns.sh, test-implementation-pipeline.sh,
+  # test-orchestrator-pipeline-integration.sh, test-orchestration-extensions.sh,
+  # test-reference-integrity.sh, plus any others found via the grep -lr in step 8).
+  # Each test the audit actually edits MUST be appended here at edit time.
 test_tasks: [task-13]
 dependencies: []
 completion_gate: "the referenced test tasks pass"
@@ -53,7 +58,14 @@ The paired test (task-13, wave 4) is the cross-cutting verification: the install
 
 7. Confirm the index body carries no `assets/` path prefix: `grep -c '\bassets/' assets/fbk-docs/fbk-sdl-workflow.md` returns 0.
 
-8. Run the paired tests: `bash tests/installer/test-refactored-sdl-install.sh` (requires all new skills/agents/docs to exist — they are produced by waves 1–2 tasks; this index wiring makes the docs reachable and T12–T14 for the routed docs pass once those leaves exist and install) and `bash tests/sdl-workflow/test-reference-integrity.sh` (routed paths resolve; no `assets/` prefix). Both must pass once all upstream slices are complete.
+8. Audit and update hard-coded SDL enumerations in `tests/sdl-workflow/`. Several shell tests enumerate the SDL phases or the asset list (skills, agents, docs) with literal lists — when the refactoring adds the two new phases (intent, design) or the new skills/agents/docs to a list a test enumerates, that test's expected list silently drifts out of date and either misses the new items or rejects them. Locate the candidates and update each one that names a list this refactoring grew:
+   - Likely candidates to read first: `tests/sdl-workflow/test-no-old-path-patterns.sh`, `test-implementation-pipeline.sh`, `test-orchestrator-pipeline-integration.sh`, `test-orchestration-extensions.sh`, `test-reference-integrity.sh`.
+   - Discover any others via: `grep -lr 'fbk-spec\|fbk-breakdown\|fbk-code-review\|fbk-implement' tests/sdl-workflow/` — every match is a file that names a current SDL skill and may carry an enumeration that needs the two new skills (`fbk-intent`, `fbk-design`) and any new technique skills / docs added by this refactoring.
+   - For each candidate: open it, look for arrays/loops/`for X in ...` constructs that enumerate the SDL phase set or the SDL asset set. Where the rewrite added items to that list, update the literal to match the new full list. Where a test enumerates the four current SDL skills, add `fbk-intent` and `fbk-design` (and any other new skills/agents/docs the rewrite adds to that enumeration's scope).
+   - Do not weaken assertions to skip the new items — the goal is the test enumerates the now-complete set. Do not edit tests whose enumeration is intentional (e.g. tests that specifically assert legacy behavior over the pre-refactor list); for those, report and leave alone.
+   - Add every file you actually edit to `files_to_modify` in this task's frontmatter at edit time. The list of candidates above is not exhaustive — `files_to_modify` may grow as the audit finds more enumerations.
+
+9. Run the paired tests: `bash tests/installer/test-refactored-sdl-install.sh` (requires all new skills/agents/docs to exist — they are produced by waves 1–2 tasks; this index wiring makes the docs reachable and T12–T14 for the routed docs pass once those leaves exist and install) and `bash tests/sdl-workflow/test-reference-integrity.sh` (routed paths resolve; no `assets/` prefix). Both must pass once all upstream slices are complete. Run any audited shell tests from step 8 to confirm they now pass against the new enumerations.
 
 ## 4. Files to create/modify
 
@@ -61,7 +73,7 @@ The paired test (task-13, wave 4) is the cross-cutting verification: the install
 - `assets/skills/fbk-spec-review/SKILL.md` (modify — one-line doc-only framing note; no behavioral change)
 - `assets/skills/fbk-implement/SKILL.md` (modify — one-line doc-only framing note; no behavioral change)
 
-File-scope justification (three files): this is the cross-cutting integration-wiring task. The two skill edits are each a single one-line framing note (no behavioral change, no new hunks of logic), so they sit naturally alongside the index wiring rather than warranting their own tasks — splitting a one-line doc note into a separate task would be an artificial boundary. Total change is well under the lines/hunks budget.
+File-scope justification: this is the cross-cutting integration-wiring task. The two skill edits are each a single one-line framing note (no behavioral change, no new hunks of logic), so they sit naturally alongside the index wiring rather than warranting their own tasks — splitting a one-line doc note into a separate task would be an artificial boundary. The step-8 enumeration-audit edits over `tests/sdl-workflow/` are each a literal-list update sized like the framing notes (extend an existing list, no new logic); they belong with the index-wiring because the index changes and the test-enumeration changes are the same cross-cutting question — "which lists name the full SDL asset set after this refactoring." Total change is well under the lines/hunks budget even with the audited files added.
 
 ## 5. Test requirements
 

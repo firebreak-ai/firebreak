@@ -54,15 +54,21 @@ Before implementation these assertions all fail because the two skill directorie
    ```bash
    INTENT="$PROJECT_ROOT/assets/skills/fbk-intent/SKILL.md"
    DESIGN="$PROJECT_ROOT/assets/skills/fbk-design/SKILL.md"
+   SPEC="$PROJECT_ROOT/assets/skills/fbk-spec/SKILL.md"
+   BREAKDOWN="$PROJECT_ROOT/assets/skills/fbk-breakdown/SKILL.md"
    ```
 
 4. Write the `fbk-intent` assertions (AC-01). T1: `[ -s "$INTENT" ]` — skill file exists and non-empty. T2: `frontmatter "$INTENT" | grep -q 'description:'` — has description. T3: `frontmatter "$INTENT" | grep -q 'argument-hint:'` — has argument-hint. T4: `grep -q 'intent-guide.md' "$INTENT"` — routes to the intent guide. T5: `grep -q 'fbk-grilling' "$INTENT"` — composes grilling. T6: `grep -q 'fbk-fresh-eyes' "$INTENT"` — composes fresh-eyes. T7: `grep -q 'fbk-product-author' "$INTENT"` — delegates PRD drafting to the product-author agent. T8: `grep -q 'intent-gate' "$INTENT"` — runs the intent gate. T9: `grep -q 'architecture-overview.md' "$INTENT"` — reads/updates the architecture/intent overview.
 
 5. Write the `fbk-design` assertions (AC-03). T10: `[ -s "$DESIGN" ]` — skill file exists and non-empty. T11: `frontmatter "$DESIGN" | grep -q 'description:'` — has description. T12: `frontmatter "$DESIGN" | grep -q 'argument-hint:'` — has argument-hint. T13: `grep -q 'design-guide.md' "$DESIGN"` — routes to the design guide. T14: `grep -q 'fbk-grilling' "$DESIGN"` — composes grilling. T15: `grep -q 'fbk-fresh-eyes' "$DESIGN"` — composes fresh-eyes. T16: `grep -q 'fbk-architect' "$DESIGN"` — delegates to the architect agent. T17: `grep -q 'design-gate' "$DESIGN"` — runs the design gate. T18: `grep -q 'decisions-log.md' "$DESIGN"` — appends to the decisions log. T19: `grep -q 'check_prerequisites' "$DESIGN"` — invokes the prerequisite probe (the intent-missing-at-design case, AC-12).
 
-6. Add the TAP summary block at the end (same pattern as the existing shell tests): print `1..$TOTAL` and exit non-zero if `FAIL` > 0.
+6. Write the cross-skill prerequisite-probe wiring assertions (AC-12 — the four upstream-missing cases). Keeping these under one shell test consolidates the prereq-wiring sentinels for the spec and breakdown skills that the rewrite touches. The intent-design and code-review cases are asserted elsewhere (T19 above for design; task-05 T6 for code-review).
+   - T20: `grep -q 'check_prerequisites' "$SPEC"` — `fbk-spec/SKILL.md` references the prerequisite probe (the design-missing-at-spec case wired by task-31).
+   - T21: `grep -q 'check_prerequisites' "$BREAKDOWN"` — `fbk-breakdown/SKILL.md` references the prerequisite probe (the spec-missing-at-breakdown case wired by task-32).
 
-7. Confirm the script is syntactically valid: `bash -n tests/sdl-workflow/test-phase-skills-intent-design.sh` exits 0. Before the skills exist, running the script must produce failing assertions (red), not a parse error.
+7. Add the TAP summary block at the end (same pattern as the existing shell tests): print `1..$TOTAL` and exit non-zero if `FAIL` > 0.
+
+8. Confirm the script is syntactically valid: `bash -n tests/sdl-workflow/test-phase-skills-intent-design.sh` exits 0. Before the skills exist, running the script must produce failing assertions (red), not a parse error.
 
 ## 4. Files to create/modify
 
@@ -70,11 +76,12 @@ Before implementation these assertions all fail because the two skill directorie
 
 ## 5. Test requirements
 
-19 TAP assertions:
+21 TAP assertions:
 - `fbk-intent` structure (T1–T9, AC-01): exists + description + argument-hint; routes to intent-guide; composes fbk-grilling + fbk-fresh-eyes; delegates to fbk-product-author; runs intent-gate; reads/updates architecture-overview.
 - `fbk-design` structure (T10–T19, AC-03 + the AC-12 probe wiring): exists + description + argument-hint; routes to design-guide; composes fbk-grilling + fbk-fresh-eyes; delegates to fbk-architect; runs design-gate; appends to decisions-log; invokes check_prerequisites.
+- Cross-skill prerequisite-probe wiring (T20–T21, AC-12): `fbk-spec/SKILL.md` and `fbk-breakdown/SKILL.md` each reference `check_prerequisites` (the design-missing-at-spec case wired by task-31; the spec-missing-at-breakdown case wired by task-32).
 
-All assertions fail before the two skills exist (missing files → failing greps) — the correct red state. The test must not assert a prerequisite-probe call in `fbk-intent` (intent is the first phase, no upstream).
+All assertions fail before the relevant skills exist or are wired — the correct red state. The test must not assert a prerequisite-probe call in `fbk-intent` (intent is the first phase, no upstream).
 
 ## 6. Acceptance criteria
 
