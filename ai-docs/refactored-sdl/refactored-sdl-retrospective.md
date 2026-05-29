@@ -71,3 +71,75 @@
 **Process note — pipeline mismatch confirmed (feeds self-improvement):** running the *current* breakdown pipeline on a spec written for the *new* one surfaced exactly the limitation this project fixes. The current breakdown gate demands a test+impl pair per AC and assumes judgment-free code tasks, but half the feature is prompt-asset authoring. Adaptations taken: the test-only cross-cutting slice got a real impl task (the SDL-index wiring); prompt-asset slices became Sonnet authoring tasks gated by shell tests; and two AC behaviors (capability-entry, retrospective-append) had to be given importable helper modules to be testable at all. This is direct evidence for the reshaped breakdown's slice-shape awareness and test-only-slice support. Tooling friction also noted: the `fbk-task-compiler` agent is read-only (Read/Grep/Glob), so its authored task content had to be harvested and written by a separate agent — a candidate for either granting it Write or changing the breakdown skill's agent wiring.
 
 **Fresh-eyes catch (post-gate, pre-implement):** an operator-requested single cold reviewer over the task set found a gap the deterministic gates and CP2 both missed — the two headline phase skills, `fbk-intent` and `fbk-design`, had no authoring task. They fell between the intent/design *gate* slices and the technique-skills slice; the gates were satisfied because the gate code, guides, and agents were all tasked, and AC-01/AC-03 had test+impl coverage via the gate and dispatcher tasks — so nothing flagged the missing SKILL.md files. Also found: the capability-entry probe was built and unit-tested but never wired into any skill; two test↔impl contradictions (a phantom quality-scan cap, a divergent ordering sentinel) introduced during earlier fix rounds. Lesson for the reshaped breakdown: AC-level coverage checks do not guarantee asset-level completeness — a slice whose deliverables are a *set* of assets (skill + gate + guide + agent) can pass with a member missing. A cold completeness pass against the spec's asset-surface list, or an asset-surface checklist in the breakdown gate, would catch this class. Fixed: added 3 tasks (1 test + 2 impl), wired the probe into the four downstream phase skills, resolved both contradictions; gates and a re-verification confirm clean.
+
+## Stage 4: Implementation
+
+### Factual data
+
+**Task execution**
+
+- Total tasks: 38 (originally 35 at Stage 3 compile; +3 from the fresh-eyes catch in Stage 3 retrospective — `task-36` test for phase skills, `task-37` fbk-intent author, `task-38` fbk-design author).
+- Distribution: 13 test tasks + 25 implementation tasks across 4 waves (Wave 1: 6 test + 12 impl = 18; Wave 2: 6 test + 10 impl = 16; Wave 3: 1 test + 1 impl = 2; Wave 4: 1 test + 1 impl = 2).
+- Result: 38/38 complete, zero escalations, zero parked, zero superseded.
+- Model routing: 7 Haiku tasks (5 test + 2 impl); 31 Sonnet tasks. All Haiku tasks succeeded without escalation.
+- Wave width: peak parallel = 12 (Wave 1 impl step); team spawned 12 fresh `fbk-implementer` agents per the implementation-guide "fresh agent per task" rule.
+
+**Verification gate results**
+
+| Wave | Python pass | Shell pass | Regressions | Wave-fixes |
+|---|---|---|---|---|
+| Baseline | 118 | 62 | — | — |
+| Wave 1 | 139 (+21) | 65 (+3) | 2 | 2 |
+| Wave 2 | 204 (+65) | 66 (+1) | 2 | 2 |
+| Wave 3 | 217 (+13) | 66 (+0) | 0 | 0 |
+| Wave 4 | 217 (+0) | 66 (+0) | 1 | 1 |
+
+- Final test surface: 217 python pass + 66 shell pass. Baseline preserved at every wave boundary.
+- Wave 4 also adds `tests/installer/test-refactored-sdl-install.sh` (16 assertions), which is deferred — the installer downloads from upstream GitHub, so 14/16 assertions cannot pass until the assets are published. The 2 infrastructure assertions (no `assets/` leaks in installed tree; uninstall cleans up) pass locally.
+
+**In-session retry count**
+
+- TaskCompleted hook rejections resolved without escalation: zero observed. No teammate triggered the hook-rejection retry path.
+
+**Task sizing accuracy**
+
+- All 38 tasks completed within their declared file scopes. Two implementation tasks expanded scope as side-fixes that the team lead accepted:
+  1. `task-34` (code_review gate impl) also patched `test_hash.verify_manifest` — fallback filename resolution when manifest was created with subdir scope but verified at parent. Flagged in summary; accepted because the patch was strictly additive and unblocked the gate test.
+  2. `task-13` (installer e2e test) corrected 10 path leaks in `assets/fbk-docs/fbk-context-assets.md` (7) and `assets/skills/fbk-council/SKILL.md` (3) — adversarial grep over its own forward guard. Accepted because the fixes were the *intended* effect of the new sentinel.
+
+**Wave-fixes by team lead**
+
+Five small team-lead-level edits to baseline tests/assets that were rendered stale by deliberate-by-design changes in this wave's scope:
+
+1. `tests/sdl-workflow/test-test-reviewer-extensions.sh` — retired 3 CP5 sentinels (mutation-testing criteria removed by spec).
+2. `assets/skills/fbk-code-review/SKILL.md` — routed `capability-entry.md` so the new leaf was not orphaned in the wave-1 intermediate state.
+3. `tests/sdl-workflow/test-hash-gate.sh` — updated to per-entry object schema (the task-26 schema rewrite).
+4. `assets/skills/fbk-breakdown/SKILL.md` — typo fix on slice-shapes index route.
+5. `tests/sdl-workflow/test-council-skill-structure.sh` — updated 3 dispatch-path sentinels to installed-path form (chained from task-13's path-class-1 correction).
+6. `assets/skills/fbk-implement/SKILL.md` — "phase five" → "phase six" (task-35 surfaced the numbering inconsistency; the gate text said five but the documented sequence is six).
+
+### Upstream traceability
+
+- Stage 2 review iterations before advancing: 2 (initial FAIL with 13 blockers → revision → focused re-review PASS).
+- Blocking findings count: 13 (Stage 2). All 13 led to spec revisions (none deferred).
+- Stage 3 compilation attempts before gate passed: 2 attempts (initial CP2 FAIL with 7 defects → fix iteration → PASS). The fresh-eyes catch was a *post-gate* find that added 3 tasks (1 test + 2 impl) — not a compilation re-attempt, but a class of completeness defect the deterministic gates were structurally blind to (AC-coverage checks do not guarantee asset-surface completeness).
+
+### Failure attribution
+
+No escalations triggered, so root-cause classification of the **escalation** kind is not applicable.
+
+Failure-adjacent observations (root-cause classification of issues caught by per-wave verification rather than by individual task failures):
+
+- **Wave 1, capability-entry orphan**: Stage 3 compilation gap. Task-25 created `capability-entry.md` as a routed leaf, but no Wave 1 task included a route to it from any installed asset. The intended router (the phase skills) were built only in Wave 2. The breakdown left a one-wave-wide window where the leaf was unreferenced; the team-lead wave-fix routed it from `fbk-code-review` SKILL.md (a legitimate routing site for the mid-pipeline-entry probe). Class: **compilation gap** — the leaf-routing dependency was not made an in-wave invariant.
+- **Wave 1, test-test-reviewer-extensions sentinels**: spec gap, but deliberate. The spec deletes CP5 mutation-testing criteria from the test-reviewer agent (task-20). The 3 affected sentinels in a baseline shell test were testing the now-retired criteria. The spec did not enumerate "baseline tests rendered stale by this refactor"; treating the retirement as expected and trimming the sentinels is the consistent action. Class: **spec gap** — the refactor's downstream test impact was not enumerated.
+- **Wave 2, test-hash-gate shell-test schema**: same class as above. Task-26 explicitly rewrites the manifest schema (flat `{path: hash}` → per-entry object `{sha256, slice, test-discipline}`). The shell sentinel asserted on the old schema. The team-lead update was mechanical. Class: **spec gap** — same downstream-baseline issue as the test-reviewer case.
+- **Wave 2, slice-shapes routing typo**: implementation error. Task-32's fbk-breakdown skill update wrote `slice-shapes/slice-shapes.md` instead of `slice-shapes.md` for the index route (one directory level too deep). Caught by `test-reference-integrity` at wave verification. Class: **implementation error** — instruction was clear, agent wrote the wrong path.
+- **Wave 3, test_hash.verify_manifest scope mismatch**: spec gap (mild). The task-26 `verify_manifest(feature_dir)` contract assumed create and verify share a base directory. Task-34's code-review-gate calls `verify_manifest(feature_dir)` against manifests created with a `tests/` subdir scope (the fixture intentionally avoids sweeping `test-review-final.md` into the manifest). The contract did not pin the cross-scope case. Resolved with a fallback filename search; flagged in task-34's summary as scope-overlap with task-26. Class: **spec gap** — the cross-scope verification contract was not specified.
+- **Wave 4, installer e2e test cannot pass locally**: known limitation, not a gap. The installer (`installer/install.sh`) downloads from upstream GitHub; local Wave 1/2 work cannot be exercised by it until published. The 14 failing assertions are the intended red state until upstream sync. Deferred; the 2 infrastructure assertions (no path leaks, uninstall cleanup) pass and form the local-verifiable subset. Class: **process gap** — the test exercises a remote operation; either a local-install harness or an explicit "deferred until upstream" mark would have made this less surprising at wave verification.
+- **Wave 4, "phase five" framing**: spec gap. Task-35's completion gate text used "phase five" for the implement skill framing, but the six-phase pipeline name (intent → design → spec → breakdown → code-review → implement) puts implement at position six. The implementing agent flagged the numbering and the team lead corrected to "phase six." Class: **spec gap** — the gate text drifted from the numbering convention defined elsewhere in the same task.
+
+### Stage 4 process notes
+
+- **Concurrent execution with fresh agents per task delivered.** All 12 Wave 1 implementation tasks ran simultaneously without scope-overlap conflicts. Stage 3's non-overlapping-files guarantee held.
+- **Idempotency safeguard.** Several agents received their task assignment after the first turn had already completed the work (mailbox re-delivery); they correctly identified the completed state and reported no further action needed. No duplicate work was performed.
+- **Routing leaks were the dominant defect class.** Three of the five wave-fixes (capability-entry orphan, slice-shapes typo, council-test path form) involved leaf references that drifted from the installed-path convention. The path-class-1 invariant from the spec (installed assets reference installed paths) is correct; what's missing is *automated enforcement* — a wave-boundary lint over modified assets would have caught all three. The task-13 forward guard (Part 3 of `test-reference-integrity`) is exactly this discipline retrofitted as a sentinel.
