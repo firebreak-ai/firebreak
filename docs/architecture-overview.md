@@ -42,3 +42,11 @@ The three durable docs are:
 - `docs/architecture-overview.md` — this file; living project overview.
 
 Spent scaffolding (spec, breakdown, manifests, reports, retrospective) lives under `ai-docs/<feature-name>/` and is deleted at squash-merge.
+
+## Python runtime
+
+Firebreak's Python code (the dispatcher `fbk.py`, the gate modules under `fbk/gates/`, the helpers, and the test suite) runs through `uv` — the project does not depend on system-wide Python packages.
+
+The constraint is that Firebreak is most often installed globally on systems where the system Python may be locked down (PEP 668 / externally-managed-environment, common on recent Arch/Debian/Ubuntu and Homebrew macOS). `pip install --user` fails on those systems; `python3 -c "import yaml"` returns ImportError unless the user has manually set up a venv outside Firebreak's awareness. `uv` handles project-local virtualenv creation, Python-version pinning (`requires-python = ">=3.11"` in `pyproject.toml`), and dependency resolution without touching system packages.
+
+The installer, shell tests, and skill body invocations currently use `python3` directly — a pre-existing pattern from before this constraint was made explicit. A migration to `uv run` at every Python invocation point is tracked as a follow-up in `docs/decisions-log.md` under the 2026-05-29 "Python runtime must not depend on system-wide packages" entry.
