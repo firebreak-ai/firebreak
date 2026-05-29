@@ -6,6 +6,12 @@ covers: [AC-08]
 files_to_modify:
   - assets/skills/fbk-code-review/SKILL.md
   - assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md
+  # Conditional — re-sentineled only if the skill/guide edits break a sentinel
+  # (this task owns the edits, so it owns the re-sentinel). If a test still passes
+  # after the edits, do not modify it. See step 6.
+  - tests/sdl-workflow/test-code-review-skill.sh
+  - tests/sdl-workflow/test-code-review-guide-extensions.sh
+  - tests/sdl-workflow/test-code-review-integration.sh
 test_tasks: [task-05]
 dependencies: []
 completion_gate: "the referenced test tasks pass"
@@ -49,7 +55,18 @@ The code-review guide (`assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md`) 
 
 5. Run the paired ordering test: `bash tests/sdl-workflow/test-code-review-ordering.sh`. T1–T5 must pass (T2–T5 are the ordering assertions).
 
-6. Verify the existing code-review path sentinel tests still pass (the prose this work touches is grepped by them): run `bash tests/sdl-workflow/test-code-review-skill.sh`, `bash tests/sdl-workflow/test-code-review-guide-extensions.sh`, and `bash tests/sdl-workflow/test-code-review-integration.sh` if present, and fix only newly-broken sentinels that assert content this task changed. If a sentinel asserts a string this task removed (it should not — this task only adds), report it rather than weakening the test.
+6. Re-sentinel the three code-review-path shell tests if (and only if) the skill/guide edits break their existing sentinels. This task owns the skill and guide edits, so it owns the re-sentineling triggered by those edits. The three tests to run after the edits:
+   - `tests/sdl-workflow/test-code-review-skill.sh`
+   - `tests/sdl-workflow/test-code-review-guide-extensions.sh`
+   - `tests/sdl-workflow/test-code-review-integration.sh`
+
+   For each, after applying the edits in steps 2–4:
+   - Run `bash tests/sdl-workflow/<test>.sh`.
+   - If it still passes, do not edit it (the edit's additions did not disturb existing sentinels).
+   - If a sentinel fails because this task moved or renamed the prose it anchored on, update that sentinel in place to anchor on the new prose marker for the same load-bearing content. Keep the assertion load-bearing — anchor on the new verbatim string that carries the same meaning, never weaken to a trivially-passing form (no bare-word matches that survive deletion of the section, no `grep -q .` placeholders).
+   - If a sentinel fails because this task genuinely removed a string a sentinel asserts (this task only adds, so this should be rare), report it rather than weakening the test.
+
+   Append every test file you actually edit to this task's `files_to_modify`. The three test paths above are listed conditionally in `files_to_modify` — edit only the ones the run actually breaks.
 
 ## 4. Files to create/modify
 
@@ -58,8 +75,8 @@ The code-review guide (`assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md`) 
 
 ## 5. Test requirements
 
-- New tests: none authored here. Make `tests/sdl-workflow/test-code-review-ordering.sh` (task-05) assertions T2–T5 pass.
-- Existing tests impacted: the code-review path sentinel tests (`test-code-review-skill.sh`, `test-code-review-guide-extensions.sh`, `test-code-review-integration.sh`) grep this skill and guide; they must stay green. This task only adds content, so they should not break. Do not edit those tests.
+- New tests: none authored here. Make `tests/sdl-workflow/test-code-review-ordering.sh` (task-05) assertions T2–T6 pass (T6 — the `check_prerequisites` sentinel — is satisfied by step 2's mid-pipeline-entry wiring).
+- Existing tests impacted: the code-review path sentinel tests (`test-code-review-skill.sh`, `test-code-review-guide-extensions.sh`, `test-code-review-integration.sh`) grep this skill and guide. This task only adds content, so they should generally not break — but where an addition lands in a section whose prose-shape a sentinel anchored on, the sentinel may need re-anchoring. Re-sentinel in place per step 6 (anchor on the new verbatim string for the same load-bearing content; never weaken to a trivially-passing form). Edit only tests whose run actually fails after the edits.
 
 ## 6. Acceptance criteria
 
