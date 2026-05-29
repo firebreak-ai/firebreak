@@ -25,6 +25,25 @@ When the spec's "Module touch policy" declares a module as *refactor-then-extend
 
 The preparatory refactor task's acceptance criteria reference the existing tests for the module — the refactor must preserve current behavior, verified by the existing test suite passing unchanged. When the existing test suite does not cover the affected behavior, compile a characterization-test task in an even earlier wave to capture current behavior before the refactor begins.
 
+## Slice-Identification-Then-Pairing
+
+Task compilation follows a two-step process when the spec contains a `## Slices` section:
+
+**Step 1 — Slice identification**: Read each `## Slices` entry in the spec and record its `test-discipline` value and contract pointer before authoring any work units.
+
+**Step 2 — Per-slice pairing**: For each slice, author the test task + implementation task pair shaped by that slice's `test-discipline`. Route to the matching shape leaf under `fbk-sdl-workflow/slice-shapes/` via `slice-shapes.md`. Load only the leaf for the current slice.
+
+### Shape routing
+
+| Slice `test-discipline` | Shape | Routing rule |
+|---|---|---|
+| `new-contract` | New contract | Load `slice-shapes/new-contract.md`. Author test task declaring the new interface signature; implementation task copies it verbatim. |
+| `contract-preserving` | Contract preserving | Load `slice-shapes/contract-preserving.md`. No new test task required; implementation task locks existing tests via `test-hash-gate`. |
+| `contract-evolving` | Contract evolving | Load `slice-shapes/contract-evolving.md`. Include a `retired_tests` list in the implementation task's manifest entry. |
+| `cross-cutting` | Cross-cutting | Load `slice-shapes/cross-cutting.md`. Test task only; no implementation task for this slice. |
+
+When the spec has no `## Slices` section, skip this step and compile from ACs directly.
+
 ## Interface Contracts
 
 When a task references files created or modified by other tasks, the task instructions must specify cross-task interface contracts. At minimum: import/export convention (default vs. named), module type (ESM/CJS), key string or enum conventions used by the referenced module, and any rendering or update-loop wiring patterns the task must follow. Extend this list with any additional cross-task assumptions specific to the project's technology stack — these are a floor, not an exhaustive set.

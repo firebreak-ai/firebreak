@@ -9,11 +9,13 @@ Exit 0 on pass, exit 2 on failure.
 import argparse
 import json
 import os
+import pathlib
 import re
 import sys
 from typing import List, Optional
 
 from fbk.injection import detect_injections
+from fbk.slices import TEST_DISCIPLINES
 
 
 # ---------------------------------------------------------------------------
@@ -157,6 +159,78 @@ def _check_testing_strategy_traceability(spec_text: str) -> List[str]:
 
 
 # ---------------------------------------------------------------------------
+# Slice validation
+# ---------------------------------------------------------------------------
+
+def check_slices(spec_text: str, inventory_behaviors: set = None) -> List[str]:
+    """Return failure strings for slice-block violations; empty list = no failures.
+
+    Only activates when the spec contains a '## Slices' heading. Legacy specs
+    with no such heading return [] immediately (backward-compatible hinge).
+    """
+    if inventory_behaviors is None:
+        inventory_behaviors = set()
+
+    slices_ln = heading_line(spec_text, "## slices")
+    if slices_ln is None:
+        return []
+
+    body = section_body(spec_text, slices_ln)
+    lines = body.splitlines()
+
+    failures = []
+    slices = []
+    current = None
+
+    for line in lines:
+        # Detect slice entry boundary: "- name: <x>" or "  - name: <x>"
+        name_match = re.match(r"^\s*-\s+name:\s+(\S+)", line)
+        if name_match:
+            if current is not None:
+                slices.append(current)
+            current = {"name": name_match.group(1), "test-discipline": None, "covers": []}
+            continue
+
+        if current is None:
+            continue
+
+        td_match = re.match(r"^\s+test-discipline:\s+(\S+)", line)
+        if td_match:
+            current["test-discipline"] = td_match.group(1)
+            continue
+
+        covers_match = re.match(r"^\s+covers:\s*\[([^\]]*)\]", line)
+        if covers_match:
+            ids_text = covers_match.group(1)
+            current["covers"] = [v.strip() for v in ids_text.split(",") if v.strip()]
+            continue
+
+    if current is not None:
+        slices.append(current)
+
+    all_covered = set()
+    for s in slices:
+        name = s["name"]
+        td = s["test-discipline"]
+        if td is None:
+            failures.append(
+                f"Slice '{name}': missing test-discipline field"
+            )
+        elif td not in TEST_DISCIPLINES:
+            valid = ", ".join(TEST_DISCIPLINES)
+            failures.append(
+                f"Slice '{name}': invalid test-discipline '{td}' (valid: {valid})"
+            )
+        all_covered.update(s["covers"])
+
+    for bid in sorted(inventory_behaviors):
+        if bid not in all_covered:
+            failures.append(f"Behavior '{bid}' not covered by any slice")
+
+    return failures
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -206,6 +280,15 @@ def main():
         fails.extend(check_open_questions(spec_text))
         fails.extend(_check_ac_format(spec_text))
         fails.extend(_check_testing_strategy_traceability(spec_text))
+
+        feature_dir = pathlib.Path(spec_path).parent
+        inv_path = feature_dir / "behavior-inventory.yaml"
+        if inv_path.exists():
+            inv_text = inv_path.read_text(encoding="utf-8", errors="replace")
+            inventory_behaviors = set(re.findall(r"^\s*-\s*id:\s*(\S+)", inv_text, re.M))
+        else:
+            inventory_behaviors = set()
+        fails.extend(check_slices(spec_text, inventory_behaviors))
     else:
         for heading in [
             "## Vision",

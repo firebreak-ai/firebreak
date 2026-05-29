@@ -318,8 +318,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Schema-change fixtures + shadow negative case",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Rewrote assets/fbk-scripts/tests/test_gates_test_hash.py: 4 classes / 10 tests for per-entry object shape, list-driven lock mode (locked_files arg), shadow detection (unlisted file inside locked scope \u2192 unexpected; outside \u2192 not flagged), verify_manifest structured return (list[dict] with kind+path; kind \u2208 {modified, unexpected, missing}). All 10 tests fail against current impl with on-contract failure modes.",
       "note": null
     },
     {
@@ -337,8 +337,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-failure-case gate fixtures",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/tests/test_gates_intent.py with make_feature_dir helper (PRD with 10 sections + B-001/B-002 refs, behavior-inventory.yaml, grilling-log-intent.md with ### decision-slug + Confirmed: line, fresh-eyes-intent.md). 22 tests / 7 classes: passes-full, 10 missing-PRD-section tests, bidirectional PRD\u2194inventory consistency, grilling log shape, fresh-eyes critical, injection_warnings, path guard. Red state: 2 fail (subprocess module-missing) + 20 skip (ImportError guard).",
       "note": null
     },
     {
@@ -354,8 +354,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Bidirectional drift fixtures",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/tests/test_gates_design.py: 14 tests / 8 classes covering passes-full, forward/backward/both-direction manifest drift, decomposition rationale, decisions-recorded count (zero/absent/nonzero), fresh-eyes critical, injection scan, path guard (binary manifest graceful). 14 skipped pre-impl (ImportError guard).",
       "note": null
     },
     {
@@ -371,8 +371,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Full-path regression + adversarial-prose case",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified assets/fbk-scripts/tests/test_gates_spec.py: added run_spec_gate subprocess helper (via fbk.py dispatcher), make_spec_with_slices builder, 4 new classes/15 tests for slice-block detection (no-slices regression, adversarial-prose non-trigger, valid slices), slice-discipline validation (missing/out-of-taxonomy/4 valid), inventory coverage (uncovered/all-covered/empty/skip-when-missing), testing-strategy retention. Red state: 17 pass + 3 fail (the 3 slice-extension cases) as expected.",
       "note": null
     },
     {
@@ -388,8 +388,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Per-shape pass/fail fixtures",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified assets/fbk-scripts/tests/test_gates_breakdown.py: added 3 helpers + MANIFEST_ENTRY const + 11 tests / 3 classes \u2014 TestSliceShapeAwareness (cross-cutting pass/no-impl, contract-preserving pass, contract-evolving retired-tests rule, manifest-presence), TestBounceBackMarkerDetection (unresolved/no-marker), TestLegacyBreakdownUnchanged (2 backward-compat). Red state: 9 pass + 8 fail as expected. Implementer note: contract-evolving fixture uses 'testing-infrastructure' category \u2014 gate logic must hinge on slice_shape, not category.",
       "note": null
     },
     {
@@ -405,8 +405,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Frontmatter/routing presence assertions",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/sdl-workflow/test-phase-skills-intent-design.sh with 21 TAP assertions: T1-T9 fbk-intent skill structure (description, argument-hint, routes intent-guide, composes fbk-grilling+fbk-fresh-eyes, delegates fbk-product-author, runs intent-gate, reads/updates architecture-overview), T10-T19 fbk-design skill structure (description, argument-hint, design-guide, composes, delegates fbk-architect, runs design-gate, appends decisions-log, check_prerequisites), T20-T21 cross-skill probe wiring on fbk-spec + fbk-breakdown. Syntax OK; all 21 assertions fail in red state as expected.",
       "note": null
     },
     {
@@ -423,8 +423,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Schema rewrite + structured return",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Rewrote assets/fbk-scripts/fbk/gates/test_hash.py: imports TEST_DISCIPLINES from fbk.slices, _is_test_file/_sha256/_relpath_for helpers, compute_hashes(feature_dir, locked_files=None), create_manifest writes per-entry {sha256, slice, test-discipline}, verify_manifest returns list[dict] with kind+path (modified/missing/unexpected), shadow detection scoped to parent dirs of recorded entries (not repo-wide). main() updated for new return shape. All 10 tests in test_gates_test_hash.py pass including both shadow cases. Caveat: relpath resolution assumes locked files inside feature_dir; truly external locked paths untested.",
       "note": null
     },
     {
@@ -444,8 +444,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "New gate module + injection import",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/fbk/gates/intent.py with validate_intent(feature_dir) -> dict (10-section PRD check, bidirectional B-NNN consistency, grilling-log presence + well-formedness, fresh-eyes no-open-critical, injection scan), path guard in main() (exit 2 on missing dir), errors='replace' reads. Created assets/fbk-docs/fbk-sdl-workflow/intent-guide.md mirroring feature-spec-guide.md (intent purpose, 10 PRD sections, behavior inventory format, artifact table, grilling+fresh-eyes requirements, established-project read-first, gate invocation). No assets/ refs. test_gates_intent.py: 22/22 pass.",
       "note": null
     },
     {
@@ -463,8 +463,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "New gate module + bidirectional check",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-scripts/fbk/gates/design.py with validate_design(feature_dir) -> dict (7 checks: manifest present, bidirectional manifest\u2194dir drift, decomposition rationale, decisions-recorded non-zero, injection scan manifest+pages, fresh-eyes no-open-critical, path guard errors='replace'). main() is_dir/exit(2). Created assets/fbk-docs/fbk-sdl-workflow/design-guide.md mirroring feature-spec-guide.md (design page authoring, manifest format, decisions-log append, fresh-eyes anchor, installed-path gate invocation). test_gates_design.py: 14/14 pass. No bare assets/ refs.",
       "note": null
     },
     {
@@ -482,8 +482,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Additive checks preserving legacy path",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified assets/fbk-scripts/fbk/gates/spec.py: added pathlib import + TEST_DISCIPLINES import; added check_slices(spec_text, inventory_behaviors) helper that detects ## Slices heading_line (case-insensitive) and parses slice entries (test-discipline in TEST_DISCIPLINES, every inventory id covered). Wired into main() feature branch after _check_testing_strategy_traceability: derives feature_dir, reads behavior-inventory.yaml regex-parsed for - id: entries, extends fails. Absent inventory skips coverage check (backward-compatible). test_gates_spec.py: 20/20 pass; test_gates_spec_injection.py: 6/6 pass.",
       "note": null
     },
     {
@@ -501,8 +501,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Modify checks #1/#8 + bounce-back",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified assets/fbk-scripts/fbk/gates/breakdown.py: added TEST_DISCIPLINES import + slice_metadata_present hinge. Check #1 modified: shape-specific suppression (cross-cutting suppresses impl, contract-preserving + contract-evolving suppress both). Check #8 suppressed for contract-preserving + contract-evolving (note: extended beyond spec to include contract-evolving so retired_tests invariant covers it). New invariants: contract-evolving requires non-empty retired_tests; slice_metadata_present requires test-hashes.json (pre-lock manifest); BOUNCE-BACK: marker scan. main() loads test-hashes.json when present. test_gates_breakdown.py: 17/17 pass (all 4 classes).",
       "note": null
     },
     {
@@ -517,8 +517,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Skill + guide reshape",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified assets/skills/fbk-spec/SKILL.md: added Inputs section (4 upstream artifacts with installed paths), Prerequisite check section (calls fbk.precheck.check_prerequisites('spec', ...) non-blocking, names design manifest), Closing ambiguity repointed to compose fbk-grilling narrowed to 'how' questions, Slices section with YAML format. Modified assets/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md: added Slices Declaration Format (4-value taxonomy table + retired-tests) and Narrowed Grilling sections before Transition. All 6 completion-grep checks pass; test-skill-guide-dedup.sh 22/22; test_gates_spec.py 20/20.",
       "note": null
     },
     {
@@ -533,8 +533,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Skill + guide reshape",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified assets/skills/fbk-breakdown/SKILL.md: added Prerequisite probe section (check_prerequisites('breakdown', ...) names spec, offers /fbk-spec non-blocking); Slice identification section reading ## Slices entries; Per-slice work-unit authoring section routing to slice-shapes.md index and four leaves; BOUNCE-BACK: marker documentation; Pre-lock test review section invoking fbk-test-review --mode pre-lock with accepted verdict gating manifest. Preserved review-gate, agents, retrospective. Modified assets/fbk-docs/fbk-sdl-workflow/task-compilation.md: added Slice-Identification-Then-Pairing section with 4-shape routing table. All 7 grep checks pass; test-skill-guide-dedup.sh 22/22; test-breakdown-integration.sh 19/19; test_gates_breakdown.py 17/17.",
       "note": null
     },
     {
@@ -549,8 +549,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Cohesive doc-set authoring (progressive disclosure)",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/fbk-docs/fbk-sdl-workflow/slice-shapes.md (index with 4-row routing table) and four leaves in slice-shapes/: new-contract.md (red\u2192green, locked new tests, test+impl tasks), contract-preserving.md (locked existing tests, no new test task), contract-evolving.md (retired-tests required, new test+impl), cross-cutting.md (test-only, no paired impl). All files non-empty, no assets/ prefix, breakdown-gate invariants stated consistently with the leaves.",
       "note": null
     },
     {
@@ -568,8 +568,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Phase-skill authoring",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/skills/fbk-intent/SKILL.md (phase-skill shape: description, argument-hint frontmatter; routes to intent-guide.md; composes fbk-grilling + fbk-fresh-eyes; delegates PRD draft to fbk-product-author; names artifacts prd.md, behavior-inventory.yaml, grilling-log-intent.md; reads/updates docs/architecture-overview.md; runs intent-gate via installed path; no check_prerequisites since first phase; no assets/ prefix). test-phase-skills-intent-design.sh T1-T9 pass.",
       "note": null
     },
     {
@@ -588,8 +588,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Phase-skill authoring + prereq wiring",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created assets/skills/fbk-design/SKILL.md: description + argument-hint frontmatter; mid-pipeline prerequisite probe calling check_prerequisites('design', ...) naming prd.md offering /fbk-intent (non-blocking, AC-12/UV-8); routes to design-guide.md; delegates to fbk-architect agent in authoring mode; composes fbk-grilling + fbk-fresh-eyes; writes ai-docs/<feature>/design/ + design-manifest.md with non-zero Decisions recorded pointing to docs/decisions-log.md; runs design-gate via installed path; stage transition to /fbk-spec. All installed paths, no assets/ prefix. test-phase-skills-intent-design.sh: 21/21 pass.",
       "note": null
     },
     {

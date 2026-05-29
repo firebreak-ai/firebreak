@@ -48,10 +48,14 @@ files = m.get('files', {})
 ca = m.get('computed_at', '')
 # Check 3 entries
 assert len(files) == 3, f'expected 3 files, got {len(files)}'
-# Check 64-char hex hashes
-for path, h in files.items():
-    assert len(h) == 64, f'hash for {path} is {len(h)} chars'
+# Check per-entry object schema: {sha256, slice, test-discipline}
+for path, entry in files.items():
+    assert isinstance(entry, dict), f'entry for {path} is {type(entry).__name__}, want dict'
+    h = entry.get('sha256', '')
+    assert len(h) == 64, f'sha256 for {path} is {len(h)} chars'
     int(h, 16)  # validates hex
+    assert 'slice' in entry, f'entry for {path} missing slice key'
+    assert 'test-discipline' in entry, f'entry for {path} missing test-discipline key'
 # Check ISO8601 computed_at
 assert 'T' in ca, f'computed_at missing T: {ca}'
 print('valid')
