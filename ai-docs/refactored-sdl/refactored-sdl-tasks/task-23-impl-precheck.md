@@ -12,7 +12,7 @@ completion_gate: "the referenced test tasks pass"
 
 ## 1. Objective
 
-Produces `assets/fbk-scripts/fbk/precheck.py`, the capability-entry prerequisite probe that, given a phase and a project root, returns a structured non-blocking result naming any missing upstream artifact and the upstream phase that produces it.
+Produces `assets/fbk-scripts/fbk/precheck.py`, the capability-entry prerequisite probe that, given a phase and a feature directory, returns a structured non-blocking result naming any missing upstream artifact and the upstream phase that produces it.
 
 ## 2. Context
 
@@ -24,7 +24,7 @@ The function signature is pinned (must match exactly what task-06's test imports
 def check_prerequisites(phase: str, feature_dir: str) -> dict
 ```
 
-Here `feature_dir` is the **project root** (the test passes `str(tmp_path)`), and the function looks under `<feature_dir>/ai-docs/sample/...` — but the feature name is not a separate argument. Read the task-06 test carefully: its `feature_dir` fixture creates `tmp_path / "ai-docs" / "sample"` and passes `tmp_path` (the project root) as the second argument, with the feature name `"sample"`. The function must therefore derive the single feature directory under `<project-root>/ai-docs/` — the test only ever has one feature dir named `sample`. Implement it to scan `<feature_dir>/ai-docs/` for the (single) feature subdirectory and check artifacts inside it. If multiple subdirectories exist, pick the one being probed is out of scope for the test — handle the single-subdirectory case the test exercises; if `ai-docs/` has exactly one subdirectory, use it.
+Here `feature_dir` is the **actual feature directory**, full stop (e.g. `ai-docs/refactored-sdl/`). The function does NOT scan a project root for "the single subdirectory under `ai-docs/`" — that fragile single-subdir invariant is removed. The feature name is derived directly from the path: `feature_name = Path(feature_dir).name`. Upstream artifacts are looked up directly under `feature_dir/...` per the spec's per-phase prerequisite rules.
 
 The return dict shape (pinned by the test):
 ```python
@@ -37,10 +37,10 @@ The return dict shape (pinned by the test):
 }
 ```
 
-The four upstream-missing cases the probe handles (each names the artifact and upstream phase):
+The four upstream-missing cases the probe handles (each names the artifact and upstream phase), checked directly under `feature_dir`:
 1. `phase == "design"` → requires `prd.md` present in the feature dir; if absent → missing `{"artifact": "prd.md", "upstream_phase": "intent"}`.
 2. `phase == "spec"` → requires `design-manifest.md`; if absent → missing `{"artifact": "design-manifest.md", "upstream_phase": "design"}`.
-3. `phase == "breakdown"` → requires `<feature>-spec.md` (the file ending in `-spec.md`); if absent → missing `{"artifact": "<feature>-spec.md", "upstream_phase": "spec"}`. The test asserts the missing artifact name ends with `-spec.md` and uses the actual feature name (`sample-spec.md`).
+3. `phase == "breakdown"` → requires `<feature>-spec.md` (the file ending in `-spec.md`); if absent → missing `{"artifact": "<feature>-spec.md", "upstream_phase": "spec"}`. The test asserts the missing artifact name ends with `-spec.md` and uses the actual feature name (derived from `Path(feature_dir).name`).
 4. `phase == "code-review"` → requires an `implementation/` directory under the feature dir; if absent → missing `{"artifact": "implementation/", "upstream_phase": "implement"}`.
 
 When the required artifact for the requested phase is present, `ready` is `True` and `missing` is `[]`. For a phase not in the four mapped cases, return `ready: True` with empty missing (no prerequisite known).
@@ -51,9 +51,9 @@ Existing patterns: this is a pure helper module like the gate check functions �
 
 1. Create `assets/fbk-scripts/fbk/precheck.py` with a module docstring and the function `def check_prerequisites(phase: str, feature_dir: str) -> dict:` exactly.
 
-2. In the function, resolve the feature directory: `root = Path(feature_dir)`, then find the single subdirectory under `root / "ai-docs"` (e.g., iterate `(root / "ai-docs").iterdir()` for the first directory). Derive the feature name from that subdirectory's name. If `ai-docs/` does not exist or has no subdirectory, treat all artifacts as missing for the mapped phase.
+2. In the function, resolve the feature directory directly: `feature_path = Path(feature_dir)`. Derive `feature_name = feature_path.name`. Do NOT scan any parent for "the single subdirectory under `ai-docs/`" — `feature_dir` IS the feature directory. If `feature_path` does not exist, treat all artifacts as missing for the mapped phase.
 
-3. Implement the four phase→prerequisite mappings exactly as listed in Context. For each, build `missing` with a dict `{"artifact": <name>, "upstream_phase": <phase>}` when the artifact is absent. For the `breakdown` case, the artifact name is `f"{feature_name}-spec.md"`. For `code-review`, check `is_dir()` on `<feature>/implementation`. Return `{"phase": phase, "ready": len(missing) == 0, "missing": missing}`.
+3. Implement the four phase→prerequisite mappings exactly as listed in Context, checking artifacts directly under `feature_path`. For each, build `missing` with a dict `{"artifact": <name>, "upstream_phase": <phase>}` when the artifact is absent. For the `breakdown` case, the artifact name is `f"{feature_name}-spec.md"`. For `code-review`, check `is_dir()` on `feature_path / "implementation"`. Return `{"phase": phase, "ready": len(missing) == 0, "missing": missing}`.
 
 4. Never call `sys.exit` inside `check_prerequisites`. Completion: the function returns a dict in every branch and contains no `sys.exit` call.
 

@@ -16,7 +16,7 @@ Extends `assets/fbk-scripts/fbk/gates/breakdown.py` so checks #1 and #8 become s
 
 ## 2. Context
 
-The breakdown gate gains slice-shape-awareness activated **only when tasks carry slice metadata** — the same backward-compat hinge style the spec gate uses. The hinge is a `"slice_shape"` field on a task entry in `task.json` (the test adds `"slice_shape": "<mode>"` to task dicts). A breakdown with no `slice_shape` on any task runs the existing checks unchanged.
+The breakdown gate gains slice-shape-awareness activated **only when tasks carry slice metadata** — the same backward-compat hinge style the spec gate uses. The hinge is a `"slice_shape"` field on a task entry in `task.json` (the test adds `"slice_shape": "<mode>"` to task dicts). This field is now spec-pinned: per §Interface contracts #5, "each task.json entry whose work belongs to a declared slice optionally carries a `slice_shape` field with a value from `TEST_DISCIPLINES`; the breakdown-gate uses this as the slice-metadata hinge for its shape-aware checks (no `slice_shape` ⇒ legacy behavior)." A breakdown with no `slice_shape` on any task runs the existing checks unchanged.
 
 Read the current `assets/fbk-scripts/fbk/gates/breakdown.py` — `validate_breakdown(spec_text, manifest, task_files)` and its eight numbered checks. The signature does NOT change (the test imports `validate_breakdown` unchanged); new behavior is triggered by slice metadata inside the manifest/task content.
 
