@@ -26,7 +26,7 @@ Two new cheap invariants enforced only when slice metadata is present:
 
 Bounce-back marker: an unresolved `BOUNCE-BACK:` or `<!-- BOUNCE-BACK:` marker in any task file body fails the gate.
 
-The slice metadata format in task.json entries: add a `"slice_shape"` field to each task dict. The gate reads this to determine if the slice-shape-aware path applies.
+The slice metadata format in task.json entries: add a `"slice_shape"` field to each task dict. The gate reads this to determine if the slice-shape-aware path applies. This field is now spec-pinned: per §Interface contracts #5, "each task.json entry whose work belongs to a declared slice optionally carries a `slice_shape` field with a value from `TEST_DISCIPLINES`; the breakdown-gate uses this as the slice-metadata hinge for its shape-aware checks (no `slice_shape` ⇒ legacy behavior)."
 
 The import `from fbk.gates.breakdown import validate_breakdown` remains unchanged — the function signature does not change. The new behavior is triggered by slice metadata inside the manifest/task content.
 

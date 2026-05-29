@@ -24,8 +24,8 @@
       "wave_id": 1,
       "dependencies": [],
       "covers": ["AC-23"],
-      "model": "Sonnet",
-      "model_rationale": "pytest fixtures + pattern-class assertions",
+      "model": "Haiku",
+      "model_rationale": "Bounded imports + per-pattern assertions",
       "status": "not_started",
       "summary": null,
       "note": null
