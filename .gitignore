@@ -20,3 +20,8 @@ Thumbs.db
 __pycache__/
 *.pyc
 assets/fbk-scripts/.venv/
+assets/fbk-scripts/venv/
+assets/fbk-scripts/*.egg-info/
+
+# Project wiki
+.firebreak-wiki

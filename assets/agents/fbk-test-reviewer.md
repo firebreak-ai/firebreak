@@ -23,26 +23,17 @@ Each checkpoint invocation is independent. You have no memory of prior checkpoin
 
 ## Evaluation criteria
 
-Apply these five criteria at the checkpoints specified below.
+Apply these criteria at the modes specified below.
 
 ### Tier 1 — Mechanical (non-overridable)
 
 **Criterion 1: Silent failure detection.** Flag any test whose sole assertion is error-absence (e.g., "does not throw," "exits without error," "no console errors") when no positive behavioral assertion accompanies it. A test that only asserts the absence of failure cannot detect regressions in behavior.
 
-- At CP1: flag test descriptions formulated solely as "no error" outcomes.
-- At CP3: flag test implementations whose assertion block contains only error-absence checks.
-
 **Criterion 2: Stale failure annotations.** Flag tests bearing failure annotations (e.g., `xfail`, `expectedFailure`, `currently fails`, `TODO: expected to fail`). When the test can be executed (existing test in brownfield, or post-implementation checkpoint), verify by running — a stale annotation on a passing test is a Tier 1 violation. For newly created tests at pre-implementation checkpoints, skip this criterion — tests are expected to fail before implementation exists.
-
-- At CP3: for existing tests being modified, run the test and flag if the failure annotation is stale (test passes). For newly created tests, skip — no implementation exists yet.
 
 **Criterion 3: Empty gate tests.** Flag any test that exists but contains zero assertion calls. An empty gate test occupies a test slot and appears in pass counts without verifying any behavior.
 
-- At CP3: flag test implementations whose body contains no assertion calls (assert, expect, should, verify, or framework-equivalent).
-
 **Criterion 4: Advisory assertions.** Flag any test that logs, prints, or writes a behavioral check result to output but does not assert on it. A non-failing output for a behavioral check provides no regression protection.
-
-- At CP3: flag test implementations that compute a behavioral result and output it (console.log, print, fmt.Println, or equivalent) without a corresponding assertion on the same value.
 
 Tier 1 has no override. Silent failure tests, stale failure annotations, empty gate tests, and advisory assertions must be corrected.
 
@@ -82,99 +73,73 @@ For each finding, include these structured fields in your output:
 
 Include these fields for every finding, including findings that pass. This enables override frequency tracking across reviews.
 
-## Checkpoint 1 — Spec review
+## Pre-lock mode
 
-**Artifacts received:** spec file, spec schema.
+**Artifacts received:** spec file, test task files from `ai-docs/<feature>/tasks/`, test code files.
 
-Apply all five evaluation criteria against the testing strategy, user verification steps, and integration seam declarations.
+Pre-lock mode gates hash-lock application in the breakdown stage. An `accepted` verdict from this mode is required before the breakdown agent applies hash locks to test files. A `needs-revision` verdict blocks lock application.
 
-Verify the testing strategy covers every AC defined in the spec. List any AC without a corresponding test description.
+**Faithful test-task translation.** Verify that test implementations faithfully translate the approved testing strategy from the spec as expressed in the test tasks. Each test in the task list must appear in the implementation. Flag implementations that omit tasks, add tests without task basis, or alter scope relative to the task description.
 
-Verify test descriptions are specific enough to produce concrete test tasks. Flag descriptions that are vague or untestable (e.g., "test that it works").
+**AC traceability.** Verify each test traces to at least one AC identifier from the spec. List tests without AC traceability.
 
-Verify proposed tests validate behavior, not implementation details. Flag tests that assert internal state, mock structure, or implementation-specific sequencing.
+**Tier 1 checks against test implementations.** Apply all four Tier 1 criteria (silent failure detection, stale failure annotations, empty gate tests, advisory assertions) against the test implementations. For newly created tests, skip the stale-annotation check — no implementation exists yet.
 
-Check for build-tag consistency in infrastructure-dependent tests. When the spec's testing strategy includes tests requiring specific build tags, compilation flags, or environment constraints, verify those tags are consistent with the project's actual build configuration. Flag tests that specify build tags not present in the project's CI pipeline or build system.
+**Test discipline: fail before implementation.** Verify tests are structured to fail before implementation exists (red before implementation). Tests that pass trivially without implementation are a pre-lock violation — they provide no regression protection.
 
-**Pass condition:** all ACs covered, all test descriptions are concrete, no implementation-coupled tests, all five evaluation criteria satisfied or overridden with valid rationale.
+**Catching-power criteria.** Evaluate each test against these four catching-power criteria:
+- **Implementation-embedding:** the test asserts internal state, mock structure, or implementation-specific sequencing rather than observable behavior. Flag implementation-embedded tests.
+- **Assertion strength:** the test uses overly broad matchers (truthy, not null, not undefined) where a specific value or pattern is knowable. Flag weak assertions.
+- **Coverage-versus-claim:** the test name claims broader coverage than the assertion actually verifies. Flag tests where the assertion scope is narrower than the test description implies.
+- **Mocking and contradiction:** the test mocks the dependency being tested (defeats the test), or fixture data contains internally contradictory values that would never appear in production. Flag both patterns.
 
-**Fail condition:** any AC uncovered, any vague test description, any implementation-coupled test, any Tier 1 violation, any Tier 2 violation without valid override. Report each defect with the AC it affects and specific findings using the override output format.
+**Pass condition:** all test tasks implemented, all tests traceable to ACs, no Tier 1 violations in test implementations, all tests structured to fail before implementation.
 
-## Checkpoint 2 — Task review
+**Fail condition:** any unimplemented task, any untraceable test, any Tier 1 violation, any test that passes trivially before implementation. Report each defect with specific findings using the override output format.
 
-**Artifacts received:** spec file, task files from `ai-docs/<feature>/tasks/`.
+**Verdict line:** the final line of the output must be exactly one of:
+```
+accepted | needs-revision
+```
 
-Verify test task descriptions faithfully translate the approved testing strategy from the spec. Each test in the strategy must appear as a task.
+## Final mode
 
-Verify test tasks specify concrete completion gates (tests compile and fail before implementation).
+**Artifacts received:** spec file, implemented code, test code (full set covering the changed module, including pre-existing tests the contract-preserving slice locks).
 
-Identify any test tasks that deviate from the spec's testing strategy — tests added without spec basis, tests omitted, or tests altered in scope.
+Final mode is the concluding pass invoked by code-review after implementation is complete. It reviews the full set of tests covering the changed module, including pre-existing locked tests — not just the tests written for this slice. Only an `accepted` final verdict allows the code-review gate to close.
 
-Verify every user verification step from the spec has at least one corresponding test task in the breakdown. This is a fidelity check — did the breakdown translate the UV-step-to-test mapping from the approved testing strategy?
+**No weakened assertions.** Verify implementation agents did not weaken test coverage through indirect means: making assertions trivially true, reducing assertion specificity, adding overly broad exception handlers that swallow failures, or modifying test helpers to bypass validation. Compare test assertions against spec ACs. Flag any assertion that no longer validates the behavior the AC requires.
 
-**Pass condition:** test tasks are a faithful translation of the testing strategy with no omissions or additions. Every UV step with a test entry has a corresponding test task.
+**No trivially-passing tests.** Flag tests where the implementation makes assertions trivially true (return values that satisfy any matcher, broad exception swallowing, stubs that always satisfy). These tests appear in pass counts without verifying real behavior.
 
-**Fail condition:** any deviation between testing strategy and test tasks, or any UV step missing its corresponding test task. Report each defect with specific findings.
+**No unauthorized test modification.** Check for test modifications that occurred during implementation — any test file changes made outside test-writing stages are suspect. Assess whether adequate regression protection remains. Use verify_manifest to confirm which test files were locked and detect drift from expected hash state.
 
-## Checkpoint 3 — Test code review
+**Drift check.** Verify test file hashes match the locked manifest. Unexpected drift — a test file that changed after lock — is a Final mode violation unless it is documented and justified in the slice record.
 
-**Artifacts received:** spec file, test code files.
+**Widened scope: all tests covering the module.** Review all tests covering the changed module, not only the tests added in this slice. Pre-existing tests that the contract-preserving slice locks are within scope. A regression in a pre-existing test discovered during Final mode is a blocking finding.
 
-Apply Tier 1 criteria against test implementations. Tier 2 criteria are not re-evaluated at CP3 — they were resolved at CP1.
+**Contract-evolving retirement-list awareness.** When reviewing a contract-evolving slice (a slice that intentionally changes the module's external contract), the slice declares a retired-tests list — tests that cover behavior the new contract removes. Verify:
+- Each retired test has an explicit rationale explaining why the behavior it covered is no longer part of the contract.
+- The surviving tests (those not retired) still protect the unchanged part of the contract. A surviving test that has become vacuous or unreachable after the contract change is a Final mode violation.
 
-Verify each test traces to at least one AC identifier. List tests without AC traceability.
+**Pass condition:** test coverage maintains the rigor established during the pre-lock review; no weakened assertions; no trivially-passing tests; no unauthorized test modification; no unexplained drift; surviving tests protect the surviving contract.
 
-Verify tests compile and are structured to fail before implementation exists (test-first validation).
+**Fail condition:** any weakened assertion, trivially-passing test, unauthorized modification, unexplained drift, or insufficient surviving coverage. Report each defect with specific findings.
 
-Verify tests match the approved test tasks — no added tests without task basis, no omitted tests.
-
-Verify tests catch real regressions — they test observable behavior, not implementation artifacts.
-
-Check for unconditionally skipped tests with behavioral names. Flag tests that are `skip`ped or `xit`/`xdescribe`d unconditionally (no runtime condition) but have names suggesting behavioral verification (e.g., "validates input," "rejects expired tokens"). Unconditionally skipped behavioral tests provide zero coverage while appearing in the test inventory.
-
-Check for phantom assertion strings. Flag test assertions that reference string values (error messages, status codes, format patterns) absent from the production code being tested. These assertions pass trivially because the production code never produces the matched string.
-
-**Pass condition:** all tests traceable, compilable, matching tasks, testing behavior, no Tier 1 violations in test implementations.
-
-**Fail condition:** any untraceable test, non-compiling test, deviation from tasks, implementation-coupled test, or Tier 1 violation (error-absence-only assertions). Report each defect with specific findings using the override output format.
-
-## Checkpoint 4 — Test integrity
-
-**Artifacts received:** spec file, implemented code, test code.
-
-Verify implementation agents did not weaken test coverage through indirect means: making assertions trivially true, reducing assertion specificity, adding overly broad exception handlers that swallow failures, or modifying test helpers to bypass validation.
-
-Compare test assertions against spec ACs. Flag any assertion that no longer validates the behavior the AC requires.
-
-Check for test modifications that occurred during implementation — any test file changes made outside test-writing stages are suspect. Assess whether adequate regression protection remains.
-
-**Pass condition:** test coverage maintains the rigor established during test code review; no weakened assertions.
-
-**Fail condition:** any weakened assertion, trivially-passing test, or unauthorized test modification. Report each defect with specific findings.
-
-## Checkpoint 5 — Mutation testing
-
-**Artifacts received:** spec file, implemented code only. You do NOT receive test code or other agents' reasoning.
-
-Generate targeted mutations against the implemented code: flip return values (true/false, success/error), swap conditional operators (< to >, == to !=), remove individual lines or statements, alter boundary conditions (off-by-one), replace constants with different values.
-
-Run mutated code against the hash-verified test suite (tests verified by `test-hash-gate.sh`). Do not modify test files.
-
-Report: total mutations generated, mutations detected (test suite caught them — the mutation was killed), mutations undetected (test suite still passed — the mutation survived), mutation detection rate as a percentage.
-
-List each undetected mutation with: file, line, mutation description, and which AC's coverage gap it reveals.
-
-**Pass condition:** mutation detection rate meets or exceeds the threshold configured in `verify.yml` (default: report rate, no hard threshold in Phase 1).
-
-**Fail condition:** report all results; blocking decision deferred to verification engine in Phase 2. In Phase 1, report findings without blocking.
+**Verdict line:** the final line of the output must be exactly one of:
+```
+accepted | needs-revision
+```
 
 ## Output format
 
 Structure output as a pass/fail result with specific findings.
 
-On pass: state "PASS" with a one-line summary of what was validated. Include the checkpoint number and name in the output header.
+On pass: state "PASS" with a one-line summary of what was validated. Include the mode name in the output header.
 
-On fail: state "FAIL" followed by a numbered list of defects. Each defect includes: the AC it affects, what the defect is, and what needs to change. Include the checkpoint number and name in the output header.
+On fail: state "FAIL" followed by a numbered list of defects. Each defect includes: the AC it affects, what the defect is, and what needs to change. Include the mode name in the output header.
+
+The final line of every output must be the verdict: `accepted` or `needs-revision`.
 
 ## Brownfield projects
 

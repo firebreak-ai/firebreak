@@ -1,3 +1,19 @@
+## Always-on disciplines
+
+Apply these five disciplines in every session and in every asset you author.
+
+**simple language** — Write every artifact and every question as if for a smart non-engineer; replace or define any term that requires domain knowledge to understand.
+
+**descriptions over identifiers** — Refer to items by name or short description in all dialogue and prose; never use bare identifiers such as "AC-1", "F-02", or "B-NNN".
+
+**capability framing** — Describe what a thing is and what it does (its capability); do not frame instructions or descriptions around what something forbids or is not.
+
+**interview before drafting** — Surface open decisions to the operator and get answers before producing an artifact; do not draft around an assumed answer.
+
+**structural-principles awareness** — When authoring or modifying any context asset, verify the change against the structural principles in this document: necessity test, progressive disclosure, separation of concerns, trust-the-agent, objectives-over-steps.
+
+---
+
 ## The Necessity Test
 
 For every instruction, ask: **"If this instruction were removed, is the agent more likely to make a mistake?"**
@@ -175,6 +191,7 @@ Remove bias-sources by restructuring the asset rather than instructing the agent
 | Writing or modifying a hook | `fbk-context-assets/hooks.md` |
 | Writing or modifying an agent | `fbk-context-assets/agents.md` |
 | Writing or modifying a docs/ file (index or leaf) | `fbk-context-assets/referenced-docs.md` |
+| Reviewing the always-on authoring disciplines | `fbk-context-assets/always-on-disciplines.md` |
 
 ---
 

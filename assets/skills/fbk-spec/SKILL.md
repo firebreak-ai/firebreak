@@ -23,6 +23,10 @@ Determine scope from the user's description using the doc's guidance:
 
 If the target file already exists, continue iterating on it — do not overwrite.
 
+## Closing ambiguity
+
+Grill the user to close any remaining ambiguity in the spec. Ask detailed questions one at a time. Ask for the user's judgment for any ambiguities that are not trivial or obvious. For each, give your recommendation and justification. When asking the user for a decision, provide the user with all of the detail that they need to decide. Use natural language instead of reference numbers or abbreviations so that the user doesn't need to look up items.
+
 ## Gate
 
 When the user signals the spec is complete, run:
