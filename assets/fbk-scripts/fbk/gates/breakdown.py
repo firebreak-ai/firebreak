@@ -8,6 +8,8 @@ from collections import defaultdict, deque
 from pathlib import Path
 from typing import Dict, List
 
+from fbk.slices import TEST_DISCIPLINES
+
 
 def validate_breakdown(spec_text: str, manifest: dict, task_files: Dict[str, str]) -> dict:
     """Validate a task breakdown against its spec.
@@ -24,6 +26,9 @@ def validate_breakdown(spec_text: str, manifest: dict, task_files: Dict[str, str
     fails: List[str] = []
     tasks = manifest.get("tasks", [])
     category = manifest.get("category", "feature")
+
+    # Slice-metadata hinge: any task carrying a slice_shape activates shape-aware checks.
+    slice_metadata_present = any(t.get("slice_shape") for t in tasks)
 
     # Schema validation
     required_fields = ["id", "title", "file", "type", "wave_id", "dependencies", "covers", "model", "status"]
@@ -48,12 +53,21 @@ def validate_breakdown(spec_text: str, manifest: dict, task_files: Dict[str, str
         if ac not in ac_tasks:
             fails.append(f"AC coverage: {ac} not covered by any task")
             continue
+        covering_shapes = {t.get("slice_shape") for t in ac_tasks[ac]}
+        has_slice_shape = any(s for s in covering_shapes)
         has_test = any(t["type"] == "test" for t in ac_tasks[ac])
         has_impl = any(t["type"] == "implementation" for t in ac_tasks[ac])
-        if not has_test:
-            fails.append(f"AC coverage: {ac} has no test task")
-        if category != "corrective" and not has_impl:
-            fails.append(f"AC coverage: {ac} has no implementation task")
+        if has_slice_shape:
+            # Shape-specific invariants replace generic has_test/has_impl checks.
+            # Cross-cutting: no impl task allowed.
+            if "cross-cutting" in covering_shapes and has_impl:
+                fails.append(f"Slice shape: cross-cutting AC {ac} must not have an impl task")
+        else:
+            # Legacy checks unchanged.
+            if not has_test:
+                fails.append(f"AC coverage: {ac} has no test task")
+            if category != "corrective" and not has_impl:
+                fails.append(f"AC coverage: {ac} has no implementation task")
 
     for ac in sorted(set(ac_tasks) - spec_acs):
         fails.append(f"AC coverage: {ac} referenced by tasks but not in spec")
@@ -113,7 +127,8 @@ def validate_breakdown(spec_text: str, manifest: dict, task_files: Dict[str, str
         if fname not in task_files:
             fails.append(f"File reference: {t['id']} references {fname} which does not exist in tasks dir")
 
-    # Parse file lists from individual task files for scope checks
+    # Parse file lists from individual task files for scope checks.
+    # Exclude test-hashes.json — it is a manifest signal, not a task file.
     task_file_list: Dict[str, list] = {}
     for t in tasks:
         fname = t.get("file", "")
@@ -149,7 +164,8 @@ def validate_breakdown(spec_text: str, manifest: dict, task_files: Dict[str, str
                 else:
                     seen_files[f] = t["id"]
 
-    # 8. Every code-modifying impl task has a corresponding test task
+    # 8. Every code-modifying impl task has a corresponding test task.
+    # Suppressed for contract-preserving slices (they lock existing tests).
     test_covered: set = set()
     for ac, ac_t in ac_tasks.items():
         if any(t["type"] == "test" for t in ac_t):
@@ -158,9 +174,34 @@ def validate_breakdown(spec_text: str, manifest: dict, task_files: Dict[str, str
         t = task_by_id.get(tid)
         if not t or t["type"] == "test":
             continue
+        if t.get("slice_shape") in ("contract-preserving", "contract-evolving"):
+            continue
         code_files = [f for f in files if not re.search(r"\.(md|json|yaml|yml|toml)$", f)]
         if code_files and tid not in test_covered:
             fails.append(f"Test coverage: code-modifying task {tid} has no corresponding test task")
+
+    # Shape invariant — contract-evolving tasks must carry a non-empty retired_tests list.
+    for t in tasks:
+        if t.get("slice_shape") == "contract-evolving":
+            if not t.get("retired_tests"):
+                fails.append(
+                    f"Slice shape: contract-evolving task {t['id']} missing non-empty retired_tests list"
+                )
+
+    # Pre-lock verdict (verified by manifest presence): when slice metadata is present,
+    # a test-hashes.json entry must exist in task_files.
+    if slice_metadata_present and "test-hashes.json" not in task_files:
+        fails.append(
+            "Pre-lock verdict: test-lock manifest (test-hashes.json) not found — "
+            "pre-lock test-review verdict must be accepted before gate can pass"
+        )
+
+    # Bounce-back marker check (unconditional): scan task-*.md bodies only.
+    for fname, content in task_files.items():
+        if fname == "test-hashes.json":
+            continue
+        if "BOUNCE-BACK:" in content:
+            fails.append(f"Bounce-back: unresolved BOUNCE-BACK marker in {fname}")
 
     if fails:
         return {"gate": "breakdown", "result": "fail", "failures": fails}
@@ -201,6 +242,11 @@ def main() -> None:
     task_files: Dict[str, str] = {}
     for f in sorted(tasks_dir.glob("task-*.md")):
         task_files[f.name] = f.read_text()
+
+    # Include test-hashes.json when present — used as the pre-lock manifest signal.
+    manifest_file = tasks_dir / "test-hashes.json"
+    if manifest_file.is_file():
+        task_files["test-hashes.json"] = manifest_file.read_text()
 
     result = validate_breakdown(spec_text, manifest, task_files)
 

@@ -156,6 +156,46 @@ Project-level:
 
 ---
 
+## Slices Declaration Format
+
+A `## Slices` block is required in every feature-level spec. Each slice declares one independently testable unit of the feature:
+
+```yaml
+slices:
+  - name: <slice-name>
+    description: <what this slice delivers>
+    test-discipline: <unit | integration | e2e | contract>
+    contract: <path to contract file, or "none">
+    retired-tests: <list of test IDs retired when this slice evolves the contract, or "none">
+```
+
+The four `test-discipline` values:
+
+| Value | When to use |
+|---|---|
+| `unit` | Slice is validated by isolated function or module tests |
+| `integration` | Slice is validated by tests spanning two or more components |
+| `e2e` | Slice is validated by full user-path tests |
+| `contract` | Slice defines or evolves a shared interface contract |
+
+When `test-discipline` is `contract`, list retiring test IDs in `retired-tests` — tests that cover the old contract shape and must be updated or removed when this slice lands.
+
+The spec gate validates the `## Slices` block: every slice must have all five fields and a valid `test-discipline` value.
+
+---
+
+## Narrowed Grilling (Spec Phase)
+
+The spec phase narrows to "how." Use the `fbk-grilling` technique, constrained to these question categories:
+
+- **Technical choices**: Which approach, library, pattern, or algorithm? What are the trade-offs?
+- **File and module organization**: Where does new code live? Which existing modules are touched and under what policy?
+- **Integration decisions**: What are the shared interfaces, data shapes, and conventions across component boundaries?
+
+Do not re-ask intent or behavior questions already resolved in the PRD or behavior inventory. If a "how" question cannot be answered because the design under-specifies something, name the gap and offer to return to the design phase before continuing.
+
+---
+
 ## Transition
 
 When the user signals the spec is complete:
