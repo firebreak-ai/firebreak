@@ -49,7 +49,9 @@ When creating native tasks for a wave's test or implementation tasks, use this s
 
 ```
 Task file: ai-docs/$FEATURE/$FEATURE-tasks/task-NN-name.md
-Read that file as your sole context and execute it.
+Read that task file and execute it. Treat the task file as your work specification — do not pull in other project context unless this prompt directs you to.
+
+When the task involves authoring tests, also read `.claude/fbk-docs/fbk-design-guidelines/test-authoring.md` for the test-authoring rules — including the mocks rule (stand-ins only for code we don't own).
 
 Before your turn ends, send a work summary message to the team lead describing what you created, what verification you ran, and any caveats. A turn ending without this message is incomplete work.
 ```

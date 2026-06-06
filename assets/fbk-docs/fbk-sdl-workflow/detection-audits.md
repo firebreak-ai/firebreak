@@ -19,3 +19,15 @@ For each modified test: (a) does the test name describe what the test actually a
 ## Cross-function API trace
 
 For every exported or public symbol the diff modifies — removes, renames, changes signature, changes return shape — enumerate callers and verify shape compatibility. Use Grep and Read beyond the reviewed file to locate callers.
+
+## Consistency audit
+
+When the diff modifies the use of a helper, shared utility, or repeated pattern at a single site, enumerate every other site in the same module or package that uses the same helper, utility, or pattern. For each unmodified sibling site, check whether the same modification is required for the diff's intent to hold. Emit a sighting for every site where the answer is yes.
+
+When an unmodified sibling site is intentionally asymmetric, the asymmetry must be documented in a spec, acceptance criterion, code comment, or design decision record that identifies which sites are intentionally asymmetric and why. A generic statement that does not identify specific sites does not satisfy this requirement. Undocumented asymmetry is a partial-fix sighting.
+
+Sibling shapes this audit covers:
+- Multiple methods of the same type sharing a helper (e.g., the level-specific methods on a logger all calling the same field-conversion helper).
+- Multiple implementations of the same interface.
+- Multiple call sites invoking the same external utility with similar argument shape.
+- Parallel guard or error-handling patterns repeated across functions in the module.
