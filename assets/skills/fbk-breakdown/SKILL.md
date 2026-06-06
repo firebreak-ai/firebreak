@@ -72,6 +72,8 @@ Invoke an Agent Teams teammate with independent context. The teammate receives o
 
 Load brownfield instructions from `.claude/fbk-docs/fbk-brownfield-breakdown.md` and include them in the teammate's prompt.
 
+Load the test-authoring rules from `.claude/fbk-docs/fbk-design-guidelines/test-authoring.md` and include them in the teammate's prompt. Test tasks must conform to those rules — including the mocks rule (stand-ins only for code we don't own).
+
 The teammate produces test tasks from the spec's testing strategy and acceptance criteria. One task per AC or logical test group. Each test task specifies: files to create, test framework conventions to follow, AC identifiers covered, and a completion gate (tests compile and fail before implementation).
 
 Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-test-<behavior>.md`. Task files use the frontmatter schema and body sections defined in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`.

@@ -49,9 +49,15 @@ Each test asserts on one behavior.
 
 Receive test dependencies as setup, not as ambient state. Use beforeEach/setUp to create fresh state for each test.
 
-## Real collaborators where fast
+## Stand-ins only for code we don't own
 
-When a test depends on a collaborator (a function, class, service, or module the production code calls), use the real implementation when the real collaborator runs fast and deterministically. Introduce a mock or stub only when the real collaborator is too slow (network I/O, filesystem operations beyond test data, expensive computation), non-deterministic (current time, random generation, external service responses), or unavailable (paid third-party service, hardware not present in the test environment).
+Run the actual production code in every test. The purpose of testing is to verify the code we own; a stand-in that replaces code we own does not test that code.
+
+Use a stand-in (mock, stub, fake) only when the collaborator is code we do not own — external services (databases, network APIs, model-inference endpoints), the operating system, the file system, the clock, random-number generation, and third-party libraries with side effects the test must control.
+
+When the goal of a test is to evaluate the real behavior of external code — prompt quality from a real model, performance against a real database, an end-to-end integration — call the external code directly. Both stand-ins and real-call integration apply only to code we do not own.
+
+Cost (slow, non-deterministic, expensive) is not justification to stand in for code we own. When an owned collaborator is too slow or non-deterministic to test against directly, refactor it to expose a faster seam, integrate at a higher level so the slow unit is exercised in context, or accept the cost. None of these uses a stand-in for owned code.
 
 Each mock added raises the cost of refactoring — production-code changes break tests on mock interaction patterns rather than on behavioral regressions.
 

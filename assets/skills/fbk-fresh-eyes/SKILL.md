@@ -1,12 +1,13 @@
 ---
 description: >-
-  Cold comprehension review of a document or artifact. Spawns an isolated
-  reviewer with no authoring context and returns severity-categorized
-  observations. Invocable standalone, outside of ceremony.
+  Adversarial review of a document or artifact. Spawns an isolated reviewer
+  that treats the author as unreliable and returns severity-categorized
+  observations of what the author missed. Invocable standalone, outside of
+  ceremony.
 argument-hint: "[artifact-path or feature-name]"
 ---
 
-Cold comprehension check: a reviewer reads the artifact without authoring context and surfaces what does not make sense, classified by severity. The reviewer has no fix authority — observations only. Fixes return to the authoring agent.
+Adversarial review: a reviewer reads the artifact without authoring context, treats the author as unreliable, and surfaces what the author missed, classified by severity. The reviewer has no fix authority — observations only. Fixes return to the authoring agent.
 
 ## Argument
 
