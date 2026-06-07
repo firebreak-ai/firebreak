@@ -56,12 +56,15 @@ After the technical approach section is drafted, author a `## Slices` block in t
 slices:
   - name: <slice-name>
     description: <what this slice delivers>
-    test-discipline: <unit | integration | e2e | contract>
-    contract: <path to contract file, or "none">
-    retired-tests: <list of test IDs retired when this slice evolves the contract, or "none">
+    test-discipline: <new-contract | contract-preserving | contract-evolving | cross-cutting>
+    covers: [<behavior-id>, ...]
 ```
 
-The four `test-discipline` values are: `unit`, `integration`, `e2e`, `contract`. Use the value that reflects the dominant validation shape for the slice. The spec gate validates this block — every slice must have all five fields.
+The four `test-discipline` values describe the *shape* of the slice — what work units the breakdown agent produces. Use `new-contract` for new behavior, `contract-preserving` for behaviour-preserving refactors, `contract-evolving` when the existing contract changes, and `cross-cutting` for seam-spanning tests (also the home for pure coverage-backfill). For full guidance and an example, see `fbk-docs/fbk-sdl-workflow/feature-spec-guide.md` (Slices Declaration Format).
+
+When `test-discipline` is `contract-evolving`, also include a `retired-tests:` field listing tests this slice retires with rationale — the breakdown agent and test reviewer consume it.
+
+The spec gate validates this block — every slice must have `name`, `test-discipline`, and `covers`, and `test-discipline` must be one of the four shapes.
 
 ## Gate
 

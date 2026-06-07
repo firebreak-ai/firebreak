@@ -29,7 +29,7 @@ The preparatory refactor task's acceptance criteria reference the existing tests
 
 Task compilation follows a two-step process when the spec contains a `## Slices` section:
 
-**Step 1 — Slice identification**: Read each `## Slices` entry in the spec and record its `test-discipline` value and contract pointer before authoring any work units.
+**Step 1 — Slice identification**: Read each `## Slices` entry in the spec and record its `test-discipline` value and `covers:` list before authoring any work units. For `contract-evolving` slices, also record the `retired-tests:` list.
 
 **Step 2 — Per-slice pairing**: For each slice, author the test task + implementation task pair shaped by that slice's `test-discipline`. Route to the matching shape leaf under `fbk-sdl-workflow/slice-shapes/` via `slice-shapes.md`. Load only the leaf for the current slice.
 
