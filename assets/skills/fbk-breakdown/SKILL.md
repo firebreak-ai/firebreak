@@ -41,7 +41,8 @@ Read the `Perspectives:` metadata line from the first line of the review file an
 Before authoring any work units, read the `## Slices` section of the spec. For each slice entry:
 
 1. Record the slice name and its `test-discipline` value (one of: `new-contract`, `contract-preserving`, `contract-evolving`, `cross-cutting`).
-2. Record the slice's contract pointer (the interface or behavior it owns).
+2. Record the slice's `covers:` list (the behavior IDs it owns from `behavior-inventory.yaml`).
+3. For `contract-evolving` slices, also record the `retired-tests:` list — every entry must carry per-test rationale.
 
 Produce a slice list before continuing. This identification step completes first; per-slice authoring follows.
 

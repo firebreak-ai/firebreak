@@ -164,23 +164,34 @@ A `## Slices` block is required in every feature-level spec. Each slice declares
 slices:
   - name: <slice-name>
     description: <what this slice delivers>
-    test-discipline: <unit | integration | e2e | contract>
-    contract: <path to contract file, or "none">
-    retired-tests: <list of test IDs retired when this slice evolves the contract, or "none">
+    test-discipline: <new-contract | contract-preserving | contract-evolving | cross-cutting>
+    covers: [<behavior-id>, ...]
 ```
 
-The four `test-discipline` values:
+The four `test-discipline` values describe the *shape* of the slice — what kind of work it produces and how the breakdown agent should pair tests with implementation:
 
 | Value | When to use |
 |---|---|
-| `unit` | Slice is validated by isolated function or module tests |
-| `integration` | Slice is validated by tests spanning two or more components |
-| `e2e` | Slice is validated by full user-path tests |
-| `contract` | Slice defines or evolves a shared interface contract |
+| `new-contract` | The slice introduces an interface that does not exist in the codebase yet. Produces a test task and an impl task. |
+| `contract-preserving` | The slice changes implementation while the existing observable contract is preserved. Produces an impl task only; existing tests stay green. |
+| `contract-evolving` | The slice changes both implementation and the existing contract. Some prior behavior is no longer guaranteed; new behavior is introduced. Produces a retired-tests list, new test tasks, and an impl task. |
+| `cross-cutting` | The slice validates behavior that spans multiple modules or seams. Produces seam tests only — no paired impl task. Also the home for pure coverage-backfill against existing untouched code. |
 
-When `test-discipline` is `contract`, list retiring test IDs in `retired-tests` — tests that cover the old contract shape and must be updated or removed when this slice lands.
+`covers:` is a list of behavior IDs from the feature's `behavior-inventory.yaml`. The spec gate verifies that every behavior in the inventory is covered by at least one slice.
 
-The spec gate validates the `## Slices` block: every slice must have all five fields and a valid `test-discipline` value.
+When `test-discipline` is `contract-evolving`, add a `retired-tests:` field listing the existing tests this slice retires (one entry per test, with a one-line rationale). The breakdown agent and test reviewer both consume this list. Example:
+
+```yaml
+slices:
+  - name: rename-parse-token
+    description: parse_token() returns claims object instead of raw payload
+    test-discipline: contract-evolving
+    covers: [B-014, B-015]
+    retired-tests:
+      - test_parse_token_returns_payload: covered the old return shape; no longer applies
+```
+
+The spec gate validates the `## Slices` block: every slice must have `name`, `test-discipline`, and `covers`, and the `test-discipline` value must be one of the four shapes above.
 
 ---
 

@@ -223,6 +223,56 @@ class TestSliceDisciplineValidation:
 
 
 # ---------------------------------------------------------------------------
+# Vocabulary drift sentinel — guards guide↔gate alignment
+# ---------------------------------------------------------------------------
+
+# Tied to the canonical four shapes the gate accepts. If the gate's
+# TEST_DISCIPLINES tuple changes, this list must change with it and the spec
+# guide (feature-spec-guide.md, Slices Declaration Format) must be updated to
+# match. Drift between guide vocabulary and gate vocabulary previously caused
+# specs that followed the guide to fail the gate; this class is the regression
+# guard.
+
+CANONICAL_DISCIPLINES = (
+    "new-contract",
+    "contract-preserving",
+    "contract-evolving",
+    "cross-cutting",
+)
+
+# The pre-hygiene vocabulary that used to appear in the guide. These values
+# must continue to fail the gate — a passing result here means the guide and
+# gate have drifted apart again.
+RETIRED_DISCIPLINES = ("unit", "integration", "e2e", "contract")
+
+
+class TestSliceVocabularyDriftSentinel:
+    """Regression guard: canonical four pass, retired four fail."""
+
+    @pytest.mark.parametrize("discipline", CANONICAL_DISCIPLINES)
+    def test_canonical_discipline_passes(self, tmp_path, discipline):
+        """Each canonical test-discipline value documented in the spec guide passes the gate."""
+        result = run_spec_gate(tmp_path, make_spec_with_slices(discipline=discipline))
+        assert result.returncode == 0, (
+            f"Canonical value {discipline!r} must pass the gate. "
+            f"stdout={result.stdout!r} stderr={result.stderr!r}"
+        )
+
+    @pytest.mark.parametrize("discipline", RETIRED_DISCIPLINES)
+    def test_retired_discipline_fails(self, tmp_path, discipline):
+        """Each pre-hygiene vocabulary value (unit/integration/e2e/contract) is rejected by the gate.
+
+        A passing result for any of these means the guide and gate have drifted apart
+        again — re-run the hygiene fix.
+        """
+        result = run_spec_gate(tmp_path, make_spec_with_slices(discipline=discipline))
+        assert result.returncode == 2, (
+            f"Retired value {discipline!r} must fail the gate. "
+            f"stdout={result.stdout!r} stderr={result.stderr!r}"
+        )
+
+
+# ---------------------------------------------------------------------------
 # Inventory coverage enforcement (AC-04)
 # ---------------------------------------------------------------------------
 

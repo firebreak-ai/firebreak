@@ -11,3 +11,5 @@ The slice describes behavior that spans multiple existing modules or seams. The 
 **No impl task**: the implementation is distributed across the other slices. The cross-cutting slice does not produce a paired implementation task. The breakdown gate enforces this invariant.
 
 **Hash-locking applies to**: the seam tests produced here, once they pass review.
+
+**Coverage-backfill against existing untouched code also maps here.** When a slice exists only to add tests against code no other slice is changing — pure coverage-backfill — declare it as `cross-cutting`. Same structural shape: tests-only, no paired impl task. The implementation already exists; this slice exists to make its behavior testable.
