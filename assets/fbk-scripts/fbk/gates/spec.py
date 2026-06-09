@@ -12,39 +12,17 @@ import os
 import pathlib
 import re
 import sys
-from typing import List, Optional
+from typing import List
 
+from fbk.gates.sections import heading_line, section_body
 from fbk.injection import detect_injections
 from fbk.slices import TEST_DISCIPLINES
-
-
-# ---------------------------------------------------------------------------
-# Heading and section helpers
-# ---------------------------------------------------------------------------
-
-def heading_line(spec_text: str, heading: str) -> Optional[int]:
-    """Return 1-based line number of first line matching heading prefix (case-insensitive), or None."""
-    heading_lower = heading.lower()
-    for i, line in enumerate(spec_text.splitlines(), 1):
-        if line.lower().startswith(heading_lower):
-            return i
-    return None
-
-
-def section_body(spec_text: str, line_number: int) -> str:
-    """Return content between heading at line_number and next '## ' heading."""
-    lines = spec_text.splitlines()
-    result = []
-    in_section = False
-    for i, line in enumerate(lines, 1):
-        if i == line_number:
-            in_section = True
-            continue
-        if in_section:
-            if line.startswith("## "):
-                break
-            result.append(line)
-    return "\n".join(result)
+from fbk.gates.contracts import (
+    check_interface_contracts_structure,
+    check_design_anchor,
+    check_ac_coverage,
+    check_seam_coverage,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -289,6 +267,10 @@ def main():
         else:
             inventory_behaviors = set()
         fails.extend(check_slices(spec_text, inventory_behaviors))
+        fails.extend(check_interface_contracts_structure(spec_text))
+        fails.extend(check_design_anchor(spec_text, str(feature_dir)))
+        fails.extend(check_ac_coverage(spec_text))
+        fails.extend(check_seam_coverage(spec_text))
     else:
         for heading in [
             "## Vision",

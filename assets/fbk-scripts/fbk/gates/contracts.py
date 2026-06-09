@@ -13,7 +13,7 @@ import re
 import pathlib
 from typing import List
 
-from fbk.gates.spec import heading_line, section_body
+from fbk.gates.sections import heading_line, section_body
 
 
 # ---------------------------------------------------------------------------
@@ -355,6 +355,10 @@ def check_ac_coverage(spec_text: str) -> List[str]:
     contracts_ln = heading_line(spec_text, "## Interface contracts")
     if contracts_ln is not None:
         contracts_body = section_body(spec_text, contracts_ln)
+        # No-contracts form: the feature declares no contracts, so coverage-by-
+        # contract is vacuously satisfied — a no-contracts spec passes (UV-4).
+        if NO_CONTRACTS_SENTENCE in contracts_body.strip():
+            return []
         # Parse entries and read only their covers: fields.
         entries = _parse_entries(contracts_body)
         for entry in entries:

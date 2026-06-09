@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 from fbk.gates.spec import check_section, check_open_questions
+from fbk.gates.contracts import NO_CONTRACTS_SENTENCE
 
 
 # ---------------------------------------------------------------------------
@@ -14,34 +15,28 @@ from fbk.gates.spec import check_section, check_open_questions
 
 FBK_PY = Path(__file__).parent.parent / "fbk.py"
 
-_MINIMAL_VALID_SECTIONS = """\
-## Problem
-Describes the issue or gap being addressed.
-
-## Goals
-- Primary objective of the feature
-
-## User-facing behavior
-Describes how end users interact with the feature.
-
-## Technical approach
-Details the implementation strategy.
-
-## Testing strategy
-- AC-01: Test criterion 1
-
-## Documentation impact
-Expected changes to user documentation.
-
-## Acceptance criteria
-- AC-01: Feature works as specified
-
-## Dependencies
-None
-
-## Open questions
-None
-"""
+_MINIMAL_VALID_SECTIONS = (
+    "## Problem\n"
+    "Describes the issue or gap being addressed.\n\n"
+    "## Goals\n"
+    "- Primary objective of the feature\n\n"
+    "## User-facing behavior\n"
+    "Describes how end users interact with the feature.\n\n"
+    "## Technical approach\n"
+    "Details the implementation strategy.\n\n"
+    "## Testing strategy\n"
+    "- AC-01: Test criterion 1\n\n"
+    "## Documentation impact\n"
+    "Expected changes to user documentation.\n\n"
+    "## Acceptance criteria\n"
+    "- AC-01: Feature works as specified\n\n"
+    "## Dependencies\n"
+    "None\n\n"
+    "## Open questions\n"
+    "None\n\n"
+    "## Interface contracts\n"
+    + NO_CONTRACTS_SENTENCE + "\n"
+)
 
 _SLICES_BLOCK = """\
 ## Slices
@@ -65,9 +60,20 @@ def make_spec_with_slices(discipline="new-contract", covers="B-001", include_sli
 
 
 def run_spec_gate(tmp_path, spec_text, name="sample-spec.md", inventory_ids=None):
-    """Write spec to a temp file and run the gate, returning CompletedProcess."""
+    """Write spec to a temp file and run the gate, returning CompletedProcess.
+
+    Unconditionally creates design/contracts.md under tmp_path so the
+    design-anchor check (task-10) finds the page and passes for contract-clean
+    specs. The file contains the no-contracts sentence, meaning a spec that
+    carries the no-contracts ## Interface contracts section satisfies both
+    the structural check and the design-anchor check.
+    """
     spec_file = tmp_path / name
     spec_file.write_text(spec_text)
+    # Create design/contracts.md so the design-anchor check passes for clean specs.
+    design_dir = tmp_path / "design"
+    design_dir.mkdir(parents=True, exist_ok=True)
+    (design_dir / "contracts.md").write_text(NO_CONTRACTS_SENTENCE + "\n")
     if inventory_ids is not None:
         inv_lines = "\n".join(f"- id: {bid}\n  short-handle: x" for bid in inventory_ids)
         (tmp_path / "behavior-inventory.yaml").write_text(inv_lines + "\n")
@@ -89,7 +95,9 @@ SLICES_SPEC_WITHOUT_TS_AC = (
     "## Acceptance criteria\n- AC-01: Feature works as specified\n\n"
     "## Dependencies\nNone\n\n"
     "## Open questions\nNone\n\n"
-    "## Slices\n"
+    "## Interface contracts\n"
+    + NO_CONTRACTS_SENTENCE + "\n\n"
+    + "## Slices\n"
     "- name: slice-alpha\n"
     "  test-discipline: new-contract\n"
     "  covers: [B-001]\n"
@@ -317,3 +325,123 @@ class TestTestingStrategyRetainedForSliceSpecs:
         result = run_spec_gate(tmp_path, SLICES_SPEC_WITHOUT_TS_AC)
         assert result.returncode == 2
         assert "Testing strategy" in (result.stdout + result.stderr)
+
+
+# ---------------------------------------------------------------------------
+# Wiring-proof tests — prove spec.py calls the four contract checks (AC-13)
+# ---------------------------------------------------------------------------
+
+# RED PHASE: These tests WILL FAIL before task-10 wires the gate (i.e. before
+# spec.py imports and calls the four contract checks from fbk.gates.contracts).
+# They are intentionally failing here to establish the red phase of the
+# test-driven build. After task-10 lands, the full suite should be green.
+
+
+class TestContractCheckWiring:
+    """Prove that spec.py calls the four contract checks after check_slices (AC-13).
+
+    RED PHASE — all three tests below that expect contract failures WILL FAIL
+    before task-10 wires the gate. This is expected and correct: the gate does
+    not yet call the contract checks, so missing-section and accumulation
+    failures are not surfaced yet.
+    """
+
+    def test_no_contracts_spec_passes(self, tmp_path):
+        """Spec with no-contracts section and matching design/contracts.md passes (exit 0).
+
+        Uses the migrated make_spec_with_slices() + run_spec_gate(), which
+        produce the ## Interface contracts section (no-contracts sentence) and
+        the design/contracts.md page unconditionally — so this test passes even
+        before task-10 wires the gate, because the gate simply ignores the
+        checks for now.
+        """
+        result = run_spec_gate(tmp_path, make_spec_with_slices())
+        assert result.returncode == 0, (
+            f"Contract-clean spec must pass the gate. "
+            f"stdout={result.stdout!r} stderr={result.stderr!r}"
+        )
+
+    def test_missing_interface_contracts_section_fails(self, tmp_path):
+        """Spec with ## Interface contracts section absent exits 2; stderr names missing section.
+
+        Constructs a spec directly from the base sections WITHOUT the
+        ## Interface contracts section (does not use the migrated helpers).
+        Expects exit 2 and the exact structural-failure message in stderr.
+
+        RED PHASE — will fail before task-10 wires the gate.
+        """
+        # Build a spec that has no ## Interface contracts section at all.
+        spec_without_contracts_section = (
+            "# Feature Specification\n\n"
+            "## Problem\nDescribes the issue or gap being addressed.\n\n"
+            "## Goals\n- Primary objective of the feature\n\n"
+            "## User-facing behavior\nDescribes how end users interact with the feature.\n\n"
+            "## Technical approach\nDetails the implementation strategy.\n\n"
+            "## Testing strategy\n- AC-01: Test criterion 1\n\n"
+            "## Documentation impact\nExpected changes to user documentation.\n\n"
+            "## Acceptance criteria\n- AC-01: Feature works as specified\n\n"
+            "## Dependencies\nNone\n\n"
+            "## Open questions\nNone\n\n"
+            "## Slices\n"
+            "- name: slice-alpha\n"
+            "  test-discipline: new-contract\n"
+            "  covers: [B-001]\n"
+        )
+        result = run_spec_gate(tmp_path, spec_without_contracts_section)
+        assert result.returncode == 2, (
+            f"Spec missing ## Interface contracts must fail the gate. "
+            f"stdout={result.stdout!r} stderr={result.stderr!r}"
+        )
+        assert (
+            "Interface contracts section missing — add ## Interface contracts to the spec. "
+            "Carry at least one entry or the no-contracts sentence from design/contracts.md."
+        ) in result.stderr, (
+            f"Expected structural-failure message in stderr. stderr={result.stderr!r}"
+        )
+
+    def test_combined_failure_accumulates_without_short_circuit(self, tmp_path):
+        """Spec failing both a slice check and the contracts structural check shows both errors.
+
+        Feeds a spec with an out-of-taxonomy test-discipline value (slice check
+        will reject it) AND no ## Interface contracts section (structural check
+        will flag it). Asserts stderr contains BOTH the slice-failure signal AND
+        the contracts structural-failure string — proving the gate accumulates
+        failures without short-circuiting.
+
+        RED PHASE — will fail before task-10 wires the gate.
+        """
+        # Spec has invalid discipline AND no ## Interface contracts section.
+        spec_dual_failure = (
+            "# Feature Specification\n\n"
+            "## Problem\nDescribes the issue or gap being addressed.\n\n"
+            "## Goals\n- Primary objective of the feature\n\n"
+            "## User-facing behavior\nDescribes how end users interact with the feature.\n\n"
+            "## Technical approach\nDetails the implementation strategy.\n\n"
+            "## Testing strategy\n- AC-01: Test criterion 1\n\n"
+            "## Documentation impact\nExpected changes to user documentation.\n\n"
+            "## Acceptance criteria\n- AC-01: Feature works as specified\n\n"
+            "## Dependencies\nNone\n\n"
+            "## Open questions\nNone\n\n"
+            "## Slices\n"
+            "- name: slice-alpha\n"
+            "  test-discipline: unit\n"  # out-of-taxonomy (retired vocabulary)
+            "  covers: [B-001]\n"
+            # No ## Interface contracts section — structural check should flag this too.
+        )
+        result = run_spec_gate(tmp_path, spec_dual_failure)
+        assert result.returncode == 2, (
+            f"Dual-failure spec must exit 2. "
+            f"stdout={result.stdout!r} stderr={result.stderr!r}"
+        )
+        combined = result.stdout + result.stderr
+        # Slice-check failure signal: the out-of-taxonomy discipline value appears.
+        assert "unit" in combined, (
+            f"Expected slice-check failure signal ('unit') in output. combined={combined!r}"
+        )
+        # Contracts structural-failure signal.
+        assert (
+            "Interface contracts section missing — add ## Interface contracts to the spec. "
+            "Carry at least one entry or the no-contracts sentence from design/contracts.md."
+        ) in combined, (
+            f"Expected contracts structural-failure message in output. combined={combined!r}"
+        )

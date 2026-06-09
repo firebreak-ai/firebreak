@@ -602,12 +602,23 @@ class TestModuleInterface:
         assert len(result) > 0
 
     def test_check_ac_coverage_returns_list_of_str(self):
-        """check_ac_coverage returns list[str]; element type checked on real failure."""
+        """check_ac_coverage returns list[str]; element type checked on real failure.
+
+        Uses a spec that declares a real contract (so AC coverage is enforced) with
+        one uncovered AC. The no-contracts form is deliberately NOT used here: a
+        no-contracts spec passes vacuously (UV-4), so it would produce no failure.
+        """
         spec = (
             "## Acceptance criteria\n"
-            "- AC-01: Uncovered criterion.\n\n"
+            "- AC-01: Covered criterion.\n"
+            "- AC-02: Uncovered criterion.\n\n"
             "## Interface contracts\n"
-            + NO_CONTRACTS_SENTENCE + "\n"
+            "- id: IF-D-01\n"
+            "  name: Foo\n"
+            "  signature: foo() -> None\n"
+            "  invariants: None.\n"
+            "  covers: [AC-01]\n"
+            "  design-ref: design/contracts.md#if-d-01\n"
         )
         result = check_ac_coverage(spec)
         assert isinstance(result, list)
