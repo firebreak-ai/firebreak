@@ -233,8 +233,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "8 tests in test_capture_hook_router.py (standard strip/full record, uninstrumented no-write, subagent empty-identity recorded, stage null when no run, writes-under-cwd-only, pinned-cwd authority, fail-silent). Caveat: router must use os.getcwd() as sole authority (not payload cwd / CLAUDE_PROJECT_DIR); stage key present=null. 8 skip red-phase.",
       "note": null
     },
     {
@@ -251,8 +251,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "4 tests in test_capture_chokepoint.py (SystemExit0 reemit+record+reraise, SystemExit2 preserve+outcome=fail, uninstrumented passthrough no-record, capture-failure still flushes stdout+preserves exit). 4 skip red-phase.",
       "note": null
     },
     {
@@ -270,8 +270,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added envelope-write tests to test_gates_spec.py (3) and test_gates_task_reviewer.py (2). 3 fail red-phase (no envelope yet), 2 fail-silent pass. Migration target: spec gate + task-reviewer gate write shared envelope via event_writer resolving cwd.",
       "note": null
     },
     {
@@ -289,8 +289,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added TestVerificationResultEvent (3) to test_hooks_task_completed.py. 2 strict-xfail (written-on-fail, zero-failures-on-pass) + 1 strict=False silence xpass. NOTE: impl (task-32) lands -> team lead must drop the 2 strict-xfail markers or they XPASS-fail.",
       "note": null
     },
     {
@@ -306,8 +306,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added TestCodeReviewRoundsEvent to test_gates_code_review.py (valid emits CODE_REVIEW_ROUNDS w/ totals, absent no-event, malformed no-event+warn, out-of-bounds x2 treated malformed). 4 fail red-phase.",
       "note": null
     },
     {
@@ -325,8 +325,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "4 tests in test_capture_retro_injector.py (inject under '## STAGE \u2014 metrics' heading w/ provenance marker not timestamp, prose untouched, rework=2 marked blocks, exception swallowed). 4 skip red-phase.",
       "note": null
     },
     {
@@ -571,8 +571,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/capture/hook_router.py. sys.path bootstrap mirrors fbk.py; os.getcwd() sole authority (ignores payload cwd/CLAUDE_PROJECT_DIR); PreToolUse/PostToolUse->TOOL_USE, Subagent*->SUBAGENT_STOP, lifecycle->LIFECYCLE; stage from latest state file (null when absent); empty agent_type recorded not dropped; central redaction; always exit 0 no stdout. task-12: 8/8.",
       "note": null
     },
     {
@@ -592,8 +592,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/capture/chokepoint.py. record_dispatch buffers stdout, reemits to real stdout on exit, writes one PIPELINE_COMMAND (outcome+exit_code in data), reraises preserving code; uninstrumented passthrough no-record; capture failure still flushes stdout+preserves exit. 'output' redacted at standard. task-13: 4/4.",
       "note": null
     },
     {
@@ -611,8 +611,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified fbk/gates/spec.py (2 sites: pass+fail) and fbk/gates/task_reviewer.py (1 site) to write PIPELINE_COMMAND via event_writer (cwd-resolved, fail-silent, exit codes unchanged), replacing audit.log_event. dispatch_status.py untouched. tasks 14 (spec/reviewer portion): 48/48 in those files.",
       "note": null
     },
     {
@@ -630,8 +630,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified fbk/hooks/task_completed.py: writes VERIFICATION_RESULT (failing_test_count, lint_error_count, out_of_scope_files present-even-empty) fail-silent before existing exits, codes unchanged. Also fixed pre-existing bug: _extract_declared_files regex only matched ## headings; widened to #{1,3} (safe superset). task-15: 17/17.",
       "note": null
     },
     {
@@ -649,8 +649,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified fbk/gates/code_review.py (_read_round_log w/ MAX_ROUNDS=100, 64KB bound; CODE_REVIEW_ROUNDS emit after result before exit, fail-silent) and fbk-code-review SKILL.md (step writing .code-review-rounds.json). absent->no event, malformed/out-of-bounds->no event+warn. task-16: 17/17.",
       "note": null
     },
     {
@@ -669,8 +669,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/capture/retro_injector.py. inject_stage_metrics(spec,stage) appends '## STAGE \u2014 metrics' block w/ structural provenance marker (no fixed timestamp), prose untouched, rework->multiple marked blocks, all exceptions swallowed->None, function-level imports avoid cycle. task-17: 4/4.",
       "note": null
     },
     {

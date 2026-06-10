@@ -308,8 +308,18 @@ def main():
         for f in fails:
             print(f, file=sys.stderr)
         try:
-            from fbk import audit
-            audit.log_event(spec_name, "gate_result", json.dumps({"gate": "spec", "result": "fail"}))
+            from fbk.capture import event_writer, gate_check
+            _level = gate_check.resolve_capture_level(os.getcwd())
+            _events_path = os.path.join(os.getcwd(), ".fbk-capture", "events.jsonl")
+            event_writer.write(
+                "PIPELINE_COMMAND",
+                "chokepoint",
+                {"gate": "spec", "result": "fail", "command_name": "spec-gate"},
+                spec_name,
+                None,
+                _level,
+                _events_path,
+            )
         except Exception:
             pass
         sys.exit(2)
@@ -326,8 +336,18 @@ def main():
     print(json.dumps(result))
 
     try:
-        from fbk import audit
-        audit.log_event(spec_name, "gate_result", json.dumps(result))
+        from fbk.capture import event_writer, gate_check
+        _level = gate_check.resolve_capture_level(os.getcwd())
+        _events_path = os.path.join(os.getcwd(), ".fbk-capture", "events.jsonl")
+        event_writer.write(
+            "PIPELINE_COMMAND",
+            "chokepoint",
+            {"gate": "spec", "result": "pass", "command_name": "spec-gate", **result},
+            spec_name,
+            None,
+            _level,
+            _events_path,
+        )
     except Exception:
         pass
 

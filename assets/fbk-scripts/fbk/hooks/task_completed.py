@@ -80,11 +80,11 @@ def _extract_declared_files(task_file_path: str) -> list[str]:
     declared = []
     in_section = False
     for line in content.splitlines():
-        if re.match(r"^## Files to.*create.*modify", line, re.IGNORECASE):
+        if re.match(r"^#{1,3} Files to.*create.*modify", line, re.IGNORECASE):
             in_section = True
             continue
         if in_section:
-            if re.match(r"^## ", line):
+            if re.match(r"^#+ ", line):
                 break
             matches = re.findall(r"`([^`]+)`", line)
             declared.extend(matches)
@@ -92,6 +92,8 @@ def _extract_declared_files(task_file_path: str) -> list[str]:
 
 
 def main() -> None:
+    from fbk.capture import event_writer, gate_check
+
     data = json.load(sys.stdin)
 
     task_description = data.get("task_description", "")
@@ -106,6 +108,8 @@ def main() -> None:
         task_file = os.path.join(cwd, task_file)
 
     failures = []
+    failing_test_count = 0
+    lint_error_count = 0
 
     test_cmd = detect_test_cmd(cwd)
     if not test_cmd:
@@ -115,6 +119,7 @@ def main() -> None:
         if result.returncode != 0:
             output = (result.stdout + result.stderr).strip()
             failures.append(f"TEST SUITE FAILED:\n{output}")
+            failing_test_count = 1
 
     lint_cmd = detect_lint_cmd(cwd)
     if not lint_cmd:
@@ -124,7 +129,9 @@ def main() -> None:
         if result.returncode != 0:
             output = (result.stdout + result.stderr).strip()
             failures.append(f"LINT ERRORS:\n{output}")
+            lint_error_count = 1
 
+    out_of_scope_files: list = []
     if os.path.isfile(task_file):
         declared_files = _extract_declared_files(task_file)
         if declared_files:
@@ -144,6 +151,7 @@ def main() -> None:
                 if modified:
                     undeclared = [f for f in modified if f not in declared_files]
                     if undeclared:
+                        out_of_scope_files = undeclared
                         task_basename = os.path.basename(task_file)
                         print(
                             f"[WARN] Task {task_basename} modified files outside declared scope:\n"
@@ -151,12 +159,37 @@ def main() -> None:
                             file=sys.stderr,
                         )
 
+    verification_data = {
+        "failing_test_count": failing_test_count,
+        "lint_error_count": lint_error_count,
+        "out_of_scope_files": out_of_scope_files,
+        "tests_passed": failing_test_count == 0 and lint_error_count == 0,
+    }
+
+    def _write_verification_event():
+        try:
+            level = gate_check.resolve_capture_level(cwd)
+            events_path = os.path.join(cwd, ".fbk-capture", "events.jsonl")
+            event_writer.write(
+                "VERIFICATION_RESULT",
+                "task_completed",
+                verification_data,
+                None,
+                None,
+                level,
+                events_path,
+            )
+        except Exception:
+            pass
+
     if failures:
         print("TaskCompleted validation failed:\n", file=sys.stderr)
         for f in failures:
             print(f + "\n", file=sys.stderr)
+        _write_verification_event()
         sys.exit(2)
 
+    _write_verification_event()
     sys.exit(0)
 
 

@@ -93,6 +93,7 @@ Run the iterative detection and verification loop:
 8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern and apply the fix to every instance. The Consistency audit normally surfaces siblings as separate sightings during detection; this fix-time sweep remains as a safety net for sites the audit missed.
 9. Run additional rounds for weakened but unrejected sightings.
 10. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds.
+11. After the loop terminates, write `.code-review-rounds.json` in the feature directory recording the full detection-round history. The file must include `schema_version` (value `"1.0"`), `spec` (the feature name), and `rounds` — an array with one entry per round, each carrying `round` (1-based integer), `raised` (sighting count before Challenger filtering), `survived` (verified count after filtering), and `severity_breakdown` (an object mapping severity labels to counts for that round). The code-review gate reads this file at check time to emit the detection-round metrics event.
 
 Only verified findings surface to the user. Rejected sightings are excluded. JSON is the working format throughout the pipeline. Markdown conversion happens once for the human-facing review report.
 

@@ -339,12 +339,18 @@ def main() -> None:
 
     if result["result"] == "pass":
         try:
-            from fbk.audit import log_event
+            from fbk.capture import event_writer, gate_check
             spec_name = os.path.splitext(os.path.basename(args.spec_path))[0]
-            log_event(
+            _level = gate_check.resolve_capture_level(os.getcwd())
+            _events_path = os.path.join(os.getcwd(), ".fbk-capture", "events.jsonl")
+            event_writer.write(
+                "PIPELINE_COMMAND",
+                "chokepoint",
+                {"gate": "task-reviewer", "result": "pass", "command_name": "task-reviewer-gate"},
                 spec_name,
-                "gate_result",
-                json.dumps({"gate": "task-reviewer", "result": "pass"}),
+                None,
+                _level,
+                _events_path,
             )
         except Exception:
             pass

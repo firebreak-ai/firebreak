@@ -1,11 +1,27 @@
 """Tests for fbk.gates.spec section validation and open-questions logic."""
 
+import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 from fbk.gates.spec import check_section, check_open_questions
+import fbk.gates.spec as _spec_gate_mod
+
+from tests import capture_fixtures
+
+# ---------------------------------------------------------------------------
+# event_writer availability guard — red-phase: module present but audit
+# call-sites not yet migrated
+# ---------------------------------------------------------------------------
+
+try:
+    from fbk.capture import event_writer as _event_writer  # noqa: F401
+    _EVENT_WRITER_AVAILABLE = True
+except ImportError:
+    _EVENT_WRITER_AVAILABLE = False
 
 
 # ---------------------------------------------------------------------------
@@ -317,3 +333,91 @@ class TestTestingStrategyRetainedForSliceSpecs:
         result = run_spec_gate(tmp_path, SLICES_SPEC_WITHOUT_TS_AC)
         assert result.returncode == 2
         assert "Testing strategy" in (result.stdout + result.stderr)
+
+
+# ---------------------------------------------------------------------------
+# Envelope write assertions — spec gate (AC-03, AC-11)
+# ---------------------------------------------------------------------------
+
+# Red phase: the migrated event-writer call sites in fbk/gates/spec.py do not
+# exist yet.  Each test drives main() in-process (monkeypatched argv + chdir)
+# and asserts the post-migration envelope behaviour.  They will fail until the
+# call-site swap lands.
+
+@pytest.mark.skipif(
+    not _EVENT_WRITER_AVAILABLE,
+    reason="fbk.capture.event_writer not available",
+)
+class TestSpecGateWritesEnvelope:
+    """Spec gate writes a PIPELINE_COMMAND envelope on both pass and fail paths (AC-03, AC-11)."""
+
+    def _events_path(self, project_root):
+        return os.path.join(project_root, ".fbk-capture", "events.jsonl")
+
+    def _read_envelopes(self, project_root):
+        path = self._events_path(project_root)
+        if not os.path.exists(path):
+            return []
+        with open(path) as fh:
+            return [json.loads(line) for line in fh if line.strip()]
+
+    def test_spec_gate_pass_writes_envelope(self, tmp_path, monkeypatch):
+        """Spec-gate pass path writes a PIPELINE_COMMAND envelope recording the pass result."""
+        project_root = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
+
+        spec_file = Path(project_root) / "sample-spec.md"
+        spec_file.write_text(_make_minimal_spec())
+
+        monkeypatch.chdir(project_root)
+        monkeypatch.setattr(sys, "argv", ["spec-gate", str(spec_file)])
+
+        # The spec gate pass path returns normally (no sys.exit) — call directly.
+        _spec_gate_mod.main()
+
+        envelopes = self._read_envelopes(project_root)
+        assert len(envelopes) >= 1, "No envelope written; migration not yet applied"
+        env = envelopes[-1]
+        assert env.get("event_type") == "PIPELINE_COMMAND"
+        assert env.get("data", {}).get("result") == "pass"
+        assert "spec" in env
+        assert "stage" in env
+
+    def test_spec_gate_fail_writes_envelope(self, tmp_path, monkeypatch):
+        """Spec-gate fail path writes a PIPELINE_COMMAND envelope recording the fail result."""
+        project_root = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
+
+        # A spec missing required sections — will fail structural validation.
+        spec_file = Path(project_root) / "broken-spec.md"
+        spec_file.write_text("# Feature Specification\n\n## Problem\nOnly one section present.\n")
+
+        monkeypatch.chdir(project_root)
+        monkeypatch.setattr(sys, "argv", ["spec-gate", str(spec_file)])
+
+        with pytest.raises(SystemExit) as exc_info:
+            _spec_gate_mod.main()
+        assert exc_info.value.code == 2
+
+        envelopes = self._read_envelopes(project_root)
+        assert len(envelopes) >= 1, "No envelope written; migration not yet applied"
+        env = envelopes[-1]
+        assert env.get("event_type") == "PIPELINE_COMMAND"
+        assert env.get("data", {}).get("result") == "fail"
+
+    def test_spec_gate_write_failure_is_silent(self, tmp_path, monkeypatch):
+        """Spec gate continues normally when the events path is unwritable (AC-11)."""
+        project_root = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
+
+        # Block writes by creating .fbk-capture/ as a plain file rather than a dir.
+        capture_dir = os.path.join(project_root, ".fbk-capture")
+        with open(capture_dir, "w") as fh:
+            fh.write("not-a-directory")
+
+        spec_file = Path(project_root) / "sample-spec.md"
+        spec_file.write_text(_make_minimal_spec())
+
+        monkeypatch.chdir(project_root)
+        monkeypatch.setattr(sys, "argv", ["spec-gate", str(spec_file)])
+
+        # Gate must complete its own pass/fail logic regardless of the write failure.
+        # The pass path returns normally (no sys.exit) — call directly.
+        _spec_gate_mod.main()
