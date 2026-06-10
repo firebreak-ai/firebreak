@@ -282,7 +282,11 @@ enumerate_assets() {
     SRC_FILES+=("$src_file")
     DST_FILES+=("$dst_file")
   done < <(find "$SOURCE_DIR" \
-    \( -type d \( -name .venv -o -name venv -o -name __pycache__ -o -name .pytest_cache \) -prune \) \
+    \( -type d \( \
+         -name .venv -o -name venv -o -name __pycache__ -o -name .pytest_cache \
+         -o -name .ruff_cache -o -name '*.egg-info' -o -name tests \
+         -o -name .claude -o -name .git \
+       \) -prune \) \
     -o \( -type f ! -name '*.pyc' ! -name '.DS_Store' -print \))
 }
 
@@ -602,6 +606,15 @@ if [ -z "$TARGET_DIR" ]; then
 fi
 
 check_prerequisites
+
+# Create the target directory before merging settings or writing the manifest.
+# Both merge_settings and write_manifest write into TARGET_DIR but run before
+# install_files, which is otherwise what first creates it via mkdir -p. On a
+# fresh target those earlier writes fail silently (set -e is off), leaving no
+# settings.json and no manifest — and a manifest-less install cannot be uninstalled.
+if [ "$DRY_RUN" != "1" ]; then
+  mkdir -p "$TARGET_DIR"
+fi
 
 # Detect upgrade
 IS_UPGRADE=0

@@ -43,7 +43,7 @@ echo "TAP version 13"
 setup_mock_home
 
 # Phase 1: Install
-HOME="$MOCK_HOME" bash "$INSTALL_SCRIPT" >/dev/null 2>&1
+HOME="$MOCK_HOME" bash "$INSTALL_SCRIPT" --source "$PROJECT_ROOT/assets" --target "$MOCK_HOME/.claude" >/dev/null 2>&1
 INSTALL_EXIT=$?
 
 # T1: Installer exits 0
@@ -135,8 +135,11 @@ else
   not_ok "fbk-sdl-workflow/capability-entry.md installed" "file not found"
 fi
 
-# T15: No installed asset body contains 'assets/' path prefix
-LEAKED_PATHS=$(grep -rl '\bassets/' "$MOCK_HOME/.claude" --include="*.md" --include="*.py" 2>/dev/null | head -5)
+# T15: No installed asset body references the source 'assets/' path prefix.
+# The pattern matches a path-leading 'assets/' segment but deliberately excludes
+# 'assets/' preceded by a hyphen or word char, so the legitimate context-asset
+# directory name 'fbk-context-assets/' does not register as a leak.
+LEAKED_PATHS=$(grep -rlE '(^|[^-[:alnum:]_])assets/' "$MOCK_HOME/.claude" --include="*.md" --include="*.py" 2>/dev/null | head -5)
 if [ -z "$LEAKED_PATHS" ]; then
   ok "No installed asset body contains 'assets/' path prefix"
 else
@@ -144,7 +147,7 @@ else
 fi
 
 # Phase 2: Uninstall
-HOME="$MOCK_HOME" bash "$INSTALL_SCRIPT" --uninstall >/dev/null 2>&1
+HOME="$MOCK_HOME" bash "$INSTALL_SCRIPT" --uninstall --target "$MOCK_HOME/.claude" >/dev/null 2>&1
 
 # T16: fbk-scripts tree gone after uninstall
 if [ ! -d "$MOCK_HOME/.claude/fbk-scripts" ]; then
