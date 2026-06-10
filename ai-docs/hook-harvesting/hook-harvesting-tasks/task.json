@@ -402,8 +402,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/test_capture_e2e_seam.py (2 tests): two-source cycle joins PIPELINE_COMMAND+TOOL_USE in one report w/ retrospective metrics block+provenance marker; uninstrumented project records nothing end-to-end. Pass against real impl, no weakening. Full suite 336.",
       "note": "Cross-cutting seam slice \u2014 test-only, no paired implementation task (implementation delivered by the producer and report slices)."
     },
     {
