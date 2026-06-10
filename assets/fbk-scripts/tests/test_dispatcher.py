@@ -22,8 +22,8 @@ class TestDispatcherCommandMap:
         except ImportError:
             pytest.skip("fbk module not yet implemented")
 
-    def test_command_map_contains_all_18_commands(self):
-        """COMMAND_MAP contains all 18 commands from spec."""
+    def test_command_map_contains_all_19_commands(self):
+        """COMMAND_MAP contains all 19 commands from spec."""
         try:
             import fbk
         except ImportError:
@@ -47,13 +47,15 @@ class TestDispatcherCommandMap:
             "intent-gate",
             "design-gate",
             "code-review-gate",
+            "report",
         }
 
         actual_commands = set(fbk.COMMAND_MAP.keys())
         assert expected_commands.issubset(actual_commands), \
             f"Missing commands: {expected_commands - actual_commands}"
-        assert len(fbk.COMMAND_MAP) == 18, \
-            f"Expected COMMAND_MAP to have exactly 18 entries, got {len(fbk.COMMAND_MAP)}"
+        assert len(fbk.COMMAND_MAP) == 19, \
+            f"Expected COMMAND_MAP to have exactly 19 entries, got {len(fbk.COMMAND_MAP)}"
+        assert fbk.COMMAND_MAP["report"] == "fbk.report"
 
     def test_intent_gate_maps_to_exact_module(self):
         """COMMAND_MAP["intent-gate"] == "fbk.gates.intent"."""

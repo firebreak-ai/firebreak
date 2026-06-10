@@ -167,8 +167,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "8 tests in test_capture_event_writer.py (one-jsonl-line append, prune-check wiring via monkeypatch, out-of-vocab discard+warn+None, fail-silent no-stdout, .gitignore '*' self-creation, standard strip/full preserve, symlink-dir refusal). 8 skip red-phase.",
       "note": null
     },
     {
@@ -187,8 +187,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "7 tests in test_report_arithmetic.py (first_try vs after_rework classification, exact first-try rate, kill-rate 0.7, empty-reason park row present, rework from repeated stage entry, subagent count excludes unknown). Caveat: fn names count_known_subagents etc. not pinned by spec \u2014 impl must match test names. 7 skip.",
       "note": null
     },
     {
@@ -209,8 +209,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "6 tests in test_report_rendering.py (all row kinds + rc0, mid-cycle partial, missing transcript->'unavailable' not 0, zero-parks present-empty row, empty-vs-absent row discriminator, over-cap warning surfaced). Caveat: fbk.report must register in COMMAND_MAP; row labels asserted as structural substrings. 6 skip.",
       "note": null
     },
     {
@@ -345,7 +345,7 @@
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
       "status": "not_started",
       "summary": null,
-      "note": null
+      "note": "SCOPE REDUCED: the dispatcher-count update (18->19, add report, rename to _19_commands, add report->fbk.report mapping assertion) was applied during wave-3 regression remediation (task-28 registering report broke the baseline dispatcher test). Wave-5 author should ONLY add the chokepoint real-transition integration test; the test_dispatcher.py count portion is already done."
     },
     {
       "id": "task-19",
@@ -516,8 +516,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/capture/event_writer.py. Appends one JSONL line per call (full envelope), runs retention.prune_if_needed after append, vocab guard before try/except (warn never suppressed), fail-silent no-stdout, .gitignore '*' on first dir creation, schema.redact by level, symlink-dir refusal, protect_specs from capture_dir/locked/. task-09: 8/8 pass.",
       "note": null
     },
     {
@@ -543,8 +543,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/report.py (classify_gate_attempts, first_try_pass_rate, kill_rate, derive_parks, derive_rework, count_known_subagents, stage_summary, CLI main) and registered report->fbk.report in fbk/__init__.py COMMAND_MAP (now 19). tasks 10/11: 13/13 pass.",
       "note": null
     },
     {

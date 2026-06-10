@@ -1,0 +1,333 @@
+"""Unit tests for fbk.report — exact-value computations.
+
+Covers:
+- classify_gate_attempts: pre-park attempts labelled first_try, post-re-entry labelled after_rework
+- first_try_pass_rate: exact fractional value from first-try attempts
+- kill_rate: (total_raised - total_confirmed) / total_raised
+- derive_parks: state-derived park rows, empty reason renders as present entry
+- derive_rework: re-entry count from repeated stage timestamps
+- subagent count filtering: only known-identity SUBAGENT_STOP events counted
+"""
+
+import pytest
+
+try:
+    import fbk.report as report
+    REPORT_AVAILABLE = True
+except ImportError:
+    REPORT_AVAILABLE = False
+
+from tests import capture_fixtures
+
+pytestmark = pytest.mark.skipif(
+    not REPORT_AVAILABLE,
+    reason="fbk.report module not yet implemented",
+)
+
+
+# ---------------------------------------------------------------------------
+# classify_gate_attempts
+# ---------------------------------------------------------------------------
+
+
+def test_attempt_before_park_classifies_first_try():
+    """classify_gate_attempts labels pre-park attempts phase == "first_try".
+
+    All VERIFICATION_RESULT events occur before the stage's first park, and the
+    state carries no re-entry.  Every returned entry must have phase "first_try".
+    """
+    stage = "VALIDATING"
+    spec = "test-spec"
+
+    events = [
+        capture_fixtures.build_event(
+            "VERIFICATION_RESULT",
+            source="fbk-implementer",
+            spec=spec,
+            stage=stage,
+            timestamp="2026-01-01T00:00:01+00:00",
+            data={"passed": False},
+        ),
+        capture_fixtures.build_event(
+            "VERIFICATION_RESULT",
+            source="fbk-implementer",
+            spec=spec,
+            stage=stage,
+            timestamp="2026-01-01T00:00:02+00:00",
+            data={"passed": True},
+        ),
+    ]
+
+    # State with only the one stage visited — no park, no re-entry.
+    state = capture_fixtures.build_state(
+        spec=spec,
+        stage_timestamps={stage: "2026-01-01T00:00:00+00:00"},
+        error_history=[],
+    )
+
+    attempts = report.classify_gate_attempts(events, state, stage)
+
+    assert len(attempts) == 2
+    for entry in attempts:
+        assert entry["phase"] == "first_try", (
+            f"expected first_try but got {entry['phase']!r}"
+        )
+
+
+def test_attempt_after_ready_reentry_classifies_after_rework():
+    """classify_gate_attempts labels post-re-entry attempts phase == "after_rework".
+
+    The state reflects a park then re-entry (PARKED → READY → stage restarted):
+    error_history has one VALIDATING park entry, and stage_timestamps shows
+    VALIDATING recorded twice (or a READY re-entry marker present).  Events
+    occurring after the re-entry timestamp must carry phase "after_rework".
+    """
+    stage = "VALIDATING"
+    spec = "test-spec"
+
+    park_ts = "2026-01-01T00:01:00+00:00"
+    reentry_ts = "2026-01-01T00:02:00+00:00"
+
+    # Two gate attempts — one before park, one after re-entry.
+    events = [
+        capture_fixtures.build_event(
+            "VERIFICATION_RESULT",
+            source="fbk-implementer",
+            spec=spec,
+            stage=stage,
+            timestamp="2026-01-01T00:00:30+00:00",
+            data={"passed": False},
+        ),
+        capture_fixtures.build_event(
+            "VERIFICATION_RESULT",
+            source="fbk-implementer",
+            spec=spec,
+            stage=stage,
+            timestamp="2026-01-01T00:02:30+00:00",
+            data={"passed": True},
+        ),
+    ]
+
+    # State: stage was parked then READY re-entered, stage restarted.
+    state = capture_fixtures.build_state(
+        spec=spec,
+        stage_timestamps={
+            stage: "2026-01-01T00:00:00+00:00",
+            "PARKED": park_ts,
+            "READY": "2026-01-01T00:01:30+00:00",
+        },
+        error_history=[
+            {"stage": stage, "error": "gate failed", "timestamp": park_ts},
+        ],
+        current_state=stage,
+    )
+
+    attempts = report.classify_gate_attempts(events, state, stage)
+
+    after_rework = [a for a in attempts if a["phase"] == "after_rework"]
+    assert len(after_rework) >= 1, (
+        "expected at least one after_rework attempt following re-entry"
+    )
+    for entry in after_rework:
+        assert "passed" in entry
+
+
+# ---------------------------------------------------------------------------
+# first_try_pass_rate
+# ---------------------------------------------------------------------------
+
+
+def test_first_try_pass_rate_is_exact_fraction():
+    """first_try_pass_rate of fail/fail/pass returns exactly 1/3.
+
+    Three first-try attempts with outcomes False, False, True.  The rate must
+    equal pytest.approx(1/3).  The attempt list must be non-empty so the
+    presence assertion guards against a trivially-passing empty input.
+    """
+    attempts = [
+        {"phase": "first_try", "passed": False},
+        {"phase": "first_try", "passed": False},
+        {"phase": "first_try", "passed": True},
+    ]
+
+    assert len(attempts) > 0, "fixture must be non-empty"
+
+    rate = report.first_try_pass_rate(attempts)
+
+    assert rate == pytest.approx(1 / 3)
+
+
+# ---------------------------------------------------------------------------
+# kill_rate
+# ---------------------------------------------------------------------------
+
+
+def test_kill_rate_is_exact_value():
+    """kill_rate for total_raised=10 and total_confirmed=3 returns exactly 0.7.
+
+    Builds a rounds list where the summed raised and confirmed totals are
+    known.  (10 - 3) / 10 == 0.7.
+    """
+    rounds = [
+        {"raised": 6, "confirmed": 2},
+        {"raised": 4, "confirmed": 1},
+    ]
+
+    rate = report.kill_rate(rounds)
+
+    assert rate == pytest.approx(0.7)
+
+
+# ---------------------------------------------------------------------------
+# derive_parks
+# ---------------------------------------------------------------------------
+
+
+def test_park_with_empty_reason_renders_no_reason_row():
+    """derive_parks keeps an empty-reason park as a present entry.
+
+    A park whose error string is empty must not be silently dropped; the
+    returned list must contain one entry for it, and the entry's reason must
+    be empty or None so the renderer can surface "(no reason recorded)".
+    """
+    stage = "VALIDATING"
+    spec = "test-spec"
+
+    state = capture_fixtures.build_state(
+        spec=spec,
+        stage_timestamps={stage: "2026-01-01T00:00:00+00:00"},
+        error_history=[
+            {"stage": stage, "error": "", "timestamp": "2026-01-01T00:01:00+00:00"},
+        ],
+    )
+
+    parks = report.derive_parks(state, stage)
+
+    assert len(parks) >= 1, "empty-reason park must not be dropped"
+
+    empty_reason_entries = [
+        p for p in parks if p.get("reason") in (None, "")
+    ]
+    assert len(empty_reason_entries) >= 1, (
+        "expected at least one entry with empty/None reason for the empty-error park"
+    )
+
+    # Confirm the renderer would surface "(no reason recorded)" rather than
+    # silently omitting the row — the entry must be present (asserted above).
+    # The rendering check is a structural presence assertion, not a re-implementation.
+    assert any(p.get("reason") in (None, "") for p in parks), (
+        "entry with empty reason must be present so renderer shows '(no reason recorded)'"
+    )
+
+
+# ---------------------------------------------------------------------------
+# derive_rework
+# ---------------------------------------------------------------------------
+
+
+def test_rework_derived_from_repeated_stage_entry():
+    """derive_rework returns >= 1 for a stage that appears twice, guarding last-write-wins.
+
+    Also calls classify_gate_attempts to confirm at least one after_rework
+    attempt is produced for the same state.  This catches a state-store
+    regression that drops repeated entries.
+    """
+    stage = "VALIDATING"
+    spec = "test-spec"
+
+    park_ts = "2026-01-01T00:01:00+00:00"
+    reentry_ts = "2026-01-01T00:02:00+00:00"
+
+    state = capture_fixtures.build_state(
+        spec=spec,
+        stage_timestamps={
+            stage: "2026-01-01T00:00:00+00:00",
+            "PARKED": park_ts,
+            "READY": "2026-01-01T00:01:30+00:00",
+        },
+        error_history=[
+            {"stage": stage, "error": "gate failed", "timestamp": park_ts},
+        ],
+        current_state=stage,
+    )
+
+    rework_count = report.derive_rework(state, stage)
+
+    assert rework_count >= 1, (
+        f"expected rework count >= 1 for re-entered stage, got {rework_count}"
+    )
+
+    # Gate attempts: one before park, one after re-entry.
+    events = [
+        capture_fixtures.build_event(
+            "VERIFICATION_RESULT",
+            source="fbk-implementer",
+            spec=spec,
+            stage=stage,
+            timestamp="2026-01-01T00:00:30+00:00",
+            data={"passed": False},
+        ),
+        capture_fixtures.build_event(
+            "VERIFICATION_RESULT",
+            source="fbk-implementer",
+            spec=spec,
+            stage=stage,
+            timestamp="2026-01-01T00:02:30+00:00",
+            data={"passed": True},
+        ),
+    ]
+
+    attempts = report.classify_gate_attempts(events, state, stage)
+    after_rework = [a for a in attempts if a["phase"] == "after_rework"]
+
+    assert len(after_rework) >= 1, (
+        "classify_gate_attempts must label at least one attempt after_rework "
+        "for a stage with a recorded park + re-entry"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Subagent identity filtering
+# ---------------------------------------------------------------------------
+
+
+def test_subagent_count_excludes_unknown_identity():
+    """Subagent aggregate counts only SUBAGENT_STOP events with a known identity.
+
+    Builds events with one known agent (fbk-implementer, present in the
+    hardcoded fallback set so no fixture scan root is required) and two
+    events with empty or unknown identity.  The report's aggregated count
+    must equal 1.
+    """
+    stage = "VALIDATING"
+    spec = "test-spec"
+
+    events = [
+        capture_fixtures.build_event(
+            "SUBAGENT_STOP",
+            source="fbk-implementer",  # known identity
+            spec=spec,
+            stage=stage,
+            data={"agent_type": "fbk-implementer"},
+        ),
+        capture_fixtures.build_event(
+            "SUBAGENT_STOP",
+            source="",  # empty identity
+            spec=spec,
+            stage=stage,
+            data={"agent_type": ""},
+        ),
+        capture_fixtures.build_event(
+            "SUBAGENT_STOP",
+            source="random-unknown-bot",  # unrecognised identity
+            spec=spec,
+            stage=stage,
+            data={"agent_type": "random-unknown-bot"},
+        ),
+    ]
+
+    count = report.count_known_subagents(events)
+
+    assert count == 1, (
+        f"expected count 1 (only fbk-implementer is known), got {count}"
+    )
