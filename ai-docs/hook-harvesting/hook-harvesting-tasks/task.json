@@ -1,0 +1,732 @@
+{
+  "spec": "ai-docs/hook-harvesting/hook-harvesting-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Shared test fixtures: event-stream/state/transcript builders, tmp-project, stdin helper",
+      "file": "task-01-test-capture-fixtures.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-07",
+        "AC-15",
+        "AC-06"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "complete",
+      "summary": "Created tests/capture_fixtures.py (build_event, write_events, build_state, write_state, build_transcript, write_transcript, write_unreadable_transcript, nonexistent_transcript_path, make_project, hook_payload) and tests/test_capture_fixtures.py self-checks. Both self-checks pass; module imports cleanly. State fixture includes agent_ids/verification_results to match real fbk/state.py shape. Sentinel path .claude/automation/.fbk-managed.",
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Tests for the event envelope, vocabulary drift check, and central redaction",
+      "file": "task-02-test-schema-envelope-and-drift.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-13",
+        "AC-26"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with a handed signature and clear tests.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-03",
+      "title": "Tests for the size-cap pruner with baseline locks and over-cap sentinel",
+      "file": "task-03-test-retention-pruner.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-14",
+        "AC-25"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-04",
+      "title": "Tests for project-instrumented detection and capture-level resolution",
+      "file": "task-04-test-gate-check-instrumentation-and-level.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-09",
+        "AC-10"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with a handed signature and clear tests.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-05",
+      "title": "Tests for marker-sentinel, out-of-tree full signal, and symlink confinement",
+      "file": "task-05-test-gate-check-hardening.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-22",
+        "AC-23"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-06",
+      "title": "Non-gating overhead-budget test for the capture gate hot path",
+      "file": "task-06-test-gate-check-overhead-budget.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with a handed signature and clear tests.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-07",
+      "title": "Tests for known-agent derivation, env override, and stale-fallback",
+      "file": "task-07-test-known-agents.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-16"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-08",
+      "title": "Tests for token harvest, stage attribution, aggregation, and unavailable marking",
+      "file": "task-08-test-token-harvester.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-06",
+        "AC-17"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-09",
+      "title": "Tests for the single-append writer: fail-silent, redaction, gitignore self-creation",
+      "file": "task-09-test-event-writer.md",
+      "type": "test",
+      "wave_id": 3,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-11",
+        "AC-13",
+        "AC-15",
+        "AC-24",
+        "AC-26",
+        "AC-23"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-10",
+      "title": "Unit tests for report classification, rate, kill-rate, park/rework derivation",
+      "file": "task-10-test-report-arithmetic-and-classification.md",
+      "type": "test",
+      "wave_id": 3,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-07",
+        "AC-17",
+        "AC-16"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-11",
+      "title": "Integration tests for the report table rendering and mid-cycle CLI run",
+      "file": "task-11-test-report-rendering-and-cli.md",
+      "type": "test",
+      "wave_id": 3,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-07",
+        "AC-08",
+        "AC-06",
+        "AC-17",
+        "AC-25"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-12",
+      "title": "Integration tests for the router: gating, payload stripping, pinning, fail-silent",
+      "file": "task-12-test-hook-router.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-08",
+        "AC-11",
+        "AC-12",
+        "AC-16",
+        "AC-21"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-13",
+      "title": "Stub-level tests for the chokepoint stdout-and-SystemExit seam",
+      "file": "task-13-test-chokepoint-stdout-exit-seam.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [],
+      "covers": [
+        "AC-03",
+        "AC-01",
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-14",
+      "title": "Tests asserting the spec and task-reviewer gates write the shared envelope",
+      "file": "task-14-test-gate-audit-migration.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-03",
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-15",
+      "title": "Tests for the VERIFICATION_RESULT side-effect write with unchanged exit codes",
+      "file": "task-15-test-verification-persistence.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-04",
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-16",
+      "title": "Tests for CODE_REVIEW_ROUNDS event emission and round-log bounds",
+      "file": "task-16-test-code-review-rounds.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [],
+      "covers": [
+        "AC-05",
+        "AC-27"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-17",
+      "title": "Tests for retrospective metrics-block injection and coexistence",
+      "file": "task-17-test-retro-injector.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-18",
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-18",
+      "title": "Integration tests for the fbk.py dispatch wrap incl real multi-line return path",
+      "file": "task-18-test-dispatcher-and-chokepoint-real-transition.md",
+      "type": "test",
+      "wave_id": 5,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-19",
+      "title": "Tests for the state-engine pair-keyed injector predicate (park exclusion)",
+      "file": "task-19-test-state-injector-predicate.md",
+      "type": "test",
+      "wave_id": 5,
+      "dependencies": [],
+      "covers": [
+        "AC-18",
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-20",
+      "title": "Tests for anchored duplicate-registration removal and idempotent install merge",
+      "file": "task-20-test-install-migration.md",
+      "type": "test",
+      "wave_id": 5,
+      "dependencies": [],
+      "covers": [
+        "AC-19"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-21",
+      "title": "Cross-cutting e2e seam tests: two-source join and uninstrumented no-op",
+      "file": "task-21-test-end-to-end-seam.md",
+      "type": "test",
+      "wave_id": 6,
+      "dependencies": [
+        "task-01",
+        "task-27",
+        "task-28",
+        "task-29",
+        "task-30",
+        "task-34",
+        "task-36"
+      ],
+      "covers": [
+        "AC-15",
+        "AC-20",
+        "AC-01"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": "Cross-cutting seam slice \u2014 test-only, no paired implementation task (implementation delivered by the producer and report slices)."
+    },
+    {
+      "id": "task-22",
+      "title": "Event envelope, vocabulary, drift check, and central redactor",
+      "file": "task-22-impl-schema-envelope.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-13",
+        "AC-26"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with a handed signature and clear tests.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-23",
+      "title": "Size-cap pruner with baseline locks and the over-cap sentinel",
+      "file": "task-23-impl-retention-pruner.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-14",
+        "AC-25"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-24",
+      "title": "Per-project capture gate and level resolver with full hardening",
+      "file": "task-24-impl-gate-check.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-09",
+        "AC-10",
+        "AC-21",
+        "AC-22",
+        "AC-23"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-25",
+      "title": "Known-agent set derived from persona files with stale-fallback",
+      "file": "task-25-impl-known-agents.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-16"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-26",
+      "title": "Post-hoc transcript token harvester with stage attribution",
+      "file": "task-26-impl-token-harvester.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-06",
+        "AC-17"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-27",
+      "title": "Single-append event writer: fail-silent, central redaction, self-confinement",
+      "file": "task-27-impl-event-writer.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-22",
+        "task-23"
+      ],
+      "covers": [
+        "AC-11",
+        "AC-13",
+        "AC-15",
+        "AC-24",
+        "AC-26",
+        "AC-23",
+        "AC-12",
+        "AC-02"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-28",
+      "title": "Report command aggregating all sources plus the reusable stage_summary",
+      "file": "task-28-impl-report.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-22",
+        "task-25",
+        "task-26"
+      ],
+      "covers": [
+        "AC-07",
+        "AC-08",
+        "AC-17",
+        "AC-16",
+        "AC-06",
+        "AC-25",
+        "AC-15",
+        "AC-20"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-29",
+      "title": "Standalone globally-installed hook router with sys.path bootstrap",
+      "file": "task-29-impl-hook-router.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-27",
+        "task-24",
+        "task-22",
+        "task-25"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-02",
+        "AC-08",
+        "AC-11",
+        "AC-12",
+        "AC-16",
+        "AC-21",
+        "AC-15"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-30",
+      "title": "Dispatch chokepoint recorder with the stdout-and-exit seam",
+      "file": "task-30-impl-chokepoint.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-27"
+      ],
+      "covers": [
+        "AC-03",
+        "AC-01",
+        "AC-11",
+        "AC-15"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-31",
+      "title": "Migrate the three gate audit sites to the shared event writer",
+      "file": "task-31-impl-gate-audit-migration.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-27"
+      ],
+      "covers": [
+        "AC-03",
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-32",
+      "title": "Add the fail-silent VERIFICATION_RESULT write to the verification hook",
+      "file": "task-32-impl-verification-persistence.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-27"
+      ],
+      "covers": [
+        "AC-04",
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-33",
+      "title": "Code-review gate round-log read + CODE_REVIEW_ROUNDS event + skill instruction",
+      "file": "task-33-impl-code-review-rounds.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-27"
+      ],
+      "covers": [
+        "AC-05",
+        "AC-27"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-34",
+      "title": "Per-stage retrospective injector firing on working-stage completion",
+      "file": "task-34-impl-retro-injector.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-28"
+      ],
+      "covers": [
+        "AC-18",
+        "AC-11",
+        "AC-20"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-35",
+      "title": "Wrap the fbk.py dispatch point in chokepoint.record_dispatch",
+      "file": "task-35-impl-fbk-dispatch-wrap.md",
+      "type": "implementation",
+      "wave_id": 5,
+      "dependencies": [
+        "task-30"
+      ],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-36",
+      "title": "Wire the guarded injector call into transition_state",
+      "file": "task-36-impl-state-injector-call.md",
+      "type": "implementation",
+      "wave_id": 5,
+      "dependencies": [
+        "task-34"
+      ],
+      "covers": [
+        "AC-18",
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-37",
+      "title": "Installer router registration, gitignore, and duplicate-removal migration",
+      "file": "task-37-impl-install-migration.md",
+      "type": "implementation",
+      "wave_id": 5,
+      "dependencies": [
+        "task-29"
+      ],
+      "covers": [
+        "AC-19"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    }
+  ]
+}
