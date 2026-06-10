@@ -135,6 +135,70 @@ class TestLeftoverProjectRegistrationRemoved:
         )
 
 
+class TestMergeStripsLeftoverWithoutSeparateRemovalCall:
+    """merge_settings itself must strip a leftover router registration.
+
+    These tests drive the real installer entry point (merge_settings) ONLY —
+    they do NOT call remove_hook_command separately. They fail if the strip is
+    not wired into merge_settings, which is the behavior the installer actually
+    runs.
+    """
+
+    def test_merge_alone_removes_leftover_project_router(
+        self, settings_with_leftover, new_entries_template
+    ):
+        """A single merge_settings call leaves exactly one router command, the global one."""
+        merged, _ = merge_settings_mod.merge_settings(
+            settings_with_leftover, new_entries_template
+        )
+
+        all_commands = [
+            hook["command"]
+            for entries in merged["hooks"].values()
+            for group in entries
+            for hook in group.get("hooks", [])
+        ]
+
+        assert _OLD_COMMAND not in all_commands, (
+            "merge_settings did not strip the leftover $CLAUDE_PROJECT_DIR router "
+            "registration — the migration is not wired into the merge path"
+        )
+
+        router_commands = [c for c in all_commands if "hook_router.py" in c]
+        assert len(router_commands) == 1, (
+            f"expected exactly one router registration after merge_settings alone, "
+            f"found {len(router_commands)}: {router_commands}"
+        )
+        assert "$CLAUDE_PROJECT_DIR" not in router_commands[0]
+        assert _GLOBAL_COMMAND_PREFIX in router_commands[0]
+
+    def test_merge_alone_preserves_unrelated_entry(
+        self, settings_with_leftover, new_entries_template, unrelated_entry
+    ):
+        """The strip inside merge_settings leaves unrelated operator hooks intact."""
+        merged, _ = merge_settings_mod.merge_settings(
+            settings_with_leftover, new_entries_template
+        )
+        all_groups = [
+            group for entries in merged["hooks"].values() for group in entries
+        ]
+        assert unrelated_entry in all_groups, (
+            "merge_settings dropped an unrelated operator hook while stripping the router"
+        )
+
+    def test_merge_alone_is_idempotent(
+        self, settings_with_leftover, new_entries_template
+    ):
+        """Feeding merge_settings output back in produces an identical result."""
+        once, _ = merge_settings_mod.merge_settings(
+            settings_with_leftover, new_entries_template
+        )
+        twice, _ = merge_settings_mod.merge_settings(once, new_entries_template)
+        assert twice == once, (
+            "a second merge_settings run changed the result — strip+re-add is not idempotent"
+        )
+
+
 class TestUnrelatedHookLeftByteIntact:
     """An operator-added hook entry unrelated to the router survives the migration unchanged."""
 
