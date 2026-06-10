@@ -35,8 +35,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file task with a handed signature and clear tests.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "8 tests in test_capture_schema.py (vocabulary equality+len, known/unknown membership, drift empty/flag GHOST_EVENT, redact standard/full/off). 8 skipped red-phase, clean collection.",
       "note": null
     },
     {
@@ -54,8 +54,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "6 tests in test_capture_retention.py (drop oldest past cap, never drop locked under ceiling, locked capped past ceiling, over-cap sentinel, intact-on-failure, no-prune-under-cap). 6 skipped red-phase.",
       "note": null
     },
     {
@@ -74,8 +74,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file task with a handed signature and clear tests.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "11 tests in test_capture_gate_check.py (instrumented true/false incl fs-error; level off/standard/default/invalid-warn/uninstrumented/one-line). 11 skipped red-phase.",
       "note": null
     },
     {
@@ -93,8 +93,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "7 tests in test_capture_gate_check_hardening.py (bare automation, sentinel, in-tree full clamp w/o corroboration, env+global-marker corroboration, symlink dir/config refused). Operator-marker shape documented for impl. 7 skipped.",
       "note": null
     },
     {
@@ -109,8 +109,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file task with a handed signature and clear tests.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "1 test in test_capture_gate_check_overhead.py marked flaky_quarantine (non-gating timing). Registered marker in pyproject.toml (minor scope expansion, benign). 1 skipped.",
       "note": null
     },
     {
@@ -125,8 +125,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "5 tests in test_capture_known_agents.py (persona derive+stale=False, scan success clears stale, scan failure sets stale-fallback no-raise, unknown/empty rejected). 5 skipped.",
       "note": null
     },
     {
@@ -144,8 +144,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "6 tests in test_capture_token_harvester.py (before/at boundary attribution, missing+unreadable unavailable!=0, two-transcript aggregate, boundary-adjacent count on REVIEWING). Caveat: boundary-adjacency def assert narrowed to REVIEWING; impl to confirm. 6 skipped.",
       "note": null
     },
     {
@@ -419,9 +419,9 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file task with a handed signature and clear tests.",
-      "status": "not_started",
-      "summary": null,
-      "note": null
+      "status": "complete",
+      "summary": "Created fbk/capture/__init__.py and schema.py. EVENT_TYPES (6), SOURCES (4), redact() strips FREETEXT_KEYS at standard/off and preserves at full, check_drift() empty on canonical/flags foreign, is_known_event_type helper. task-02: 8/8 pass.",
+      "note": "Team-lead regression fix at wave-2 verification: check_drift was flagging all ALL-CAPS literals incl env-var names (CLAUDE_CONFIG_DIR etc.) and datetime 'Z'. Narrowed to event-type context (event_type= / build_event( first arg). All drift tests + full suite green."
     },
     {
       "id": "task-23",
@@ -436,8 +436,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/capture/retention.py. prune_if_needed() fail-silent (try/except, single final write, intact on failure); keeps protected(locked) lines + newest unprotected within max_bytes; over-ceiling drops oldest protected and writes .retention-warning sentinel. task-03: 6/6 pass.",
       "note": null
     },
     {
@@ -457,8 +457,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/capture/gate_check.py. project_is_instrumented (sentinel or capture.cfg; fail-safe False on fs error; symlinked capture dir/cfg -> uninstrumented). resolve_capture_level (off/standard/full; in-tree full clamped to standard unless FBK_CAPTURE_LEVEL=full or global marker). tasks 04/05/06: 19/19 pass. NOTE: operator-marker dir implemented as fbk-capture-level/ (matches test); task-24 prose said fbk-capture-full/ \u2014 no downstream consumer, accepted.",
       "note": null
     },
     {
@@ -473,8 +473,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/capture/known_agents.py. FALLBACK_AGENTS frozenset (16 names incl fbk-implementer), derive_known_agents via regex (no yaml dep), is_known_agent re-derives from FBK_AGENTS_DIR each call, STALE_FALLBACK on scan failure. task-07: 5/5 pass.",
       "note": null
     },
     {
@@ -490,8 +490,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/capture/token_harvester.py. Per-stage token attribution by transition boundary (at-or-after -> later stage), missing/unreadable -> available=False (not 0), multi-transcript aggregation, boundary_adjacent_turns. task-08: 6/6 pass.",
       "note": null
     },
     {
