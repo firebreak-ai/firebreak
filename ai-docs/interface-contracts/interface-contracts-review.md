@@ -206,3 +206,14 @@ Action before merge: fix #1 (genuine), and re-run #2–#4 in a writable environm
 During the dogfood, the test agent reported that a multi-line `invariants:` block (YAML sub-bullets) caused the contract-entry parser to treat the `covers` field as missing, and worked around it by using single-line `invariants` values. A direct reproduction (a contract entry with sub-bullet invariants whose sub-lines contain colons, e.g. `- Pre: ...`) did NOT reproduce a covers-missing failure — `check_interface_contracts_structure` returned no failures. So the exact trigger is uncharacterized and this is NOT a confirmed defect.
 
 What is true: the field regex `_FIELD_RE = r"^\s+(\S[^:]*?):\s*(.*)"` is permissive across newlines, and the canonical entry format (the spec's own dogfood entries, the format leaf) uses single-line field values. Recommendation for follow-up (not this run): add a targeted unit test pinning the parser's behavior on multi-line block values, and decide whether to support or explicitly reject them. Out of scope here — no AC requires multi-line invariants.
+
+---
+
+## Pre-existing failures — resolution update (2026-06-10)
+
+Three of the four pre-existing failures are now fixed:
+- `test-instruction-hygiene-scope.sh` — bumped the stale exact-count assertion 14→15 (the doc legitimately has 15 failure modes).
+- `test-install.sh` — replaced two obsolete pip-era "pyyaml missing" tests with uv-venv behavior tests (venv built + pyyaml importable; dry-run makes no changes); extended the dev-artifact exclusion test to cover a dot-less `venv/`.
+- `test-upgrade-uninstall.sh` — **real installer bug fixed**: `--uninstall` now removes the `fbk-scripts/.venv` it creates (previously orphaned, leaving the directory).
+
+The fourth, `test-refactored-sdl-install.sh`, was passing vacuously at baseline (it never actually installed). Making it install for real exposed a separate, larger installer-hygiene problem (source tree ships dev cruft; incomplete exclusions; uninstall leftovers; manifest oddity). Reclassified as its own task with a full diagnosis at `ai-docs/installer-hygiene-task.md`. The temporary invocation fix used to surface it was reverted to keep this change set clean.
