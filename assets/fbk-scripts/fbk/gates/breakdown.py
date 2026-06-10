@@ -41,7 +41,7 @@ def validate_breakdown(spec_text: str, manifest: dict, task_files: Dict[str, str
     task_by_id = {t["id"]: t for t in tasks}
 
     # 1. AC coverage — spec ACs must appear in covers with both test+impl tasks
-    ac_sec = re.search(r"## Acceptance criteria(.*?)(?=\n## |\Z)", spec_text, re.I | re.S)
+    ac_sec = re.search(r"^## Acceptance criteria(.*?)(?=\n## |\Z)", spec_text, re.I | re.M | re.S)
     spec_acs = set(re.findall(r"\bAC-\d+\b", ac_sec.group(1))) if ac_sec else set()
 
     ac_tasks: Dict[str, list] = defaultdict(list)
