@@ -343,8 +343,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/test_capture_chokepoint_integration.py (real fbk.py state transition through wrapped dispatch: multiline JSON re-emitted, exit code propagates, one PIPELINE_COMMAND written). Left test_dispatcher.py count test untouched (already done wave 3). 2 fail red (no wrap yet).",
       "note": "SCOPE REDUCED: the dispatcher-count update (18->19, add report, rename to _19_commands, add report->fbk.report mapping assertion) was applied during wave-3 regression remediation (task-28 registering report broke the baseline dispatcher test). Wave-5 author should ONLY add the chokepoint real-transition integration test; the test_dispatcher.py count portion is already done."
     },
     {
@@ -360,8 +360,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added TestInjectorWiring to test_state.py (6 tests). Predicate: fire when prev_state in working-stages AND new_state!=PARKED, pass (spec, prev_state), wrap try/except. 2 fail red. CRITICAL caveat for task-36: test patches fbk.capture.retro_injector.inject_stage_metrics -> state.py MUST call via module attr (from fbk.capture import retro_injector; retro_injector.inject_stage_metrics(...)), not a name import.",
       "note": null
     },
     {
@@ -376,8 +376,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created tests/test_install_migration.py (5 tests: leftover project registration removed, unrelated hook byte-intact, idempotent, global path resolves to HOME not CLAUDE_PROJECT_DIR, .fbk-capture/ gitignored). 5 skip red. Contract for task-37: add remove_hook_command(hooks_list, anchor); settings.json needs router cmd python3 $HOME/.claude/fbk-scripts/fbk/capture/hook_router.py + top-level gitignore:['.fbk-capture/']; install.sh consumes gitignore key.",
       "note": null
     },
     {
@@ -687,8 +687,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified fbk.py: wrapped the dispatch (module.main) in chokepoint.record_dispatch(command_name, args, main, cwd). Exit codes/JSON stdout preserved. Wrap was correct; the 2 paired tests failed due to a test-setup defect (state create setup also recorded an event under the universal wrap) \u2014 team lead fixed task-18's test to clear events.jsonl after setup. task-18+dispatcher: 11/11.",
       "note": null
     },
     {
@@ -706,8 +706,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified fbk/state.py: import retro_injector as module attr; WORKING_STAGES derived from VALID_TRANSITIONS; guarded inject_stage_metrics(spec, prev_state) call in transition_state after save_state, fires only when prev in WORKING_STAGES and new!=PARKED, try/except swallows. task-19: 16/16.",
       "note": null
     },
     {
@@ -724,8 +724,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file, integration, security-sensitive, or orchestrator work needing judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified installer/merge-settings.py (remove_hook_command + merge_gitignore + gitignore propagation), assets/settings.json (global router registration for 10 events as python3 $HOME/.claude/fbk-scripts/fbk/capture/hook_router.py + gitignore:['.fbk-capture/']), installer/install.sh (exclude hook_router from HOME->CLAUDE_PROJECT_DIR rewrite; write_gitignore). task-20: 5/5; installer suite green.",
       "note": null
     }
   ]

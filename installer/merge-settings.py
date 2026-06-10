@@ -44,6 +44,23 @@ def merge_hooks(existing_hooks, new_hooks):
     return merged, hooks_added
 
 
+def remove_hook_command(existing_hooks, command_anchor):
+    """Return a copy of existing_hooks with any hook group whose command equals or
+    contains command_anchor removed.  Operates on the per-event dict (event →
+    list-of-groups); all other groups are left byte-intact and in order."""
+    result = {}
+    for event, groups in existing_hooks.items():
+        kept = [
+            g for g in groups
+            if not any(
+                command_anchor in hook.get("command", "")
+                for hook in g.get("hooks", [])
+            )
+        ]
+        result[event] = kept
+    return result
+
+
 def merge_env(existing_env, new_env):
     merged = dict(existing_env)
     env_added = {}
@@ -54,6 +71,17 @@ def merge_env(existing_env, new_env):
             env_added[key] = value
 
     return merged, env_added
+
+
+def merge_gitignore(existing_entries, new_entries):
+    """Return a deduplicated union of two gitignore entry lists, preserving order."""
+    seen = set(existing_entries)
+    merged = list(existing_entries)
+    for entry in new_entries:
+        if entry not in seen:
+            merged.append(entry)
+            seen.add(entry)
+    return merged
 
 
 def merge_settings(existing, new_entries):
@@ -69,6 +97,12 @@ def merge_settings(existing, new_entries):
         result["hooks"] = merged_hooks
     if merged_env:
         result["env"] = merged_env
+
+    # Propagate gitignore entries from the template into the merged output.
+    if "gitignore" in new_entries:
+        result["gitignore"] = merge_gitignore(
+            existing.get("gitignore", []), new_entries["gitignore"]
+        )
 
     manifest = {"hooks_added": hooks_added, "env_added": env_added}
     return result, manifest

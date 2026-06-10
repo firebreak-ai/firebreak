@@ -340,7 +340,9 @@ merge_settings() {
   local merge_source="$firebreak_settings"
   if [ "$INSTALL_MODE" = "project" ]; then
     merge_source="$(mktemp)"
-    sed 's|\\"\$HOME\\"/\.claude/|\\"\$CLAUDE_PROJECT_DIR\\"/\.claude/|g' "$firebreak_settings" > "$merge_source"
+    # Rewrite "$HOME"/.claude/ → "$CLAUDE_PROJECT_DIR"/.claude/ for project installs,
+    # but skip hook_router.py lines — the router always resolves to the global fbk-scripts tree.
+    sed '/hook_router\.py/!s|\\"\$HOME\\"/\.claude/|\\"\$CLAUDE_PROJECT_DIR\\"/\.claude/|g' "$firebreak_settings" > "$merge_source"
   fi
 
   # Run merge script — stdout gets merged JSON, stderr gets errors
@@ -365,6 +367,49 @@ merge_settings() {
 
   # Write merged settings
   cp "$SETTINGS_JSON_FILE" "$TARGET_DIR/settings.json"
+}
+
+# --- Gitignore ---
+write_gitignore() {
+  # Read gitignore entries from the merged settings JSON and append any missing
+  # lines to the target directory's .gitignore file.
+  if [ -z "$SETTINGS_JSON_FILE" ] || [ ! -f "$SETTINGS_JSON_FILE" ]; then
+    return
+  fi
+
+  if [ "$DRY_RUN" = "1" ]; then
+    echo "Would write gitignore entries from merged settings to $TARGET_DIR/.gitignore"
+    return
+  fi
+
+  local gitignore_path="$TARGET_DIR/.gitignore"
+
+  python3 - "$SETTINGS_JSON_FILE" "$gitignore_path" <<'EOF'
+import json, sys
+from pathlib import Path
+
+settings_path = sys.argv[1]
+gitignore_path = Path(sys.argv[2])
+
+with open(settings_path) as f:
+    settings = json.load(f)
+
+entries = settings.get("gitignore", [])
+if not entries:
+    sys.exit(0)
+
+existing_lines = set()
+if gitignore_path.exists():
+    existing_lines = {line.rstrip("\n") for line in gitignore_path.read_text().splitlines()}
+
+to_add = [e for e in entries if e not in existing_lines]
+if not to_add:
+    sys.exit(0)
+
+with open(gitignore_path, "a") as f:
+    for entry in to_add:
+        f.write(entry + "\n")
+EOF
 }
 
 # --- Manifest writing ---
@@ -604,6 +649,7 @@ fi
 
 enumerate_assets
 merge_settings
+write_gitignore
 
 # Pre-populate MANIFEST_FILES from enumerated assets so write_manifest can record them
 MANIFEST_FILES=()
