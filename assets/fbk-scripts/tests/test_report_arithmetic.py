@@ -376,3 +376,82 @@ def test_subagent_count_excludes_unknown_identity(tmp_path, monkeypatch):
         "count_known_subagents must derive the known set from the configured "
         "FBK_AGENTS_DIR scan, not the hardcoded fallback"
     )
+
+
+def test_stale_fallback_warning_fires_with_zero_subagent_events(
+    tmp_path, monkeypatch, capsys
+):
+    """The stale-fallback warning fires even when no subagent events exist.
+
+    The flag that drives this warning is set as a side effect of scanning the
+    persona directory.  The per-event subagent count only triggers that scan
+    while iterating SUBAGENT_STOP events, so a session with zero such events
+    would otherwise never refresh the flag — it would keep whatever value the
+    import-time scan left behind.
+
+    This test reproduces that gap: it first drives a *healthy* scan (a real
+    persona directory) so the flag reads non-stale, then repoints the scan root
+    at a directory that does not exist and renders a table whose events contain
+    no SUBAGENT_STOP entries.  The render path must perform its own scan so the
+    now-stale flag is current and the warning is surfaced.  Without an explicit
+    scan in the render path this assertion fails, because the flag stays at its
+    healthy import-time value and the warning is wrongly omitted.
+    """
+    from fbk.capture import known_agents
+
+    # 1. Drive a healthy scan so the flag starts out non-stale, mirroring a
+    #    process whose import-time scan found a populated persona directory.
+    healthy_dir = tmp_path / "agents"
+    healthy_dir.mkdir()
+    _write_persona(healthy_dir, "fbk-scan-probe.md", "fbk-scan-probe")
+    monkeypatch.setenv("FBK_AGENTS_DIR", str(healthy_dir))
+    assert known_agents.is_known_agent("fbk-scan-probe") is True
+    assert known_agents.STALE_FALLBACK is False, (
+        "precondition: the healthy scan must leave the flag non-stale"
+    )
+
+    # 2. Repoint the scan root at a directory that does not exist, so any fresh
+    #    scan yields nothing and falls back to the hardcoded set (stale=True).
+    nonexistent_dir = tmp_path / "no-such-agents-dir"
+    monkeypatch.setenv("FBK_AGENTS_DIR", str(nonexistent_dir))
+
+    # 3. Render a table whose events contain ZERO SUBAGENT_STOP entries, so the
+    #    per-event count never triggers a scan on its own.
+    spec = "test-spec"
+    stage = "IMPLEMENTING"
+    events = [
+        capture_fixtures.build_event(
+            "PIPELINE_COMMAND",
+            source="chokepoint",
+            spec=spec,
+            stage=stage,
+            data={
+                "command_name": "task-completed",
+                "args": ["task-01"],
+                "outcome": "pass",
+                "exit_code": 0,
+                "duration": 0.1,
+                "output": "",
+            },
+        ),
+    ]
+    assert not any(e.get("event_type") == "SUBAGENT_STOP" for e in events), (
+        "the fixture must contain no SUBAGENT_STOP events for this test to "
+        "exercise the zero-subagent path"
+    )
+
+    st = capture_fixtures.build_state(
+        spec=spec,
+        stage_timestamps={stage: "2026-01-01T00:00:00+00:00"},
+        error_history=[],
+        current_state=stage,
+    )
+
+    report._render_table(spec, events, st, {}, str(tmp_path))
+
+    out = capsys.readouterr().out
+    assert "stale agent fallback" in out, (
+        "the stale-fallback warning must be surfaced in a zero-subagent "
+        "session whose live scan root yields nothing; the render path must "
+        "scan once unconditionally so the flag is current"
+    )

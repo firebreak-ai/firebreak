@@ -235,3 +235,106 @@ class TestRealStateTransitionChokepoint:
         assert data["outcome"] == "fail", (
             f"expected outcome 'fail' for exit code 1, got {data['outcome']!r}"
         )
+
+
+class TestDirectNormalReturnChokepoint:
+    """Direct record_dispatch tests for the normal-return branch.
+
+    The subprocess tests above drive commands through fbk.py, but every command
+    those tests reach raises SystemExit. Commands like `report` instead return
+    an int from main() without calling sys.exit, taking the normal-return branch
+    of record_dispatch (result = run_fn(); exit_code = result; ... return
+    exit_code). These tests call record_dispatch directly with a run_fn that
+    RETURNS an int — never raising SystemExit — in an instrumented project, so
+    the normal-return path is exercised and the returned value is observable.
+    """
+
+    def test_normal_return_zero_returns_value_records_pass_and_flushes(
+        self, tmp_path, capsys
+    ):
+        """run_fn returns 0: record_dispatch returns 0, records outcome 'pass' with exit_code 0, flushes stdout."""
+        project = capture_fixtures.make_project(
+            str(tmp_path), instrumented=True, marked=True
+        )
+
+        stub_output = json.dumps({"report": "stub", "result": "ok"})
+
+        def run_fn():
+            print(stub_output)
+            return 0
+
+        result = _chokepoint_module.record_dispatch(
+            "report", ["--summary"], run_fn, project
+        )
+
+        # The exact int run_fn returned is returned by record_dispatch — no
+        # SystemExit artifact, no coercion.
+        assert result == 0, (
+            f"expected record_dispatch to return 0 (run_fn's return value), got {result!r}"
+        )
+
+        # The buffered stdout is flushed to real stdout on the normal-return path.
+        captured = capsys.readouterr()
+        assert stub_output in captured.out, (
+            f"expected run_fn stdout flushed to real stdout on normal return, got: {captured.out!r}"
+        )
+
+        # Exactly one PIPELINE_COMMAND event was written.
+        events = _read_event_lines(project)
+        pipeline_events = [
+            e for e in events if e.get("event_type") == "PIPELINE_COMMAND"
+        ]
+        assert len(pipeline_events) == 1, (
+            f"expected exactly one PIPELINE_COMMAND event, got {len(pipeline_events)}: "
+            f"{pipeline_events!r}"
+        )
+
+        data = pipeline_events[0].get("data", {})
+
+        # The outcome reflects the zero exit code and the recorded exit_code matches.
+        assert data.get("outcome") == "pass", (
+            f"expected outcome 'pass' for return value 0, got {data.get('outcome')!r}; data={data!r}"
+        )
+        assert data.get("exit_code") == 0, (
+            f"expected exit_code 0 in recorded event, got {data.get('exit_code')!r}; data={data!r}"
+        )
+
+    def test_normal_return_nonzero_returns_same_value_records_fail(
+        self, tmp_path, capsys
+    ):
+        """run_fn returns 3: record_dispatch returns 3, records outcome 'fail' with exit_code 3."""
+        project = capture_fixtures.make_project(
+            str(tmp_path), instrumented=True, marked=True
+        )
+
+        def run_fn():
+            return 3
+
+        result = _chokepoint_module.record_dispatch(
+            "report", [], run_fn, project
+        )
+
+        # The exact non-zero int is propagated unchanged.
+        assert result == 3, (
+            f"expected record_dispatch to return 3 (run_fn's return value), got {result!r}"
+        )
+
+        # Exactly one PIPELINE_COMMAND event was written.
+        events = _read_event_lines(project)
+        pipeline_events = [
+            e for e in events if e.get("event_type") == "PIPELINE_COMMAND"
+        ]
+        assert len(pipeline_events) == 1, (
+            f"expected exactly one PIPELINE_COMMAND event, got {len(pipeline_events)}: "
+            f"{pipeline_events!r}"
+        )
+
+        data = pipeline_events[0].get("data", {})
+
+        # The outcome reflects the non-zero exit code and the exit_code matches.
+        assert data.get("outcome") == "fail", (
+            f"expected outcome 'fail' for return value 3, got {data.get('outcome')!r}; data={data!r}"
+        )
+        assert data.get("exit_code") == 3, (
+            f"expected exit_code 3 in recorded event, got {data.get('exit_code')!r}; data={data!r}"
+        )

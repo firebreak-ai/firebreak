@@ -324,18 +324,16 @@ def test_missing_transcript_renders_literal_unavailable(tmp_path):
     assert tokens_row_lines, "tokens row not found in report output"
 
     for line in tokens_row_lines:
-        # The cell value should be 'unavailable', not '0'
-        assert "unavailable" in line, (
-            f"tokens row '{line}' does not contain 'unavailable'"
+        # The report renders an unavailable stage as "tokens: unavailable" and an
+        # available stage as "tokens: in=<n> out=<n>". For a missing transcript
+        # every stage must take the unavailable path, so each token line must show
+        # the literal word and must NOT show the "in=... out=..." count rendering.
+        assert "tokens: unavailable" in line, (
+            f"tokens row '{line}' does not render 'tokens: unavailable'"
         )
-        # A bare standalone '0' should not substitute for 'unavailable'
-        # (check that the value cell is not just '0')
-        cells = [c.strip() for c in line.split("|") if c.strip()]
-        for cell in cells:
-            if cell == "0":
-                pytest.fail(
-                    f"tokens row rendered '0' instead of 'unavailable' in line: {line!r}"
-                )
+        assert "in=" not in line and "out=" not in line, (
+            f"tokens row '{line}' rendered an in=/out= token count instead of 'unavailable'"
+        )
 
 
 def test_zero_parks_renders_present_empty_row(tmp_path):

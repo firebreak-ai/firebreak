@@ -237,6 +237,36 @@ def test_subagent_start_is_not_counted_as_a_completion(tmp_path):
     )
 
 
+@pytest.mark.parametrize("hook_event_name", ["UserPromptSubmit", "Notification"])
+def test_registered_lifecycle_events_classify_explicitly(tmp_path, hook_event_name):
+    """UserPromptSubmit and Notification are registered hook events that classify
+    to LIFECYCLE via an explicit map entry — not by falling through to the default.
+
+    These events fire the router (they are registered in settings.json) but carry
+    no tool or subagent meaning, so they belong in the lifecycle stream. Locking
+    the classification here guards against the explicit entries silently
+    disappearing and regressing to the default safety net.
+    """
+    project = capture_fixtures.make_project(
+        str(tmp_path), instrumented=True, marked=True, capture_cfg="standard"
+    )
+
+    payload = capture_fixtures.hook_payload(hook_event_name)
+
+    result = run_router(payload, project)
+
+    assert result.returncode == 0, (
+        f"router exited {result.returncode}, stderr: {result.stderr!r}"
+    )
+
+    events = _read_events(project)
+    assert len(events) == 1, f"expected 1 written event, got {len(events)}"
+    assert events[0].get("event_type") == "LIFECYCLE", (
+        f"{hook_event_name} must classify to LIFECYCLE, "
+        f"got {events[0].get('event_type')!r}"
+    )
+
+
 def test_stage_null_for_terminal_run_state(tmp_path):
     """A tool-use event fired while the only run is parked carries no stage.
 

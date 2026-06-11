@@ -111,9 +111,12 @@ class TestLeftoverProjectRegistrationRemoved:
             settings_with_leftover, new_entries_template
         )
 
-        hooks_after = merge_settings_mod.remove_hook_command(
-            merged["hooks"], _OLD_COMMAND
-        )
+        # Rely on merge_settings's own ROUTER_ANCHOR handling to strip the leftover
+        # registration — do NOT remove it with a separate remove_hook_command call.
+        # A second removal keyed on _OLD_COMMAND (which itself contains
+        # "hook_router.py") would mask a broken ROUTER_ANCHOR, making this test
+        # pass regardless. Reading merged["hooks"] directly keeps the guard real.
+        hooks_after = merged["hooks"]
 
         # Collect all command strings across all events.
         all_commands = [

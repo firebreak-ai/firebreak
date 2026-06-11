@@ -381,10 +381,20 @@ def _render_table(spec, events, st, token_data, cwd):
     print(f"current state: {st.get('current_state', '?')}")
     print()
 
-    # Count known subagents early: the scan inside count_known_subagents is what
-    # sets known_agents.STALE_FALLBACK as a side effect, so it must run before
-    # _print_warnings reads that flag. The value is reused at the end of the
-    # table where the "known subagents" line is printed.
+    # Refresh the known-agent scan once, unconditionally, before warnings read
+    # the stale-fallback flag. count_known_subagents only triggers the scan as a
+    # side effect of checking SUBAGENT_STOP events, so a session with zero such
+    # events would leave known_agents.STALE_FALLBACK at its stale import-time
+    # value and wrongly suppress the warning. Deriving here keeps the flag
+    # current regardless of event content.
+    scan_root = os.environ.get(
+        "FBK_AGENTS_DIR", os.path.expanduser("~/.claude/agents")
+    )
+    _, known_agents.STALE_FALLBACK = known_agents.derive_known_agents(scan_root)
+
+    # Count known subagents (value is reused at the end of the table where the
+    # "known subagents" line is printed). is_known_agent re-derives per event,
+    # which keeps the flag current when events do exist.
     known_count = count_known_subagents(events)
 
     # Print warnings before the table body.

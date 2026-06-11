@@ -43,6 +43,7 @@ class TestDispatcherCommandMap:
             "state",
             "session-logger",
             "session-manager",
+            "session-state",
             "ralph",
             "intent-gate",
             "design-gate",
