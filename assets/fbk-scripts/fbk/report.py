@@ -92,8 +92,12 @@ def classify_gate_attempts(events, st, stage):
 def _event_passed(data):
     """Extract a pass/fail bool from a VERIFICATION_RESULT event's data dict.
 
-    Accepts both {"passed": bool} and {"result": "pass"/"fail"} shapes.
+    The verification hook writes ``tests_passed``; older/other shapes may carry
+    ``passed`` or ``result``.  All three are accepted so the report reads the
+    real producer field rather than a shape only the test fixtures emit.
     """
+    if "tests_passed" in data:
+        return bool(data["tests_passed"])
     if "passed" in data:
         return bool(data["passed"])
     result = data.get("result", "")
@@ -120,21 +124,22 @@ def first_try_pass_rate(attempts):
 def kill_rate(rounds):
     """Compute the detection kill rate across all rounds.
 
-    kill rate = (total_raised - total_confirmed) / total_raised
+    kill rate = (total_raised - total_survived) / total_raised
 
-    Each round dict must carry "raised" and "confirmed" keys.
+    "Survived" findings are the ones that were not killed; the kill rate is the
+    fraction of raised findings that did not survive.
 
     Args:
-        rounds: List of dicts, each {"raised": int, "confirmed": int}.
+        rounds: List of dicts, each {"raised": int, "survived": int}.
 
     Returns:
         float — the kill rate.  Returns 0.0 when total_raised is zero.
     """
     total_raised = sum(r.get("raised", 0) for r in rounds)
-    total_confirmed = sum(r.get("confirmed", 0) for r in rounds)
+    total_survived = sum(r.get("survived", 0) for r in rounds)
     if total_raised == 0:
         return 0.0
-    return (total_raised - total_confirmed) / total_raised
+    return (total_raised - total_survived) / total_raised
 
 
 def derive_parks(st, stage):
@@ -392,10 +397,14 @@ def _render_table(spec, events, st, token_data, cwd):
     for ev in events:
         if ev.get("event_type") == "CODE_REVIEW_ROUNDS":
             data = ev.get("data", {})
+            # The code-review gate writes total_raised/total_survived plus a
+            # rounds *list*; read those, deriving the round count from the list.
+            rounds_list = data.get("rounds", [])
+            round_count = len(rounds_list) if isinstance(rounds_list, list) else rounds_list
             review_rounds.append({
-                "raised": data.get("raised", 0),
-                "confirmed": data.get("confirmed", 0),
-                "rounds": data.get("rounds", 1),
+                "raised": data.get("total_raised", 0),
+                "survived": data.get("total_survived", 0),
+                "rounds": round_count,
             })
 
     # --- Duration rows ---
@@ -436,16 +445,17 @@ def _render_table(spec, events, st, token_data, cwd):
     print("=== tasks ===")
     for s in ran_stages:
         stage_evs = events_by_stage.get(s, [])
+        # A completed task is a passing task-completed dispatch the chokepoint
+        # recorded under this stage (command_name, hyphenated, with outcome).
         completed = sum(
             1 for ev in stage_evs
             if ev.get("event_type") == "PIPELINE_COMMAND"
-            and ev.get("data", {}).get("command") == "task_completed"
+            and ev.get("data", {}).get("command_name") == "task-completed"
+            and ev.get("data", {}).get("outcome") == "pass"
         )
-        reworked = sum(
-            1 for ev in stage_evs
-            if ev.get("event_type") == "PIPELINE_COMMAND"
-            and ev.get("data", {}).get("command") == "task_reworked"
-        )
+        # There is no task-reworked event; rework is the stage's re-entry count,
+        # derived from the parks recorded in error_history.
+        reworked = derive_rework(st, s)
         print(f"  {s:<20} tasks completed: {completed}  tasks reworked: {reworked}")
     print()
 
@@ -453,10 +463,12 @@ def _render_table(spec, events, st, token_data, cwd):
     print("=== scope violations ===")
     for s in ran_stages:
         stage_evs = events_by_stage.get(s, [])
+        # Out-of-scope files are recorded on the verification event, not as a
+        # separate command; sum them across this stage's verification results.
         violations = sum(
-            1 for ev in stage_evs
-            if ev.get("event_type") == "PIPELINE_COMMAND"
-            and ev.get("data", {}).get("command") == "scope_violation"
+            len(ev.get("data", {}).get("out_of_scope_files", []))
+            for ev in stage_evs
+            if ev.get("event_type") == "VERIFICATION_RESULT"
         )
         print(f"  {s:<20} scope violation count: {violations}")
     print()
@@ -465,13 +477,13 @@ def _render_table(spec, events, st, token_data, cwd):
     print("=== detection rounds ===")
     if review_rounds:
         for i, r in enumerate(review_rounds, 1):
-            print(f"  detection round {i}: raised={r['raised']}  confirmed={r['confirmed']}")
+            print(f"  detection round {i}: raised={r['raised']}  survived={r['survived']}")
         kr = kill_rate(review_rounds)
-        print(f"  kill rate: {kr:.2f} (note: confirmed = survived; true positives may inflate kill rate)")
+        print(f"  kill rate: {kr:.2f} (note: survivors are findings not killed; true positives may inflate kill rate)")
     else:
         # No rounds yet — still print the section header row so the label appears.
         print("  detection round: (none yet)")
-        print("  kill rate: n/a (note: confirmed = survived; true positives may inflate kill rate)")
+        print("  kill rate: n/a (note: survivors are findings not killed; true positives may inflate kill rate)")
     print()
 
     # --- Tokens per stage ---

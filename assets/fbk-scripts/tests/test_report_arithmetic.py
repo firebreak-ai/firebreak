@@ -163,14 +163,14 @@ def test_first_try_pass_rate_is_exact_fraction():
 
 
 def test_kill_rate_is_exact_value():
-    """kill_rate for total_raised=10 and total_confirmed=3 returns exactly 0.7.
+    """kill_rate for total_raised=10 and total_survived=3 returns exactly 0.7.
 
-    Builds a rounds list where the summed raised and confirmed totals are
-    known.  (10 - 3) / 10 == 0.7.
+    Builds a rounds list (the producer's total_raised/total_survived shape)
+    where the summed totals are known.  (10 - 3) / 10 == 0.7.
     """
     rounds = [
-        {"raised": 6, "confirmed": 2},
-        {"raised": 4, "confirmed": 1},
+        {"raised": 6, "survived": 2},
+        {"raised": 4, "survived": 1},
     ]
 
     rate = report.kill_rate(rounds)

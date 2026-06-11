@@ -168,14 +168,20 @@ def main() -> None:
 
     def _write_verification_event():
         try:
+            from fbk.capture import active_stage
+
             level = gate_check.resolve_capture_level(cwd)
             events_path = os.path.join(cwd, ".fbk-capture", "events.jsonl")
+            # Stamp the active spec/stage so the report can attribute this
+            # gate attempt to the stage that produced it (a null stage row
+            # would never match the report's per-stage gate-rate filter).
+            spec, stage = active_stage.resolve_active_stage(cwd)
             event_writer.write(
                 "VERIFICATION_RESULT",
                 "task_completed",
                 verification_data,
-                None,
-                None,
+                spec,
+                stage,
                 level,
                 events_path,
             )

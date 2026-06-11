@@ -19,52 +19,17 @@ import sys
 import time
 from typing import Callable
 
-from fbk.capture import event_writer, gate_check
+from fbk.capture import active_stage, event_writer, gate_check
 
 
 def _resolve_spec_stage(cwd: str):
-    """Return (spec, stage) from the active state store under cwd, or (None, None).
+    """Return (spec, stage) for the active run under cwd, or (None, None).
 
-    Reads state files from <cwd>/.claude/automation/state/ and finds the most
-    recently modified one that is not in a terminal state (DONE, FAILED, PARKED).
-    Returns (None, None) on any error or when no run is active.
+    Thin wrapper over the shared resolver so the chokepoint, the hook router,
+    and the verification hook all attribute events to the same stage with the
+    same terminal-state rule.
     """
-    try:
-        state_dir = os.path.join(cwd, ".claude", "automation", "state")
-        if not os.path.isdir(state_dir):
-            return None, None
-
-        import json
-
-        candidates = []
-        for entry in os.listdir(state_dir):
-            if not entry.endswith(".json"):
-                continue
-            path = os.path.join(state_dir, entry)
-            if not os.path.isfile(path):
-                continue
-            try:
-                mtime = os.path.getmtime(path)
-                candidates.append((mtime, path))
-            except OSError:
-                continue
-
-        # Try the most recently touched file first.
-        candidates.sort(reverse=True)
-        for _, path in candidates:
-            try:
-                with open(path, "r") as fh:
-                    state = json.load(fh)
-                spec = state.get("spec_name")
-                stage = state.get("current_state")
-                if spec and stage and stage not in ("DONE", "FAILED", "PARKED"):
-                    return spec, stage
-            except Exception:
-                continue
-
-        return None, None
-    except Exception:
-        return None, None
+    return active_stage.resolve_active_stage(cwd)
 
 
 def record_dispatch(

@@ -7,6 +7,7 @@ when the fbk.report module is absent (red phase before implementation).
 
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -78,62 +79,65 @@ _STAGES_EARLY = ["VALIDATING", "REVIEWING"]
 
 
 def _build_full_events(spec=_SPEC):
-    """Return events covering gate attempts, parks, tasks, scope violations,
-    and code-review rounds across all pipeline stages."""
+    """Return events in the real producer shapes, covering gate attempts, tasks,
+    scope violations, and code-review rounds across pipeline stages.
+
+    Every event here matches what an actual producer writes (the verification
+    hook's tests_passed/out_of_scope_files, the chokepoint's command_name/
+    outcome, the code-review gate's total_raised/total_survived) — not a shape
+    only the report's reader expects.  Parks and rework are state-derived, so
+    they live in _build_full_state, not here.
+    """
     events = []
 
-    # Gate attempts: first-try pass for VALIDATING, rework then pass for REVIEWING
+    # Gate attempts (verification hook shape): VALIDATING passes first try.
     events.append(capture_fixtures.build_event(
-        "VERIFICATION_RESULT", "gate", spec, "VALIDATING",
-        data={"result": "pass", "attempt": 1},
-    ))
-    events.append(capture_fixtures.build_event(
-        "VERIFICATION_RESULT", "gate", spec, "REVIEWING",
-        data={"result": "fail", "attempt": 1},
-    ))
-    events.append(capture_fixtures.build_event(
-        "VERIFICATION_RESULT", "gate", spec, "REVIEWING",
-        data={"result": "pass", "attempt": 2},
+        "VERIFICATION_RESULT", "task_completed", spec, "VALIDATING",
+        data={"failing_test_count": 0, "lint_error_count": 0,
+              "out_of_scope_files": [], "tests_passed": True},
     ))
 
-    # Parks: one park in BREAKING_DOWN stage
+    # A completed task in IMPLEMENTING (chokepoint dispatch shape).
     events.append(capture_fixtures.build_event(
-        "PIPELINE_COMMAND", "orchestrator", spec, "BREAKING_DOWN",
-        data={"command": "park", "reason": "blocked on upstream"},
+        "PIPELINE_COMMAND", "chokepoint", spec, "IMPLEMENTING",
+        data={"command_name": "task-completed", "args": ["task-01"],
+              "outcome": "pass", "exit_code": 0, "duration": 0.1, "output": ""},
     ))
 
-    # Tasks completed and reworked in IMPLEMENTING
+    # A scope violation in IMPLEMENTING: the verification event lists two
+    # out-of-scope files (and so reads as a failed verification).
     events.append(capture_fixtures.build_event(
-        "PIPELINE_COMMAND", "orchestrator", spec, "IMPLEMENTING",
-        data={"command": "task_completed", "task": "task-01"},
-    ))
-    events.append(capture_fixtures.build_event(
-        "PIPELINE_COMMAND", "orchestrator", spec, "IMPLEMENTING",
-        data={"command": "task_reworked", "task": "task-02"},
-    ))
-
-    # Scope violation in IMPLEMENTING
-    events.append(capture_fixtures.build_event(
-        "PIPELINE_COMMAND", "orchestrator", spec, "IMPLEMENTING",
-        data={"command": "scope_violation", "detail": "edited out-of-scope file"},
+        "VERIFICATION_RESULT", "task_completed", spec, "IMPLEMENTING",
+        data={"failing_test_count": 0, "lint_error_count": 0,
+              "out_of_scope_files": ["src/extra.py", "src/other.py"],
+              "tests_passed": False},
     ))
 
-    # Code-review rounds in REVIEWING: two rounds, one finding raised→confirmed
+    # Code-review rounds: 3 raised, 1 survived → kill rate (3-1)/3.
     events.append(capture_fixtures.build_event(
-        "CODE_REVIEW_ROUNDS", "reviewer", spec, "REVIEWING",
-        data={"rounds": 2, "raised": 3, "confirmed": 2},
+        "CODE_REVIEW_ROUNDS", "code_review", spec, None,
+        data={"spec": spec, "rounds": [{"raised": 3, "survived": 1}],
+              "total_raised": 3, "total_survived": 1},
     ))
 
     return events
 
 
 def _build_full_state(spec=_SPEC):
-    """Return a state dict covering all pipeline stages with durations."""
+    """Return a state dict covering all pipeline stages with durations.
+
+    IMPLEMENTING carries one park in error_history so the report renders a park
+    reason and a rework count of one (rework is the stage's re-entry count).
+    """
     timestamps = {s: "2026-01-01T00:00:00+00:00" for s in _STAGES_FULL}
     timestamps["COMPLETED"] = "2026-01-01T01:00:00+00:00"
     return capture_fixtures.build_state(
         spec=spec,
         stage_timestamps=timestamps,
+        error_history=[
+            {"stage": "IMPLEMENTING", "error": "blocked on upstream",
+             "timestamp": "2026-01-01T00:30:00+00:00"},
+        ],
         current_state="COMPLETED",
     )
 
@@ -217,6 +221,38 @@ def test_report_renders_all_required_row_kinds(tmp_path):
         assert label in output, (
             f"required row label '{label}' not found in report output"
         )
+
+
+def test_report_renders_real_values_from_producer_shapes(tmp_path):
+    """The table shows the captured numbers, not zero, for each producer source.
+
+    Guards against producer/consumer envelope drift: the fixtures use the real
+    producer shapes, so a report that read the wrong key/value/stage would print
+    zero here and fail.  (Companion to the producer-driven integration test.)
+    """
+    project, state_dir = _setup_full_project(tmp_path)
+
+    result = _run_report(project, state_dir)
+    assert result.returncode == 0, (
+        f"report exited {result.returncode}; stderr: {result.stderr}"
+    )
+    out = result.stdout
+
+    def _row(pattern):
+        m = re.search(pattern, out)
+        assert m, f"row not found for pattern {pattern!r}\n--- report ---\n{out}"
+        return m.group(1)
+
+    # VALIDATING passed its one verification on the first try.
+    assert float(_row(r"VALIDATING\s+first-try rate:\s*([\d.]+)")) == pytest.approx(1.0)
+    # One passing task-completed dispatch landed in IMPLEMENTING.
+    assert int(_row(r"IMPLEMENTING\s+tasks completed:\s*(\d+)")) == 1
+    # The IMPLEMENTING verification listed two out-of-scope files.
+    assert int(_row(r"IMPLEMENTING\s+scope violation count:\s*(\d+)")) == 2
+    # One park in IMPLEMENTING → one re-entry counted as rework.
+    assert int(_row(r"IMPLEMENTING\s+tasks completed:\s*\d+\s+tasks reworked:\s*(\d+)")) == 1
+    # 3 raised, 1 survived → (3-1)/3 ≈ 0.67.
+    assert float(_row(r"kill rate:\s*([\d.]+)")) == pytest.approx(0.67, abs=0.01)
 
 
 def test_report_runs_mid_cycle_with_partial_rows(tmp_path):

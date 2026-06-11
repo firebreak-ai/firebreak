@@ -25,3 +25,6 @@ assets/fbk-scripts/*.egg-info/
 
 # Project wiki
 .firebreak-wiki
+
+# Threat models — document attack surface; never commit (see fbk-sdl-workflow/threat-modeling.md)
+*threat-model*
