@@ -291,24 +291,63 @@ def test_rework_derived_from_repeated_stage_entry():
 # ---------------------------------------------------------------------------
 
 
-def test_subagent_count_excludes_unknown_identity():
+def _write_persona(base_dir, filename, name_value):
+    """Write a minimal .md persona file with a name: frontmatter key.
+
+    Mirrors the canonical fixture shape used in tests/test_capture_known_agents.py:
+    a *.md file whose leading frontmatter carries a ``name:`` value, which is
+    exactly what known_agents.derive_known_agents reads.
+    """
+    import os
+
+    path = os.path.join(str(base_dir), filename)
+    with open(path, "w") as f:
+        f.write(f"---\nname: {name_value}\n---\n\nPersona body.\n")
+    return path
+
+
+def test_subagent_count_excludes_unknown_identity(tmp_path, monkeypatch):
     """Subagent aggregate counts only SUBAGENT_STOP events with a known identity.
 
-    Builds events with one known agent (fbk-implementer, present in the
-    hardcoded fallback set so no fixture scan root is required) and two
-    events with empty or unknown identity.  The report's aggregated count
-    must equal 1.
+    This test exercises the *configurable* persona scan root rather than the
+    hardcoded fallback list.  It points FBK_AGENTS_DIR at a temporary agents
+    directory (the same override the production path reads) containing a single
+    persona whose name is deliberately NOT a member of the hardcoded fallback
+    set.  Because the identity is only ever "known" if the real directory scan
+    works, the test fails if the configurable scan root stops working — it can
+    no longer be satisfied by the fallback.
+
+    The events are: one with the scanned identity (counted), one with an empty
+    identity, and one with an unrecognised identity (both excluded).  The
+    aggregated count must equal 1, and the scan must report a live result
+    (STALE_FALLBACK is False) rather than the hardcoded fallback.
     """
+    from fbk.capture import known_agents
+
+    # Sanity guard: the probe name must NOT be in the hardcoded fallback set,
+    # otherwise the test could pass on the fallback path and prove nothing.
+    scanned_identity = "fbk-scan-probe"
+    assert scanned_identity not in known_agents.FALLBACK_AGENTS, (
+        "probe identity must be absent from the fallback set so the test "
+        "exercises the real scan, not the hardcoded fallback"
+    )
+
+    # Build a temporary persona directory and point the scan root at it.
+    persona_dir = tmp_path / "agents"
+    persona_dir.mkdir()
+    _write_persona(persona_dir, "fbk-scan-probe.md", scanned_identity)
+    monkeypatch.setenv("FBK_AGENTS_DIR", str(persona_dir))
+
     stage = "VALIDATING"
     spec = "test-spec"
 
     events = [
         capture_fixtures.build_event(
             "SUBAGENT_STOP",
-            source="fbk-implementer",  # known identity
+            source=scanned_identity,  # known via the configured scan root
             spec=spec,
             stage=stage,
-            data={"agent_type": "fbk-implementer"},
+            data={"agent_type": scanned_identity},
         ),
         capture_fixtures.build_event(
             "SUBAGENT_STOP",
@@ -329,5 +368,11 @@ def test_subagent_count_excludes_unknown_identity():
     count = report.count_known_subagents(events)
 
     assert count == 1, (
-        f"expected count 1 (only fbk-implementer is known), got {count}"
+        f"expected count 1 (only the scanned probe identity is known), got {count}"
+    )
+
+    # The count must have come from the live directory scan, not the fallback.
+    assert known_agents.STALE_FALLBACK is False, (
+        "count_known_subagents must derive the known set from the configured "
+        "FBK_AGENTS_DIR scan, not the hardcoded fallback"
     )

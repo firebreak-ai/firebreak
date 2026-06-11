@@ -381,6 +381,12 @@ def _render_table(spec, events, st, token_data, cwd):
     print(f"current state: {st.get('current_state', '?')}")
     print()
 
+    # Count known subagents early: the scan inside count_known_subagents is what
+    # sets known_agents.STALE_FALLBACK as a side effect, so it must run before
+    # _print_warnings reads that flag. The value is reused at the end of the
+    # table where the "known subagents" line is printed.
+    known_count = count_known_subagents(events)
+
     # Print warnings before the table body.
     _print_warnings(cwd)
 
@@ -509,8 +515,8 @@ def _render_table(spec, events, st, token_data, cwd):
             )
     print()
 
-    # Subagent count (session-level).
-    known_count = count_known_subagents(events)
+    # Subagent count (session-level) — computed early so the stale-fallback
+    # warning can read the flag the scan sets.
     print(f"known subagents: {known_count}")
 
 

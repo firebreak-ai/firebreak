@@ -195,16 +195,16 @@ def test_subagent_empty_identity_recorded_but_excluded(tmp_path):
     )
 
     event = subagent_events[0]
-    # The agent identity must be present in the record — either directly on the
-    # envelope or in the data dict — but the exact field name is implementation detail.
-    # Assert that the record exists (was written, not silently dropped).
-    assert event is not None, "SubagentStop event with empty identity must be recorded"
-
-    # The agent_type carried by the event should reflect the empty identity.
+    # The router stores the agent identity at data["agent_type"]. The empty
+    # identity must be PRESENT-and-EMPTY — the key exists and its value is the
+    # empty string — not silently dropped. An absent key would mean the empty
+    # identity was lost, which is exactly the failure this test guards against.
     data = event.get("data", {})
-    agent_val = event.get("agent_type", data.get("agent_type"))
-    assert agent_val == "" or agent_val is None, (
-        f"expected empty agent identity preserved, got: {agent_val!r}"
+    assert "agent_type" in data, (
+        f"agent_type key dropped from SubagentStop event; data: {data!r}"
+    )
+    assert data["agent_type"] == "", (
+        f"expected empty agent identity preserved as empty string, got: {data['agent_type']!r}"
     )
 
 
