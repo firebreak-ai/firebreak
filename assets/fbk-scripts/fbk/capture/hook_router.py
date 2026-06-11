@@ -49,7 +49,7 @@ for _site_pkg in glob.glob(
         sys.path.insert(0, _site_pkg)
 
 # Now that sys.path is set up, import fbk.capture modules.
-from fbk.capture import event_writer, gate_check, known_agents  # noqa: E402
+from fbk.capture import active_stage, event_writer, gate_check, known_agents  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Event-type mapping
@@ -60,7 +60,7 @@ _EVENT_TYPE_MAP = {
     "PreToolUse": "TOOL_USE",
     "PostToolUse": "TOOL_USE",
     "PostToolUseFailure": "TOOL_USE",
-    "SubagentStart": "SUBAGENT_STOP",
+    "SubagentStart": "LIFECYCLE",
     "SubagentStop": "SUBAGENT_STOP",
     "PrePrompt": "LIFECYCLE",
     "PostPrompt": "LIFECYCLE",
@@ -83,27 +83,13 @@ def _map_event_type(hook_event_name):
 
 
 def _read_active_stage(cwd):
-    """Return (spec, stage) from the most-recently-modified state file under cwd.
+    """Return (spec, stage) for the active run under cwd, or (None, None).
 
-    Reads .claude/automation/state/*.json, picks the newest by mtime, and
-    returns (spec_name, current_state) from its contents.  Returns (None, None)
-    on any failure or when no state files exist.
+    Thin wrapper over the shared resolver so a tool-use or lifecycle event that
+    fires while a run is idle, parked, or finished carries no stage — rather
+    than inheriting a terminal state from the newest state file.
     """
-    try:
-        state_pattern = os.path.join(
-            cwd, ".claude", "automation", "state", "*.json"
-        )
-        state_files = glob.glob(state_pattern)
-        if not state_files:
-            return None, None
-
-        latest = max(state_files, key=os.path.getmtime)
-        with open(latest) as f:
-            state = json.load(f)
-
-        return state.get("spec_name"), state.get("current_state")
-    except Exception:
-        return None, None
+    return active_stage.resolve_active_stage(cwd)
 
 
 # ---------------------------------------------------------------------------

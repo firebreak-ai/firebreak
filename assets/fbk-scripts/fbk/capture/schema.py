@@ -32,7 +32,7 @@ FREETEXT_KEYS = {
     "files",
     "out_of_scope_files",
     "scope_violations",
-    "round_detail",
+    "rounds",
     "args",
     "command",
     "output",

@@ -77,9 +77,19 @@ def write(
             if real_capture != os.path.abspath(capture_dir):
                 return None
         else:
-            # Dir does not yet exist — confirm the parent (project root) is real
-            # and then create the capture dir there.
+            # Dir does not yet exist — apply the same confinement the existing-dir
+            # branch uses before creating anything, so a symlinked project root
+            # cannot place the capture dir (and its files) outside the real tree.
+            # realpath resolves symlinks in the existing parent components even
+            # though the final capture dir does not exist yet.
             real_root = os.path.realpath(project_root)
+            real_capture = os.path.realpath(capture_dir)
+            # The resolved capture dir must sit under the real project root.
+            if not real_capture.startswith(real_root + os.sep) and real_capture != real_root:
+                return None
+            # Refuse if a symlink was traversed (realpath differs from abspath).
+            if real_capture != os.path.abspath(capture_dir):
+                return None
             os.makedirs(capture_dir, exist_ok=True)
             # Write .gitignore with exactly '*' on first creation.
             gitignore_path = os.path.join(capture_dir, ".gitignore")
@@ -102,9 +112,11 @@ def write(
             "data": redacted_data,
         }
 
-        # Append exactly one line.
-        with open(events_path, "a") as fh:
-            fh.write(json.dumps(envelope) + "\n")
+        # Append exactly one line under the shared lock so the append cannot
+        # land inside a concurrent prune's read-modify-write and be lost.
+        with retention.file_lock(events_path):
+            with open(events_path, "a") as fh:
+                fh.write(json.dumps(envelope) + "\n")
 
         # Resolve the set of protected specs from empty lock files under
         # <capture_dir>/locked/.  An absent locked/ dir yields an empty set.

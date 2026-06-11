@@ -368,8 +368,11 @@ class TestCodeReviewRoundsEvent:
     # ------------------------------------------------------------------
 
     def test_valid_round_file_emits_event(self, tmp_path):
-        """Valid .code-review-rounds.json in the feature dir causes the gate to emit a
-        CODE_REVIEW_ROUNDS event carrying per-round and total counts; pass/fail is unchanged.
+        """Valid .code-review-rounds.json causes the gate to emit a CODE_REVIEW_ROUNDS
+        event carrying the total counts; pass/fail is unchanged.
+
+        At the default standard capture level the per-round breakdown (which can
+        carry severity detail) is redacted, so only the aggregate totals survive.
         """
         project_root = self._make_instrumented_project(tmp_path)
         feature_dir = self._make_feature_dir_in_project(project_root)
@@ -398,28 +401,19 @@ class TestCodeReviewRoundsEvent:
         event = rounds_events[0]
         data = event["data"]
 
-        # Per-round entries: two rounds present.
-        assert "rounds" in data, "Event data must carry a 'rounds' key"
-        assert len(data["rounds"]) == 2, (
-            f"Expected 2 round entries in event data, got {len(data['rounds'])}"
-        )
-
-        round_1 = data["rounds"][0]
-        assert round_1["round"] == 1
-        assert round_1["raised"] == 5
-        assert round_1["survived"] == 2
-
-        round_2 = data["rounds"][1]
-        assert round_2["round"] == 2
-        assert round_2["raised"] == 1
-        assert round_2["survived"] == 0
-
-        # Total counts: raised=6 (5+1), survived=2 (2+0).
+        # Total counts (the report's inputs): raised=6 (5+1), survived=2 (2+0).
         assert data.get("total_raised") == 6, (
             f"Expected total_raised=6, got {data.get('total_raised')!r}"
         )
         assert data.get("total_survived") == 2, (
             f"Expected total_survived=2, got {data.get('total_survived')!r}"
+        )
+
+        # Per-round detail is redacted at standard level — the breakdown that
+        # could carry severity text must not survive on the recorded event.
+        assert "rounds" not in data, (
+            "per-round breakdown must be redacted at standard capture level; "
+            f"data still carried it: {data!r}"
         )
 
     def test_absent_round_file_emits_no_event_unchanged_passfail(self, tmp_path):

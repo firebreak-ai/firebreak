@@ -11,8 +11,14 @@ fully in memory and written in a single operation at the very end, so a
 failure before that write leaves the original file untouched.
 """
 
+import contextlib
 import json
 import os
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover — non-Unix fallback
+    fcntl = None
 
 # Default byte cap for the events file (~5 MB).
 DEFAULT_MAX_BYTES = 5 * 1024 * 1024
@@ -21,6 +27,43 @@ DEFAULT_MAX_BYTES = 5 * 1024 * 1024
 # 0.5 keeps protected baselines from monopolizing the file while leaving
 # headroom for current-session capture.
 PROTECTED_FRACTION = 0.5
+
+
+def _lock_path(events_path: str) -> str:
+    """Return the sibling advisory-lock path for an events file."""
+    return os.path.join(os.path.dirname(os.path.abspath(events_path)), ".events.lock")
+
+
+@contextlib.contextmanager
+def file_lock(events_path: str):
+    """Hold an exclusive advisory lock that serialises appends against prunes.
+
+    A prune reads the whole file then rewrites it; an append adds a line at the
+    end.  If an append lands between a prune's read and its rewrite, the rewrite
+    overwrites the appended line.  Every append and every prune takes this lock
+    so the two never overlap.
+
+    Best-effort: if locking is unavailable (no fcntl, or the lock file cannot be
+    opened) the body still runs, unlocked, rather than dropping the write.
+    """
+    lock_fp = None
+    if fcntl is not None:
+        try:
+            lock_fp = open(_lock_path(events_path), "w")
+            fcntl.flock(lock_fp, fcntl.LOCK_EX)
+        except Exception:
+            if lock_fp is not None:
+                lock_fp.close()
+            lock_fp = None
+    try:
+        yield
+    finally:
+        if lock_fp is not None:
+            try:
+                fcntl.flock(lock_fp, fcntl.LOCK_UN)
+            except Exception:
+                pass
+            lock_fp.close()
 
 
 def prune_if_needed(events_path: str, max_bytes: int, protect_specs: set[str]) -> None:
@@ -53,6 +96,24 @@ def prune_if_needed(events_path: str, max_bytes: int, protect_specs: set[str]) -
         # Early exit: file absent or already within cap.
         if not os.path.exists(events_path):
             return
+        if os.path.getsize(events_path) <= max_bytes:
+            return
+
+        # Hold the lock across the whole read-modify-write so a concurrent
+        # append cannot land between the read and the rewrite (and be lost).
+        with file_lock(events_path):
+            _prune_locked(events_path, max_bytes, protect_specs)
+
+    except Exception:
+        # Never raise; leave the original file untouched.
+        return
+
+
+def _prune_locked(events_path: str, max_bytes: int, protect_specs: set[str]) -> None:
+    """Perform the read-modify-write prune.  Caller holds the events lock."""
+    try:
+        # Re-check size under the lock — a concurrent prune may have already
+        # brought the file within the cap while we waited for the lock.
         if os.path.getsize(events_path) <= max_bytes:
             return
 

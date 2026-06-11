@@ -451,6 +451,53 @@ class TestTaskReviewerGateWritesEnvelope:
         assert "spec" in env
         assert "stage" in env
 
+    def test_task_reviewer_gate_fail_writes_envelope(self, tmp_path, monkeypatch):
+        """Task-reviewer gate fail path also writes a PIPELINE_COMMAND envelope (AC-05).
+
+        A gate-rate metric needs both outcomes recorded; the fail path used to
+        exit without writing, so failures never reached the stream.
+        """
+        spec_file, tasks_dir, project_root = _make_task_reviewer_fixture(str(tmp_path))
+
+        instr_root = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
+
+        spec_dest = os.path.join(instr_root, "sample-spec.md")
+        with open(spec_file) as fh:
+            spec_content = fh.read()
+        with open(spec_dest, "w") as fh:
+            fh.write(spec_content)
+
+        tasks_dest = os.path.join(instr_root, "tasks")
+        os.makedirs(tasks_dest, exist_ok=True)
+        for fname in ("task-01.md", "task-02.md"):
+            src = os.path.join(tasks_dir, fname)
+            dst = os.path.join(tasks_dest, fname)
+            with open(src) as fh:
+                content = fh.read()
+            with open(dst, "w") as fh:
+                fh.write(content)
+
+        # Deliberately omit src/placeholder.py so the impl task's files_to_modify
+        # path does not exist — this forces a fail result.
+
+        monkeypatch.chdir(instr_root)
+        monkeypatch.setattr(
+            sys, "argv",
+            ["task-reviewer-gate", spec_dest, tasks_dest, "--project-root", instr_root],
+        )
+
+        with pytest.raises(SystemExit) as exc_info:
+            _task_reviewer_mod.main()
+        assert exc_info.value.code == 2, "missing files_to_modify path should fail the gate"
+
+        envelopes = self._read_envelopes(instr_root)
+        assert len(envelopes) >= 1, "fail path wrote no envelope"
+        env = envelopes[-1]
+        assert env.get("event_type") == "PIPELINE_COMMAND"
+        assert env.get("data", {}).get("result") == "fail", (
+            f"expected a recorded fail result, got: {env.get('data')!r}"
+        )
+
     def test_task_reviewer_gate_write_failure_is_silent(self, tmp_path, monkeypatch):
         """Task-reviewer gate continues normally when the events path is unwritable (AC-11)."""
         spec_file, tasks_dir, project_root = _make_task_reviewer_fixture(str(tmp_path))

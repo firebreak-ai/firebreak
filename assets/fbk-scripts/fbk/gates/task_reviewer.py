@@ -337,26 +337,30 @@ def main() -> None:
 
     print(json.dumps(result))
 
-    if result["result"] == "pass":
-        try:
-            from fbk.capture import event_writer, gate_check
-            spec_name = os.path.splitext(os.path.basename(args.spec_path))[0]
-            _level = gate_check.resolve_capture_level(os.getcwd())
-            _events_path = os.path.join(os.getcwd(), ".fbk-capture", "events.jsonl")
-            event_writer.write(
-                "PIPELINE_COMMAND",
-                "chokepoint",
-                {"gate": "task-reviewer", "result": "pass", "command_name": "task-reviewer-gate"},
-                spec_name,
-                None,
-                _level,
-                _events_path,
-            )
-        except Exception:
-            pass
-        sys.exit(0)
-    else:
-        sys.exit(2)
+    # Record the gate outcome on both pass and fail — a gate-rate derived from
+    # this stream would otherwise only ever see passes.
+    try:
+        from fbk.capture import event_writer, gate_check
+        spec_name = os.path.splitext(os.path.basename(args.spec_path))[0]
+        _level = gate_check.resolve_capture_level(os.getcwd())
+        _events_path = os.path.join(os.getcwd(), ".fbk-capture", "events.jsonl")
+        event_writer.write(
+            "PIPELINE_COMMAND",
+            "chokepoint",
+            {
+                "gate": "task-reviewer",
+                "result": result["result"],
+                "command_name": "task-reviewer-gate",
+            },
+            spec_name,
+            None,
+            _level,
+            _events_path,
+        )
+    except Exception:
+        pass
+
+    sys.exit(0 if result["result"] == "pass" else 2)
 
 
 if __name__ == "__main__":

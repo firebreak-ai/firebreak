@@ -364,3 +364,64 @@ def test_write_refuses_symlinked_capture_dir(tmp_path):
     assert not symlink_target.exists(), (
         "write() followed the symlink out of the project root and created a file outside it"
     )
+
+
+@pytest.mark.skipif(
+    not hasattr(os, "symlink"),
+    reason="platform does not support symlinks",
+)
+def test_first_write_refuses_symlinked_project_root(tmp_path):
+    """First-write creation is refused when the project root is reached via a symlink.
+
+    Covers the directory-creation branch: .fbk-capture/ does not exist yet, and
+    the root is a symlink, so creating the dir there would escape the real tree.
+    """
+    real_root = tmp_path / "real_root"
+    real_root.mkdir()
+    link_root = tmp_path / "link_root"
+    try:
+        link_root.symlink_to(real_root)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlink creation not supported on this platform")
+
+    # First write: no .fbk-capture/ exists yet under either path.
+    events_path = str(link_root / _CAPTURE_DIR / _EVENTS_FILE)
+    try:
+        event_writer.write(
+            "TOOL_USE", "hook_router", {"count": 1},
+            "sym-spec", "IMPLEMENTING", "standard", events_path,
+        )
+    except Exception as exc:
+        pytest.fail(
+            f"write() raised {type(exc).__name__} on symlinked root instead of swallowing: {exc}"
+        )
+
+    # Confinement refused creation — nothing was made under the real root.
+    assert not (real_root / _CAPTURE_DIR).exists(), (
+        "first-write created the capture dir through a symlinked project root"
+    )
+
+
+def test_file_lock_is_exclusive(tmp_path):
+    """retention.file_lock holds an exclusive advisory lock a second holder cannot take.
+
+    This is the mechanism that stops a concurrent append from being lost inside a
+    prune's read-modify-write.
+    """
+    import fcntl
+
+    from fbk.capture import retention
+
+    capture_dir = tmp_path / _CAPTURE_DIR
+    capture_dir.mkdir()
+    events_path = str(capture_dir / _EVENTS_FILE)
+
+    with retention.file_lock(events_path):
+        # While the lock is held, a non-blocking acquire on the same lock file
+        # must fail rather than proceed concurrently.
+        contender = open(retention._lock_path(events_path), "w")
+        try:
+            with pytest.raises(BlockingIOError):
+                fcntl.flock(contender, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        finally:
+            contender.close()

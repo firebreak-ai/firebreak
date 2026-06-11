@@ -208,6 +208,68 @@ def test_subagent_empty_identity_recorded_but_excluded(tmp_path):
     )
 
 
+def test_subagent_start_is_not_counted_as_a_completion(tmp_path):
+    """A SubagentStart records a lifecycle event, never a SUBAGENT_STOP.
+
+    Both SubagentStart and SubagentStop fire for every subagent. If a start is
+    classified as a stop, each subagent is counted twice and the report's
+    subagent total roughly doubles.
+    """
+    project = capture_fixtures.make_project(
+        str(tmp_path), instrumented=True, marked=True, capture_cfg="standard"
+    )
+
+    payload = capture_fixtures.hook_payload(
+        "SubagentStart",
+        agent_type="fbk-implementer",
+    )
+
+    result = run_router(payload, project)
+    assert result.returncode == 0, (
+        f"router exited {result.returncode}, stderr: {result.stderr!r}"
+    )
+
+    events = _read_events(project)
+    assert len(events) == 1, f"expected 1 written event, got {len(events)}"
+    assert events[0].get("event_type") == "LIFECYCLE", (
+        f"SubagentStart must map to LIFECYCLE, not a completion; "
+        f"got {events[0].get('event_type')!r}"
+    )
+
+
+def test_stage_null_for_terminal_run_state(tmp_path):
+    """A tool-use event fired while the only run is parked carries no stage.
+
+    The router must not stamp a terminal state (PARKED/DONE/FAILED) onto events
+    that fire during idle or post-completion periods.
+    """
+    project = capture_fixtures.make_project(
+        str(tmp_path), instrumented=True, marked=True, capture_cfg="standard"
+    )
+    state_dir = os.path.join(project, ".claude", "automation", "state")
+    state = capture_fixtures.build_state(
+        spec="demo-spec",
+        stage_timestamps={
+            "IMPLEMENTING": "2026-01-01T00:00:00+00:00",
+            "PARKED": "2026-01-01T00:10:00+00:00",
+        },
+        current_state="PARKED",
+    )
+    capture_fixtures.write_state(state_dir, state)
+
+    payload = capture_fixtures.hook_payload("PostToolUse", tool_name="Read")
+    result = run_router(payload, project)
+    assert result.returncode == 0, (
+        f"router exited {result.returncode}, stderr: {result.stderr!r}"
+    )
+
+    events = _read_events(project)
+    assert len(events) == 1, f"expected 1 written event, got {len(events)}"
+    assert events[0]["stage"] is None, (
+        f"expected null stage for a terminal (PARKED) run, got {events[0]['stage']!r}"
+    )
+
+
 def test_stage_null_when_no_run_active(tmp_path):
     """When no SDL state file is present, the written event has stage set to null."""
     # Instrumented project with no state file.

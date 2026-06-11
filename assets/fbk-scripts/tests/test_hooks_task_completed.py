@@ -9,7 +9,12 @@ import sys
 from pathlib import Path
 
 import pytest
-from fbk.hooks.task_completed import detect_test_cmd, detect_lint_cmd
+from fbk.hooks.task_completed import (
+    count_lint_errors,
+    count_test_failures,
+    detect_lint_cmd,
+    detect_test_cmd,
+)
 
 try:
     from fbk.capture import event_writer as _event_writer_mod
@@ -25,6 +30,36 @@ from tests import capture_fixtures
 FBK_PY = Path(__file__).parent.parent / "fbk.py"
 
 TASK_PATH_PATTERN = r"ai-docs/\S+?/\S*tasks/task-\S*\.md"
+
+
+class TestFailureCountParsing:
+    """The verification event must record the real number of failures, not a 0/1 flag.
+
+    A flag (always 1) makes 1 failing test and 50 failing tests indistinguishable.
+    These assert exact counts greater than one so a reversion to the flag fails.
+    """
+
+    def test_pytest_summary_counts_each_failure(self):
+        output = "=== 5 failed, 3 passed in 0.21s ==="
+        assert count_test_failures("python -m pytest", output) == 5
+
+    def test_go_counts_each_fail_line(self):
+        output = "--- FAIL: TestA\n--- FAIL: TestB\n--- FAIL: TestC\nFAIL\n"
+        assert count_test_failures("go test ./...", output) == 3
+
+    def test_unparseable_test_output_reports_at_least_one(self):
+        # A bare non-zero exit with no summary must never read as zero.
+        assert count_test_failures("make test", "Makefile:2: recipe failed") == 1
+
+    def test_ruff_summary_counts_each_error(self):
+        assert count_lint_errors("ruff check .", "Found 7 errors.") == 7
+
+    def test_eslint_summary_counts_errors_not_warnings(self):
+        output = "✖ 10 problems (8 errors, 2 warnings)"
+        assert count_lint_errors("npx eslint .", output) == 8
+
+    def test_unparseable_lint_output_reports_at_least_one(self):
+        assert count_lint_errors("cargo clippy", "error: could not compile") == 1
 
 
 class TestTaskPathRegex:
