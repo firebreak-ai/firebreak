@@ -487,7 +487,10 @@ def _render_table(spec, events, st, token_data, cwd):
     print()
 
     # --- Tokens per stage ---
-    print("=== per-stage token usage ===")
+    # The "coarse indicator" label is an explicit AC-06 requirement: stage
+    # attribution is a hard split by timestamp, so per-stage token counts are
+    # approximate and should not be over-trusted across cycles.
+    print("=== per-stage token usage (coarse indicator — stage attribution is approximate) ===")
     for s in ran_stages:
         token_entry = token_data.get(s) if token_data else None
         if token_entry is None or not token_entry.get("available", False):
@@ -496,7 +499,14 @@ def _render_table(spec, events, st, token_data, cwd):
             by_type = token_entry.get("tokens_by_type", {})
             total_in = by_type.get("input_tokens", 0)
             total_out = by_type.get("output_tokens", 0)
-            print(f"  {s:<20} tokens: in={total_in} out={total_out}")
+            # Turns near a stage boundary may be mis-attributed; surfacing the
+            # count tells the operator how coarse this stage's figure is.
+            boundary = token_entry.get("boundary_adjacent_turns")
+            boundary = boundary if boundary is not None else 0
+            print(
+                f"  {s:<20} tokens: in={total_in} out={total_out}"
+                f"  boundary-adjacent turns: {boundary}"
+            )
     print()
 
     # Subagent count (session-level).

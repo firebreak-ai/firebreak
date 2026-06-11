@@ -58,6 +58,8 @@ _REQUIRED_ROW_LABELS = [
     "detection round", # code-review detection rounds
     "kill rate",       # detection kill rate
     "tokens",          # tokens per stage
+    "coarse indicator",       # token attribution caveat label
+    "boundary-adjacent turns", # per-stage boundary-adjacency count
 ]
 
 # ---------------------------------------------------------------------------

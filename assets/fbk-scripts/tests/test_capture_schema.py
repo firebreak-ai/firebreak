@@ -52,20 +52,19 @@ def test_unknown_event_type_is_rejected():
 
 
 def test_drift_check_passes_on_canonical_sources(tmp_path):
-    """check_drift returns empty list when scanning shipped fbk.capture source."""
-    capture_pkg_root = os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "fbk",
-        "capture",
-    )
-    # Only run if the module exists; otherwise skip (red phase).
-    if not os.path.isdir(capture_pkg_root):
-        pytest.skip("fbk.capture package not yet created")
+    """check_drift returns empty when scanning the whole shipped fbk package.
 
-    result = schema.check_drift(capture_pkg_root)
+    The producers that write event types live in fbk/gates/ and fbk/hooks/, not
+    only fbk/capture/, so the scan must cover the entire package or drift in a
+    gate or hook would never be seen.
+    """
+    fbk_pkg_root = os.path.join(os.path.dirname(__file__), "..", "fbk")
+    if not os.path.isdir(fbk_pkg_root):
+        pytest.skip("fbk package not yet created")
+
+    result = schema.check_drift(fbk_pkg_root)
     assert isinstance(result, list)
-    assert result == []
+    assert result == [], f"drift check flagged out-of-vocabulary event types: {result}"
 
 
 def test_drift_check_flags_a_foreign_event_type(tmp_path):
@@ -81,6 +80,27 @@ def test_drift_check_flags_a_foreign_event_type(tmp_path):
     assert isinstance(result, list)
     assert len(result) > 0
     assert "GHOST_EVENT" in result
+
+
+def test_drift_check_flags_a_foreign_write_call(tmp_path):
+    """check_drift catches a drifted type passed to event_writer.write(...).
+
+    Producers pass the event type as the first argument to event_writer.write,
+    usually on the following line; the check must see that call shape.
+    """
+    fixture_file = tmp_path / "producer.py"
+    fixture_file.write_text(
+        "event_writer.write(\n"
+        '    "PHANTOM_EVENT",\n'
+        '    "some_source",\n'
+        "    {},\n"
+        ")\n"
+    )
+
+    result = schema.check_drift(str(tmp_path))
+    assert "PHANTOM_EVENT" in result, (
+        f"drift check missed a foreign event type in a write() call: {result}"
+    )
 
 
 # ---------------------------------------------------------------------------

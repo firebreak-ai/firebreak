@@ -227,10 +227,11 @@ def harvest(transcript_paths, transitions):
             tool_errors             (int)
             boundary_adjacent_turns (int)
 
-    When every transcript contributing to a stage is unreadable or missing,
-    that stage's available is False and its token totals are absent (not 0).
-    A stage with at least one readable contributing transcript is available True
-    even if it received no turns (legitimately empty).
+    A stage is available True only when at least one turn is attributed to it
+    from a readable transcript; its token totals are then real counts.  When a
+    stage's turns lived only in unreadable or missing transcripts (or it had no
+    attributed turns at all), available is False and its totals are absent — so
+    "no readable data" stays distinct from "zero tokens".
     """
     boundaries = _build_stage_boundaries(transitions)
     if not boundaries:
@@ -256,22 +257,20 @@ def harvest(transcript_paths, transitions):
     stage_tool_errors = {name: 0 for name in stage_names}
     stage_boundary_adjacent = {name: 0 for name in stage_names}
 
-    # Track which stages were "touched" by a readable transcript (even if empty).
-    stages_with_readable = set()
-
     for path in transcript_paths:
         turns = _parse_transcript(path)
         if turns is None:
             # Unreadable — do not contribute to any stage.
             continue
 
-        # Readable transcript: mark all stages as having at least one readable source.
-        for name in stage_names:
-            stages_with_readable.add(name)
-
         for turn in turns:
             idx = _attribute_turn(turn["timestamp"], boundaries)
             stage = boundaries[idx]["stage"]
+
+            # A turn attributed from this readable transcript makes the stage
+            # available — so a stage whose turns lived only in an unreadable
+            # transcript stays unavailable rather than reading as zero.
+            readable_counts[stage] += 1
 
             # Accumulate token totals.
             for key in ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"):
@@ -300,7 +299,7 @@ def harvest(transcript_paths, transitions):
     # Build result.
     result = {}
     for name in stage_names:
-        available = name in stages_with_readable
+        available = readable_counts[name] > 0
         if available:
             result[name] = {
                 "available": True,

@@ -244,6 +244,58 @@ class TestCrossSessionAggregation:
         assert implementing["tokens_by_type"]["output_tokens"] == 100
         assert implementing["available"] is True
 
+    def test_stage_only_in_unreadable_transcript_stays_unavailable(self, tmp_path):
+        """In a mixed cycle, a stage available makes its peer no less unavailable.
+
+        One stage's turns are in a readable transcript; another stage's turns are
+        only in an unreadable one.  The readable stage must show real tokens and
+        the other must stay unavailable — not read as zero.  (A readable
+        transcript must not make every stage look available.)
+        """
+        stage_timestamps = {
+            "IMPLEMENTING": "2026-01-01T00:00:00+00:00",
+            "VERIFYING":    "2026-01-01T02:00:00+00:00",
+            "DONE":         "2026-01-01T04:00:00+00:00",
+        }
+        transitions = _transitions_from_timestamps(stage_timestamps)
+
+        # Readable transcript: one turn in IMPLEMENTING only.
+        readable = str(tmp_path / "readable.jsonl")
+        capture_fixtures.write_transcript(
+            readable,
+            [
+                {
+                    "timestamp": "2026-01-01T00:30:00+00:00",
+                    "model": "claude-sonnet-4-6",
+                    "input_tokens": 120,
+                    "output_tokens": 30,
+                    "tools": [],
+                    "sidechain": False,
+                },
+            ],
+        )
+
+        # Unreadable transcript: would have carried the VERIFYING turn.
+        unreadable = capture_fixtures.write_unreadable_transcript(
+            str(tmp_path / "unreadable.jsonl")
+        )
+
+        result = token_harvester.harvest([readable, unreadable], transitions)
+
+        # IMPLEMENTING got a real readable turn.
+        assert result["IMPLEMENTING"]["available"] is True
+        assert result["IMPLEMENTING"]["tokens_by_type"]["input_tokens"] == 120
+
+        # VERIFYING had no readable turn — it must be unavailable, not zero.
+        verifying = result["VERIFYING"]
+        assert verifying["available"] is False, (
+            "a stage with no readable turn must stay unavailable even when "
+            "another transcript was readable"
+        )
+        assert verifying["tokens_by_type"] == {}, (
+            f"unavailable stage must not present zero token totals: {verifying!r}"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Boundary-adjacent turn count tests

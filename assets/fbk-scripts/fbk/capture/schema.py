@@ -85,6 +85,10 @@ def check_drift(scan_root: str) -> list[str]:
     context_patterns = (
         re.compile(r'event_type\s*[=:]\s*["\']([A-Z][A-Z_]*)["\']'),
         re.compile(r'build_event\(\s*["\']([A-Z][A-Z_]*)["\']'),
+        # Every producer passes the event type as the first positional argument
+        # to event_writer.write(...), usually on the line after the call opens —
+        # \s* spans that newline. Without this the check matched no producer.
+        re.compile(r'event_writer\.write\(\s*["\']([A-Z][A-Z_]*)["\']'),
     )
 
     found_literals = set()
