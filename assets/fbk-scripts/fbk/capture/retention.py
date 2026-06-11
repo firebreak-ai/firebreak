@@ -100,13 +100,6 @@ def prune_if_needed(events_path: str, max_bytes: int, protect_specs: set[str]) -
         current_protected_bytes = sum(len(b) for b in protected_lines)
         remaining_budget = max_bytes - current_protected_bytes
 
-        if remaining_budget < 0:
-            # Edge case: protected lines alone still exceed cap even after
-            # ceiling enforcement; keep at least one protected line.
-            protected_lines = protected_lines[-1:]
-            current_protected_bytes = sum(len(b) for b in protected_lines)
-            remaining_budget = max_bytes - current_protected_bytes
-
         # Keep newest unprotected lines that fit (unprotected_lines is oldest-first,
         # so we iterate from the end).
         kept_unprotected = []

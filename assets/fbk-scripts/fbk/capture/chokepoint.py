@@ -57,7 +57,7 @@ def _resolve_spec_stage(cwd: str):
                     state = json.load(fh)
                 spec = state.get("spec_name")
                 stage = state.get("current_state")
-                if spec and stage and stage not in ("DONE", "FAILED"):
+                if spec and stage and stage not in ("DONE", "FAILED", "PARKED"):
                     return spec, stage
             except Exception:
                 continue
@@ -108,12 +108,10 @@ def record_dispatch(
     # Instrumented path — try to install a stdout redirect.
     saved = sys.stdout
     buffer = None
-    redirect_installed = False
 
     try:
         buffer = io.StringIO()
         sys.stdout = buffer
-        redirect_installed = True
     except Exception:
         # Redirect install failed: run directly with real stdout, record nothing.
         return run_fn()

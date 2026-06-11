@@ -65,7 +65,7 @@ def _read_round_log(feature_dir: str) -> dict | None:
     for entry in rounds:
         raised = entry.get("raised")
         survived = entry.get("survived")
-        if not isinstance(raised, int) or not isinstance(survived, int):
+        if not (isinstance(raised, int) and not isinstance(raised, bool)) or not (isinstance(survived, int) and not isinstance(survived, bool)):
             print(
                 "code-review-gate: round entry raised/survived must be integers — treating as malformed",
                 file=sys.stderr,

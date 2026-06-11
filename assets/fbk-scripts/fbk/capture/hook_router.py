@@ -59,6 +59,7 @@ from fbk.capture import event_writer, gate_check, known_agents  # noqa: E402
 _EVENT_TYPE_MAP = {
     "PreToolUse": "TOOL_USE",
     "PostToolUse": "TOOL_USE",
+    "PostToolUseFailure": "TOOL_USE",
     "SubagentStart": "SUBAGENT_STOP",
     "SubagentStop": "SUBAGENT_STOP",
     "PrePrompt": "LIFECYCLE",

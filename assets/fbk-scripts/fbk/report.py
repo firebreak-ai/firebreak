@@ -470,8 +470,8 @@ def _render_table(spec, events, st, token_data, cwd):
         print(f"  kill rate: {kr:.2f} (note: confirmed = survived; true positives may inflate kill rate)")
     else:
         # No rounds yet — still print the section header row so the label appears.
-        print(f"  detection round: (none yet)")
-        print(f"  kill rate: n/a (note: confirmed = survived; true positives may inflate kill rate)")
+        print("  detection round: (none yet)")
+        print("  kill rate: n/a (note: confirmed = survived; true positives may inflate kill rate)")
     print()
 
     # --- Tokens per stage ---

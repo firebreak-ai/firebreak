@@ -6,8 +6,6 @@ build/test-time drift check that flags any event-type literal not in the
 vocabulary.
 """
 
-import glob
-import os
 from pathlib import Path
 
 
