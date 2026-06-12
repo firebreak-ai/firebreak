@@ -594,12 +594,17 @@ def main():
     # Harvest tokens.
     transcript_paths = _find_transcript_paths(spec, cwd)
     stage_timestamps = st.get("stage_timestamps", {})
+    # Boundaries are working stages only — a checkpoint-state boundary would siphon
+    # the turns that follow it into a bucket the table never renders, understating the
+    # adjacent working stage (the harvester's windows now run working-stage start to
+    # next working-stage start).
     transitions = [
         {"stage": k, "timestamp": v}
         for k, v in sorted(
             stage_timestamps.items(),
             key=lambda item: item[1] or "",
         )
+        if k not in NON_ACTIVE_STATES
     ]
     if transcript_paths and transitions:
         token_data = token_harvester.harvest(transcript_paths, transitions)

@@ -539,8 +539,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Boundary-list arithmetic that must agree with the shared non-active-state constant",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Token-attribution boundary list in report.main restricted to working stages: 'if k not in NON_ACTIVE_STATES' added to the transitions comprehension (shared wave-2 constant, already imported), with the spec's explanatory comment; placeholder branches untouched. Checkpoint-period turns now fold into the adjacent working stage — the gating test shows VALIDATING in=1500 out=300 and every fixture turn accounted for. Full suite green: 401 passed (team lead re-verified), mypy clean, scope confined to fbk/report.py.",
       "note": "Slice is contract-evolving with no retired tests; legacy gate path",
       "test_tasks": [
         "task-15"
