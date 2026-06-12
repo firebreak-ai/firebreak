@@ -512,8 +512,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "One contract across three files: projection at the trust boundary, redaction recursion, and the render",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Round entries allowlist-projected at the code-review gate (ROUND_SEVERITIES constant + project_round_entries called in main() before totals/event-write), redaction recurses via _strip_freetext with 'rounds' removed from FREETEXT_KEYS (defense-in-depth docstring, mypy-clean cast), and the report renders one row per round from the events' rounds lists with dead round_count removed (kill rate still from per-event totals). Two operator-logged scope revisions to tests/test_gates_code_review.py: the missing capture_fixtures import (wave-1 latent defect) and the stale 'rounds not in data' assertion rebuilt to the projected contract (compilation gap — missed retirement). All 4 gating tests green, projection tests unskipped, 0 skips remain; mypy clean. Team lead re-verified via full suite.",
       "note": null,
       "test_tasks": [
         "task-08",
@@ -588,8 +588,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Two sides of the single-writer contract across three files; fail-silent guarantee must be preserved",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Both gates' own PIPELINE_COMMAND writes removed (fbk/gates/spec.py pass+fail paths, fbk/gates/task_reviewer.py; no event_writer reference remains — the chokepoint's single event is the record) and event_writer.py gained the unregistered-source warn-but-write check after the event-type guard, with docstrings corrected. All 8 gating tests green (4 no-envelope, 2 single-writer, 2 source-validation); task-11 source pins stay green (team lead re-verified: 89+2 passed). event_writer mypy-clean; the 6 mypy errors in the gate files are pre-existing in untouched lines. Fail-silent guarantee preserved.",
       "note": null,
       "test_tasks": [
         "task-10",

@@ -14,6 +14,26 @@ from fbk.gates import test_hash
 MAX_ROUNDS = 100
 MAX_ROUND_FILE_BYTES = 64 * 1024
 
+# Fixed severity vocabulary for round entries (matches fbk.pipeline.VALID_SEVERITIES).
+ROUND_SEVERITIES = ("critical", "major", "minor", "info")
+
+
+def project_round_entries(rounds: list) -> list:
+    """Allowlist-project round entries read from the untrusted round log.
+
+    Returns a new list: each entry becomes {"raised": ..., "survived": ...}
+    plus "severity" only when entry.get("severity") is a member of
+    ROUND_SEVERITIES.  Every other key is dropped.  Order is preserved.
+    raised/survived are already int-validated by _read_round_log.
+    """
+    projected = []
+    for entry in rounds:
+        slim = {"raised": entry.get("raised"), "survived": entry.get("survived")}
+        if entry.get("severity") in ROUND_SEVERITIES:
+            slim["severity"] = entry["severity"]
+        projected.append(slim)
+    return projected
+
 
 def _read_round_log(feature_dir: str) -> dict | None:
     """Read and validate .code-review-rounds.json from feature_dir.
@@ -146,7 +166,9 @@ def main():
 
         round_log = _read_round_log(feature_dir)
         if round_log is not None:
-            rounds = round_log.get("rounds", [])
+            # The round log is untrusted input; only raised/survived/enum-valid severity
+            # may reach the events file.
+            rounds = project_round_entries(round_log.get("rounds", []))
             total_raised = sum(r.get("raised", 0) for r in rounds)
             total_survived = sum(r.get("survived", 0) for r in rounds)
             spec = round_log.get("spec")

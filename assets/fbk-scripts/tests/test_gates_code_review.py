@@ -24,6 +24,7 @@ except ImportError:
 import fbk.gates.code_review as _code_review_mod
 
 from fbk.gates.test_hash import create_manifest, verify_manifest
+from tests import capture_fixtures
 
 
 FBK_PY = Path(__file__).parent.parent / "fbk.py"
@@ -419,11 +420,25 @@ class TestCodeReviewRoundsEvent:
             f"Expected total_survived=2, got {data.get('total_survived')!r}"
         )
 
-        # Per-round detail is redacted at standard level — the breakdown that
-        # could carry severity text must not survive on the recorded event.
-        assert "rounds" not in data, (
-            "per-round breakdown must be redacted at standard capture level; "
-            f"data still carried it: {data!r}"
+        # After gate projection, round entries carry only raised/survived (and
+        # enum-validated severity when present); untrusted keys like
+        # severity_breakdown are dropped at the trust boundary.  Projected
+        # rounds survive standard redaction — the gate's allowlist projection
+        # is the trust-boundary control; recursive redaction is defense-in-depth.
+        assert "rounds" in data, (
+            f"projected rounds must survive standard capture level; data was: {data!r}"
+        )
+        assert data["rounds"] == [
+            {"raised": 5, "survived": 2},
+            {"raised": 1, "survived": 0},
+        ], (
+            "each projected round must carry only raised/survived (no severity when "
+            f"the source entry had none); got: {data['rounds']!r}"
+        )
+        events_file = project_root / ".fbk-capture" / "events.jsonl"
+        raw_text = events_file.read_text()
+        assert "severity_breakdown" not in raw_text, (
+            "severity_breakdown must not survive gate projection into the events file"
         )
 
     def test_absent_round_file_emits_no_event_unchanged_passfail(self, tmp_path):

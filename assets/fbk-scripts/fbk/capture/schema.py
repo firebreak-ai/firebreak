@@ -7,6 +7,7 @@ vocabulary.
 """
 
 from pathlib import Path
+from typing import cast
 
 
 # Closed vocabulary of event types allowed in envelopes.
@@ -32,7 +33,6 @@ FREETEXT_KEYS = {
     "files",
     "out_of_scope_files",
     "scope_violations",
-    "rounds",
     "args",
     "command",
     "output",
@@ -40,12 +40,24 @@ FREETEXT_KEYS = {
 }
 
 
+def _strip_freetext(value: object) -> object:
+    """Recursively remove FREETEXT_KEYS from dicts, including dicts nested
+    inside lists. Returns copies; the input is never mutated."""
+    if isinstance(value, dict):
+        return {k: _strip_freetext(v) for k, v in value.items() if k not in FREETEXT_KEYS}
+    if isinstance(value, list):
+        return [_strip_freetext(v) for v in value]
+    return value
+
+
 def redact(data: dict, level: str) -> dict:
     """Return a redacted copy of the envelope payload at the given level.
 
     At "full", return the data unchanged. At "standard", "off", or any unknown
     level, return a copy with free-text payload keys removed while structural
-    and numeric keys survive.
+    and numeric keys survive. Free-text keys are stripped at every nesting depth
+    (defense-in-depth behind the code-review gate's allowlist projection, which
+    is the control at the trust boundary).
 
     Args:
         data: The envelope payload dictionary to redact.
@@ -56,9 +68,7 @@ def redact(data: dict, level: str) -> dict:
     """
     if level == "full":
         return data
-
-    # For any other level (standard, off, or unknown), strip free-text keys.
-    return {k: v for k, v in data.items() if k not in FREETEXT_KEYS}
+    return cast(dict, _strip_freetext(data))
 
 
 def check_drift(scan_root: str) -> list[str]:

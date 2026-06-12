@@ -1,9 +1,10 @@
 """Single append path into .fbk-capture/events.jsonl for the metrics plane.
 
-Every producer (hook router, chokepoint, verification hook, code-review gate,
-spec/task-reviewer gates) writes through this one function so that all
-privacy and safety invariants are enforced in one place rather than scattered
-across producers.
+Every producer (hook router, chokepoint, verification hook, code-review gate)
+writes through this one function so that all privacy and safety invariants are
+enforced in one place rather than scattered across producers.  The spec and
+task-reviewer gates do not write events directly — the chokepoint's dispatch
+event is the single record for each gate invocation.
 
 The envelope schema has exactly eight fields:
     schema_version  always "1.0"
@@ -11,7 +12,7 @@ The envelope schema has exactly eight fields:
     timestamp       ISO-8601 UTC
     spec            str or None (present, value null, when no SDL run is active)
     stage           str or None (same null-not-absent rule)
-    source          the registered writer name
+    source          the registered writer name (warn-but-write if unregistered)
     capture_level   "standard" | "full"
     data            the redacted payload dict
 """
@@ -41,7 +42,9 @@ def write(
     Args:
         event_type:     Must be in schema.EVENT_TYPES; otherwise the call is
                         discarded with a stderr warning.
-        source:         The registered source name for the envelope.
+        source:         The registered source name for the envelope.  If source
+                        is not in schema.SOURCES, a warning is emitted to stderr
+                        but the event is written unchanged (warn-but-write).
         data:           Raw payload dict; redacted by capture_level before write.
         spec:           Current SDL spec name, or None when no run is active.
         stage:          Current SDL stage name, or None when no run is active.
@@ -60,6 +63,17 @@ def write(
             file=sys.stderr,
         )
         return None
+
+    # Source check — warn-but-write. Unlike the event-type guard above, an
+    # unregistered source is surfaced on stderr but the event is still written
+    # unchanged: source is provenance, not load-bearing, and dropping a real
+    # event over a label would be silent data loss. Wrong-but-registered
+    # labels are caught by the per-producer literal pins in the tests, not here.
+    if source not in schema.SOURCES:
+        print(
+            f"event_writer: unregistered source {source!r} — writing anyway",
+            file=sys.stderr,
+        )
 
     try:
         capture_dir = os.path.dirname(os.path.abspath(events_path))

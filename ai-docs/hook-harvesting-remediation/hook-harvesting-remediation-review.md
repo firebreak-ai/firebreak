@@ -168,3 +168,28 @@ All eight important findings were also applied as spec revisions: the impacted-t
 The structural spec gate re-ran clean on the revised spec (pass, 0 injection warnings). Test strategy review: pass (round 3).
 
 **Overall result: PASS** — no unresolved blocking findings; test strategy review pass; threat model determination recorded.
+
+## Stage 4 escalation log
+
+### task-26 — scope revision (attempt 1), 2026-06-12
+
+During its readiness check, the implementation teammate found that the wave-1 round-projection
+integration test (`tests/test_gates_code_review.py::TestRoundLogProjectedBeforeEventWrite`) uses
+`capture_fixtures.make_project(...)` without importing `capture_fixtures`. The defect was latent in
+wave 1 because the test skips while `project_round_entries` is absent — the skip guard meant the
+missing import was never executed, so the test-authoring task's collection check could not catch it.
+Resolution: task-26's scope revised to permit adding the one-line `from tests import capture_fixtures`
+import to that test file (import only, no other test modification). Counts as escalation attempt 1
+for task-26 under the protocol. Root-cause class: compilation gap in the wave-1 test task (task-08) —
+the skip guard hid an unexecuted name reference.
+
+### task-26 — scope revision (attempt 2), 2026-06-12
+
+Second discrepancy from the same teammate: `tests/test_gates_code_review.py::TestCodeReviewRoundsEvent::
+test_valid_round_file_emits_event` asserts `"rounds" not in data` — written under the old model where the
+whole rounds list was stripped at standard level. The remediation's new contract is the opposite: rounds
+survives in projected form (raised, survived, enum severity). The slice's retired-tests list missed this
+stale assertion — a compilation gap (the breakdown should have listed it for rebuild alongside task-09's
+strip test). Resolution: task-26 authorized to replace the stale negative assertion with assertions of the
+projected shape (rounds present, only the three allowlisted keys per entry, no free text). Counts as
+escalation attempt 2 for task-26 — the cap; any further failure parks the task for operator review.

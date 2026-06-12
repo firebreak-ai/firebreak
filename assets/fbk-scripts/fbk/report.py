@@ -412,19 +412,20 @@ def _render_table(spec, events, st, token_data, cwd):
         events_by_stage[s].append(ev)
 
     # Collect CODE_REVIEW_ROUNDS data (spec-level, not per-stage).
+    # review_rounds holds per-event totals for the kill-rate computation.
+    # all_rounds holds the flattened per-round entries for row rendering.
     review_rounds = []
+    all_rounds: list = []
     for ev in events:
         if ev.get("event_type") == "CODE_REVIEW_ROUNDS":
             data = ev.get("data", {})
-            # The code-review gate writes total_raised/total_survived plus a
-            # rounds *list*; read those, deriving the round count from the list.
-            rounds_list = data.get("rounds", [])
-            round_count = len(rounds_list) if isinstance(rounds_list, list) else rounds_list
             review_rounds.append({
                 "raised": data.get("total_raised", 0),
                 "survived": data.get("total_survived", 0),
-                "rounds": round_count,
             })
+            rounds_list = data.get("rounds", [])
+            if isinstance(rounds_list, list):
+                all_rounds.extend(rounds_list)
 
     # --- Duration rows ---
     print("=== stage durations ===")
@@ -495,8 +496,11 @@ def _render_table(spec, events, st, token_data, cwd):
     # --- Detection rounds and kill rate ---
     print("=== detection rounds ===")
     if review_rounds:
-        for i, r in enumerate(review_rounds, 1):
-            print(f"  detection round {i}: raised={r['raised']}  survived={r['survived']}")
+        for i, entry in enumerate(all_rounds, 1):
+            line = f"  detection round {i}: raised={entry.get('raised')}  survived={entry.get('survived')}"
+            if "severity" in entry:
+                line += f"  severity={entry['severity']}"
+            print(line)
         kr = kill_rate(review_rounds)
         print(f"  kill rate: {kr:.2f} (note: survivors are findings not killed; true positives may inflate kill rate)")
     else:

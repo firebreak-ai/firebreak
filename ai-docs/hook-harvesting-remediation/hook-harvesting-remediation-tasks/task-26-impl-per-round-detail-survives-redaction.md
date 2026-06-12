@@ -7,6 +7,7 @@ files_to_modify:
   - assets/fbk-scripts/fbk/gates/code_review.py
   - assets/fbk-scripts/fbk/capture/schema.py
   - assets/fbk-scripts/fbk/report.py
+  - assets/fbk-scripts/tests/test_gates_code_review.py  # scope revisions: (attempt 1) add the missing `from tests import capture_fixtures` import — latent wave-1 authoring defect masked by the projection skip guard; (attempt 2) in test_valid_round_file_emits_event, replace the stale `"rounds" not in data` assertion (old strip-the-list model, missed by the slice's retired-tests list) with assertions that data["rounds"] is present and every entry carries only the three projected keys (raised, survived, enum severity) with no free text. No other test change permitted.
 test_tasks: [task-08, task-09]
 dependencies: [task-08, task-09]
 completion_gate: "task-08 tests pass (projection unit test, gate main() integration test, one-row-per-round rendering test) and task-09's rebuilt test_standard_level_strips_freetext_payload passes; the rest of tests/test_gates_code_review.py, tests/test_report_rendering.py, and tests/test_capture_event_writer.py stay green"
