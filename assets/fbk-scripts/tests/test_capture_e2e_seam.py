@@ -157,17 +157,11 @@ def test_two_source_cycle_joins_in_one_report(tmp_path):
         f"transition to VALIDATING failed: {transition1_result.stderr!r}"
     )
 
-    # --- Step 3: transition VALIDATING -> VALIDATED (triggers retro injector) ---
-    transition2_result = _run_fbk(
-        ["state", "transition", "demo-spec", "VALIDATED"],
-        project_root=project,
-        state_dir=state_dir,
-    )
-    assert transition2_result.returncode == 0, (
-        f"transition to VALIDATED failed: {transition2_result.stderr!r}"
-    )
-
-    # --- Step 4: feed the router a PostToolUse payload (produces a TOOL_USE event) ---
+    # --- Step 3: feed the router a PostToolUse payload while stage is VALIDATING ---
+    # The router event must fire while the stage is actively VALIDATING, before the
+    # VALIDATING -> VALIDATED transition. After the corrected resolver lands, an event
+    # fired post-transition would carry no stage and exit the asserted table for a
+    # reason unrelated to the stub.
     payload = capture_fixtures.hook_payload(
         "PostToolUse",
         tool_name="Bash",
@@ -178,6 +172,16 @@ def test_two_source_cycle_joins_in_one_report(tmp_path):
     )
     assert router_result.stdout == "", (
         f"expected no stdout from router, got: {router_result.stdout!r}"
+    )
+
+    # --- Step 4: transition VALIDATING -> VALIDATED (triggers retro injector) ---
+    transition2_result = _run_fbk(
+        ["state", "transition", "demo-spec", "VALIDATED"],
+        project_root=project,
+        state_dir=state_dir,
+    )
+    assert transition2_result.returncode == 0, (
+        f"transition to VALIDATED failed: {transition2_result.stderr!r}"
     )
 
     # --- Step 5: assert events.jsonl contains events from both producers ---
@@ -215,6 +219,14 @@ def test_two_source_cycle_joins_in_one_report(tmp_path):
         f"envelope field sets differ between producers: "
         f"PIPELINE_COMMAND has {sorted(pipeline_fields)}, "
         f"TOOL_USE has {sorted(tool_use_fields)}"
+    )
+
+    # The router event fired while the stage was VALIDATING (Step 3 precedes the
+    # VALIDATING -> VALIDATED transition in Step 4), so the TOOL_USE event must
+    # carry stage="VALIDATING".
+    assert tool_use_sample["stage"] == "VALIDATING", (
+        f"expected TOOL_USE event stage='VALIDATING', got {tool_use_sample['stage']!r}; "
+        f"event={tool_use_sample!r}"
     )
 
     # --- Step 7: run fbk.py report and assert it exits 0 and renders both sources ---
@@ -278,6 +290,23 @@ def test_two_source_cycle_joins_in_one_report(tmp_path):
     assert marker_prefix in retro_content, (
         f"expected provenance marker starting with {marker_prefix!r} "
         f"in retrospective; content={retro_content!r}"
+    )
+
+    # Assert exact metric lines are present in the retrospective. This cycle drives
+    # no gate dispatch and no park, so the fixture computes to zeros — the guard's
+    # teeth are that the stub renders no metric lines at all.
+    retro_lines = retro_content.splitlines()
+    assert "first-try rate: 0.00" in retro_lines, (
+        f"exact line 'first-try rate: 0.00' not found in retrospective (intentional zero: "
+        f"no gate dispatch in this cycle); content={retro_content!r}"
+    )
+    assert "parks: 0" in retro_lines, (
+        f"exact line 'parks: 0' not found in retrospective (intentional zero: "
+        f"no park in this cycle); content={retro_content!r}"
+    )
+    assert "rework: 0" in retro_lines, (
+        f"exact line 'rework: 0' not found in retrospective (intentional zero: "
+        f"no rework in this cycle); content={retro_content!r}"
     )
 
 

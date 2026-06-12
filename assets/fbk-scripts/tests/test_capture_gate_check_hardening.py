@@ -158,4 +158,5 @@ def test_symlinked_config_refused(tmp_path, monkeypatch):
     except (OSError, NotImplementedError):
         pytest.skip("Platform does not support symlinks")
 
+    assert gate_check.project_is_instrumented(root) is False
     assert gate_check.resolve_capture_level(root) == "off"

@@ -378,19 +378,27 @@ def _make_task_reviewer_fixture(base_dir):
 
 
 # ---------------------------------------------------------------------------
-# Envelope write assertions — task-reviewer gate (AC-03, AC-11)
+# Envelope write assertions — task-reviewer gate (AC-12)
 # ---------------------------------------------------------------------------
 
-# Red phase: the migrated event-writer call site in fbk/gates/task_reviewer.py
-# does not exist yet.  Tests assert post-migration behaviour and will fail
-# until the call-site swap lands.
+# The task-reviewer gate must write NO PIPELINE_COMMAND of its own.  One
+# dispatch through fbk.py yields exactly one PIPELINE_COMMAND, written by
+# the chokepoint; the chokepoint-side positive assertion lives in
+# tests/test_capture_chokepoint_integration.py.  These tests pin the negative
+# half: calling the gate directly (bypassing the chokepoint) must leave the
+# events file empty.
 
 @pytest.mark.skipif(
     not _EVENT_WRITER_AVAILABLE,
     reason="fbk.capture.event_writer not available",
 )
-class TestTaskReviewerGateWritesEnvelope:
-    """Task-reviewer gate writes a PIPELINE_COMMAND envelope on the pass path (AC-03, AC-11)."""
+class TestTaskReviewerGateWritesNoEnvelope:
+    """Task-reviewer gate writes no PIPELINE_COMMAND of its own on pass or fail (AC-12).
+
+    One dispatch yields exactly one PIPELINE_COMMAND, written by the
+    chokepoint; the chokepoint-side positive assertion lives in
+    tests/test_capture_chokepoint_integration.py.
+    """
 
     def _events_path(self, project_root):
         return os.path.join(project_root, ".fbk-capture", "events.jsonl")
@@ -402,8 +410,8 @@ class TestTaskReviewerGateWritesEnvelope:
         with open(path) as fh:
             return [json.loads(line) for line in fh if line.strip()]
 
-    def test_task_reviewer_gate_pass_writes_envelope(self, tmp_path, monkeypatch):
-        """Task-reviewer gate pass path writes a PIPELINE_COMMAND envelope recording the pass result."""
+    def test_task_reviewer_gate_pass_writes_no_envelope(self, tmp_path, monkeypatch):
+        """Task-reviewer gate pass path writes no PIPELINE_COMMAND when called directly."""
         spec_file, tasks_dir, project_root = _make_task_reviewer_fixture(str(tmp_path))
 
         # Wrap the project in the capture-fixtures project tree so chdir points
@@ -443,20 +451,10 @@ class TestTaskReviewerGateWritesEnvelope:
             _task_reviewer_mod.main()
         assert exc_info.value.code == 0
 
-        envelopes = self._read_envelopes(instr_root)
-        assert len(envelopes) >= 1, "No envelope written; migration not yet applied"
-        env = envelopes[-1]
-        assert env.get("event_type") == "PIPELINE_COMMAND"
-        assert env.get("data", {}).get("result") == "pass"
-        assert "spec" in env
-        assert "stage" in env
+        assert self._read_envelopes(instr_root) == []
 
-    def test_task_reviewer_gate_fail_writes_envelope(self, tmp_path, monkeypatch):
-        """Task-reviewer gate fail path also writes a PIPELINE_COMMAND envelope (AC-05).
-
-        A gate-rate metric needs both outcomes recorded; the fail path used to
-        exit without writing, so failures never reached the stream.
-        """
+    def test_task_reviewer_gate_fail_writes_no_envelope(self, tmp_path, monkeypatch):
+        """Task-reviewer gate fail path writes no PIPELINE_COMMAND when called directly."""
         spec_file, tasks_dir, project_root = _make_task_reviewer_fixture(str(tmp_path))
 
         instr_root = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
@@ -488,56 +486,6 @@ class TestTaskReviewerGateWritesEnvelope:
 
         with pytest.raises(SystemExit) as exc_info:
             _task_reviewer_mod.main()
-        assert exc_info.value.code == 2, "missing files_to_modify path should fail the gate"
+        assert exc_info.value.code == 2
 
-        envelopes = self._read_envelopes(instr_root)
-        assert len(envelopes) >= 1, "fail path wrote no envelope"
-        env = envelopes[-1]
-        assert env.get("event_type") == "PIPELINE_COMMAND"
-        assert env.get("data", {}).get("result") == "fail", (
-            f"expected a recorded fail result, got: {env.get('data')!r}"
-        )
-
-    def test_task_reviewer_gate_write_failure_is_silent(self, tmp_path, monkeypatch):
-        """Task-reviewer gate continues normally when the events path is unwritable (AC-11)."""
-        spec_file, tasks_dir, project_root = _make_task_reviewer_fixture(str(tmp_path))
-
-        instr_root = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
-
-        # Block writes by placing a plain file at .fbk-capture/.
-        capture_dir = os.path.join(instr_root, ".fbk-capture")
-        with open(capture_dir, "w") as fh:
-            fh.write("not-a-directory")
-
-        # Move spec and task files into the instrumented root.
-        spec_dest = os.path.join(instr_root, "sample-spec.md")
-        with open(spec_file) as fh:
-            spec_content = fh.read()
-        with open(spec_dest, "w") as fh:
-            fh.write(spec_content)
-
-        tasks_dest = os.path.join(instr_root, "tasks")
-        os.makedirs(tasks_dest, exist_ok=True)
-        for fname in ("task-01.md", "task-02.md"):
-            src = os.path.join(tasks_dir, fname)
-            dst = os.path.join(tasks_dest, fname)
-            with open(src) as fh:
-                content = fh.read()
-            with open(dst, "w") as fh:
-                fh.write(content)
-
-        src_dir = os.path.join(instr_root, "src")
-        os.makedirs(src_dir, exist_ok=True)
-        with open(os.path.join(src_dir, "placeholder.py"), "w") as fh:
-            fh.write("# placeholder\n")
-
-        monkeypatch.chdir(instr_root)
-        monkeypatch.setattr(
-            sys, "argv",
-            ["task-reviewer-gate", spec_dest, tasks_dest, "--project-root", instr_root],
-        )
-
-        # Gate must exit 0 on pass regardless of the write failure.
-        with pytest.raises(SystemExit) as exc_info:
-            _task_reviewer_mod.main()
-        assert exc_info.value.code == 0
+        assert self._read_envelopes(instr_root) == []

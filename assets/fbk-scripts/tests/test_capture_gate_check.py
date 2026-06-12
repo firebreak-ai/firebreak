@@ -107,22 +107,74 @@ class TestResolveCaptureLevel:
         root = capture_fixtures.make_project(str(tmp_path), instrumented=False)
         assert gate_check.resolve_capture_level(root) == "off"
 
-    def test_level_reads_only_one_line(self, tmp_path):
-        """Large trailing content after the first line does not affect the result.
+    def test_oversized_first_segment_resolves_safe_default(self, tmp_path, monkeypatch):
+        """A parseable non-default token placed beyond the 256-byte read cap resolves to "standard".
 
-        This verifies the bounded-read behavior: only the first line is read,
-        so a multi-megabyte file does not change the resolved level.
+        Divergence design: the cfg file is a single line whose first 256 bytes are
+        spaces, followed by "capture_level=full" on the same line (no newline before
+        the token).  The bounded read (`f.readline(256)`) ingests only the leading
+        spaces — no "=" character — and returns None, causing resolve_capture_level to
+        fall back to the safe default "standard".  An unbounded read (`f.readline()`)
+        would consume the entire line, find the token, and return "full".
+
+        Why the token beyond the cap must be the non-default "full":
+          A "standard" token there would make both the bounded and unbounded reads
+          return "standard", and the test would pass on both implementations —
+          proving nothing.  "full" is required so the bounded path disagrees with
+          the unbounded path, and the assertion catches the unbounded implementation.
+
+        Why whitespace filler instead of "x" * 256:
+          _read_cfg_level partitions on the first "=" and checks that the left side
+          strips to exactly "capture_level".  "x" * 256 has no "=" so both reads
+          return None (key match fails) and both resolve to "standard" — no
+          divergence.  Whitespace filler strips to an empty key, which also fails
+          the key match, but the unbounded read includes the full line with its
+          parseable "capture_level=full" segment — only the unbounded code path
+          reaches that segment.
+
+        Corroboration: FBK_CAPTURE_LEVEL=full is set so the pre-fix unbounded path
+        returns "full" rather than being clamped to "standard" by _full_corroborated.
+        The bounded path still returns "standard" because it finds no token at all.
         """
-        root = capture_fixtures.make_project(
-            str(tmp_path), instrumented=False, capture_cfg="standard"
-        )
-        # Append a very large second line to the capture.cfg
+        root = capture_fixtures.make_project(str(tmp_path), instrumented=False)
         cfg_path = os.path.join(root, ".fbk-capture", "capture.cfg")
-        with open(cfg_path, "a") as f:
-            # Write ~5MB of padding on a second line
-            large_padding = "x" * (5 * 1024 * 1024)
-            f.write(large_padding + "\n")
+        os.makedirs(os.path.dirname(cfg_path), exist_ok=True)
+        with open(cfg_path, "w") as f:
+            f.write(" " * 256 + "capture_level=full\n")
 
-        # Resolve should still return standard (only first line read)
-        result = gate_check.resolve_capture_level(root)
-        assert result == "standard"
+        monkeypatch.setenv("FBK_CAPTURE_LEVEL", "full")
+
+        assert gate_check.resolve_capture_level(root) == "standard"
+
+    @pytest.mark.flaky_quarantine
+    def test_giant_single_line_cfg_stays_fast(self, tmp_path):
+        """A 5 MB newline-less cfg line resolves to "standard" without stalling.
+
+        Correctness assertion (gating): the cfg file exists so the project is
+        instrumented, but the bounded read finds no parseable token in its byte
+        window, so the safe default "standard" is returned.
+
+        Timing assertion (advisory, non-gating): a single timed call must complete
+        under 0.5 s.  Marked flaky_quarantine so a slow CI run does not block the
+        suite.
+        """
+        import time
+
+        root = capture_fixtures.make_project(str(tmp_path), instrumented=False)
+        cfg_path = os.path.join(root, ".fbk-capture", "capture.cfg")
+        os.makedirs(os.path.dirname(cfg_path), exist_ok=True)
+        with open(cfg_path, "w") as f:
+            f.write("x" * (5 * 1024 * 1024))
+
+        # Correctness assertion (gating): cfg present → instrumented; no token in
+        # bounded window → safe default.
+        assert gate_check.resolve_capture_level(root) == "standard"
+
+        # Advisory timing assertion: generous 0.5 s upper bound for a bounded read.
+        start = time.perf_counter()
+        gate_check.resolve_capture_level(root)
+        elapsed = time.perf_counter() - start
+        assert elapsed < 0.5, (  # noqa: flaky_quarantine — non-gating on CI
+            f"resolve_capture_level took {elapsed:.4f}s on 5 MB single-line cfg; "
+            "expected under 0.5s with a bounded readline"
+        )

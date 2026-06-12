@@ -484,3 +484,84 @@ def test_over_cap_retention_warning_surfaced(tmp_path):
         assert marker not in output_without.lower(), (
             f"retention warning marker '{marker}' appeared in output when sentinel is absent"
         )
+
+
+def test_standard_level_renders_one_row_per_detection_round(tmp_path):
+    """Report renders one row per entry in the rounds list, not one collapsed total row.
+
+    The post-projection production shape carries a rounds list; the renderer must
+    iterate it and emit one "detection round N:" line per entry.  This test pins
+    the exact row count (2), the per-row raised/survived/severity values, and the
+    kill-rate computation.
+
+    kill rate = (total_raised - total_survived) / total_raised = (5 - 1) / 5 = 0.80
+    """
+    project = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
+    state_dir = str(tmp_path / "state")
+
+    spec = _SPEC
+
+    # Post-projection production shape: two round entries, each with raised/survived/severity.
+    rounds_data = [
+        {"raised": 3, "survived": 1, "severity": "major"},
+        {"raised": 2, "survived": 0, "severity": "minor"},
+    ]
+    rounds_event = capture_fixtures.build_event(
+        "CODE_REVIEW_ROUNDS",
+        "code_review",
+        spec,
+        None,
+        capture_level="standard",
+        data={
+            "spec": spec,
+            "rounds": rounds_data,
+            "total_raised": 5,
+            "total_survived": 1,
+        },
+    )
+
+    capture_fixtures.write_events(
+        os.path.join(project, _EVENTS_REL),
+        [rounds_event],
+    )
+
+    # A minimal single-stage state so the report renders without errors.
+    state = capture_fixtures.build_state(
+        spec=spec,
+        stage_timestamps={"VALIDATING": "2026-01-01T00:00:00+00:00"},
+        current_state="VALIDATING",
+    )
+    capture_fixtures.write_state(state_dir, state)
+
+    result = _run_report(project, state_dir)
+    assert result.returncode == 0, (
+        f"report exited {result.returncode}; stderr: {result.stderr}"
+    )
+
+    output = result.stdout
+
+    # Count lines that match "detection round <digit(s)>:" — must be exactly 2
+    # (one per entry in the rounds list, not a single collapsed total row).
+    round_lines = [
+        line for line in output.splitlines()
+        if re.search(r"detection round \d+:", line)
+    ]
+    assert len(round_lines) == 2, (
+        f"Expected exactly 2 detection-round lines (one per entry), "
+        f"got {len(round_lines)}: {round_lines!r}\n--- report ---\n{output}"
+    )
+
+    # Round 1: raised=3 survived=1 severity=major
+    assert re.search(r"detection round 1:\s+raised=3\s+survived=1\s+severity=major", output), (
+        f"Round 1 row not found or incorrect in report output:\n{output}"
+    )
+
+    # Round 2: raised=2 survived=0 severity=minor
+    assert re.search(r"detection round 2:\s+raised=2\s+survived=0\s+severity=minor", output), (
+        f"Round 2 row not found or incorrect in report output:\n{output}"
+    )
+
+    # Kill rate: (5 - 1) / 5 = 0.80
+    assert re.search(r"kill rate:\s*0\.80", output), (
+        f"Expected 'kill rate: 0.80' in report output; got:\n{output}"
+    )

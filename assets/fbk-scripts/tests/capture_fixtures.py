@@ -10,6 +10,8 @@ No pytest fixtures here — import this module by name from test files:
 import json
 import os
 import stat
+import subprocess
+import sys
 
 # ---------------------------------------------------------------------------
 # Event envelope helpers
@@ -255,3 +257,151 @@ def hook_payload(
     if extra:
         payload.update(extra)
     return json.dumps(payload)
+
+
+# ---------------------------------------------------------------------------
+# Real-producer drivers
+# ---------------------------------------------------------------------------
+
+FBK_PY = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fbk.py")
+
+# Source of truth for a gate-passing spec is _make_minimal_spec() in
+# tests/test_gates_spec.py — the header plus _MINIMAL_VALID_SECTIONS.
+MINIMAL_VALID_SPEC_MD = """\
+# Feature Specification
+
+## Problem
+Describes the issue or gap being addressed.
+
+## Goals
+- Primary objective of the feature
+
+## User-facing behavior
+Describes how end users interact with the feature.
+
+## Technical approach
+Details the implementation strategy.
+
+## Testing strategy
+- AC-01: Test criterion 1
+
+## Documentation impact
+Expected changes to user documentation.
+
+## Acceptance criteria
+- AC-01: Feature works as specified
+
+## Dependencies
+None
+
+## Open questions
+None
+"""
+
+BROKEN_SPEC_MD = "# Feature Specification\n\n## Problem\nOnly one section present.\n"
+
+
+def run_fbk(args, project_root, state_dir, stdin_text=None):
+    """Run fbk.py with args in project_root, STATE_DIR set to state_dir.
+
+    Identical in shape to _run_fbk in tests/test_capture_report_integration.py.
+    Returns a CompletedProcess with captured text stdout/stderr.
+    """
+    env = {**os.environ, "STATE_DIR": str(state_dir)}
+    return subprocess.run(
+        [sys.executable, FBK_PY] + args,
+        input=stdin_text,
+        capture_output=True,
+        text=True,
+        cwd=str(project_root),
+        env=env,
+        timeout=30,
+    )
+
+
+def drive_gate_fail_park_recover(project_root, state_dir, spec):
+    """Drive a complete gate-fail → park → recover cycle via real fbk.py producers.
+
+    Performs the following steps in order, asserting the expected return code
+    after each one:
+
+    1. state create <spec>                                  — rc 0
+    2. state transition <spec> VALIDATING                  — rc 0
+    3. Write task-01.md; task-completed (stdin JSON)       — rc 0
+    4. Write broken-spec.md; spec-gate broken-spec.md      — rc 2
+    5. state transition <spec> PARKED --reason ...         — rc 0
+    6. state transition <spec> READY                       — rc 0
+       state transition <spec> VALIDATING                  — rc 0 (re-entry)
+    7. Write sample-spec.md; spec-gate sample-spec.md      — rc 0
+
+    Returns the parsed event dicts from <project_root>/.fbk-capture/events.jsonl.
+    """
+    # Step 1 — create the state record.
+    r = run_fbk(["state", "create", spec], project_root, state_dir)
+    assert r.returncode == 0, f"state create failed (rc {r.returncode}): {r.stderr!r}"
+
+    # Step 2 — enter the VALIDATING working stage.
+    r = run_fbk(["state", "transition", spec, "VALIDATING"], project_root, state_dir)
+    assert r.returncode == 0, (
+        f"transition to VALIDATING failed (rc {r.returncode}): {r.stderr!r}"
+    )
+
+    # Step 3 — record a passing verification result before the park.
+    task_dir = os.path.join(project_root, "ai-docs", spec, "tasks")
+    os.makedirs(task_dir, exist_ok=True)
+    with open(os.path.join(task_dir, "task-01.md"), "w") as fh:
+        fh.write("# Task 01\n\nDo the thing.\n")
+
+    stdin_payload = json.dumps({
+        "task_description": f"Implement ai-docs/{spec}/tasks/task-01.md",
+        "cwd": project_root,
+    })
+    r = run_fbk(["task-completed"], project_root, state_dir, stdin_text=stdin_payload)
+    assert r.returncode == 0, (
+        f"task-completed failed (rc {r.returncode}): {r.stderr!r}"
+    )
+
+    # Step 4 — write a broken spec and run spec-gate so it records a fail.
+    broken_path = os.path.join(project_root, "broken-spec.md")
+    with open(broken_path, "w") as fh:
+        fh.write(BROKEN_SPEC_MD)
+    r = run_fbk(["spec-gate", "broken-spec.md"], project_root, state_dir)
+    assert r.returncode == 2, (
+        f"spec-gate on broken spec should exit 2 (rc {r.returncode}): {r.stderr!r}"
+    )
+
+    # Step 5 — park the stage (records first error_history entry).
+    r = run_fbk(
+        ["state", "transition", spec, "PARKED", "--reason", "spec gate failed"],
+        project_root,
+        state_dir,
+    )
+    assert r.returncode == 0, (
+        f"transition to PARKED failed (rc {r.returncode}): {r.stderr!r}"
+    )
+
+    # Step 6 — recover: PARKED → READY → VALIDATING (re-entry).
+    r = run_fbk(["state", "transition", spec, "READY"], project_root, state_dir)
+    assert r.returncode == 0, (
+        f"transition to READY failed (rc {r.returncode}): {r.stderr!r}"
+    )
+    r = run_fbk(["state", "transition", spec, "VALIDATING"], project_root, state_dir)
+    assert r.returncode == 0, (
+        f"re-entry to VALIDATING failed (rc {r.returncode}): {r.stderr!r}"
+    )
+
+    # Step 7 — write a valid spec and run spec-gate so it records a pass after the park.
+    sample_path = os.path.join(project_root, "sample-spec.md")
+    with open(sample_path, "w") as fh:
+        fh.write(MINIMAL_VALID_SPEC_MD)
+    r = run_fbk(["spec-gate", "sample-spec.md"], project_root, state_dir)
+    assert r.returncode == 0, (
+        f"spec-gate on valid spec failed (rc {r.returncode}): {r.stderr!r}"
+    )
+
+    # Return all captured events for the caller to assert on.
+    events_path = os.path.join(project_root, ".fbk-capture", "events.jsonl")
+    if not os.path.exists(events_path):
+        return []
+    with open(events_path) as fh:
+        return [json.loads(line) for line in fh if line.strip()]

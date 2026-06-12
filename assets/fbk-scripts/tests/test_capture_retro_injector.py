@@ -38,25 +38,63 @@ def _setup_project(tmp_path, spec, stage, monkeypatch):
 
     Writes events at <tmp_path>/.fbk-capture/events.jsonl and state at
     <tmp_path>/<STATE_DIR>/<spec>.json; changes cwd to tmp_path.
+
+    Events: three VERIFICATION_RESULT events with production payload shape:
+      - fail at 2026-01-01T00:01:00  (first-try, before the 00:02 park)
+      - pass at 2026-01-01T00:01:30  (first-try, before the 00:02 park)
+      - pass at 2026-01-01T00:03:00  (after-rework, after READY at 00:02:30)
+
+    Hand-derived expectations:
+      first-try attempts: fail + pass (both < 00:02) → rate = 1/2 = 0.50
+      after-rework attempts: one pass (>= READY 00:02:30) → rate = 1.0
+      parks: 1 (one entry in error_history for stage)
+      rework: 1 (one error_history entry for stage)
     """
     monkeypatch.chdir(tmp_path)
+    # Ensure _load_state uses the default path relative to cwd, not any ambient STATE_DIR.
+    monkeypatch.delenv("STATE_DIR", raising=False)
 
-    # Events file with one lifecycle event for the stage.
     events_path = os.path.join(str(tmp_path), ".fbk-capture", "events.jsonl")
     events = [
         capture_fixtures.build_event(
-            event_type="LIFECYCLE",
-            source="hook_router",
+            event_type="VERIFICATION_RESULT",
+            source="task_completed",
             spec=spec,
             stage=stage,
-        )
+            timestamp="2026-01-01T00:01:00+00:00",
+            data={"failing_test_count": 1, "lint_error_count": 0, "out_of_scope_files": [], "tests_passed": False},
+        ),
+        capture_fixtures.build_event(
+            event_type="VERIFICATION_RESULT",
+            source="task_completed",
+            spec=spec,
+            stage=stage,
+            timestamp="2026-01-01T00:01:30+00:00",
+            data={"failing_test_count": 0, "lint_error_count": 0, "out_of_scope_files": [], "tests_passed": True},
+        ),
+        capture_fixtures.build_event(
+            event_type="VERIFICATION_RESULT",
+            source="task_completed",
+            spec=spec,
+            stage=stage,
+            timestamp="2026-01-01T00:03:00+00:00",
+            data={"failing_test_count": 0, "lint_error_count": 0, "out_of_scope_files": [], "tests_passed": True},
+        ),
     ]
     capture_fixtures.write_events(events_path, events)
 
-    # State file under the default STATE_DIR.
+    # State with one park (PARKED at 00:02) and re-entry (READY at 00:02:30).
     state = capture_fixtures.build_state(
         spec=spec,
-        stage_timestamps={stage: "2026-01-01T00:00:00+00:00"},
+        stage_timestamps={
+            stage: "2026-01-01T00:00:00+00:00",
+            "PARKED": "2026-01-01T00:02:00+00:00",
+            "READY": "2026-01-01T00:02:30+00:00",
+        },
+        current_state=stage,
+        error_history=[
+            {"stage": stage, "error": "gate failed", "timestamp": "2026-01-01T00:02:00+00:00"}
+        ],
     )
     state_dir = os.path.join(str(tmp_path), _STATE_DIR_DEFAULT)
     capture_fixtures.write_state(state_dir, state)
@@ -110,6 +148,22 @@ def test_injects_block_under_metrics_heading(tmp_path, monkeypatch):
     sample = marker_lines[0]
     generated_value = sample[len(prefix): -len(" -->")]
     assert generated_value, "generated= field is empty in provenance marker"
+
+    # Assert exact metric lines are present in the file (the stub emits none of
+    # these; their absence is the test's failing condition against the stub).
+    file_lines = text.splitlines()
+    assert "first-try rate: 0.50" in file_lines, (
+        "exact line 'first-try rate: 0.50' not found in retrospective"
+    )
+    assert "after-rework rate: 1.00" in file_lines, (
+        "exact line 'after-rework rate: 1.00' not found in retrospective"
+    )
+    assert "parks: 1" in file_lines, (
+        "exact line 'parks: 1' not found in retrospective"
+    )
+    assert "rework: 1" in file_lines, (
+        "exact line 'rework: 1' not found in retrospective"
+    )
 
 
 def test_does_not_disturb_existing_prose_section(tmp_path, monkeypatch):

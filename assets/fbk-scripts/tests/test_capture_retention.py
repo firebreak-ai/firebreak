@@ -7,15 +7,22 @@ a sentinel file when it drops locked lines past that ceiling.
 Module is not yet implemented; every test skips in the red phase.
 """
 
+import contextlib
 import json
 import os
 import stat
+import threading
 import pytest
 
 try:
     from fbk.capture import retention
 except ImportError:
     retention = None
+
+try:
+    from fbk.capture import event_writer
+except ImportError:
+    event_writer = None
 
 from tests import capture_fixtures
 
@@ -335,4 +342,142 @@ def test_no_prune_when_under_cap(tmp_path):
 
     assert _read_bytes(events_path) == original_bytes, (
         "file was modified even though it was under the byte cap"
+    )
+
+
+@pytest.mark.skipif(event_writer is None, reason="fbk.capture.event_writer not importable")
+def test_lock_created_during_active_write_protects_spec_lines(tmp_path):
+    """A baseline lock file created while an active write is in progress protects its spec's lines.
+
+    Contract: once a lock file exists on disk, lines whose spec matches that
+    lock file name must survive the prune that follows the write — regardless
+    of exactly when during the write's execution the lock file was created.
+
+    Sequencing guarantee: the test holds the events lock until after the lock
+    file exists on disk.  The prune's protected-set determination happens inside
+    a lock scope that cannot begin until the test releases.  By the time the
+    prune acquires the lock, the lock file is already present, so the protection
+    is honored regardless of thread scheduling — no sleeps required.
+
+    This test does not assert on internal mechanisms (_locked_specs, _prune_locked
+    call shapes, or any implementation detail).  It is valid under any compliant
+    implementation.
+    """
+    events_path = _events_path(str(tmp_path))
+    capture_dir = os.path.join(str(tmp_path), ".fbk-capture")
+
+    # -----------------------------------------------------------------------
+    # Build the events file.
+    #
+    # Arithmetic:
+    #   Each line carries data={"pad_field": "y" * 1000}, making each line
+    #   roughly 1.1 KB.
+    #
+    #   - 2000 lines with spec="locked-spec"  → ~2.2 MB protected bytes
+    #   - 4000 lines with spec="other-spec"   → ~4.4 MB unprotected bytes
+    #   - total                               → ~6.6 MB > 5 MB (DEFAULT_MAX_BYTES)
+    #
+    #   Protected ceiling = DEFAULT_MAX_BYTES * PROTECTED_FRACTION = 2.5 MB.
+    #   ~2.2 MB protected bytes stay UNDER the 2.5 MB ceiling, so no locked
+    #   lines are dropped and no sentinel is written.
+    #   Total exceeds the 5 MB cap, so the prune fires and trims other-spec lines.
+    # -----------------------------------------------------------------------
+    pad = "y" * 1000
+
+    locked_events = [
+        capture_fixtures.build_event(
+            event_type="TOOL_USE",
+            source="retention-concurrency-test",
+            spec="locked-spec",
+            stage="QUEUED",
+            data={"pad_field": pad},
+        )
+        for _ in range(2000)
+    ]
+    other_events = [
+        capture_fixtures.build_event(
+            event_type="TOOL_USE",
+            source="retention-concurrency-test",
+            spec="other-spec",
+            stage="QUEUED",
+            data={"pad_field": pad},
+        )
+        for _ in range(4000)
+    ]
+    capture_fixtures.write_events(events_path, locked_events + other_events)
+
+    # -----------------------------------------------------------------------
+    # Acquire the events lock in the main thread so the writer thread blocks
+    # on it, then create the lock file while holding the events lock.
+    # -----------------------------------------------------------------------
+    with retention.file_lock(events_path):
+        # Start the writer thread; it will block trying to acquire file_lock.
+        thread = threading.Thread(
+            target=event_writer.write,
+            args=("LIFECYCLE", "hook_router", {}, "other-spec", None, "standard", events_path),
+        )
+        thread.start()
+
+        # Create the baseline lock file while the events lock is still held.
+        # This is "the lock created during an active write."
+        locked_dir = os.path.join(capture_dir, "locked")
+        os.makedirs(locked_dir, exist_ok=True)
+        open(os.path.join(locked_dir, "locked-spec"), "w").close()
+
+    # Release of the events lock happens on exit from the with block above.
+    # The writer thread can now proceed: it will append, read locked_specs,
+    # and trigger the prune — at which point the lock file is already on disk.
+    thread.join(timeout=30)
+    assert not thread.is_alive(), "writer thread did not complete within 30 s"
+
+    # -----------------------------------------------------------------------
+    # Assertions.
+    # -----------------------------------------------------------------------
+    with open(events_path) as fh:
+        lines = [ln for ln in fh if ln.strip()]
+
+    events_by_spec = {}
+    events_by_type = {}
+    for ln in lines:
+        obj = json.loads(ln)
+        spec = obj.get("spec")
+        etype = obj.get("event_type")
+        events_by_spec[spec] = events_by_spec.get(spec, 0) + 1
+        events_by_type[etype] = events_by_type.get(etype, 0) + 1
+
+    locked_surviving = events_by_spec.get("locked-spec", 0)
+    other_surviving = events_by_spec.get("other-spec", 0)
+    lifecycle_count = events_by_type.get("LIFECYCLE", 0)
+
+    # All 2000 locked-spec lines must have survived.
+    assert locked_surviving == 2000, (
+        f"expected all 2000 locked-spec lines to survive, got {locked_surviving}"
+    )
+
+    # The prune must have fired: file is at or under the 5 MB cap.
+    final_size = os.path.getsize(events_path)
+    assert final_size <= retention.DEFAULT_MAX_BYTES, (
+        f"file size {final_size} exceeds DEFAULT_MAX_BYTES {retention.DEFAULT_MAX_BYTES} "
+        "(prune did not fire or did not reduce the file)"
+    )
+
+    # The prune dropped some other-spec lines (upper bound) but at least one survived
+    # (lower bound — confirms the file was not fully cleared).
+    assert other_surviving < 4001, (
+        f"expected fewer than 4001 other-spec lines after prune, got {other_surviving}"
+    )
+    assert other_surviving >= 1, (
+        "expected at least 1 other-spec line to survive, got none"
+    )
+
+    # The thread's appended LIFECYCLE event survived as the newest unprotected line.
+    assert lifecycle_count == 1, (
+        f"expected exactly 1 LIFECYCLE line (the thread's append), got {lifecycle_count}"
+    )
+
+    # No retention-warning sentinel: locked bytes stayed under the ceiling,
+    # so no locked lines should have been dropped.
+    warning_path = _warning_path(str(tmp_path))
+    assert not os.path.exists(warning_path), (
+        ".retention-warning sentinel exists — locked lines were wrongly dropped"
     )

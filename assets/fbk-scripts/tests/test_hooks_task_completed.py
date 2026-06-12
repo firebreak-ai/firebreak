@@ -439,6 +439,11 @@ class TestVerificationResultEvent:
             f"expected empty out_of_scope_files on in-scope-only run, got {out_of_scope!r}"
         )
 
+        # Producer source-literal pin: task_completed must stamp exactly this name.
+        assert event["source"] == "task_completed", (
+            f"expected source == 'task_completed' (exact literal), got {event.get('source')!r}"
+        )
+
     def test_verification_write_failure_is_silent(self, tmp_path):
         """An unwritable events path leaves the hook's exit code unchanged and
         produces no traceback in stderr — the write failure is swallowed.

@@ -413,6 +413,31 @@ def test_gate_and_write_follow_pinned_cwd(tmp_path):
     )
 
 
+def test_event_source_is_exact_hook_router_literal(tmp_path):
+    """The envelope ``source`` is the writer's provenance name; after the subagent
+    fix nothing computes metrics from it, so this pin is the regression lock
+    against a relabel.
+    """
+    project = capture_fixtures.make_project(
+        str(tmp_path), instrumented=True, marked=True, capture_cfg="standard"
+    )
+
+    payload = capture_fixtures.hook_payload("PostToolUse", tool_name="Read")
+
+    result = run_router(payload, project)
+
+    assert result.returncode == 0, (
+        f"router exited {result.returncode}, stderr: {result.stderr!r}"
+    )
+
+    events = _read_events(project)
+    assert len(events) == 1, f"expected 1 written event, got {len(events)}"
+
+    assert events[0]["source"] == "hook_router", (
+        f"expected source == 'hook_router' (exact literal), got {events[0].get('source')!r}"
+    )
+
+
 def test_router_fail_silent_on_unwritable(tmp_path):
     """When the events path is unwritable, the router exits 0, no stdout, no traceback."""
     project = capture_fixtures.make_project(

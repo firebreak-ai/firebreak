@@ -33,15 +33,6 @@ _OLD_COMMAND = 'python3 "$CLAUDE_PROJECT_DIR"/hooks/hook_router.py'
 # The global command form the new template ships (uses $HOME path, not $CLAUDE_PROJECT_DIR).
 _GLOBAL_COMMAND_PREFIX = '"$HOME"/.claude/fbk-scripts'
 
-# Skip all tests in this file if remove_hook_command is not yet implemented.
-_remove_hook_command = getattr(merge_settings_mod, "remove_hook_command", None)
-_missing_removal = _remove_hook_command is None
-
-pytestmark = pytest.mark.skipif(
-    _missing_removal,
-    reason="remove_hook_command not yet implemented in merge-settings.py (red phase)",
-)
-
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -208,54 +199,60 @@ class TestUnrelatedHookLeftByteIntact:
     def test_unrelated_hook_left_byte_intact(
         self, settings_with_leftover, new_entries_template, unrelated_entry
     ):
-        """Unrelated operator hook entry is byte-identical to its input after merge+removal."""
+        """Unrelated operator hook entry is byte-identical to its input after a single merge."""
         merged, _ = merge_settings_mod.merge_settings(
             settings_with_leftover, new_entries_template
-        )
-
-        hooks_after = merge_settings_mod.remove_hook_command(
-            merged["hooks"], _OLD_COMMAND
         )
 
         # Collect all hook groups across all events.
         all_groups = [
             group
-            for entries in hooks_after.values()
+            for entries in merged["hooks"].values()
             for group in entries
         ]
 
-        assert unrelated_entry in all_groups, (
-            "unrelated operator hook entry was not preserved byte-intact after migration"
+        # Find the group that matches the unrelated entry by content.
+        found = next(
+            (g for g in all_groups if json.dumps(g, sort_keys=True) == json.dumps(unrelated_entry, sort_keys=True)),
+            None,
+        )
+        assert found is not None, (
+            "unrelated operator hook entry was not preserved after merge"
+        )
+        assert json.dumps(found, sort_keys=True) == json.dumps(unrelated_entry, sort_keys=True), (
+            "unrelated operator hook entry was not byte-identical after merge"
         )
 
 
 class TestSecondRunIsIdempotent:
-    """A second migration run over its own output produces no further change."""
+    """A second merge run over its own output produces no further change."""
 
     def test_second_run_is_idempotent(self, settings_with_leftover, new_entries_template):
-        """Running merge+removal twice yields the same result as running it once."""
-        # First run.
-        merged_once, _ = merge_settings_mod.merge_settings(
+        """Running merge_settings twice yields byte-identical serialized output; exactly one global router command remains."""
+        once, _ = merge_settings_mod.merge_settings(
             settings_with_leftover, new_entries_template
         )
-        hooks_once = merge_settings_mod.remove_hook_command(
-            merged_once["hooks"], _OLD_COMMAND
-        )
-        first_result = dict(merged_once)
-        first_result["hooks"] = hooks_once
+        twice, _ = merge_settings_mod.merge_settings(once, new_entries_template)
 
-        # Second run: feed the first result back in.
-        merged_twice, _ = merge_settings_mod.merge_settings(
-            first_result, new_entries_template
+        # Serialized settings must be byte-identical across both runs.
+        assert json.dumps(twice, indent=2, sort_keys=True) == json.dumps(once, indent=2, sort_keys=True), (
+            "a second merge_settings run changed the serialized output — merge is not idempotent"
         )
-        hooks_twice = merge_settings_mod.remove_hook_command(
-            merged_twice["hooks"], _OLD_COMMAND
-        )
-        second_result = dict(merged_twice)
-        second_result["hooks"] = hooks_twice
 
-        assert second_result == first_result, (
-            "second migration run changed the settings — migration is not idempotent"
+        # After the second merge, exactly one command across all hook groups references
+        # hook_router.py, and it uses the global installation prefix.
+        all_commands = [
+            hook["command"]
+            for entries in twice["hooks"].values()
+            for group in entries
+            for hook in group.get("hooks", [])
+        ]
+        router_commands = [c for c in all_commands if "hook_router.py" in c]
+        assert len(router_commands) == 1, (
+            f"expected exactly one router command after second merge, found {len(router_commands)}: {router_commands}"
+        )
+        assert _GLOBAL_COMMAND_PREFIX in router_commands[0], (
+            f"router command after second merge does not use global prefix: {router_commands[0]!r}"
         )
 
 

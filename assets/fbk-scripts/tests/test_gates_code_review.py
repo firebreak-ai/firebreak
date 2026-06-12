@@ -13,6 +13,16 @@ try:
 except ImportError:
     validate_code_review = None
 
+try:
+    from fbk.gates.code_review import project_round_entries, ROUND_SEVERITIES
+    _PROJECTION_AVAILABLE = True
+except ImportError:
+    project_round_entries = None
+    ROUND_SEVERITIES = None
+    _PROJECTION_AVAILABLE = False
+
+import fbk.gates.code_review as _code_review_mod
+
 from fbk.gates.test_hash import create_manifest, verify_manifest
 
 
@@ -524,4 +534,156 @@ class TestCodeReviewRoundsEvent:
         )
         assert proc.stderr.strip() != "", (
             f"[{label}] Expected a stderr warning for out-of-bounds round file"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Allowlist projection (AC-08)
+# ---------------------------------------------------------------------------
+
+# The three-entry fixture used across projection tests.  The third entry carries
+# an unknown key ("notes") and an out-of-enum severity ("catastrophic") — both
+# must be dropped by project_round_entries.
+_PROJECTION_INPUT = [
+    {"raised": 3, "survived": 1, "severity": "major"},
+    {"raised": 2, "survived": 0, "severity": "minor", "notes": "FREE-TEXT-LEAK attempt"},
+    {"raised": 1, "survived": 1, "severity": "catastrophic"},
+]
+
+# Expected output: unknown key dropped, out-of-enum severity key dropped entirely,
+# known keys preserved in order.
+_PROJECTION_EXPECTED = [
+    {"raised": 3, "survived": 1, "severity": "major"},
+    {"raised": 2, "survived": 0, "severity": "minor"},
+    {"raised": 1, "survived": 1},
+]
+
+
+@pytest.mark.skipif(
+    not _PROJECTION_AVAILABLE,
+    reason="project_round_entries not yet implemented in fbk.gates.code_review",
+)
+class TestProjectRoundEntries:
+    """project_round_entries allowlist-projects round entries read from the untrusted round log."""
+
+    def test_project_round_entries_allowlists_exactly_three_keys(self):
+        """Unknown key is dropped, out-of-enum severity is rejected (key dropped), known keys preserved in order.
+
+        Input carries three entries: one clean, one with an unknown free-text key,
+        and one with an out-of-enum severity value.  The returned list must equal
+        the projected form exactly and the original input objects must not be mutated.
+        """
+        # Deep-copy the input so we can check for mutation after the call.
+        import copy
+        original_input = copy.deepcopy(_PROJECTION_INPUT)
+
+        result = project_round_entries(_PROJECTION_INPUT)
+
+        assert result == _PROJECTION_EXPECTED, (
+            f"project_round_entries returned unexpected output.\n"
+            f"  expected: {_PROJECTION_EXPECTED!r}\n"
+            f"  got:      {result!r}"
+        )
+
+        # The original input list objects must not have been modified.
+        assert _PROJECTION_INPUT == original_input, (
+            "project_round_entries mutated the input list objects; "
+            "it must return a new list with new dicts"
+        )
+
+
+@pytest.mark.skipif(
+    not _PROJECTION_AVAILABLE,
+    reason="project_round_entries not yet implemented in fbk.gates.code_review",
+)
+@pytest.mark.skipif(
+    not _EVENT_WRITER_AVAILABLE,
+    reason="fbk.capture.event_writer not available",
+)
+class TestRoundLogProjectedBeforeEventWrite:
+    """main() applies project_round_entries before writing the CODE_REVIEW_ROUNDS event.
+
+    Drives main() in-process (monkeypatched argv + chdir) so the real event-write
+    path executes.  The feature dir contains only .code-review-rounds.json — no
+    quality-scan or test-review artifacts — so the gate exits 2, but event emission
+    is an unconditional side effect of main(); the SystemExit code is pinned at 2.
+    """
+
+    def _read_events(self, project_root):
+        events_file = Path(project_root) / ".fbk-capture" / "events.jsonl"
+        if not events_file.exists():
+            return []
+        return [json.loads(line) for line in events_file.read_text().splitlines() if line.strip()]
+
+    def test_round_log_projected_before_event_write(self, tmp_path, monkeypatch):
+        """CODE_REVIEW_ROUNDS event carries exactly the projected round list; raw file is leak-free.
+
+        The three-entry fixture includes an unknown key ("notes") and an out-of-enum
+        severity ("catastrophic").  After projection, neither string must appear in the
+        raw events file, and the per-round numerics (total_raised=6, total_survived=2)
+        must match the hand-derived sums from the raised/survived fields that projection
+        preserves.
+        """
+        project_root = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
+
+        # Feature dir contains only the round log — no quality-scan or test-review artifacts.
+        feature_dir = Path(project_root) / "ai-docs" / "demo-feature"
+        feature_dir.mkdir(parents=True)
+
+        round_data = {
+            "spec": "demo-spec",
+            "rounds": _PROJECTION_INPUT,
+        }
+        (feature_dir / ".code-review-rounds.json").write_text(json.dumps(round_data))
+
+        monkeypatch.chdir(project_root)
+        monkeypatch.setattr(sys, "argv", ["code-review-gate", str(feature_dir)])
+
+        with pytest.raises(SystemExit) as exc_info:
+            _code_review_mod.main()
+
+        # Gate exits 2: artifacts absent, but event emission runs unconditionally.
+        assert exc_info.value.code == 2, (
+            f"Expected exit code 2 (artifacts absent), got {exc_info.value.code}"
+        )
+
+        events = self._read_events(project_root)
+        rounds_events = [ev for ev in events if ev.get("event_type") == "CODE_REVIEW_ROUNDS"]
+
+        assert len(rounds_events) == 1, (
+            f"Expected exactly one CODE_REVIEW_ROUNDS event, got {len(rounds_events)}"
+        )
+
+        event = rounds_events[0]
+        data = event["data"]
+
+        # Source literal pin.
+        assert event.get("source") == "code_review", (
+            f"Expected source='code_review', got {event.get('source')!r}"
+        )
+
+        # Projected round list: unknown key dropped, out-of-enum severity dropped.
+        assert data.get("rounds") == _PROJECTION_EXPECTED, (
+            f"data['rounds'] did not match projected form.\n"
+            f"  expected: {_PROJECTION_EXPECTED!r}\n"
+            f"  got:      {data.get('rounds')!r}"
+        )
+
+        # Aggregate totals are derived from raised/survived, which projection preserves.
+        assert data.get("total_raised") == 6, (
+            f"Expected total_raised=6 (3+2+1), got {data.get('total_raised')!r}"
+        )
+        assert data.get("total_survived") == 2, (
+            f"Expected total_survived=2 (1+0+1), got {data.get('total_survived')!r}"
+        )
+
+        # The raw events file must contain neither the free-text leak string nor the
+        # out-of-enum severity label — both must have been stripped by projection.
+        events_file = Path(project_root) / ".fbk-capture" / "events.jsonl"
+        raw_text = events_file.read_text()
+        assert "FREE-TEXT-LEAK" not in raw_text, (
+            "Raw events file contains 'FREE-TEXT-LEAK' — unknown key was not dropped by projection"
+        )
+        assert "catastrophic" not in raw_text, (
+            "Raw events file contains 'catastrophic' — out-of-enum severity was not dropped by projection"
         )

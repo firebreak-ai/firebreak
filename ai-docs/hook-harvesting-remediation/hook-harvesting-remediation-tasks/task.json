@@ -1,0 +1,647 @@
+{
+  "spec": "ai-docs/hook-harvesting-remediation/hook-harvesting-remediation-spec.md",
+  "category": "corrective",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Direct resolver tests: no stage for terminal/checkpoint states, stage for working stages, shared-constant identity guard",
+      "file": "task-01-test-active-stage-resolver.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01",
+        "AC-02"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Declares the new shared-constant interface and an identity-based guard; judgment about state-machine coverage",
+      "status": "complete",
+      "summary": "Created tests/test_capture_active_stage.py (20 tests): 11 pinned non-active states return (None,None), 8 working stages return ('demo-spec',<stage>), identity guard pins NON_ACTIVE_STATES frozenset and asserts both consumers share it by identity with TERMINAL_STATES gone. Collects cleanly at HEAD. Red run at 40ec021: 11 failed (resolver returns stage for COMPLETED/checkpoint states; NON_ACTIVE_STATES AttributeError), 8 working-stage cases pass as expected. Pre-existing indirect router coverage stays green.",
+      "note": "Slice stage-attribution-shared-constant is contract-evolving with no retired tests: the resolver has no direct coverage to retire (the coverage absence is part of the defect), so the slice runs through the legacy gate path"
+    },
+    {
+      "id": "task-02",
+      "title": "Rebuild subagent-count test on the production envelope shape with exact expected count",
+      "file": "task-02-test-subagent-identity-field.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Envelope-shape fidelity is load-bearing; the rebuilt test must fail red for the documented reason",
+      "status": "complete",
+      "summary": "Rebuilt test_subagent_count_excludes_unknown_identity on the production envelope shape (source='hook_router', identity in data['agent_type']) and added test_subagent_count_is_exact_over_production_envelopes (two known personas + one unknown, exact count 2). Red run at 40ec021: both fail 0!=expected because the pre-fix read takes the truthy source literal first and never reaches the identity field. Collects cleanly at HEAD.",
+      "note": null,
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_report_arithmetic.py::test_subagent_count_excludes_unknown_identity — built source=<agent-name>, a non-production envelope shape that masked the always-zero bug; rebuilt pinning source=\"hook_router\" with identity in data[\"agent_type\"]"
+      ]
+    },
+    {
+      "id": "task-03",
+      "title": "Extend injector and e2e seam tests to assert exact metric content, re-choreograph router event to fire during VALIDATING",
+      "file": "task-03-test-injection-metric-content.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-04"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Two test files, fixture choreography against the state machine",
+      "status": "complete",
+      "summary": "Extended tests/test_capture_retro_injector.py (richer fixture: three VERIFICATION_RESULT events, park + READY re-entry in state; test_injects_block_under_metrics_heading now asserts exact lines 'first-try rate: 0.50', 'after-rework rate: 1.00', 'parks: 1', 'rework: 1') and tests/test_capture_e2e_seam.py (router event re-choreographed to fire during VALIDATING with stage assertion; exact 'first-try rate: 0.00', 'parks: 0', 'rework: 0' lines). Red at 40ec021: the stage_summary stub emits only marker + stage/spec labels, no metric lines. Other 4 tests in the two files stay green.",
+      "note": null,
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_capture_retro_injector.py::test_injects_block_under_metrics_heading — heading-only assertion that passed against the metrics-less stub; extended to assert exact gate-rate and parks values",
+        "tests/test_capture_e2e_seam.py::test_two_source_cycle_joins_in_one_report — asserted only the heading and provenance marker; strengthened to exact metric values and re-choreographed so the router event fires while the stage is actively VALIDATING"
+      ]
+    },
+    {
+      "id": "task-04",
+      "title": "New end-to-end injection-seam guard: real producers through writer into injector, exact injected metric values",
+      "file": "task-04-test-injection-seam-guard.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-04",
+        "AC-15"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Owns the shared real-producer-to-report fixture; e2e harness plus tests combined per the harness exception",
+      "status": "complete",
+      "summary": "Created tests/test_capture_injection_seam.py (test_real_producer_cycle_injects_exact_metrics) plus the shared real-producer driver section in tests/capture_fixtures.py (run_fbk helper, minimal/broken spec constants, drive_gate_fail_park_recover 7-step cycle through real fbk.py producers). Asserts exactly 2 spec-gate dispatches and 1 passing VERIFICATION_RESULT during VALIDATING, then the injected block's four exact metric lines (first-try 0.50, after-rework 1.00, parks 1, rework 1). Red at 40ec021: sanity count reads 4 spec-gate envelopes instead of 2 — each dispatch writes a duplicate (gate + chokepoint), exactly as the spec documents.",
+      "note": "Seam-guards slice (cross-cutting); left unshaped in the manifest because it shares AC-04 with the injection-render implementation task and the shape hinge would otherwise forbid that implementation"
+    },
+    {
+      "id": "task-05",
+      "title": "Install-seam and atomic-write tests: sentinel arms capture, settings.json lands via same-directory rename",
+      "file": "task-05-test-install-seam-and-atomic-write.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-11",
+        "AC-16",
+        "AC-20"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Owns the install-seam fixture; drives the real installer against a tmp_path project",
+      "status": "complete",
+      "summary": "Created tests/test_install_seam.py: test_install_arms_capture_with_no_manual_step (real install.sh into tmp project; sentinel at automation/.fbk-managed, instrumented, level 'standard', router emits one TOOL_USE) and test_settings_json_written_by_same_dir_rename (pre-existing operator hook + env preserved, inode changes proving rename semantics, byte-equal .pre-firebreak backup, no temp residue). No-op uv shim is the only stand-in (third-party). Red at 40ec021: sentinel never created (F-03) and cp truncate-in-place keeps the inode (F-22).",
+      "note": null,
+      "slice_shape": "new-contract"
+    },
+    {
+      "id": "task-06",
+      "title": "Rebuild bounded-read test on a divergence fixture where bounded and unbounded reads provably differ",
+      "file": "task-06-test-bounded-config-read.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Fixture must make the two implementations diverge by correctness, not timing; spec's own example fixture had to be corrected",
+      "status": "complete",
+      "summary": "Replaced test_level_reads_only_one_line in tests/test_capture_gate_check.py with the divergence guard test_oversized_first_segment_resolves_safe_default (256 spaces then capture_level=full on one line; bounded readline(256) finds no '=' and falls back to 'standard', unbounded resolves 'full') plus flaky_quarantine companion test_giant_single_line_cfg_stays_fast (5MB line, correctness gating, timing advisory). Red at 40ec021 and at current tree: 'full' != 'standard' from the unbounded readline. Other 10 tests in file pass.",
+      "note": null,
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_capture_gate_check.py::test_level_reads_only_one_line — payload on the second line never exercised the unbounded path; rebuilt on the divergence fixture (out-of-bounds non-default token, asserting the safe default)"
+      ]
+    },
+    {
+      "id": "task-07",
+      "title": "Concurrency guard: a baseline lock created between append and prune protects its spec's lines",
+      "file": "task-07-test-retention-lock-under-concurrency.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-07"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Concurrency choreography requires care to avoid flake and deadlock",
+      "status": "complete",
+      "summary": "Added test_lock_created_during_active_write_protects_spec_lines to tests/test_capture_retention.py: main thread holds retention.file_lock, background event_writer.write blocks, baseline lock file created before release; asserts all 2000 locked-spec lines survive the prune, size cap honored, other-spec lines pruned, one LIFECYCLE append, no warning sentinel. Deterministic, no sleeps; team lead re-ran 5x consecutively, all pass. Contract-preserving slice: spec-mandated guard, explicitly exempt from the red-run discipline per the task's completion gate.",
+      "note": "Retention slice is contract-preserving; this new guard test is spec-mandated (testing strategy requires a red-capable concurrency test for the lock-scope fix), recorded as the operator-confirmed deviation from the no-new-tests shape"
+    },
+    {
+      "id": "task-08",
+      "title": "Round-projection and per-round rendering tests: allowlist at the round-log boundary, one row per detection round",
+      "file": "task-08-test-round-projection-and-rendering.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Unknown-key and out-of-enum adversarial fixtures against the untrusted round-log boundary",
+      "status": "complete",
+      "summary": "Added TestProjectRoundEntries (allowlist projection of exactly three keys, unknown-key and out-of-enum adversarial fixtures, no input mutation) and TestRoundLogProjectedBeforeEventWrite (in-process gate main(); one CODE_REVIEW_ROUNDS event, projected rounds, totals 6/2, no free-text leak in raw file) to tests/test_gates_code_review.py — both skip until project_round_entries/ROUND_SEVERITIES exist. Added test_standard_level_renders_one_row_per_detection_round to tests/test_report_rendering.py. Red at 40ec021: renderer collapses the event to a single totals row (1 row != 2); projection tests skip cleanly. Pre-existing 24 tests pass.",
+      "note": "Per-round slice; the slice's retired test is carried by task-09, which owns the event_writer rebuild"
+    },
+    {
+      "id": "task-09",
+      "title": "Rebuild standard-level strip test with the nested-round fixture: free text stripped, numerics and enum tag survive",
+      "file": "task-09-test-nested-round-redaction.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Nested-structure redaction semantics; red run must fail for the documented reason",
+      "status": "complete",
+      "summary": "Rebuilt test_standard_level_strips_freetext_payload in tests/test_capture_event_writer.py on the nested-round fixture: CODE_REVIEW_ROUNDS event with rounds=[{raised,survived,severity,reason_text}] plus top-level tool_input/count/totals. Asserts at standard level the round survives with numerics and enum severity intact, nested reason_text stripped, tool_input gone, and the raw line carries no sentinel text. test_full_level_preserves_payload untouched. Collects cleanly (10 tests). Red at 40ec021: FREETEXT_KEYS contains 'rounds' so the whole rounds list is stripped — data.get('rounds') is None vs expected projected round.",
+      "note": null,
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_capture_event_writer.py::test_standard_level_strips_freetext_payload — single hand-built payload; rebuilt carrying the nested-round fixture (free text inside a round entry stripped while the round's numeric fields and enum severity survive)"
+      ]
+    },
+    {
+      "id": "task-10",
+      "title": "Rebuild gate envelope-write assertions: spec and task-reviewer gates write no PIPELINE_COMMAND of their own",
+      "file": "task-10-test-gates-write-no-envelope.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-12"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Inverts existing assertions across two gate test files under the single-writer resolution",
+      "status": "complete",
+      "summary": "Replaced the envelope-write classes in tests/test_gates_spec.py and tests/test_gates_task_reviewer.py with no-envelope classes (pass and fail choreography each assert zero PIPELINE_COMMAND envelopes; write-failure-is-silent tests deleted — their premise is the removed duplicate write). Helpers and skip guards preserved; structural validation tests untouched. Red at 40ec021: all 4 new tests fail because both gate main() functions still write their own envelope.",
+      "note": null,
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_gates_spec.py envelope-write assertions (lines 352-405) — asserted the gate's own duplicate PIPELINE_COMMAND write; rebuilt to assert the gate writes no envelope of its own (the chokepoint's single event is the record)",
+        "tests/test_gates_task_reviewer.py envelope-write assertions (lines 393-496) — same duplicate-write assertions; same rebuild as the spec-gate tests"
+      ]
+    },
+    {
+      "id": "task-11",
+      "title": "Pin each producer's exact source string literal in its own test file",
+      "file": "task-11-test-producer-source-pins.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-13"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "The pins are the only check that catches a wrong-but-registered label; exact literals matter",
+      "status": "complete",
+      "summary": "Pinned each producer's exact source literal in its own test file: new test_event_source_is_exact_hook_router_literal in tests/test_capture_hook_router.py (real router run, exactly 1 event, source == 'hook_router') and a source == 'task_completed' pin appended to the verification-event test in tests/test_hooks_task_completed.py. Documented expected-green exception: both producers already stamp the correct literal, pins are regression locks (AC-13 not in the red-run list). 36/36 pass.",
+      "note": null
+    },
+    {
+      "id": "task-12",
+      "title": "Installer-migration tests rewritten to the production merge path; symlinked-config test asserts not-instrumented",
+      "file": "task-12-test-installer-test-corrections.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-19"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Removes a file-level skip guard and rewrites two tests without weakening their distinct properties",
+      "status": "complete",
+      "summary": "tests/test_install_migration.py: removed the file-level skip guard; rewrote the unrelated-hook byte-intact and second-run idempotency tests as merge-only (no bolted-on remove_hook_command call), pinning byte-identical serialization and exactly one hook_router command with the global prefix. tests/test_capture_gate_check_hardening.py: symlinked-config test now also asserts project_is_instrumented is False. Documented expected-green: merge_settings already strips leftovers internally; these are test-fidelity corrections over correct production code. 15/15 pass at both current tree and 40ec021.",
+      "note": null,
+      "slice_shape": "cross-cutting"
+    },
+    {
+      "id": "task-13",
+      "title": "Gate-rate guard: PIPELINE_COMMAND fail-then-pass beside a first-try pass yields exactly one-half first-try rate",
+      "file": "task-13-test-gate-rate-all-gates.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-05"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Real-gate dispatch fixture with exact-fraction arithmetic across gate types",
+      "status": "not_started",
+      "summary": null,
+      "note": "Slice gate-rate-all-gates is contract-evolving with no retired tests (existing rate tests are confirm-green only); legacy gate path"
+    },
+    {
+      "id": "task-14",
+      "title": "Rework-boundary tests rebuilt against the first park in error_history, plus the two-park classification guard",
+      "file": "task-14-test-rework-boundary-first-park.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Boundary semantics across multiple parks; rebuilt tests must fail red via the stale-early-READY fixture",
+      "status": "not_started",
+      "summary": null,
+      "note": null,
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_report_arithmetic.py::test_attempt_after_ready_reentry_classifies_after_rework — encodes the last-write-wins stage_timestamps[\"READY\"] read; rebuilt against the first-park boundary in error_history",
+        "tests/test_report_arithmetic.py::test_rework_derived_from_repeated_stage_entry — same stage_timestamps[\"READY\"] encoding; same first-park rebuild"
+      ]
+    },
+    {
+      "id": "task-15",
+      "title": "Token-boundary guard: checkpoint-period turns attribute to the adjacent working stage with every fixture turn accounted for",
+      "file": "task-15-test-token-boundary-working-stages.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-09"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Exact per-stage token sums require careful fixture arithmetic",
+      "status": "not_started",
+      "summary": null,
+      "note": "Slice token-boundary-working-stages is contract-evolving with no retired tests; legacy gate path"
+    },
+    {
+      "id": "task-16",
+      "title": "Central-redaction coverage driven dynamically from schema.SOURCES; full-level preservation test rebuilt on the enumeration",
+      "file": "task-16-test-redaction-coverage-from-sources.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-14"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Registry-driven enumeration; expected-green correction recorded rather than a fabricated red",
+      "status": "not_started",
+      "summary": null,
+      "note": null,
+      "slice_shape": "cross-cutting"
+    },
+    {
+      "id": "task-17",
+      "title": "Single-writer integration: one real dispatch yields exactly one PIPELINE_COMMAND event; unregistered source warn-but-write",
+      "file": "task-17-test-single-writer-and-source-validation.md",
+      "type": "test",
+      "wave_id": 3,
+      "dependencies": [],
+      "covers": [
+        "AC-12",
+        "AC-13"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Real chokepoint dispatch with event-count and stderr-warning assertions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-18",
+      "title": "Final verification: full suite green and every corrected test's red and green runs captured in completion notes",
+      "file": "task-18-test-final-suite-and-red-run-verification.md",
+      "type": "test",
+      "wave_id": 9,
+      "dependencies": [],
+      "covers": [
+        "AC-21"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Cross-checks the demonstration procedure across all slices, including the expected-green exceptions",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-19",
+      "title": "Define NON_ACTIVE_STATES in state.py; active_stage and report consume it by identity",
+      "file": "task-19-impl-stage-attribution-shared-constant.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-02"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Three files changing atomically around one shared constant; import-cycle awareness required",
+      "status": "not_started",
+      "summary": null,
+      "note": "Slice is contract-evolving with no retired tests (no prior direct resolver coverage existed); legacy gate path",
+      "test_tasks": [
+        "task-01"
+      ]
+    },
+    {
+      "id": "task-20",
+      "title": "Subagent count reads the agent identity field, never the envelope source",
+      "file": "task-20-impl-subagent-identity-field.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-02"
+      ],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file field-read fix with verbatim target expression",
+      "status": "not_started",
+      "summary": null,
+      "note": null,
+      "test_tasks": [
+        "task-02"
+      ],
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_report_arithmetic.py::test_subagent_count_excludes_unknown_identity — non-production envelope shape masked the always-zero bug; replaced by the task-02 rebuild this implementation must turn green"
+      ]
+    },
+    {
+      "id": "task-21",
+      "title": "Installer creates the .fbk-managed sentinel and writes settings.json via same-directory temp-then-rename",
+      "file": "task-21-impl-installer-sentinel-and-atomic-write.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-05"
+      ],
+      "covers": [
+        "AC-11",
+        "AC-20"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Shell installer surgery where same-directory temp placement is load-bearing for atomicity",
+      "status": "not_started",
+      "summary": null,
+      "note": null,
+      "test_tasks": [
+        "task-05"
+      ],
+      "slice_shape": "new-contract"
+    },
+    {
+      "id": "task-22",
+      "title": "stage_summary loads events and state and renders real per-stage gate-rate, parks, and rework values",
+      "file": "task-22-impl-injection-render.md",
+      "type": "implementation",
+      "wave_id": 7,
+      "dependencies": [
+        "task-03",
+        "task-04",
+        "task-23",
+        "task-24"
+      ],
+      "covers": [
+        "AC-04"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Replaces the stub with a real render that must agree with the report command's own arithmetic",
+      "status": "not_started",
+      "summary": null,
+      "note": null,
+      "test_tasks": [
+        "task-03",
+        "task-04"
+      ],
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_capture_retro_injector.py::test_injects_block_under_metrics_heading — heading-only assertion; replaced by the task-03 extension this implementation must turn green",
+        "tests/test_capture_e2e_seam.py::test_two_source_cycle_joins_in_one_report — heading-and-marker-only seam assertion; replaced by the task-03 strengthening"
+      ]
+    },
+    {
+      "id": "task-23",
+      "title": "classify_gate_attempts includes PIPELINE_COMMAND outcomes for the spec, task-reviewer, and code-review gates",
+      "file": "task-23-impl-gate-rate-all-gates.md",
+      "type": "implementation",
+      "wave_id": 5,
+      "dependencies": [
+        "task-13",
+        "task-19",
+        "task-29"
+      ],
+      "covers": [
+        "AC-05"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Rate arithmetic spanning two event types; depends on resolved stages and single-writer events",
+      "status": "not_started",
+      "summary": null,
+      "note": "Slice is contract-evolving with no retired tests (existing rate tests are confirm-green only); legacy gate path",
+      "test_tasks": [
+        "task-13"
+      ]
+    },
+    {
+      "id": "task-24",
+      "title": "After-rework boundary derived from the first park in append-only error_history",
+      "file": "task-24-impl-rework-boundary-from-history.md",
+      "type": "implementation",
+      "wave_id": 6,
+      "dependencies": [
+        "task-14",
+        "task-23"
+      ],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Boundary semantics in the same classification function the gate-rate task reshapes; sequenced after it",
+      "status": "not_started",
+      "summary": null,
+      "note": null,
+      "test_tasks": [
+        "task-14"
+      ],
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_report_arithmetic.py::test_attempt_after_ready_reentry_classifies_after_rework — encoded the stage_timestamps[\"READY\"] read; replaced by the task-14 rebuild",
+        "tests/test_report_arithmetic.py::test_rework_derived_from_repeated_stage_entry — same encoding; replaced by the task-14 rebuild"
+      ]
+    },
+    {
+      "id": "task-25",
+      "title": "Locked-spec set read under the prune's own lock so a concurrently-created lock is honored",
+      "file": "task-25-impl-retention-locked-set-under-lock.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-07"
+      ],
+      "covers": [
+        "AC-07"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Locking-order reasoning; the naive single-lock-scope shape deadlocks",
+      "status": "not_started",
+      "summary": null,
+      "note": null,
+      "test_tasks": [
+        "task-07"
+      ],
+      "slice_shape": "contract-preserving"
+    },
+    {
+      "id": "task-26",
+      "title": "Round entries allowlist-projected at the gate, redaction recurses into nested rounds, one rendered row per round, dead round_count removed",
+      "file": "task-26-impl-per-round-detail-survives-redaction.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-08",
+        "task-09"
+      ],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "One contract across three files: projection at the trust boundary, redaction recursion, and the render",
+      "status": "not_started",
+      "summary": null,
+      "note": null,
+      "test_tasks": [
+        "task-08",
+        "task-09"
+      ],
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_capture_event_writer.py::test_standard_level_strips_freetext_payload — single hand-built payload; replaced by the task-09 nested-round rebuild this implementation must turn green"
+      ]
+    },
+    {
+      "id": "task-27",
+      "title": "Token-boundary list restricted to working stages so checkpoint-period turns are not dropped",
+      "file": "task-27-impl-token-boundary-working-stages.md",
+      "type": "implementation",
+      "wave_id": 8,
+      "dependencies": [
+        "task-15",
+        "task-19"
+      ],
+      "covers": [
+        "AC-09"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Boundary-list arithmetic that must agree with the shared non-active-state constant",
+      "status": "not_started",
+      "summary": null,
+      "note": "Slice is contract-evolving with no retired tests; legacy gate path",
+      "test_tasks": [
+        "task-15"
+      ]
+    },
+    {
+      "id": "task-28",
+      "title": "Both hot-path gate_check reads byte-bounded with the pinned caps",
+      "file": "task-28-impl-gate-config-read-bounded.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-06"
+      ],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file change applying verbatim byte caps",
+      "status": "not_started",
+      "summary": null,
+      "note": null,
+      "test_tasks": [
+        "task-06"
+      ],
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_capture_gate_check.py::test_level_reads_only_one_line — never exercised the unbounded path; replaced by the task-06 divergence rebuild this implementation must turn green"
+      ]
+    },
+    {
+      "id": "task-29",
+      "title": "Gates' own PIPELINE_COMMAND writes removed; writer warn-but-writes unregistered sources",
+      "file": "task-29-impl-source-attribution-and-validation.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-10",
+        "task-11",
+        "task-17"
+      ],
+      "covers": [
+        "AC-12",
+        "AC-13"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Two sides of the single-writer contract across three files; fail-silent guarantee must be preserved",
+      "status": "not_started",
+      "summary": null,
+      "note": null,
+      "test_tasks": [
+        "task-10",
+        "task-11",
+        "task-17"
+      ],
+      "slice_shape": "contract-evolving",
+      "retired_tests": [
+        "tests/test_gates_spec.py envelope-write assertions (lines 352-405) — asserted the duplicate write being removed; replaced by the task-10 rebuild",
+        "tests/test_gates_task_reviewer.py envelope-write assertions (lines 393-496) — same duplicate-write assertions; replaced by the task-10 rebuild"
+      ]
+    },
+    {
+      "id": "task-30",
+      "title": "Chokepoint fast paths return int, retention fcntl fallback typed clean, rounds_to_quiet removed from IF-D-06, contract wording corrected",
+      "file": "task-30-impl-structural-and-type-cleanups.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-17",
+        "AC-18"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Type-checker reasoning plus contract-doc corrections with a pinned mypy baseline",
+      "status": "not_started",
+      "summary": null,
+      "note": "Contract-preserving: no dedicated test task; test_tasks references the final full-suite verification (task-18), and the slice's real gates are the pinned mypy baseline reaching zero and the existing tests staying green",
+      "slice_shape": "contract-preserving",
+      "test_tasks": [
+        "task-18"
+      ]
+    },
+    {
+      "id": "task-31",
+      "title": "Decisions-log remediation entry; glossary confirmation recorded as a finding",
+      "file": "task-31-impl-docs-decisions-log.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-18"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Single documentation file with specified content",
+      "status": "not_started",
+      "summary": null,
+      "note": "Documentation task; test_tasks references the final full-suite verification (task-18) to satisfy the implementation-task schema — the real gate is the decisions-log entry landing",
+      "slice_shape": "contract-preserving",
+      "test_tasks": [
+        "task-18"
+      ]
+    }
+  ]
+}

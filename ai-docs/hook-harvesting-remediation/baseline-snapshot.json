@@ -1,0 +1,1444 @@
+{
+ "captured_at_commit": "40ec021",
+ "suite_command": "assets/fbk-scripts/venv/bin/pytest (cwd assets/fbk-scripts)",
+ "total": 359,
+ "passing": 359,
+ "tests": [
+  {
+   "id": "tests.test_audit.TestLogEvent::test_single_log_event_produces_valid_json_with_correct_fields",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_audit.TestLogEvent::test_multiple_log_calls_produce_independent_lines",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_audit.TestLogEvent::test_existing_entries_preserved_on_append",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_audit.TestLogEvent::test_nested_json_preserved",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_audit.TestLogEvent::test_invalid_json_exits_with_error",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_chokepoint::test_systemexit_zero_reemits_stdout_records_event_reraises",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_chokepoint::test_systemexit_two_preserves_code_and_records_fail",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_chokepoint::test_uninstrumented_calls_runfn_returns_records_nothing",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_chokepoint::test_capture_failure_still_flushes_stdout_and_preserves_exit",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_chokepoint_integration.TestRealStateTransitionChokepoint::test_real_state_transition_reemits_multiline_json_and_propagates_exit",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_chokepoint_integration.TestRealStateTransitionChokepoint::test_real_transition_invalid_propagates_nonzero_and_records",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_chokepoint_integration.TestDirectNormalReturnChokepoint::test_normal_return_zero_returns_value_records_pass_and_flushes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_chokepoint_integration.TestDirectNormalReturnChokepoint::test_normal_return_nonzero_returns_same_value_records_fail",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_e2e_seam::test_two_source_cycle_joins_in_one_report",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_e2e_seam::test_uninstrumented_project_records_nothing_end_to_end",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_event_writer::test_write_appends_exactly_one_jsonl_line",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_event_writer::test_write_runs_prune_check_after_append",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_event_writer::test_out_of_vocabulary_event_type_discarded_with_warning",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_event_writer::test_write_swallows_failure_returns_none_no_raise_no_stdout",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_event_writer::test_first_directory_creation_writes_star_gitignore",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_event_writer::test_standard_level_strips_freetext_payload",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_event_writer::test_full_level_preserves_payload",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_event_writer::test_write_refuses_symlinked_capture_dir",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_event_writer::test_first_write_refuses_symlinked_project_root",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_event_writer::test_file_lock_is_exclusive",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_fixtures::test_event_builder_yields_full_envelope",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_fixtures::test_make_project_writes_sentinel_only_when_marked",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestProjectIsInstrumented::test_instrumented_true_for_firebreak_marked_project",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestProjectIsInstrumented::test_instrumented_true_for_capture_cfg_project",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestProjectIsInstrumented::test_instrumented_false_for_bare_project",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestProjectIsInstrumented::test_instrumented_false_on_filesystem_error",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestProjectIsInstrumented::test_instrumented_false_on_file_where_directory_expected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestResolveCaptureLevel::test_level_returns_off_from_cfg",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestResolveCaptureLevel::test_level_returns_standard_from_cfg",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestResolveCaptureLevel::test_level_defaults_standard_for_firebreak_without_cfg",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestResolveCaptureLevel::test_level_invalid_cfg_warns_and_defaults_standard",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestResolveCaptureLevel::test_level_off_for_uninstrumented_project",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check.TestResolveCaptureLevel::test_level_reads_only_one_line",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check_hardening::test_bare_automation_dir_is_not_instrumented",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check_hardening::test_sentinel_makes_project_instrumented",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check_hardening::test_in_tree_full_clamped_to_standard_without_corroboration",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check_hardening::test_full_honored_with_env_corroboration",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check_hardening::test_full_honored_with_global_marker_corroboration",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check_hardening::test_symlinked_capture_dir_treated_uninstrumented",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check_hardening::test_symlinked_config_refused",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_gate_check_overhead::test_instrumented_check_is_cheap_on_bare_project",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_standard_strips_payload",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_full_records_payload",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_uninstrumented_writes_nothing_no_stdout",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_subagent_empty_identity_recorded_but_excluded",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_subagent_start_is_not_counted_as_a_completion",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_registered_lifecycle_events_classify_explicitly[UserPromptSubmit]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_registered_lifecycle_events_classify_explicitly[Notification]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_stage_null_for_terminal_run_state",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_stage_null_when_no_run_active",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_writes_under_cwd_never_global",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_gate_and_write_follow_pinned_cwd",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_hook_router::test_router_fail_silent_on_unwritable",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_known_agents.TestDeriveKnownAgents::test_known_persona_matches_via_derive",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_known_agents.TestDeriveKnownAgents::test_scan_success_clears_stale_fallback",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_known_agents.TestDeriveKnownAgents::test_scan_failure_sets_stale_fallback",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_known_agents.TestIsKnownAgent::test_unknown_identity_rejected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_known_agents.TestIsKnownAgent::test_empty_identity_rejected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_report_integration::test_real_producers_drive_nonzero_report_rows",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_retention::test_drops_oldest_lines_past_cap",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_retention::test_never_drops_protected_spec_under_ceiling",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_retention::test_protected_bytes_capped_past_ceiling",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_retention::test_over_cap_condition_is_surfaced",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_retention::test_leaves_file_intact_on_failure",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_retention::test_no_prune_when_under_cap",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_retro_injector::test_injects_block_under_metrics_heading",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_retro_injector::test_does_not_disturb_existing_prose_section",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_retro_injector::test_rework_produces_two_marked_blocks",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_retro_injector::test_injector_exception_is_swallowed",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_schema::test_vocabulary_is_exactly_the_six_known_types",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_schema::test_known_event_type_is_recognized",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_schema::test_unknown_event_type_is_rejected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_schema::test_drift_check_passes_on_canonical_sources",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_schema::test_drift_check_flags_a_foreign_event_type",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_schema::test_drift_check_flags_a_foreign_write_call",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_schema::test_redact_strips_freetext_at_standard",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_schema::test_redact_preserves_payload_at_full",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_schema::test_redact_off_level_strips_like_standard_or_stricter",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_token_harvester.TestTurnAttributionByStageBoundary::test_turn_before_boundary_attributes_to_earlier_stage",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_token_harvester.TestTurnAttributionByStageBoundary::test_turn_exactly_at_boundary_attributes_to_later_stage",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_token_harvester.TestUnavailableTranscript::test_missing_transcript_marks_unavailable_not_zero",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_token_harvester.TestUnavailableTranscript::test_unreadable_transcript_marks_unavailable_not_zero",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_token_harvester.TestCrossSessionAggregation::test_two_transcripts_aggregate_into_one_total_set",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_token_harvester.TestCrossSessionAggregation::test_stage_only_in_unreadable_transcript_stays_unavailable",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_capture_token_harvester.TestBoundaryAdjacentTurnCount::test_boundary_adjacent_turn_count_emitted",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_config.TestMergeConfigs::test_merge_disjoint_configs",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_config.TestMergeConfigs::test_merge_overrides_later_wins",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_config.TestMergeConfigs::test_merge_nested_dicts_deep_merge",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_config.TestMergeConfigs::test_merge_three_layer_precedence",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_config.TestLoadYaml::test_load_yaml_nonexistent_path",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_config.TestParseFrontmatter::test_parse_frontmatter_valid_yaml",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_config.TestPyYAMLRequired::test_missing_pyyaml_exits_with_clear_error",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestRecoveryCheck::test_no_state_returns_not_recovering",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestRecoveryCheck::test_missing_session_id_returns_not_recovering",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestRecoveryCheck::test_reports_state_fields",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestRecoveryCheck::test_corrupt_state_file_treated_as_empty",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestCheckAbort::test_no_abort_file_exits_zero",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestCheckAbort::test_empty_abort_file_exits_zero",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestCheckAbort::test_abort_requested_exits_two_and_clears",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestCheckpoint::test_creates_state_file_with_fields",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestCheckpoint::test_merges_without_clobbering_unspecified_fields",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestCheckpoint::test_ignores_empty_csv_entries",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestCleanup::test_removes_state_file",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestCleanup::test_missing_state_file_is_ok",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestCleanup::test_does_not_touch_other_files",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestShow::test_prints_empty_when_no_state",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_council_session_state.TestShow::test_prints_state_contents",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_dispatcher.TestDispatcherCommandMap::test_command_map_available",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_dispatcher.TestDispatcherCommandMap::test_command_map_contains_all_19_commands",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_dispatcher.TestDispatcherCommandMap::test_intent_gate_maps_to_exact_module",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_dispatcher.TestDispatcherCommandMap::test_design_gate_maps_to_exact_module",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_dispatcher.TestDispatcherCommandMap::test_code_review_gate_maps_to_exact_module",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_dispatcher.TestDispatcherModuleResolution::test_each_command_resolves_to_importable_module",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_dispatcher.TestDispatcherBehavior::test_unrecognized_command_exits_2",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_dispatcher.TestDispatcherBehavior::test_unrecognized_command_prints_to_stderr",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_dispatcher.TestDispatcherIntegration::test_stdin_passthrough_to_module",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestBreakdownGateValidation::test_uncovered_ac_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestBreakdownGateValidation::test_circular_dependency_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestBreakdownGateValidation::test_wave_ordering_violation_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestBreakdownGateValidation::test_file_conflict_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestBreakdownGateValidation::test_test_ordering_violation_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestBreakdownGateValidation::test_valid_breakdown_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestSliceShapeAwareness::test_cross_cutting_test_only_slice_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestSliceShapeAwareness::test_contract_preserving_impl_without_new_test_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestSliceShapeAwareness::test_contract_evolving_missing_retired_tests_list_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestSliceShapeAwareness::test_contract_evolving_with_retired_tests_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestSliceShapeAwareness::test_cross_cutting_with_impl_task_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestSliceShapeAwareness::test_slices_breakdown_missing_test_lock_manifest_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestSliceShapeAwareness::test_slices_breakdown_with_test_lock_manifest_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestBounceBackMarkerDetection::test_unresolved_bounce_back_in_task_file_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestBounceBackMarkerDetection::test_no_bounce_back_marker_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestLegacyBreakdownUnchanged::test_legacy_no_slice_metadata_passes_same_as_before",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_breakdown.TestLegacyBreakdownUnchanged::test_legacy_uncovered_ac_still_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestCodeReviewGatePasses::test_all_artifacts_present_and_hashes_intact_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestMissingArtifacts::test_missing_quality_scan_artifact_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestMissingArtifacts::test_quality_scan_missing_severity_field_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestMissingArtifacts::test_missing_test_review_verdict_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestHashMismatch::test_modified_locked_test_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestHashMismatch::test_shadow_test_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestNonFailingConditions::test_critical_severity_quality_finding_does_not_fail",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestNonFailingConditions::test_missing_hash_kind_discrepancy_does_not_fail",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestNonFailingConditions::test_test_review_drift_finding_does_not_fail_gate",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestVerifyManifestDelegation::test_hash_check_delegates_to_verify_manifest",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestPathGuard::test_missing_feature_dir_exits_2",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestPathGuard::test_binary_quality_scan_degrades_gracefully",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestCodeReviewRoundsEvent::test_valid_round_file_emits_event",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestCodeReviewRoundsEvent::test_absent_round_file_emits_no_event_unchanged_passfail",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestCodeReviewRoundsEvent::test_malformed_round_file_no_event_warns_unchanged",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestCodeReviewRoundsEvent::test_out_of_bounds_round_value_treated_malformed[negative_raised_count-round_data_override0]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_code_review.TestCodeReviewRoundsEvent::test_out_of_bounds_round_value_treated_malformed[over_length_rounds_list-round_data_override1]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestDesignGatePassesFull::test_well_formed_design_artifacts_pass",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestManifestToDirDrift::test_manifest_lists_nonexistent_page_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestDirToManifestDrift::test_unlisted_page_in_design_dir_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestBothDirectionsDrift::test_both_directions_reports_both_failures",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestDecompositionRationale::test_missing_decomposition_rationale_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestDecompositionRationale::test_decomposition_rationale_present_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestDecisionsRecordedCount::test_zero_decisions_recorded_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestDecisionsRecordedCount::test_absent_decisions_recorded_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestDecisionsRecordedCount::test_nonzero_decisions_recorded_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestFreshEyesGate::test_open_critical_design_observation_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestFreshEyesGate::test_empty_critical_section_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestInjectionScan::test_injection_in_design_page_emits_warning",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestPathGuard::test_missing_feature_dir_exits_2",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_design.TestPathGuard::test_binary_manifest_degrades_gracefully",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestIntentGatePassesFull::test_well_formed_artifact_set_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestMissingPRDSections::test_missing_vision_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestMissingPRDSections::test_missing_problem_statement_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestMissingPRDSections::test_missing_goals_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestMissingPRDSections::test_missing_use_cases_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestMissingPRDSections::test_missing_functional_requirements_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestMissingPRDSections::test_missing_nonfunctional_requirements_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestMissingPRDSections::test_missing_edge_cases_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestMissingPRDSections::test_missing_dependencies_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestMissingPRDSections::test_missing_success_metrics_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestMissingPRDSections::test_missing_open_questions_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestPRDInventoryConsistency::test_behavior_in_inventory_not_referenced_in_prd_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestPRDInventoryConsistency::test_behavior_in_prd_not_in_inventory_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestPRDInventoryConsistency::test_consistent_bidirectional_references_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestGrillingLog::test_missing_grilling_log_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestGrillingLog::test_malformed_grilling_log_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestGrillingLog::test_well_formed_grilling_log_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestFreshEyesGate::test_open_critical_observation_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestFreshEyesGate::test_empty_critical_section_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestInjectionWarnings::test_poisoned_prd_emits_warning_count",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestPathGuard::test_missing_feature_dir_exits_2",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_intent.TestPathGuard::test_binary_prd_degrades_to_structural_failure",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_review.TestReviewValidation::test_missing_perspective",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_review.TestReviewValidation::test_missing_severity_tags",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_review.TestReviewValidation::test_missing_threat_model_section",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_review.TestReviewValidation::test_threat_model_without_rationale",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_review.TestReviewValidation::test_valid_review",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_review.TestReviewValidation::test_missing_severity_in_perspective_section",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_review.TestReviewValidation::test_threat_model_with_valid_rationale",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_review.TestReviewValidation::test_missing_testing_strategy_new_tests",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_review.TestReviewValidation::test_missing_testing_strategy_existing_tests",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_review.TestReviewValidation::test_missing_testing_strategy_infrastructure",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestCheckSection::test_missing_section_produces_failure",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestCheckSection::test_empty_section_produces_failure",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestCheckSection::test_valid_section_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestCheckOpenQuestions::test_bare_question_without_rationale_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestCheckOpenQuestions::test_inline_rationale_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestCheckOpenQuestions::test_indented_continuation_rationale_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceBlockDetection::test_no_slices_block_passes_identically",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceBlockDetection::test_test_discipline_in_prose_does_not_activate_check",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceBlockDetection::test_slices_block_with_valid_slice_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceDisciplineValidation::test_slice_missing_test_discipline_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceDisciplineValidation::test_slice_invalid_test_discipline_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceDisciplineValidation::test_valid_new_contract_discipline_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceDisciplineValidation::test_valid_contract_preserving_discipline_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceDisciplineValidation::test_valid_contract_evolving_discipline_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceDisciplineValidation::test_valid_cross_cutting_discipline_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceVocabularyDriftSentinel::test_canonical_discipline_passes[new-contract]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceVocabularyDriftSentinel::test_canonical_discipline_passes[contract-preserving]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceVocabularyDriftSentinel::test_canonical_discipline_passes[contract-evolving]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceVocabularyDriftSentinel::test_canonical_discipline_passes[cross-cutting]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceVocabularyDriftSentinel::test_retired_discipline_fails[unit]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceVocabularyDriftSentinel::test_retired_discipline_fails[integration]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceVocabularyDriftSentinel::test_retired_discipline_fails[e2e]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSliceVocabularyDriftSentinel::test_retired_discipline_fails[contract]",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestInventoryCoverage::test_behavior_not_covered_by_any_slice_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestInventoryCoverage::test_all_behaviors_covered_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestInventoryCoverage::test_empty_inventory_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestInventoryCoverage::test_no_inventory_file_skips_coverage_check",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestTestingStrategyRetainedForSliceSpecs::test_slices_spec_without_ac_in_testing_strategy_fails",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSpecGateWritesEnvelope::test_spec_gate_pass_writes_envelope",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSpecGateWritesEnvelope::test_spec_gate_fail_writes_envelope",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec.TestSpecGateWritesEnvelope::test_spec_gate_write_failure_is_silent",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec_injection.TestControlCharacterDetection::test_control_character_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec_injection.TestZeroWidthCharacterDetection::test_zero_width_space_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec_injection.TestHTMLCommentInjectionDetection::test_html_comment_with_instruction_phrase_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec_injection.TestEmbeddedInstructionPatternDetection::test_embedded_instruction_pattern_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec_injection.TestCleanSpec::test_clean_spec_no_warnings",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_spec_injection.TestCodeBlockExemption::test_instruction_in_code_block_exempt",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestParseFormatter::test_valid_frontmatter",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestParseFormatter::test_missing_frontmatter",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestParseFormatter::test_unclosed_frontmatter",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_missing_required_field",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_invalid_type_enum",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_implementation_missing_test_tasks",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_file_scope_conflict_same_wave",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_valid_task_set_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_missing_files_to_create_or_modify",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_invalid_ac_identifier_format",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_ac_coverage_test_task_missing",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_ac_coverage_impl_task_missing",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_test_tasks_reference_validation",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_corrective_category_allows_test_only_ac",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestValidateTasks::test_testing_infrastructure_category_allows_test_only_ac",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestTaskReviewerGateWritesEnvelope::test_task_reviewer_gate_pass_writes_envelope",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestTaskReviewerGateWritesEnvelope::test_task_reviewer_gate_fail_writes_envelope",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_task_reviewer.TestTaskReviewerGateWritesEnvelope::test_task_reviewer_gate_write_failure_is_silent",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_test_hash.TestComputeHashesAndCreateManifest::test_first_run_creates_manifest_with_per_entry_objects",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_test_hash.TestComputeHashesAndCreateManifest::test_no_change_verification_returns_empty_list",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_test_hash.TestComputeHashesAndCreateManifest::test_modified_file_returns_modified_discrepancy",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_test_hash.TestComputeHashesAndCreateManifest::test_deleted_file_returns_missing_discrepancy",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_test_hash.TestComputeHashesAndCreateManifest::test_empty_directory_verify_returns_empty_list",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_test_hash.TestListDrivenLockMode::test_locked_pre_existing_file_appears_in_manifest",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_test_hash.TestListDrivenLockMode::test_locked_file_tamper_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_test_hash.TestShadowTestDetection::test_unlisted_file_in_locked_scope_flagged_as_shadow",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_test_hash.TestShadowTestDetection::test_unlisted_file_outside_locked_scope_not_flagged",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_gates_test_hash.TestVerifyManifestReturnStructure::test_discrepancy_dict_has_kind_and_path",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_dispatch_status.TestDispatchStatusFormatting::test_queued_state_formatted_correctly",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_dispatch_status.TestDispatchStatusFormatting::test_reviewing_state_shows_history",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_dispatch_status.TestDispatchStatusFormatting::test_parked_state_shows_failure_details",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_dispatch_status.TestDispatchStatusFormatting::test_completed_state_formatted",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_dispatch_status.TestDispatchStatusFormatting::test_output_contains_spec_name_and_state",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_dispatch_status.TestDispatchStatusFormatting::test_error_history_displayed_for_parked_spec",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestFailureCountParsing::test_pytest_summary_counts_each_failure",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestFailureCountParsing::test_go_counts_each_fail_line",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestFailureCountParsing::test_unparseable_test_output_reports_at_least_one",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestFailureCountParsing::test_ruff_summary_counts_each_error",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestFailureCountParsing::test_eslint_summary_counts_errors_not_warnings",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestFailureCountParsing::test_unparseable_lint_output_reports_at_least_one",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestTaskPathRegex::test_matches_feature_suffixed_tasks_dir",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestTaskPathRegex::test_matches_plain_tasks_dir",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestTaskPathRegex::test_non_sdl_task_description_does_not_match",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestTaskPathRegex::test_path_without_ai_docs_prefix_does_not_match",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestTaskPathRegex::test_matches_absolute_path",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestDetectTestCmd::test_npm_project_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestDetectTestCmd::test_cargo_project_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestDetectTestCmd::test_go_project_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestDetectTestCmd::test_pytest_project_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestDetectTestCmd::test_makefile_test_target_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestDetectTestCmd::test_empty_directory_returns_empty_string",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestDetectLintCmd::test_eslint_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestDetectLintCmd::test_ruff_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestDetectLintCmd::test_empty_directory_returns_empty_string",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestVerificationResultEvent::test_verification_event_written_on_failure",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestVerificationResultEvent::test_verification_event_records_zero_failures_on_pass",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_hooks_task_completed.TestVerificationResultEvent::test_verification_write_failure_is_silent",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_injection.TestDetectInjectionsImportContract::test_importable_from_fbk_injection",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_injection.TestControlCharacterDetection::test_control_character_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_injection.TestZeroWidthCharacterDetection::test_zero_width_space_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_injection.TestHTMLCommentInjectionDetection::test_html_comment_instruction_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_injection.TestEmbeddedInstructionPatternDetection::test_embedded_instruction_outside_code_block_detected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_injection.TestCleanInputReturnsZero::test_clean_string_returns_zero",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_injection.TestCleanInputReturnsZero::test_instruction_in_code_fence_exempt",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_injection.TestFilePathInput::test_accepts_file_path",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_install_migration.TestLeftoverProjectRegistrationRemoved::test_leftover_project_registration_removed",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_install_migration.TestMergeStripsLeftoverWithoutSeparateRemovalCall::test_merge_alone_removes_leftover_project_router",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_install_migration.TestMergeStripsLeftoverWithoutSeparateRemovalCall::test_merge_alone_preserves_unrelated_entry",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_install_migration.TestMergeStripsLeftoverWithoutSeparateRemovalCall::test_merge_alone_is_idempotent",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_install_migration.TestUnrelatedHookLeftByteIntact::test_unrelated_hook_left_byte_intact",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_install_migration.TestSecondRunIsIdempotent::test_second_run_is_idempotent",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_install_migration.TestGlobalRegistrationResolvesToGlobalPath::test_global_registration_resolves_to_global_path",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_install_migration.TestCaptureDirGitignored::test_capture_dir_gitignored",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_pipeline.TestValidateSighting::test_valid_behavioral_critical_passes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_pipeline.TestValidateSighting::test_invalid_behavioral_minor_rejected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_pipeline.TestValidateSighting::test_invalid_structural_critical_rejected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_pipeline.TestValidateSighting::test_missing_title_field_rejected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_pipeline.TestValidateSighting::test_title_below_minimum_length_rejected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_pipeline.TestValidateSighting::test_invalid_type_rejected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_precheck.TestPrerequisiteCheckNonBlocking::test_check_never_calls_sys_exit",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_precheck.TestIntentMissingAtDesign::test_design_fails_when_prd_missing",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_precheck.TestIntentMissingAtDesign::test_design_passes_when_prd_present",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_precheck.TestDesignMissingAtSpec::test_spec_fails_when_design_manifest_missing",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_precheck.TestDesignMissingAtSpec::test_spec_passes_when_design_manifest_present",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_precheck.TestSpecMissingAtBreakdown::test_breakdown_fails_when_spec_missing",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_precheck.TestSpecMissingAtBreakdown::test_breakdown_passes_when_spec_present",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_precheck.TestImplMissingAtCodeReview::test_code_review_fails_when_impl_absent",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_precheck.TestImplMissingAtCodeReview::test_code_review_passes_when_impl_present",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_precheck.TestReturnStructure::test_return_dict_has_required_keys",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_arithmetic::test_attempt_before_park_classifies_first_try",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_arithmetic::test_attempt_after_ready_reentry_classifies_after_rework",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_arithmetic::test_first_try_pass_rate_is_exact_fraction",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_arithmetic::test_kill_rate_is_exact_value",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_arithmetic::test_park_with_empty_reason_renders_no_reason_row",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_arithmetic::test_rework_derived_from_repeated_stage_entry",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_arithmetic::test_subagent_count_excludes_unknown_identity",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_arithmetic::test_stale_fallback_warning_fires_with_zero_subagent_events",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_rendering::test_report_renders_all_required_row_kinds",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_rendering::test_report_renders_real_values_from_producer_shapes",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_rendering::test_report_runs_mid_cycle_with_partial_rows",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_rendering::test_missing_transcript_renders_literal_unavailable",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_rendering::test_zero_parks_renders_present_empty_row",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_rendering::test_empty_vs_absent_row_discriminator",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_report_rendering::test_over_cap_retention_warning_surfaced",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_retro::test_second_append_preserves_first",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestCreateState::test_create_state_produces_queued",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestCreateState::test_create_state_duplicate_rejected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestValidTransition::test_queued_to_validating_succeeds",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestValidTransition::test_multi_step_transition",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestInvalidTransition::test_invalid_transition_rejected",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestParkedState::test_parked_stores_failure_info",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestParkedState::test_parked_without_reason",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestReadyState::test_ready_resolves_from_parked_info",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestReadyState::test_ready_clears_parked_info_when_transitioning",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestStateValidTransitionsMap::test_valid_transitions_map_exists",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestInjectorWiring::test_injection_fires_on_working_stage_to_checkpoint",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestInjectorWiring::test_injection_does_not_fire_on_park",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestInjectorWiring::test_injection_does_not_fire_leaving_queued_or_checkpoint_or_ready",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestInjectorWiring::test_injection_does_not_fire_on_ready_resume",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestInjectorWiring::test_failed_injection_does_not_block_transition",
+   "status": "pass"
+  },
+  {
+   "id": "tests.test_state.TestInjectorWiring::test_injection_additive_existing_transitions_unchanged",
+   "status": "pass"
+  }
+ ]
+}

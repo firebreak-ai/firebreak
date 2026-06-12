@@ -257,13 +257,36 @@ def test_first_directory_creation_writes_star_gitignore(tmp_path):
 
 
 def test_standard_level_strips_freetext_payload(tmp_path):
-    """At capture_level='standard', free-text payload fields are stripped before writing."""
+    """At standard level, nested free-text inside a round entry is stripped while round
+    numeric fields and enum severity tag survive.
+
+    Pre-fix: 'rounds' is itself in FREETEXT_KEYS, so the entire rounds list is stripped
+    and the exact-equality assertion on data['rounds'] fails red.
+    Post-fix: 'rounds' is removed from FREETEXT_KEYS and redact recurses into nested
+    dicts/lists, stripping only the nested free-text key (reason_text) while preserving
+    numeric counts and the severity enum.
+    """
     path = _events_path(tmp_path)
 
+    data_in = {
+        "rounds": [
+            {
+                "raised": 3,
+                "survived": 1,
+                "severity": "major",
+                "reason_text": "NESTED-FREETEXT sentinel",
+            }
+        ],
+        "total_raised": 3,
+        "total_survived": 1,
+        "tool_input": {"command": "secret"},
+        "count": 2,
+    }
+
     event_writer.write(
-        "TOOL_USE",
-        "hook_router",
-        {"tool_input": {"command": "secret"}, "count": 2},
+        "CODE_REVIEW_ROUNDS",
+        "code_review",
+        data_in,
         "s",
         "IMPLEMENTING",
         "standard",
@@ -274,16 +297,38 @@ def test_standard_level_strips_freetext_payload(tmp_path):
     assert len(lines) == 1, f"expected 1 line written, got {len(lines)}"
 
     record = lines[0]
-    data = record.get("data", {})
+    data = record["data"]
 
-    # Free-text payload key must be absent or emptied after standard redaction.
+    # Top-level free-text key must be stripped.
     assert "tool_input" not in data, (
         f"expected 'tool_input' stripped at standard level, but data was: {data!r}"
     )
 
-    # Structural/numeric field must survive.
+    # Structural/numeric top-level fields must survive.
     assert data.get("count") == 2, (
         f"expected 'count' to survive standard redaction, data was: {data!r}"
+    )
+    assert data.get("total_raised") == 3, (
+        f"expected 'total_raised' to survive standard redaction, data was: {data!r}"
+    )
+    assert data.get("total_survived") == 1, (
+        f"expected 'total_survived' to survive standard redaction, data was: {data!r}"
+    )
+
+    # The rounds list must survive with numeric fields and enum severity tag intact,
+    # and the nested free-text key stripped by recursion.
+    assert data.get("rounds") == [{"raised": 3, "survived": 1, "severity": "major"}], (
+        f"expected rounds to survive with nested free-text stripped, but data['rounds'] was: "
+        f"{data.get('rounds')!r}"
+    )
+
+    # Raw written line must not contain either sentinel string.
+    raw_line = _read_lines(path)[0]
+    assert "NESTED-FREETEXT" not in raw_line, (
+        f"expected 'NESTED-FREETEXT' sentinel absent from written line, but found in: {raw_line!r}"
+    )
+    assert "secret" not in raw_line, (
+        f"expected 'secret' sentinel absent from written line, but found in: {raw_line!r}"
     )
 
 

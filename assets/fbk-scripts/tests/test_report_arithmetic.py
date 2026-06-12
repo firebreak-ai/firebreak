@@ -309,18 +309,19 @@ def _write_persona(base_dir, filename, name_value):
 def test_subagent_count_excludes_unknown_identity(tmp_path, monkeypatch):
     """Subagent aggregate counts only SUBAGENT_STOP events with a known identity.
 
-    This test exercises the *configurable* persona scan root rather than the
-    hardcoded fallback list.  It points FBK_AGENTS_DIR at a temporary agents
-    directory (the same override the production path reads) containing a single
-    persona whose name is deliberately NOT a member of the hardcoded fallback
-    set.  Because the identity is only ever "known" if the real directory scan
-    works, the test fails if the configurable scan root stops working — it can
-    no longer be satisfied by the fallback.
+    The hook router writes SUBAGENT_STOP envelopes where `source` is always the
+    literal "hook_router" (the writer name) and the agent identity lives in
+    `data["agent_type"]` / `data["is_known_agent"]`.  The pre-fix implementation
+    reads `ev.get("source") or ev.get("data", {}).get("agent_type")` — on a
+    production envelope the truthy `source` ("hook_router") always wins and the
+    identity fallback never fires, so the count is always 0.  This test pins the
+    production envelope shape so it can only pass when the implementation reads
+    the identity from `data`, not from `source`.
 
-    The events are: one with the scanned identity (counted), one with an empty
-    identity, and one with an unrecognised identity (both excluded).  The
-    aggregated count must equal 1, and the scan must report a live result
-    (STALE_FALLBACK is False) rather than the hardcoded fallback.
+    The events are: one with a known identity in data (counted), one with an
+    empty identity in data (excluded), and one with an unrecognised identity in
+    data (excluded).  The aggregated count must equal 1, and the scan must report
+    a live result (STALE_FALLBACK is False) rather than the hardcoded fallback.
     """
     from fbk.capture import known_agents
 
@@ -342,26 +343,29 @@ def test_subagent_count_excludes_unknown_identity(tmp_path, monkeypatch):
     spec = "test-spec"
 
     events = [
+        # source is the router writer name; identity is only in data — counted.
         capture_fixtures.build_event(
             "SUBAGENT_STOP",
-            source=scanned_identity,  # known via the configured scan root
+            source="hook_router",
             spec=spec,
             stage=stage,
-            data={"agent_type": scanned_identity},
+            data={"agent_type": "fbk-scan-probe", "is_known_agent": True},
         ),
+        # empty identity in data — excluded.
         capture_fixtures.build_event(
             "SUBAGENT_STOP",
-            source="",  # empty identity
+            source="hook_router",
             spec=spec,
             stage=stage,
-            data={"agent_type": ""},
+            data={"agent_type": "", "is_known_agent": False},
         ),
+        # unrecognised identity in data — excluded.
         capture_fixtures.build_event(
             "SUBAGENT_STOP",
-            source="random-unknown-bot",  # unrecognised identity
+            source="hook_router",
             spec=spec,
             stage=stage,
-            data={"agent_type": "random-unknown-bot"},
+            data={"agent_type": "random-unknown-bot", "is_known_agent": False},
         ),
     ]
 
@@ -375,6 +379,63 @@ def test_subagent_count_excludes_unknown_identity(tmp_path, monkeypatch):
     assert known_agents.STALE_FALLBACK is False, (
         "count_known_subagents must derive the known set from the configured "
         "FBK_AGENTS_DIR scan, not the hardcoded fallback"
+    )
+
+
+def test_subagent_count_is_exact_over_production_envelopes(tmp_path, monkeypatch):
+    """count_known_subagents returns the exact count of known-identity events.
+
+    Two known personas (fbk-scan-probe-a and fbk-scan-probe-b) are written into
+    a temp agents directory, which is then set as the scan root.  Three
+    SUBAGENT_STOP events are built — all with source="hook_router" matching the
+    production envelope shape — two with known identities and one with an
+    unrecognised identity.  The function must return exactly 2.
+
+    Red mechanics: the pre-fix implementation reads
+    `ev.get("source") or ev.get("data", {}).get("agent_type")`.  On every
+    production envelope source is the truthy literal "hook_router", so it always
+    wins and the data fallback never fires.  "hook_router" is not a known agent,
+    so the pre-fix count is exactly 0 and this test fails red as 0 != 2.
+    """
+    from fbk.capture import known_agents
+
+    persona_dir = tmp_path / "agents"
+    persona_dir.mkdir()
+    _write_persona(persona_dir, "fbk-scan-probe-a.md", "fbk-scan-probe-a")
+    _write_persona(persona_dir, "fbk-scan-probe-b.md", "fbk-scan-probe-b")
+    monkeypatch.setenv("FBK_AGENTS_DIR", str(persona_dir))
+
+    stage = "VALIDATING"
+    spec = "test-spec"
+
+    events = [
+        capture_fixtures.build_event(
+            "SUBAGENT_STOP",
+            source="hook_router",
+            spec=spec,
+            stage=stage,
+            data={"agent_type": "fbk-scan-probe-a", "is_known_agent": True},
+        ),
+        capture_fixtures.build_event(
+            "SUBAGENT_STOP",
+            source="hook_router",
+            spec=spec,
+            stage=stage,
+            data={"agent_type": "fbk-scan-probe-b", "is_known_agent": True},
+        ),
+        capture_fixtures.build_event(
+            "SUBAGENT_STOP",
+            source="hook_router",
+            spec=spec,
+            stage=stage,
+            data={"agent_type": "random-unknown-bot", "is_known_agent": False},
+        ),
+    ]
+
+    count = report.count_known_subagents(events)
+
+    assert count == 2, (
+        f"expected exactly 2 known-agent events (probe-a and probe-b), got {count}"
     )
 
 
