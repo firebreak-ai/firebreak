@@ -412,8 +412,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Replaces the stub with a real render that must agree with the report command's own arithmetic",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "stage_summary stub in fbk/report.py replaced with the real render: loads events (.fbk-capture/events.jsonl) and state, computes classify_gate_attempts / first_try_pass_rate / guarded after-rework rate / derive_parks / derive_rework — the same helpers the report command uses, so the injected block agrees with the report's own arithmetic — and appends the four metric lines in order. Docstring names inject_stage_metrics as sole consumer. All three injection tests green (injector exact-content, e2e two-source seam, real-producer seam guard); report arithmetic and integration files fully green; mypy clean. Team lead re-verified: suite at 400 passed, 1 failed (the wave-8 token boundary), zero regressions.",
       "note": null,
       "test_tasks": [
         "task-03",

@@ -232,8 +232,11 @@ def count_known_subagents(events):
 def stage_summary(spec, stage):
     """Return a markdown metrics block body for one stage.
 
-    Opens with the provenance marker line and includes the stage's gate/park/
-    rework metrics.  Tokens are excluded from the per-stage injected block.
+    Loads events from the current working directory's .fbk-capture/events.jsonl
+    and state via _load_state, then renders the stage's real gate-rate, parks,
+    and rework values beneath the provenance marker.  Tokens are excluded from
+    the per-stage injected block.  Consumed only by
+    retro_injector.inject_stage_metrics.
 
     Args:
         spec:  The spec name.
@@ -247,6 +250,19 @@ def stage_summary(spec, stage):
     lines = [marker]
     lines.append(f"stage: {stage}")
     lines.append(f"spec: {spec}")
+    events = _load_events(os.getcwd())
+    st = _load_state(spec)
+    attempts = classify_gate_attempts(events, st, stage)
+    ftr = first_try_pass_rate(attempts)
+    after_rework_attempts = [a for a in attempts if a["phase"] == "after_rework"]
+    after_rework_rate = (
+        sum(1 for a in after_rework_attempts if a["passed"]) / len(after_rework_attempts)
+        if after_rework_attempts else 0.0
+    )
+    lines.append(f"first-try rate: {ftr:.2f}")
+    lines.append(f"after-rework rate: {after_rework_rate:.2f}")
+    lines.append(f"parks: {len(derive_parks(st, stage))}")
+    lines.append(f"rework: {derive_rework(st, stage)}")
     return "\n".join(lines)
 
 
