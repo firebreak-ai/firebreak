@@ -42,9 +42,14 @@ def classify_gate_attempts(events, st, stage):
       are excluded to avoid double-counting — their outcome already reaches the
       rate through the accompanying ``VERIFICATION_RESULT``.
 
-    A "first try" attempt is any gate attempt that occurred before the stage's
-    first park.  An "after rework" attempt is any gate attempt from the moment
-    the stage was re-entered following a READY transition onward.
+    A "first try" attempt is any gate attempt that occurred strictly before the
+    stage's first park recorded in the append-only ``error_history``.  An "after
+    rework" attempt is any gate attempt at or after that first-park timestamp.
+    ``error_history`` records parks (the re-entry follows the park), so the
+    boundary is the first entry whose ``stage`` matches and is stable when a
+    stage parks and resumes more than once.  When no park is recorded for the
+    stage, every attempt is ``first_try``.  The ``READY`` timestamp in
+    ``stage_timestamps`` is not consulted.
 
     Args:
         events: List of event dicts from the events stream.
@@ -76,10 +81,6 @@ def classify_gate_attempts(events, st, stage):
             first_park_ts = entry.get("timestamp")
             break
 
-    # Determine re-entry timestamp: READY appears in stage_timestamps when the
-    # pipeline returns from a park.  The re-entry point is when READY was recorded.
-    reentry_ts = st.get("stage_timestamps", {}).get("READY")
-
     results = []
     for ev in gate_events:
         ev_ts = ev.get("timestamp", "")
@@ -91,18 +92,15 @@ def classify_gate_attempts(events, st, stage):
         else:
             passed = _event_passed(data)
 
-        # Classify the attempt phase.
-        if first_park_ts is None:
-            # No park recorded — every attempt is first_try.
-            phase = "first_try"
-        elif reentry_ts is not None and ev_ts >= reentry_ts:
-            # After re-entry: after_rework.
-            phase = "after_rework"
-        elif ev_ts < first_park_ts:
-            # Before the park: first_try.
+        # Classify using the first-park boundary from error_history.
+        if first_park_ts is None or ev_ts < first_park_ts:
+            # No park recorded for this stage, or the attempt precedes the
+            # stage's first park: first try.
             phase = "first_try"
         else:
-            # Between park and re-entry (shouldn't normally happen, but treat as after_rework).
+            # At-or-after the stage's first park: the re-entry follows the park,
+            # so everything from the first park onward is after-rework — stable
+            # across second parks and later transitions.
             phase = "after_rework"
 
         results.append({"phase": phase, "passed": passed})

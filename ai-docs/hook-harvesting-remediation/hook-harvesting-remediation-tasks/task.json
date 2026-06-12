@@ -463,8 +463,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Boundary semantics in the same classification function the gate-rate task reshapes; sequenced after it",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "classify_gate_attempts now derives the after-rework boundary from the first error_history park whose stage matches: the stage_timestamps['READY'] read is gone entirely, replaced by the two-branch first-park rule (strictly before the first park = first_try; at-or-after = after_rework; no parks = all first_try), stable across second parks and immune to the stale-early-READY overwrite. Docstring states the boundary contract. Both wave-2 rebuilds turned green, the two-parks guard stayed green; report arithmetic + integration files 12/12; mypy clean. Team lead re-verified via full suite: zero regressions.",
       "note": null,
       "test_tasks": [
         "task-14"
