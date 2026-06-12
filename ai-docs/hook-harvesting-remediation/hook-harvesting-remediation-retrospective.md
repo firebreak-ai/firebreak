@@ -7,6 +7,7 @@
 - **Spec revision** — 2026-06-12. All blocking and important findings folded into the spec; spec gate re-passed.
 - **Spec Review (re-run)** — 2026-06-12. Council (Architecture, Quality, Security, discussion mode) + independent test-reviewer (three rounds). Result: **PASS** — 2 new blocking findings resolved by in-session spec revision; review gate pass.
 - **Breakdown** — 2026-06-12. Two independent compiler teammates produced 31 tasks (18 test, 13 implementation) across 9 waves; one bounce-back resolved through the test-task owner; checkpoint-2 test review PASS (2 minors fixed); pre-lock test review accepted on a narrowed lock set; task-reviewer and breakdown gates pass.
+- **Implementation** — 2026-06-12. All 31 tasks across 9 waves completed by a wave-based agent team (one fresh teammate per task); every wave passed verification with zero baseline regressions; two scope-revision escalations on one task, both resolved in-wave; final suite 401 passed / 0 failed; per-slice red/green ledger verified and written to completion notes.
 
 ## Key decisions
 
@@ -18,11 +19,13 @@
 6. **The gate-rate fixture conflict resolved via the pass route** (Breakdown). The strengthened real-producers test's code-review-gate dispatch was failing for missing artifacts, which would have dragged the pinned first-try rate to one-half; the fixture now writes the two artifacts the gate requires so the dispatch passes deterministically and the pinned rate stays exactly 1.0. A failing-dispatch fixture re-pinned to 0.50 was rejected as fragile (the failure reason could drift).
 7. **The retention lock-scope fix takes the retention-side shape** (Breakdown). Re-reading the locked-spec set inside one event-writer lock scope deadlocks (same-process flock re-entry) and breaks an existing prune-check test; the interface contract's permitted alternative — the prune re-reads the lock directory under its own lock and unions with the caller's snapshot — is pinned instead. The guard test asserts only the observable contract, not the mechanism.
 8. **The unimplemented rounds-to-quiet metric is removed from its contract, not computed** (Breakdown). It has no consumer, and writing it would mint exactly the dead-field failure class the dead round-count finding documents.
+9. **Latent stale tests surfaced mid-implementation are rebuilt under explicit team-lead authorization, not silently fixed** (Implementation). The round-projection task twice hit pre-existing defects in the test file it had to turn green — a missing fixture import hidden by a skip guard, and an assertion encoding the old strip-the-list contract that the retirement list missed. Each was verified by the team lead against the source, authorized as a tightly-scoped task-file revision, counted against the escalation cap, and logged in the review log — preserving the no-silent-scope-expansion invariant while keeping the wave moving.
 
 ## Scope changes
 
 - None to the feature scope. The review surfaced spec-accuracy and test-design gaps to fix in place, not scope additions.
 - Breakdown recorded one shape deviation rather than a scope change: the retention slice is contract-preserving yet carries one new spec-mandated concurrency guard test, and three contract-evolving slices (stage attribution, gate rate, token boundary) genuinely retire nothing, so they run through the gate's legacy checks instead of the shaped path.
+- Implementation added one file to one task's declared scope (the round-projection task gained the gate test file, import fix and one stale-assertion rebuild only) via two logged escalation-protocol scope revisions. No feature-scope change.
 
 ---
 
@@ -90,3 +93,35 @@
 - The shaped-slice gate path requires a non-empty retired-tests list on every contract-evolving task, but a remediation legitimately produces contract-evolving slices that retire nothing (no prior coverage existed — the absence is the defect). Those slices ride the legacy checks with an explanatory note; a shaped path that accepts an explicit empty-with-rationale retirement would be more honest.
 - The skill's capability-entry prerequisite probe names a command (`precheck`) the installed scripts don't expose; the manual check (spec exists) is trivial, but the skill text and the installed surface have drifted.
 - The pre-lock review's lock-scope finding — candidate lock files that test tasks must still extend — is structural for any remediation that adds guards to existing suites. The deferred-lock obligation (lock the file the moment its owning test task lands) now lives only in prose; a manifest field the implement stage reads would make it mechanical.
+
+## Implementation (2026-06-12)
+
+**Team shape.** Wave-based execution per the implementation guide: the orchestrating session as team lead (no task execution), one fresh teammate spawned per task (31 teammates total), Sonnet for 28 tasks and Haiku for 3 per the manifest's model routing. Baseline snapshot captured before Wave 1: 359/359 passing at the pre-fix commit (40ec021), which doubled as the red-run reference.
+
+**Per-task metrics (factual).**
+- 31/31 tasks complete; 0 parked, 0 superseded, 0 reassignments, 0 unresponsive-teammate timeouts.
+- Escalations: 1 task (the round-projection implementation) used both of its 2 escalation attempts, as operator-authorized scope revisions rather than failures — (1) a missing `capture_fixtures` import in the wave-1 gate test file, hidden by the projection skip guard; (2) a stale `"rounds" not in data` assertion encoding the pre-fix contract, missed by the slice's retirement list. Both logged in the review log with root-cause classification. Every other task: 0 escalations, first-attempt completion.
+- In-session retry count: 0 hook-rejection retries reported by any teammate.
+- One readiness-check halt worked as designed: the round-projection teammate stopped and reported instead of silently expanding scope — the pause-on-scope-discrepancy protocol's intended behavior.
+
+**Task sizing accuracy.** Every task's actual modified files matched its declared scope, with the one exception above (+1 test file added to the round-projection task by logged revision). No task touched an undeclared file; the per-wave `git diff` scope check was clean at all 9 waves.
+
+**Model routing accuracy.** 3/3 Haiku tasks (subagent identity-field read, bounded config reads, decisions-log entry) succeeded without escalation — the bounded single-file routing held.
+
+**Verification gate pass rates.** Per-wave verification: 9/9 waves passed on the first attempt; zero baseline regressions at every wave boundary. Test-compilation checks (waves with test tasks): clean every time. Expected reds tracked per wave: 25 after Wave 1, burned down to 0 after Wave 8 exactly on the planned schedule; zero skips remained after Wave 4. Final verification (Wave 9): full suite 401 passed / 0 failed / 0 collection errors; the per-slice red/green ledger cross-checked, with the five documented expected-green exceptions verified as test-fidelity corrections over already-correct production code; ledger at `hook-harvesting-remediation-tasks/completion-notes.md`.
+
+**Wall-clock.** Waves ran 3–8 minutes each (12-way parallel test authoring in Wave 1 took ~6 minutes); end-to-end the implementation spanned one day with an operator pause between Waves 2 and 3. Each wave was committed at its checkpoint (8 commits, Wave 4 amended twice — see friction).
+
+**Upstream traceability (factual).**
+- Stage spec review: 2 iterations (fail 2026-06-11, pass 2026-06-12); 8 blocking findings in round 1 (all spec-revised), 2 in round 2 (resolved in-session).
+- Stage breakdown: task-reviewer gate passed on the third run (two mechanical-convention failures), breakdown gate first run.
+- Implementation consumed the breakdown cleanly: no bounce-backs to the spec, no task file was internally inconsistent, and the two pre-fix-commit-pinned red-run procedures the spec defined were executable exactly as written.
+
+**Failure attribution (AI judgment).** No task failed verification, so attribution applies to the two scope-revision escalations:
+- *Missing fixture import* — implementation error in the wave-1 test-authoring task, with a process-gap component: the test's skip guard meant pytest collection could not execute the name reference, so the wave-1 compilation gate was structurally blind to it. Any skip-guarded test authored against a not-yet-existing symbol has this blind spot.
+- *Stale strip-the-list assertion* — compilation gap: the breakdown's retired-tests enumeration for the per-round slice listed the event-writer strip test but missed the gate-side test asserting the same old contract. The spec's own lesson ("when adding a seam guard, search for and fold in any existing test of that seam") applies one level down: when a slice flips a contract, enumerate every test asserting the old contract, not just the ones in the slice's primary files.
+
+**Friction for the pipeline.**
+- Teammate message ordering is not guaranteed: the round-projection teammate's revert-and-reapply straddled the team lead's wave commit, so the Wave-4 commit twice captured a mid-revert tree state and had to be amended after the dust settled. Wave checkpoints should confirm the reporting teammate is idle *and* its task's files are quiescent (`git diff` re-check immediately before `git add`) before committing.
+- Two teammates' final summaries contained stale claims (a test reported red that the suite showed green) because they ran their last verification before a concurrent teammate's fix landed. The team lead's own full-suite re-verification caught both; worth keeping as a standing rule that the lead never records a wave on teammate-reported test results alone.
+- The completion-notes location was unspecified by the task schema — red/green evidence lived in task.json summaries and the team lead's prompts had to point the final-verification task at them. A manifest field naming the evidence file from the start would remove the indirection.

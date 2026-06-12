@@ -321,8 +321,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Cross-checks the demonstration procedure across all slices, including the expected-green exceptions",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Final verification PASS on all counts: 401 passed / 0 failed / 0 collection errors. Per-slice red/green ledger cross-checked — subagent count, injection metrics (incl. the 4-vs-2 duplicate-envelope red), rework boundary, per-round detail, bounded read all demonstrated red at 40ec021 and green post-fix; the documented expected-green exceptions (two-parks guard, schema.SOURCES parametrization, installer merge-path/symlink corrections) verified as test-fidelity-only over already-correct production code. All red runs from a separate worktree at the pinned pre-fix commit, removed after capture. Ledger written to completion-notes.md. AC-21 met, no gaps.",
       "note": null
     },
     {
