@@ -182,9 +182,13 @@ def derive_rework(st, stage):
 
 
 def count_known_subagents(events):
-    """Count SUBAGENT_STOP events whose source is a known Firebreak agent.
+    """Count SUBAGENT_STOP events whose agent identity is a known Firebreak agent.
 
-    Events with empty or unrecognised identities are excluded from the count.
+    The hook router writes SUBAGENT_STOP envelopes where the envelope's source
+    field is always the writer's provenance name ("hook_router") and the agent
+    identity lives in the event's data["agent_type"] field.  This function reads
+    the identity from data, not the envelope source.  Events with empty or
+    unrecognised identities are excluded from the count.
 
     Args:
         events: List of event dicts from the events stream.
@@ -196,7 +200,7 @@ def count_known_subagents(events):
     for ev in events:
         if ev.get("event_type") != "SUBAGENT_STOP":
             continue
-        identity = ev.get("source") or ev.get("data", {}).get("agent_type") or ""
+        identity = ev.get("data", {}).get("agent_type") or ""
         if known_agents.is_known_agent(identity):
             count += 1
     return count

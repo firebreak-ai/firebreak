@@ -66,6 +66,27 @@ def file_lock(events_path: str):
             lock_fp.close()
 
 
+def _locked_specs(capture_dir: str) -> set[str]:
+    """Return the set of spec names with an empty lock file under locked/.
+
+    An absent or unreadable locked/ directory yields an empty set.
+    """
+    locked_dir = os.path.join(capture_dir, "locked")
+    if not os.path.isdir(locked_dir):
+        return set()
+
+    specs: set[str] = set()
+    try:
+        for entry in os.listdir(locked_dir):
+            entry_path = os.path.join(locked_dir, entry)
+            if os.path.isfile(entry_path) and os.path.getsize(entry_path) == 0:
+                specs.add(entry)
+    except OSError:
+        pass
+
+    return specs
+
+
 def prune_if_needed(events_path: str, max_bytes: int, protect_specs: set[str]) -> None:
     """Prune events_path to at most max_bytes, protecting locked-spec lines.
 
@@ -89,8 +110,10 @@ def prune_if_needed(events_path: str, max_bytes: int, protect_specs: set[str]) -
     Args:
         events_path: Absolute or relative path to the events JSONL file.
         max_bytes: Maximum allowed file size in bytes.
-        protect_specs: Set of spec names whose lines must not be dropped under
-            normal pruning conditions.
+        protect_specs: Caller's snapshot of protected spec names.  The locked
+            section re-reads locked/ and unions it with this set, so a lock
+            file created after the caller read its snapshot but before the
+            prune acquired the lock is honored (IF-S-06).
     """
     try:
         # Early exit: file absent or already within cap.
@@ -116,6 +139,13 @@ def _prune_locked(events_path: str, max_bytes: int, protect_specs: set[str]) -> 
         # brought the file within the cap while we waited for the lock.
         if os.path.getsize(events_path) <= max_bytes:
             return
+
+        # Re-derive the locked set while holding the events lock and union it with
+        # the caller's snapshot: a lock file dropped after the caller read its set
+        # but before this prune acquired the lock is honored (IF-S-06 — the
+        # protected set consulted by the prune is read under the lock).
+        capture_dir = os.path.dirname(os.path.abspath(events_path))
+        protect_specs = set(protect_specs) | _locked_specs(capture_dir)
 
         # Read all raw lines preserving order (oldest first = top of file).
         with open(events_path, "rb") as fh:

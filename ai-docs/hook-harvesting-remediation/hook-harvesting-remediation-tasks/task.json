@@ -305,8 +305,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Real chokepoint dispatch with event-count and stderr-warning assertions",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added TestSpecGateSingleWriter to tests/test_capture_chokepoint_integration.py (pass and fail dispatch each assert exactly one PIPELINE_COMMAND with source='chokepoint' and the outcome/exit_code payload) and two event_writer tests (unregistered 'rogue_producer' is written unchanged with an 'unregistered source' stderr warning; registered source writes silently). Red at 40ec021: each dispatch shows 2 events — the gate's own duplicate (gate/result, no outcome) beside the chokepoint's — and the warn path emits nothing. Registered-source silence is green at both trees by design.",
       "note": null
     },
     {
@@ -361,8 +361,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file field-read fix with verbatim target expression",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "count_known_subagents in fbk/report.py now reads identity from data['agent_type'] only — the envelope source (always the writer name 'hook_router') is never treated as an agent identity; docstring states the provenance-vs-identity distinction. Both wave-1 subagent tests green; stale-fallback warning test green (persona-scan side effects preserved). File pattern as expected: 8 passed, 2 failed (the wave-6 rework-boundary reds). Team lead re-verified.",
       "note": null,
       "test_tasks": [
         "task-02"
@@ -489,8 +489,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Locking-order reasoning; the naive single-lock-scope shape deadlocks",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Locked-spec set now derived under the prune's own lock: _locked_specs moved verbatim into fbk/capture/retention.py as a private helper (set[str] return), and _prune_locked unions it into protect_specs right after the under-lock size re-check — a lock file on disk before the prune acquires the lock is always honored. event_writer.py delegates to retention._locked_specs as a best-effort snapshot (its local copy deleted). Concurrency guard green 5 consecutive runs; retention 7/7; event_writer pass/fail pattern unchanged; mypy clean on both files. Team lead re-verified.",
       "note": null,
       "test_tasks": [
         "task-07"

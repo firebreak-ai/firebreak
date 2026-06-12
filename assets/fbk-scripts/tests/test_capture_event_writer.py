@@ -511,6 +511,90 @@ def test_first_write_refuses_symlinked_project_root(tmp_path):
     )
 
 
+# ---------------------------------------------------------------------------
+# Source-validation tests (AC-13)
+# ---------------------------------------------------------------------------
+
+
+def test_unregistered_source_is_written_with_stderr_warning(tmp_path, capsys):
+    """Unregistered source: event written unchanged, stderr names the source, stdout empty.
+
+    An unregistered source must never cause data loss — the event is written
+    with the source label preserved (warn-but-write).  This mirrors the
+    event-type vocabulary guard path but never discards data.
+    """
+    path = _events_path(tmp_path)
+
+    event_writer.write(
+        "TOOL_USE",
+        "rogue_producer",
+        {"count": 1},
+        "s",
+        "IMPLEMENTING",
+        "standard",
+        path,
+    )
+
+    lines = _read_json_lines(path)
+
+    # Exactly one line written — the event is not dropped over a label.
+    assert len(lines) == 1, (
+        f"expected exactly 1 line written for unregistered source, got {len(lines)}"
+    )
+
+    record = lines[0]
+
+    # Source is preserved unchanged in the written envelope.
+    assert record.get("source") == "rogue_producer", (
+        f"expected source='rogue_producer' written unchanged, got {record.get('source')!r}"
+    )
+
+    # Payload data survives unmodified.
+    assert record.get("data", {}).get("count") == 1, (
+        f"expected data.count=1, got {record.get('data', {}).get('count')!r}"
+    )
+
+    captured = capsys.readouterr()
+
+    # Warning names the unregistered source on stderr.
+    assert "unregistered source" in captured.err, (
+        f"expected 'unregistered source' in stderr warning, got: {captured.err!r}"
+    )
+    assert "rogue_producer" in captured.err, (
+        f"expected source name 'rogue_producer' in stderr warning, got: {captured.err!r}"
+    )
+
+    # No stdout contamination.
+    assert captured.out == "", (
+        f"expected empty stdout for unregistered source write, got: {captured.out!r}"
+    )
+
+
+def test_registered_source_writes_without_warning(tmp_path, capsys):
+    """Registered source writes exactly one line with no stderr warning."""
+    path = _events_path(tmp_path)
+
+    event_writer.write(
+        "TOOL_USE",
+        "hook_router",
+        {"count": 5},
+        "s",
+        "IMPLEMENTING",
+        "standard",
+        path,
+    )
+
+    lines = _read_json_lines(path)
+    assert len(lines) == 1, (
+        f"expected exactly 1 line written for registered source, got {len(lines)}"
+    )
+
+    # No warning for a known source.
+    assert capsys.readouterr().err == "", (
+        "expected no stderr warning for registered source 'hook_router'"
+    )
+
+
 def test_file_lock_is_exclusive(tmp_path):
     """retention.file_lock holds an exclusive advisory lock a second holder cannot take.
 

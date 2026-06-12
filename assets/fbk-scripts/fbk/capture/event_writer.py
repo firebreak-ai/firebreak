@@ -118,9 +118,10 @@ def write(
             with open(events_path, "a") as fh:
                 fh.write(json.dumps(envelope) + "\n")
 
-        # Resolve the set of protected specs from empty lock files under
-        # <capture_dir>/locked/.  An absent locked/ dir yields an empty set.
-        protect_specs = _locked_specs(capture_dir)
+        # Best-effort snapshot of locked specs; the prune re-reads the set under
+        # its lock, so a lock file created after this read but before the prune
+        # acquires the lock is still honored (IF-S-06).
+        protect_specs = retention._locked_specs(capture_dir)
 
         # Prune after append — wired to retention module, never raises.
         retention.prune_if_needed(events_path, retention.DEFAULT_MAX_BYTES, protect_specs)
@@ -130,24 +131,3 @@ def write(
         pass
 
     return None
-
-
-def _locked_specs(capture_dir: str) -> set:
-    """Return the set of spec names with an empty lock file under locked/.
-
-    An absent or unreadable locked/ directory yields an empty set.
-    """
-    locked_dir = os.path.join(capture_dir, "locked")
-    if not os.path.isdir(locked_dir):
-        return set()
-
-    specs = set()
-    try:
-        for entry in os.listdir(locked_dir):
-            entry_path = os.path.join(locked_dir, entry)
-            if os.path.isfile(entry_path) and os.path.getsize(entry_path) == 0:
-                specs.add(entry)
-    except OSError:
-        pass
-
-    return specs

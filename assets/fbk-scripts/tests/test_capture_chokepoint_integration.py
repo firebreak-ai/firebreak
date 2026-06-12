@@ -237,6 +237,186 @@ class TestRealStateTransitionChokepoint:
         )
 
 
+# ---------------------------------------------------------------------------
+# Spec-gate single-writer tests (AC-12)
+# ---------------------------------------------------------------------------
+#
+# One real fbk.py spec-gate dispatch must yield exactly one PIPELINE_COMMAND
+# event, written by the chokepoint with source="chokepoint".  Pre-fix, two
+# events were written per dispatch: the chokepoint's (correct) and the gate's
+# own duplicate (mislabelled source="chokepoint", carrying "result" but no
+# "outcome") — double-counting attempts and poisoning the rate arithmetic.
+#
+# Minimal valid spec content is copied from _make_minimal_spec() in
+# tests/test_gates_spec.py, which is the canonical source of truth.
+_MINIMAL_VALID_SPEC = """\
+# Feature Specification
+
+## Problem
+Describes the issue or gap being addressed.
+
+## Goals
+- Primary objective of the feature
+
+## User-facing behavior
+Describes how end users interact with the feature.
+
+## Technical approach
+Details the implementation strategy.
+
+## Testing strategy
+- AC-01: Test criterion 1
+
+## Documentation impact
+Expected changes to user documentation.
+
+## Acceptance criteria
+- AC-01: Feature works as specified
+
+## Dependencies
+None
+
+## Open questions
+None
+"""
+
+_BROKEN_SPEC = "# Feature Specification\n\n## Problem\nOnly one section present.\n"
+
+
+def _write_state_file(state_dir, spec_name, current_state, stage_timestamps):
+    """Write a state JSON file under state_dir and return its path."""
+    os.makedirs(state_dir, exist_ok=True)
+    state = {
+        "spec_name": spec_name,
+        "current_state": current_state,
+        "stage_timestamps": stage_timestamps,
+        "agent_ids": [],
+        "verification_results": {},
+        "error_history": [],
+        "parked_info": {},
+    }
+    path = os.path.join(state_dir, f"{spec_name}.json")
+    with open(path, "w") as fh:
+        json.dump(state, fh, indent=2)
+    return path
+
+
+class TestSpecGateSingleWriter:
+    """One fbk.py spec-gate dispatch yields exactly one PIPELINE_COMMAND (AC-12)."""
+
+    def test_one_gate_dispatch_yields_exactly_one_pipeline_command(self, tmp_path):
+        """Passing spec-gate: exactly one PIPELINE_COMMAND with source='chokepoint',
+        outcome='pass', exit_code=0, spec='demo-spec', stage='VALIDATING'."""
+        project = capture_fixtures.make_project(
+            str(tmp_path), instrumented=True, marked=True
+        )
+        state_dir = os.path.join(project, ".claude", "automation", "state")
+
+        # Pre-populate a state in VALIDATING so the resolver attributes the event.
+        # stage_timestamps matches the shape active_stage.resolve_active_stage reads.
+        _write_state_file(
+            state_dir,
+            spec_name="demo-spec",
+            current_state="VALIDATING",
+            stage_timestamps={"QUEUED": "2026-01-01T00:00:00+00:00", "VALIDATING": "2026-01-01T00:01:00+00:00"},
+        )
+
+        # Write a gate-passing spec.  Content is copied verbatim from
+        # _make_minimal_spec() in tests/test_gates_spec.py — that function is
+        # the canonical source of truth for what the gate accepts.
+        spec_path = os.path.join(project, "sample-spec.md")
+        with open(spec_path, "w") as fh:
+            fh.write(_MINIMAL_VALID_SPEC)
+
+        result = _run_fbk(["spec-gate", "sample-spec.md"], project, state_dir)
+        assert result.returncode == 0, (
+            f"expected spec-gate pass (rc 0), got rc {result.returncode}; "
+            f"stderr: {result.stderr!r}"
+        )
+
+        events = _read_event_lines(project)
+        gate_events = [
+            e for e in events
+            if e.get("event_type") == "PIPELINE_COMMAND"
+            and e.get("data", {}).get("command_name") == "spec-gate"
+        ]
+
+        assert len(gate_events) == 1, (
+            f"expected exactly one spec-gate PIPELINE_COMMAND, got {len(gate_events)}: "
+            f"{gate_events!r}"
+        )
+
+        ev = gate_events[0]
+        data = ev.get("data", {})
+
+        assert ev.get("source") == "chokepoint", (
+            f"expected source='chokepoint', got {ev.get('source')!r}"
+        )
+        assert data.get("outcome") == "pass", (
+            f"expected outcome='pass', got {data.get('outcome')!r}; data={data!r}"
+        )
+        assert data.get("exit_code") == 0, (
+            f"expected exit_code=0, got {data.get('exit_code')!r}; data={data!r}"
+        )
+        assert ev.get("spec") == "demo-spec", (
+            f"expected spec='demo-spec', got {ev.get('spec')!r}"
+        )
+        assert ev.get("stage") == "VALIDATING", (
+            f"expected stage='VALIDATING', got {ev.get('stage')!r}"
+        )
+
+    def test_failing_gate_dispatch_also_yields_exactly_one_event(self, tmp_path):
+        """Failing spec-gate: exactly one PIPELINE_COMMAND with outcome='fail',
+        exit_code=2, source='chokepoint'."""
+        project = capture_fixtures.make_project(
+            str(tmp_path), instrumented=True, marked=True
+        )
+        state_dir = os.path.join(project, ".claude", "automation", "state")
+
+        _write_state_file(
+            state_dir,
+            spec_name="demo-spec",
+            current_state="VALIDATING",
+            stage_timestamps={"QUEUED": "2026-01-01T00:00:00+00:00", "VALIDATING": "2026-01-01T00:01:00+00:00"},
+        )
+
+        # A spec with only one section — the gate rejects it with exit code 2.
+        broken_path = os.path.join(project, "broken-spec.md")
+        with open(broken_path, "w") as fh:
+            fh.write(_BROKEN_SPEC)
+
+        result = _run_fbk(["spec-gate", "broken-spec.md"], project, state_dir)
+        assert result.returncode == 2, (
+            f"expected spec-gate fail (rc 2), got rc {result.returncode}; "
+            f"stderr: {result.stderr!r}"
+        )
+
+        events = _read_event_lines(project)
+        gate_events = [
+            e for e in events
+            if e.get("event_type") == "PIPELINE_COMMAND"
+            and e.get("data", {}).get("command_name") == "spec-gate"
+        ]
+
+        assert len(gate_events) == 1, (
+            f"expected exactly one spec-gate PIPELINE_COMMAND for failing dispatch, "
+            f"got {len(gate_events)}: {gate_events!r}"
+        )
+
+        ev = gate_events[0]
+        data = ev.get("data", {})
+
+        assert ev.get("source") == "chokepoint", (
+            f"expected source='chokepoint', got {ev.get('source')!r}"
+        )
+        assert data.get("outcome") == "fail", (
+            f"expected outcome='fail', got {data.get('outcome')!r}; data={data!r}"
+        )
+        assert data.get("exit_code") == 2, (
+            f"expected exit_code=2, got {data.get('exit_code')!r}; data={data!r}"
+        )
+
+
 class TestDirectNormalReturnChokepoint:
     """Direct record_dispatch tests for the normal-return branch.
 
