@@ -30,7 +30,7 @@ The wrapper, `chokepoint.record_dispatch(command_name, args, run_fn, cwd)`, must
 
 `cwd` is supplied by `fbk.py` as `os.getcwd()` — the project root, which is where fbk commands are always invoked. This is the same project-root assumption the report and injector use.
 
-The gate result payload is stored summarized at standard capture (gate, result, failure count, finding count) and verbatim at full capture.
+The gate result's structured fields (command name, outcome, exit code, duration) are stored at every capture level; the captured output text is free text, so central redaction strips it at standard capture and preserves it verbatim only at full capture. [Corrected by the hook-harvesting remediation: the earlier "summarized at standard" wording described a structured summary the code never produced.]
 
 Module: `fbk/capture/chokepoint.py`; `fbk.py` lines 40–43 change to call it.
 

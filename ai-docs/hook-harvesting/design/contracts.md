@@ -13,7 +13,7 @@ produced-by: the shared event writer (`fbk/capture/event_writer.py`)
 
 signature: `write(event_type, source, data, spec, stage, capture_level, events_path) -> None`
 invariants: Pre — `data` matches the per-type shape for `event_type`. Post — exactly one JSONL line is appended on success, and the retention prune check runs after the append. Error — any exception (unwritable file, full disk, sandbox restriction) is caught and discarded; the function returns None regardless and never propagates a failure to its caller. No write to stdout, ever; no write outside `events_path`.
-consumed-by: the chokepoint recorder, the hook router, the modified verification hook, the modified code-review gate, the spec and task-reviewer gates
+consumed-by: the chokepoint recorder, the hook router, the modified verification hook, the modified code-review gate. [Corrected by the hook-harvesting remediation: the spec and task-reviewer gates no longer write events of their own — the chokepoint's dispatch event is the single record of their outcomes.]
 produced-by: `fbk/capture/event_writer.py`
 
 ## IF-D-03 — Per-project capture gate

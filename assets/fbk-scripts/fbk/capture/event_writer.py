@@ -114,7 +114,10 @@ def write(
         # Central redaction — no caller needs to strip free-text themselves.
         redacted_data = schema.redact(data, capture_level)
 
-        # Build the eight-field envelope.
+        # Build the eight-field envelope. The timestamp shape must stay
+        # identical to fbk.state.now_iso() ("+00:00" offset, never "Z"):
+        # the report classifier orders events by string comparison and
+        # compares event timestamps against state-file park timestamps.
         envelope = {
             "schema_version": "1.0",
             "event_type": event_type,

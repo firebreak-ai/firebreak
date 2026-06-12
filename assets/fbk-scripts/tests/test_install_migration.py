@@ -263,16 +263,16 @@ class TestGlobalRegistrationResolvesToGlobalPath:
         self, settings_with_leftover, new_entries_template
     ):
         """Router registration after migration points under $HOME/.claude/fbk-scripts, not per-project."""
+        # Assert on the merge output directly — merge_settings strips the
+        # leftover registration itself, and a bolted-on remove_hook_command
+        # call here would mask a regression in that internal strip.
         merged, _ = merge_settings_mod.merge_settings(
             settings_with_leftover, new_entries_template
-        )
-        hooks_after = merge_settings_mod.remove_hook_command(
-            merged["hooks"], _OLD_COMMAND
         )
 
         router_commands = [
             hook["command"]
-            for entries in hooks_after.values()
+            for entries in merged["hooks"].values()
             for group in entries
             for hook in group.get("hooks", [])
             if "hook_router.py" in hook.get("command", "")

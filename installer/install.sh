@@ -382,7 +382,13 @@ merge_settings() {
     echo "Error: failed to stage merged settings.json." >&2
     exit 1
   fi
-  mv -f "$SETTINGS_TMP_FILE" "$TARGET_DIR/settings.json"
+  # The rename must not fail silently: the script does not run set -e, and a
+  # quiet mv failure would leave capture disarmed while the install reports
+  # success — the pre-merge backup stays intact, so failing loudly is safe.
+  if ! mv -f "$SETTINGS_TMP_FILE" "$TARGET_DIR/settings.json"; then
+    echo "Error: failed to rename merged settings.json into place." >&2
+    exit 1
+  fi
   SETTINGS_TMP_FILE=""
 }
 

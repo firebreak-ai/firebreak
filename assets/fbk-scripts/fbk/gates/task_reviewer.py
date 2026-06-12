@@ -155,12 +155,9 @@ def _run_validations(
                 failures.append(f"AC coverage: {ac} not covered by any test task")
             if ac not in impl_acs:
                 failures.append(f"AC coverage: {ac} not covered by any implementation task")
-        elif category == "corrective":
-            # Corrective: test tasks can cover ACs without paired implementation
-            if ac not in test_acs and ac not in impl_acs:
-                failures.append(f"AC coverage: {ac} not covered by any test task or implementation task")
-        elif category == "testing-infrastructure":
-            # Testing infra: test tasks can satisfy ACs directly
+        elif category in ("corrective", "testing-infrastructure"):
+            # Both categories share one rule: a test task can satisfy an AC
+            # directly, without a paired implementation task.
             if ac not in test_acs and ac not in impl_acs:
                 failures.append(f"AC coverage: {ac} not covered by any test task or implementation task")
 

@@ -151,14 +151,16 @@ def _prune_locked(events_path: str, max_bytes: int, protect_specs: set[str]) -> 
         with open(events_path, "rb") as fh:
             raw_lines = fh.readlines()
 
-        # Classify each line as protected or unprotected.
-        protected_lines = []
-        unprotected_lines = []
-        for raw in raw_lines:
+        # Classify each line by its original index as protected or unprotected,
+        # so the surviving set can be merged back in file order by index —
+        # byte-identical duplicate lines stay distinct.
+        protected_idx = []
+        unprotected_idx = []
+        for i, raw in enumerate(raw_lines):
             stripped = raw.strip()
             if not stripped:
                 # Skip blank lines; treat as unprotected for accounting.
-                unprotected_lines.append(raw)
+                unprotected_idx.append(i)
                 continue
             try:
                 obj = json.loads(stripped)
@@ -167,11 +169,11 @@ def _prune_locked(events_path: str, max_bytes: int, protect_specs: set[str]) -> 
                 spec = ""
 
             if spec in protect_specs:
-                protected_lines.append(raw)
+                protected_idx.append(i)
             else:
-                unprotected_lines.append(raw)
+                unprotected_idx.append(i)
 
-        protected_bytes = sum(len(b) for b in protected_lines)
+        protected_bytes = sum(len(raw_lines[i]) for i in protected_idx)
         protected_ceiling = int(max_bytes * PROTECTED_FRACTION)
 
         # Determine whether we need to drop locked lines past the ceiling.
@@ -180,49 +182,38 @@ def _prune_locked(events_path: str, max_bytes: int, protect_specs: set[str]) -> 
         if protected_bytes > protected_ceiling:
             # Protected lines alone exceed the ceiling; drop oldest locked lines
             # until protected bytes are at or under the ceiling.
-            # oldest first in protected_lines (list order = file order)
-            while protected_lines and protected_bytes > protected_ceiling:
-                removed = protected_lines.pop(0)
-                protected_bytes -= len(removed)
+            # oldest first in protected_idx (index order = file order)
+            while protected_idx and protected_bytes > protected_ceiling:
+                removed = protected_idx.pop(0)
+                protected_bytes -= len(raw_lines[removed])
                 dropped_locked = True
 
         # Now fit unprotected lines: keep ALL protected lines plus as many of
         # the newest unprotected lines as fit within max_bytes.
-        current_protected_bytes = sum(len(b) for b in protected_lines)
+        current_protected_bytes = sum(len(raw_lines[i]) for i in protected_idx)
         remaining_budget = max_bytes - current_protected_bytes
 
-        # Keep newest unprotected lines that fit (unprotected_lines is oldest-first,
-        # so we iterate from the end).
-        kept_unprotected = []
+        # Keep newest unprotected lines that fit (unprotected_idx is oldest-first,
+        # so we iterate from the end). Oldest lines that don't fit are omitted.
+        kept_unprotected_idx = []
         budget = remaining_budget
-        for raw in reversed(unprotected_lines):
-            if budget >= len(raw):
-                kept_unprotected.append(raw)
-                budget -= len(raw)
-            # Oldest lines that don't fit are simply omitted.
+        for i in reversed(unprotected_idx):
+            if budget >= len(raw_lines[i]):
+                kept_unprotected_idx.append(i)
+                budget -= len(raw_lines[i])
 
-        # Reverse to restore chronological (oldest-first) order.
-        kept_unprotected.reverse()
-
-        # Merge protected and unprotected lines back into original file order.
-        # Walk the original line list and include only lines that survived.
-        protected_set = set(id(b) for b in protected_lines)
-        unprotected_set = set(id(b) for b in kept_unprotected)
-
-        surviving = [
-            raw for raw in raw_lines
-            if id(raw) in protected_set or id(raw) in unprotected_set
-        ]
-
-        new_content = b"".join(surviving)
+        # Merge survivors back into original file order by index.
+        surviving_idx = sorted(set(protected_idx) | set(kept_unprotected_idx))
+        new_content = b"".join(raw_lines[i] for i in surviving_idx)
 
         # Single write — any failure before this point leaves the original intact.
         with open(events_path, "wb") as fh:
             fh.write(new_content)
 
         # Write the sentinel only when locked lines were actually dropped.
+        # capture_dir was derived once above (abspath) — the sentinel lands in
+        # the same directory the locked-spec set was read from.
         if dropped_locked:
-            capture_dir = os.path.dirname(events_path)
             sentinel_path = os.path.join(capture_dir, ".retention-warning")
             with open(sentinel_path, "w") as fh:
                 fh.write("")

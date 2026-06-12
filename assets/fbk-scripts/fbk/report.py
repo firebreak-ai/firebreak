@@ -25,6 +25,9 @@ from fbk.capture import known_agents, token_harvester
 
 
 # Gate dispatch command names whose PIPELINE_COMMAND outcomes count as gate attempts.
+# task-completed is intentionally absent: its outcome already reaches the rate
+# through the accompanying VERIFICATION_RESULT event, and listing it here would
+# double-count every task-completion dispatch.
 GATE_COMMAND_NAMES = ("spec-gate", "task-reviewer-gate", "code-review-gate")
 
 # ---------------------------------------------------------------------------

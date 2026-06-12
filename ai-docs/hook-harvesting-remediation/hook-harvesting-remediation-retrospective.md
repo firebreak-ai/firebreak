@@ -8,6 +8,7 @@
 - **Spec Review (re-run)** — 2026-06-12. Council (Architecture, Quality, Security, discussion mode) + independent test-reviewer (three rounds). Result: **PASS** — 2 new blocking findings resolved by in-session spec revision; review gate pass.
 - **Breakdown** — 2026-06-12. Two independent compiler teammates produced 31 tasks (18 test, 13 implementation) across 9 waves; one bounce-back resolved through the test-task owner; checkpoint-2 test review PASS (2 minors fixed); pre-lock test review accepted on a narrowed lock set; task-reviewer and breakdown gates pass.
 - **Implementation** — 2026-06-12. All 31 tasks across 9 waves completed by a wave-based agent team (one fresh teammate per task); every wave passed verification with zero baseline regressions; two scope-revision escalations on one task, both resolved in-wave; final suite 401 passed / 0 failed; per-slice red/green ledger verified and written to completion notes.
+- **Code Review** — 2026-06-12. Post-implementation review: two independent detection rounds, zero verified behavioral findings; final test-review accepted on all six checks; doc reconcile 3 advisory drift items + 2 notes; code-review gate pass.
 
 ## Key decisions
 
@@ -125,3 +126,15 @@
 - Teammate message ordering is not guaranteed: the round-projection teammate's revert-and-reapply straddled the team lead's wave commit, so the Wave-4 commit twice captured a mid-revert tree state and had to be amended after the dust settled. Wave checkpoints should confirm the reporting teammate is idle *and* its task's files are quiescent (`git diff` re-check immediately before `git add`) before committing.
 - Two teammates' final summaries contained stale claims (a test reported red that the suite showed green) because they ran their last verification before a concurrent teammate's fix landed. The team lead's own full-suite re-verification caught both; worth keeping as a standing rule that the lead never records a wave on teammate-reported test results alone.
 - The completion-notes location was unspecified by the task schema — red/green evidence lived in task.json summaries and the team lead's prompts had to point the final-verification task at them. A manifest field naming the evidence file from the start would remove the indirection.
+
+## Code Review (2026-06-12)
+
+**Mode.** Post-implementation review (non-interactive): two independent Detector rounds against the spec's 21 acceptance criteria, the failure-mode checklist, security targets, the five procedural audits, and structural targets; preset `behavioral-only`, threshold `minor`. Pre-review state: 401 tests green, mypy clean on touched lines.
+
+**Findings summary.** Verified findings: **0**. Sightings: 4 across 2 rounds, all domain-filtered by the preset (none rejected on merit, 0 nits): one test-integrity major (the installer global-path test's redundant remove-call — routed to the final test-review, adjudicated acceptable documented residual debt with the merge-only companions guarding the strip), one fragile minor (unguarded `mv` in the installer's atomic write), two structural minors (constant-site exclusion comment; retention `capture_dir` derivation asymmetry). False-positive rate: n/a (no verified findings to dismiss). Rejection count: 0.
+
+**Closing passes.** Quality scan: 2 substantive + 3 minor opportunities (`quality-scan.md`, scan-only). Final test-review: **accepted** on all six checks — all 13 retirements justified and replaced by stronger guards, hash-locked chokepoint suite intact (`test-review-final.md`). Doc reconcile: 3 drift items, all stale design-subdoc claims whose contract-file counterparts were corrected this cycle, + 2 benign notes (`doc-reconcile.md`). Code-review gate: **pass**, one non-blocking finding (the gate probes for the lock manifest at the feature root; breakdown wrote it under the `-tasks/` subdirectory).
+
+**Detection source breakdown.** spec-ac 2, checklist 1, audit-pass 1, structural-target 0, linter 0, intent 0 (no intent register — spec ACs were the source of truth).
+
+**Contrast with the prior cycle.** The review that spawned this remediation found 25 findings (3 release blockers) behind a green 359-test suite. The remediation implementation — built test-first from the reviewed spec with red-run demonstrations at the pinned pre-fix commit — surfaced zero behavioral findings across two independent adversarial detection rounds. Review report: `fbk-cr-hook-harvesting-remediation-impl.md`.

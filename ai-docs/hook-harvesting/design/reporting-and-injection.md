@@ -12,7 +12,7 @@ What consumes the captured events. One aggregation engine serves two callers: th
 
 The table rows, at minimum: per-stage duration; gate outcomes as two rows per gate (first-try pass rate, after-rework pass rate); parks per stage with the recorded reason; tasks completed and reworked; scope violations; code-review detection rounds with raised-to-confirmed counts and kill rate; tokens per stage. A missing transcript marks the token row "unavailable" — distinct from a true zero. Where no event of a kind occurred, the row is legitimately empty.
 
-The command also exports `stage_summary(spec, stage) -> str`, which produces the markdown block for a single completed stage. The injector calls this; the command reuses it for the full table. The standalone command does not write to the retrospective — injection is a separate code path (the `--inject` flag from earlier drafts is not implemented).
+The command also exports `stage_summary(spec, stage) -> str`, which produces the markdown block for a single completed stage. The injector is its only consumer — the report command renders its full table independently through the same classification helpers and never calls `stage_summary`, so the two outputs agree by shared arithmetic, not by reuse. [Corrected by the hook-harvesting remediation.] The standalone command does not write to the retrospective — injection is a separate code path (the `--inject` flag from earlier drafts is not implemented).
 
 Module: `fbk/report.py` (flat, matching the existing single-command convention; the earlier `fbk/commands/report.py` was superseded at spec time); registered in `COMMAND_MAP` as `report`.
 
