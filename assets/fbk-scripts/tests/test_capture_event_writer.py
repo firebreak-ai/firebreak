@@ -22,6 +22,7 @@ try:
 except ImportError:
     event_writer = None
 
+from fbk.capture import schema
 from tests import capture_fixtures
 
 
@@ -332,14 +333,23 @@ def test_standard_level_strips_freetext_payload(tmp_path):
     )
 
 
-def test_full_level_preserves_payload(tmp_path):
-    """At capture_level='full', free-text payload fields are preserved verbatim."""
-    path = _events_path(tmp_path)
+@pytest.mark.parametrize("source", schema.SOURCES)
+def test_full_level_preserves_payload(tmp_path, source):
+    """At capture_level='full', every free-text payload field is preserved verbatim
+    for every registered source in schema.SOURCES.
+
+    Payload is built from schema.FREETEXT_KEYS so a new key added to the registry
+    is automatically exercised here without a manual update.
+    """
+    path = _events_path(tmp_path / source)
+
+    payload = {key: f"FREETEXT-SENTINEL-{key}" for key in sorted(schema.FREETEXT_KEYS)}
+    payload["count"] = 7
 
     event_writer.write(
         "TOOL_USE",
-        "hook_router",
-        {"tool_input": {"command": "secret"}, "count": 2},
+        source,
+        payload,
         "s",
         "IMPLEMENTING",
         "full",
@@ -350,19 +360,73 @@ def test_full_level_preserves_payload(tmp_path):
     assert len(lines) == 1, f"expected 1 line written at full level, got {len(lines)}"
 
     record = lines[0]
-    data = record.get("data", {})
-
-    # Free-text payload must be present and verbatim at full level.
-    assert "tool_input" in data, (
-        f"expected 'tool_input' preserved at full level, but data was: {data!r}"
-    )
-    assert data["tool_input"] == {"command": "secret"}, (
-        f"expected tool_input verbatim, got {data['tool_input']!r}"
+    assert record["data"] == payload, (
+        f"expected full level to preserve payload verbatim for source={source!r}, "
+        f"but data was: {record['data']!r}"
     )
 
-    # Structural field also survives.
-    assert data.get("count") == 2, (
-        f"expected 'count' to be present at full level, data was: {data!r}"
+
+@pytest.mark.parametrize("source", schema.SOURCES)
+def test_standard_level_strips_freetext_for_every_registered_source(tmp_path, source):
+    """At standard level, every free-text sentinel is stripped from the written line
+    for every registered source in schema.SOURCES.
+
+    Three assertion families:
+    1. No "FREETEXT-SENTINEL" string appears anywhere in the raw written line.
+    2. The numeric 'count' field survives.
+    3. No key remaining in record["data"] is a member of schema.FREETEXT_KEYS.
+
+    Registry lower-bound guard: schema.SOURCES has at least 4 entries and includes
+    "hook_router", so the parametrized enumeration cannot pass trivially on an
+    emptied or truncated registry.
+    """
+    # Registry guard — keeps the dynamic enumeration from passing on an empty/truncated
+    # registry. Placed inside the test so failures surface per parametrize case.
+    assert len(schema.SOURCES) >= 4 and "hook_router" in schema.SOURCES, (
+        f"schema.SOURCES must have at least 4 entries and include 'hook_router'; "
+        f"got {schema.SOURCES!r}"
+    )
+
+    path = _events_path(tmp_path / source)
+
+    payload = {key: f"FREETEXT-SENTINEL-{key}" for key in sorted(schema.FREETEXT_KEYS)}
+    payload["count"] = 7
+
+    event_writer.write(
+        "TOOL_USE",
+        source,
+        payload,
+        "s",
+        "IMPLEMENTING",
+        "standard",
+        path,
+    )
+
+    lines = _read_lines(path)
+    assert len(lines) == 1, f"expected 1 line written, got {len(lines)}"
+
+    raw_line = lines[0]
+
+    # 1. No sentinel string survives anywhere in the raw line.
+    assert "FREETEXT-SENTINEL" not in raw_line, (
+        f"expected no 'FREETEXT-SENTINEL' in raw line for source={source!r}, "
+        f"but found in: {raw_line!r}"
+    )
+
+    record = json.loads(raw_line)
+    data = record["data"]
+
+    # 2. Numeric field survives.
+    assert data.get("count") == 7, (
+        f"expected 'count' to survive standard redaction for source={source!r}, "
+        f"data was: {data!r}"
+    )
+
+    # 3. No surviving key is a freetext key.
+    leaked_keys = set(data.keys()) & schema.FREETEXT_KEYS
+    assert not leaked_keys, (
+        f"standard redaction leaked freetext keys {leaked_keys!r} for source={source!r}, "
+        f"data was: {data!r}"
     )
 
 

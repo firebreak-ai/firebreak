@@ -26,11 +26,13 @@ GITHUB_BRANCH="${FIREBREAK_GITHUB_BRANCH:-main}"
 MERGE_OUTPUT_FILE=""
 SETTINGS_JSON_FILE=""
 MANIFEST_RECORD_FILE=""
+SETTINGS_TMP_FILE=""
 
 cleanup_temps() {
   [ -n "$MERGE_OUTPUT_FILE" ] && rm -f "$MERGE_OUTPUT_FILE"
   [ -n "$SETTINGS_JSON_FILE" ] && rm -f "$SETTINGS_JSON_FILE"
   [ -n "$MANIFEST_RECORD_FILE" ] && rm -f "$MANIFEST_RECORD_FILE"
+  [ -n "$SETTINGS_TMP_FILE" ] && rm -f "$SETTINGS_TMP_FILE"
   [ -n "$DOWNLOAD_TMPDIR" ] && rm -rf "$DOWNLOAD_TMPDIR"
 }
 trap cleanup_temps EXIT
@@ -322,6 +324,9 @@ merge_settings() {
     return
   fi
 
+  # The same-directory temp file below requires the target directory to exist.
+  mkdir -p "$TARGET_DIR"
+
   # Create backup of existing settings.json
   if [ -f "$TARGET_DIR/settings.json" ]; then
     if [ ! -f "$TARGET_DIR/settings.json.pre-firebreak" ]; then
@@ -365,8 +370,35 @@ merge_settings() {
   awk '/^---MANIFEST---$/{exit} {print}' "$MERGE_OUTPUT_FILE" > "$SETTINGS_JSON_FILE"
   awk 'found{print} /^---MANIFEST---$/{found=1}' "$MERGE_OUTPUT_FILE" > "$MANIFEST_RECORD_FILE"
 
-  # Write merged settings
-  cp "$SETTINGS_JSON_FILE" "$TARGET_DIR/settings.json"
+  # Write merged settings atomically: temp file in the SAME directory as the
+  # target, then rename. Same-directory placement is load-bearing — a /tmp
+  # temp would sit on another filesystem and mv would silently degrade to a
+  # non-atomic copy, recreating the truncation hazard this exists to close.
+  SETTINGS_TMP_FILE="$(mktemp "$TARGET_DIR/.settings.json.tmp.XXXXXX")" || {
+    echo "Error: failed to create temp file in $TARGET_DIR." >&2
+    exit 1
+  }
+  if ! cp "$SETTINGS_JSON_FILE" "$SETTINGS_TMP_FILE"; then
+    echo "Error: failed to stage merged settings.json." >&2
+    exit 1
+  fi
+  mv -f "$SETTINGS_TMP_FILE" "$TARGET_DIR/settings.json"
+  SETTINGS_TMP_FILE=""
+}
+
+# --- Capture sentinel ---
+# Marks the target as Firebreak-managed so the per-project capture gate arms
+# with no manual step. The filename is the shared token the gate keys on:
+# gate_check.FBK_MARKER_SENTINEL = ".fbk-managed"
+# (assets/fbk-scripts/fbk/capture/gate_check.py). $TARGET_DIR is the .claude
+# directory, so this lands at .claude/automation/.fbk-managed in the project.
+create_capture_sentinel() {
+  if [ "$DRY_RUN" = "1" ]; then
+    echo "Would create capture sentinel at $TARGET_DIR/automation/.fbk-managed"
+    return
+  fi
+  mkdir -p "$TARGET_DIR/automation"
+  : > "$TARGET_DIR/automation/.fbk-managed"
 }
 
 # --- Gitignore ---
@@ -649,6 +681,7 @@ fi
 
 enumerate_assets
 merge_settings
+create_capture_sentinel
 write_gitignore
 
 # Pre-populate MANIFEST_FILES from enumerated assets so write_manifest can record them

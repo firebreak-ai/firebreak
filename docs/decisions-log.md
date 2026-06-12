@@ -240,3 +240,18 @@ This migration is out of scope for the refactored-sdl branch, which inherited th
 **Rationale**: The state-engine transition is the only code path that fires reliably at every stage boundary without additional hooks or operator involvement. The state engine is already authoritative about stage completion; making it responsible for triggering the metrics append keeps the two concerns co-located. The agent's prose and the machine block coexist as distinct append-only sections, with the machine block carrying a parseable provenance marker so the two are always distinguishable.
 
 **Constrains**: The injection is wrapped in a full try/except inside the transition call — a failed injection must never prevent a stage transition from succeeding. Injection fires only when leaving an active working stage (the in-progress states), not on parks, ready re-entries, the initial queued creation, or checkpoint states. Token rows are excluded from the injected block because token attribution is post-hoc; the full report command supplies tokens. The retrospective file path is resolved by convention and must be reconciled with the existing `<feature>-retrospective.md` naming at spec time.
+
+---
+
+## 2026-06-12 — Hook-harvesting remediation: shared non-active-state constant, install-time capture sentinel, gate rates cover all gate types
+
+**Status**: accepted (remediation spec, operator-confirmed at spec review 2026-06-12)
+**Author**: rahvin / remediation spec
+
+**Decided**: Three resolutions from the hook-harvesting remediation. (1) One authoritative "not an active working stage" set, `NON_ACTIVE_STATES`, lives in `fbk/state.py` beside `WORKING_STAGES`, derived from the same transition map; the active-stage resolver and the report import it by identity — no module may carry its own copy. (2) The installer creates the `.claude/automation/.fbk-managed` sentinel at install time, so a freshly-installed Firebreak project is instrumented and captures events with no manual step. (3) Gate pass-rates cover all gate types: the rate classifier reads the chokepoint's `PIPELINE_COMMAND` outcomes for the spec, task-reviewer, and code-review gates alongside task-completion verification, and the chokepoint is the single writer of gate-outcome events (the gates' own duplicate writes are removed).
+
+**Alternative considered**: (1) Homing the constant in the capture package — rejected because `state.py` already imports the capture package, so the reverse import would close a cycle. (3) Relabelling the metric as verification-only, or keeping the gates as a second event writer — rejected because two events per dispatch double-count attempts and break exact-fraction rates, and a gates-as-source design would need a second two-module name agreement of exactly the parallel-literal kind the shared constant eliminates.
+
+**Rationale**: The independent review found the remediation's own code reproducing the producer/consumer drift class the feature measures; each decision removes a place where two modules had to agree by convention.
+
+**Constrains**: Any new pipeline state lands in the shared sets automatically (derived, not listed); uninstall does not remove the sentinel; a future gate command must be added to the report's `GATE_COMMAND_NAMES` to enter the rates.

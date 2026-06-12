@@ -486,6 +486,116 @@ def test_over_cap_retention_warning_surfaced(tmp_path):
         )
 
 
+def test_checkpoint_period_turn_attributed_to_adjacent_working_stage(tmp_path):
+    """Turns landing in a checkpoint window are counted in the adjacent working stage.
+
+    State sequence: QUEUED → VALIDATING (00:00) → VALIDATED (01:00) → REVIEWING (02:00).
+    VALIDATED is a checkpoint state (not a working stage); the 01:30 turn falls inside
+    its window.
+
+    Pre-fix, VALIDATED is included in the transitions list, creating a VALIDATED
+    boundary.  The harvester's hard-split attributes the 01:30 turn to VALIDATED,
+    which is never rendered, so VALIDATING shows in=1000 instead of in=1500.
+
+    Post-fix, VALIDATED is excluded from transitions (only WORKING_STAGES are used).
+    The harvester sees VALIDATING (00:00) → REVIEWING (02:00); the 01:30 turn lands
+    in the VALIDATING window, giving VALIDATING in=1000+500=1500 / out=200+100=300.
+
+    Turn accounting (hand-derived, every fixture turn rendered):
+        VALIDATING: 1000+500 in, 200+100 out  → 1500 in, 300 out
+        REVIEWING:  2000 in, 400 out
+        Total rendered: 3500 in, 700 out  (== sum of all three fixture turns)
+    """
+    project = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
+    state_dir = str(tmp_path / "state")
+
+    state = capture_fixtures.build_state(
+        spec=_SPEC,
+        stage_timestamps={
+            "QUEUED":      "2025-12-31T23:00:00+00:00",
+            "VALIDATING":  "2026-01-01T00:00:00+00:00",
+            "VALIDATED":   "2026-01-01T01:00:00+00:00",
+            "REVIEWING":   "2026-01-01T02:00:00+00:00",
+        },
+        current_state="REVIEWING",
+    )
+    capture_fixtures.write_state(state_dir, state)
+
+    # Empty events — token rows derive from transcripts alone.
+    capture_fixtures.write_events(os.path.join(project, _EVENTS_REL), [])
+
+    transcript_path = os.path.join(
+        project, ".claude", "projects", _SPEC, "session.jsonl"
+    )
+    turns = [
+        # 00:30 — squarely in the VALIDATING working-stage window.
+        {
+            "timestamp": "2026-01-01T00:30:00+00:00",
+            "model": "claude-opus-4-8",
+            "input_tokens": 1000,
+            "output_tokens": 200,
+            "tools": [],
+            "sidechain": False,
+        },
+        # 01:30 — the contested turn: falls in the VALIDATED checkpoint window
+        # pre-fix (siphoned into a non-rendered VALIDATED bucket); post-fix it
+        # belongs to VALIDATING, the preceding working stage.
+        {
+            "timestamp": "2026-01-01T01:30:00+00:00",
+            "model": "claude-opus-4-8",
+            "input_tokens": 500,
+            "output_tokens": 100,
+            "tools": [],
+            "sidechain": False,
+        },
+        # 02:30 — squarely in the REVIEWING working-stage window.
+        {
+            "timestamp": "2026-01-01T02:30:00+00:00",
+            "model": "claude-opus-4-8",
+            "input_tokens": 2000,
+            "output_tokens": 400,
+            "tools": [],
+            "sidechain": False,
+        },
+    ]
+    capture_fixtures.write_transcript(transcript_path, turns)
+
+    result = _run_report(project, state_dir)
+    assert result.returncode == 0, (
+        f"report exited {result.returncode}; stderr: {result.stderr}"
+    )
+
+    out = result.stdout
+
+    # The checkpoint-period turn (01:30) must be attributed to the adjacent
+    # preceding working stage (VALIDATING), not to a non-rendered VALIDATED bucket.
+    # Hand-derived: 1000 (00:30) + 500 (01:30) = 1500 in; 200 + 100 = 300 out.
+    assert re.search(r"VALIDATING\s+tokens: in=1500 out=300", out), (
+        f"VALIDATING token row does not show in=1500 out=300 — checkpoint-period "
+        f"turn was not attributed to the adjacent working stage.\n--- report ---\n{out}"
+    )
+
+    # REVIEWING is unaffected — only its own window turn (02:30).
+    assert re.search(r"REVIEWING\s+tokens: in=2000 out=400", out), (
+        f"REVIEWING token row does not show in=2000 out=400.\n--- report ---\n{out}"
+    )
+
+    # Turn accounting: all three fixture turns must be accounted for in the
+    # rendered stages (1500+2000 = 3500 in; 300+400 = 700 out).  No turn dropped
+    # into a non-rendered bucket.
+    validating_in_match = re.search(r"VALIDATING\s+tokens: in=(\d+)", out)
+    reviewing_in_match = re.search(r"REVIEWING\s+tokens: in=(\d+)", out)
+    assert validating_in_match and reviewing_in_match, (
+        f"Could not extract rendered token counts for accounting check.\n{out}"
+    )
+    total_rendered_in = int(validating_in_match.group(1)) + int(reviewing_in_match.group(1))
+    # Total fixture input tokens: 1000 + 500 + 2000 = 3500.
+    assert total_rendered_in == 3500, (
+        f"Rendered input token total {total_rendered_in} != 3500 — "
+        f"at least one fixture turn was dropped into a non-rendered bucket."
+    )
+
+
 def test_standard_level_renders_one_row_per_detection_round(tmp_path):
     """Report renders one row per entry in the rounds list, not one collapsed total row.
 

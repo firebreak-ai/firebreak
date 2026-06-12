@@ -85,8 +85,10 @@ def _real_capture_dir(cwd):
 def _read_cfg_level(real_capture_dir):
     """Read the first line of capture.cfg and return the level value, or None.
 
-    Refuses a symlinked ``capture.cfg``.  Only one line is read regardless of
-    file size.
+    Refuses a symlinked ``capture.cfg``.  Only the first 256 bytes of the first
+    line are read; a giant newline-less file cannot stall the hot path.  A window
+    with no parseable ``capture_level=`` token yields None, falling back to the
+    caller's safe default.
     """
     cfg_path = os.path.join(real_capture_dir, _CAPTURE_CFG_NAME)
 
@@ -99,7 +101,7 @@ def _read_cfg_level(real_capture_dir):
 
     try:
         with open(cfg_path, "r") as f:
-            line = f.readline().strip()
+            line = f.readline(256).strip()
     except OSError:
         return None
 
@@ -149,8 +151,10 @@ def _full_corroborated(cwd):
             continue
         try:
             with open(entry_path, "r") as f:
-                line1 = f.readline().strip()
-                line2 = f.readline().strip()
+                # Byte-capped at 4096 (covers PATH_MAX for realpath line); an
+                # over-capacity line fails the match and corroboration is refused.
+                line1 = f.readline(4096).strip()
+                line2 = f.readline(4096).strip()
         except OSError:
             continue
 

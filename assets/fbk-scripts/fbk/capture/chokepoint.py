@@ -68,7 +68,8 @@ def record_dispatch(
         instrumented = False
 
     if not instrumented:
-        return run_fn()
+        result = run_fn()
+        return 0 if result is None else result
 
     # Instrumented path — try to install a stdout redirect.
     saved = sys.stdout
@@ -79,21 +80,20 @@ def record_dispatch(
         sys.stdout = buffer
     except Exception:
         # Redirect install failed: run directly with real stdout, record nothing.
-        return run_fn()
+        result = run_fn()
+        return 0 if result is None else result
 
     # Run run_fn with the buffer in place.
     start = time.monotonic()
     exit_code = None
     original_exit = None
     result = None
-    raised = False
 
     try:
         result = run_fn()
         # Normal return: treat None as 0 for outcome purposes.
         exit_code = result if result is not None else 0
     except SystemExit as se:
-        raised = True
         original_exit = se
         code = se.code
         exit_code = code if isinstance(code, int) else (0 if code is None else 1)
@@ -148,6 +148,6 @@ def record_dispatch(
         pass
 
     # Re-raise the original SystemExit or return the int result.
-    if raised:
+    if original_exit is not None:
         raise original_exit
     return exit_code

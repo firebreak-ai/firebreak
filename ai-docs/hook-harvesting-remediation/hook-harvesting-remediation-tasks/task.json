@@ -234,8 +234,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Real-gate dispatch fixture with exact-fraction arithmetic across gate types",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added test_gate_outcomes_drive_exact_first_try_fraction to tests/test_capture_report_integration.py (drives the wave-1 real-producer fail/park/recover cycle; sanity-pins 2 chokepoint spec-gate events and 1 passing verification; asserts VALIDATING first-try 0.50, after-rework 1.00, reworked 1) and strengthened test_real_producers_drive_nonzero_report_rows (deterministic code-review-gate pass with quality-scan/test-review artifacts, exact one-event sanity pin, tasks-completed == 1). Red at 40ec021: classify_gate_attempts reads only VERIFICATION_RESULT events so the rate reads 1.00 instead of 0.50.",
       "note": "Slice gate-rate-all-gates is contract-evolving with no retired tests (existing rate tests are confirm-green only); legacy gate path"
     },
     {
@@ -250,8 +250,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Boundary semantics across multiple parks; rebuilt tests must fail red via the stale-early-READY fixture",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Rebuilt test_attempt_after_ready_reentry_classifies_after_rework and test_rework_derived_from_repeated_stage_entry in tests/test_report_arithmetic.py on the stale-early-READY fixture (two stages each parked once; READY holds the other stage's earlier re-entry), plus new test_two_parks_boundary_is_first_park (IMPLEMENTING parked twice, phases first_try/after_rework/after_rework, derive_rework==2 — documented expected-green at pre-fix). Red at 40ec021: both rebuilds get ['after_rework','after_rework'] because classify_gate_attempts reads stage_timestamps['READY'] (stale T2) instead of the stage's first park in error_history.",
       "note": null,
       "slice_shape": "contract-evolving",
       "retired_tests": [
@@ -271,8 +271,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Exact per-stage token sums require careful fixture arithmetic",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added test_checkpoint_period_turn_attributed_to_adjacent_working_stage to tests/test_report_rendering.py: QUEUED->VALIDATING->VALIDATED(checkpoint)->REVIEWING with three transcript turns; asserts VALIDATING in=1500 out=300 (checkpoint-window turn folded into the preceding working stage), REVIEWING in=2000 out=400, and rendered totals equal the fixture total so no turn drops. Red at 40ec021: VALIDATED sits in the boundary list, so the 01:30 turn lands in a never-rendered VALIDATED bucket (VALIDATING shows in=1000). Harvester tests unchanged (7 pass).",
       "note": "Slice token-boundary-working-stages is contract-evolving with no retired tests; legacy gate path"
     },
     {
@@ -287,8 +287,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Registry-driven enumeration; expected-green correction recorded rather than a fabricated red",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Parametrized central-redaction coverage over schema.SOURCES in tests/test_capture_event_writer.py: test_full_level_preserves_payload rebuilt over all four registered sources (exact payload equality at full level) and new test_standard_level_strips_freetext_for_every_registered_source (sentinel absent from raw line, numerics survive, no FREETEXT_KEYS key survives), with a registry lower-bound guard (>=4 sources, hook_router present). Documented expected-green at pre-fix: production redact() was already correct; the defect was single-source coverage. 8/8 new tests pass at both trees; future sources are covered automatically.",
       "note": null,
       "slice_shape": "cross-cutting"
     },
@@ -340,8 +340,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Three files changing atomically around one shared constant; import-cycle awareness required",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "NON_ACTIVE_STATES = frozenset(ALL_STATES - WORKING_STAGES) defined in fbk/state.py below WORKING_STAGES with the spec's verbatim comment; fbk/capture/active_stage.py drops the broken TERMINAL_STATES tuple and guards with 'stage not in NON_ACTIVE_STATES' (docstrings reworded to 'active working stage'); fbk/report.py replaces the parallel eleven-member literal with the imported constant. All 20 resolver tests plus the identity guard green; both pre-existing indirect router tests stay green (team lead re-verified: 33 passed across the two files). Exactly the three declared files touched.",
       "note": "Slice is contract-evolving with no retired tests (no prior direct resolver coverage existed); legacy gate path",
       "test_tasks": [
         "task-01"
@@ -387,8 +387,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Shell installer surgery where same-directory temp placement is load-bearing for atomicity",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "installer/install.sh: settings.json now lands via same-directory mktemp + mv -f rename (atomic; SETTINGS_TMP_FILE global wired into the cleanup trap so interrupted installs leave no temp residue), mkdir -p of the target dir made the fresh-install path work, and new create_capture_sentinel() (with dry-run branch) creates .claude/automation/.fbk-managed right after merge_settings. bash -n clean. Both wave-1 install-seam tests turned green; installer-migration suite stays green (team lead re-verified: 10 passed). Scope confined to installer/install.sh.",
       "note": null,
       "test_tasks": [
         "task-05"
@@ -560,8 +560,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file change applying verbatim byte caps",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Bounded both hot-path gate_check reads with the pinned caps: _read_cfg_level readline(256) and both _full_corroborated readline(4096) calls, with docstring/comment rationale (no-parseable-token window yields the safe default; over-capacity realpath line refuses corroboration). Grep confirms no unbounded reads remain in the module. Divergence guard and 5MB companion green; all 20 gate_check tests pass; scope confined to fbk/capture/gate_check.py. Team lead re-verified: 20 passed.",
       "note": null,
       "test_tasks": [
         "task-06"
@@ -615,8 +615,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Type-checker reasoning plus contract-doc corrections with a pinned mypy baseline",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "chokepoint.py fast paths normalized to int returns (run_fn() result captured, None coerced to 0) and the raised-flag re-raise guard replaced with an original_exit None-check mypy can narrow; retention.py fcntl ImportError fallback annotated. Pinned mypy baseline went 4 errors -> clean (team lead re-verified: no issues in 2 source files). Contracts doc corrections per AC-18: gate-result redaction wording, rounds-to-quiet removed from the code-review event contract, stage_summary consumer corrected to inject_stage_metrics only — each with a bracketed remediation note. Chokepoint/retention tests green (15 passed); the one red event_writer test is the wave-4 intentional red, confirmed pre-existing via git stash.",
       "note": "Contract-preserving: no dedicated test task; test_tasks references the final full-suite verification (task-18), and the slice's real gates are the pinned mypy baseline reaching zero and the existing tests staying green",
       "slice_shape": "contract-preserving",
       "test_tasks": [
@@ -635,8 +635,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Single documentation file with specified content",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Appended the 2026-06-12 remediation entry to docs/decisions-log.md recording the three durable decisions (shared NON_ACTIVE_STATES constant, install-time .fbk-managed sentinel, chokepoint as single writer of gate-outcome events) in the file's existing format. Glossary verification (read-only): 'capture gate', 'event envelope', 'chokepoint' are absent from GLOSSARY.md — the glossary covers SDL process terms only; recorded as a finding per the spec rather than silently passing.",
       "note": "Documentation task; test_tasks references the final full-suite verification (task-18) to satisfy the implementation-task schema — the real gate is the decisions-log entry landing",
       "slice_shape": "contract-preserving",
       "test_tasks": [

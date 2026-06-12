@@ -20,6 +20,7 @@ import os
 import sys
 
 import fbk.state as state_module
+from fbk.state import NON_ACTIVE_STATES
 from fbk.capture import known_agents, token_harvester
 
 
@@ -371,9 +372,7 @@ def _render_table(spec, events, st, token_data, cwd):
     extra_ran = [
         k for k in stage_timestamps
         if k not in _PIPELINE_STAGES
-        and k not in ("QUEUED", "PARKED", "READY", "COMPLETED",
-                      "VALIDATED", "REVIEWED", "BROKEN_DOWN", "TASKS_READY",
-                      "TESTS_WRITTEN", "TESTS_READY", "IMPLEMENTED")
+        and k not in NON_ACTIVE_STATES
     ]
     ran_stages = ran_stages + extra_ran
 

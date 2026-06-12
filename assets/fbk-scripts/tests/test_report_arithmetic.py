@@ -75,61 +75,88 @@ def test_attempt_before_park_classifies_first_try():
 
 
 def test_attempt_after_ready_reentry_classifies_after_rework():
-    """classify_gate_attempts labels post-re-entry attempts phase == "after_rework".
+    """classify_gate_attempts uses first-park boundary, not stale READY timestamp.
 
-    The state reflects a park then re-entry (PARKED → READY → stage restarted):
-    error_history has one VALIDATING park entry, and stage_timestamps shows
-    VALIDATING recorded twice (or a READY re-entry marker present).  Events
-    occurring after the re-entry timestamp must carry phase "after_rework".
+    Red mechanics: pre-fix, classify_gate_attempts reads stage_timestamps["READY"]
+    as the re-entry boundary.  READY is a last-write-wins key — when VALIDATING
+    parked and re-entered first, REVIEWING's state still carries READY=T2
+    (VALIDATING's re-entry).  T4 >= READY(T2) satisfies the pre-fix condition, so
+    the T4 attempt is misclassified as after_rework.  The first-park boundary (T5,
+    the first error_history entry for REVIEWING) labels T4 as first_try because
+    T4 < T5.
+
+    Fixture shape — two stages visited, each parked once, READY holds VALIDATING's
+    re-entry (stale and earlier than REVIEWING's own first park):
+      T0 = 2026-01-01T00:00:00  VALIDATING stage start
+      T1 = 2026-01-01T00:01:00  VALIDATING parks  (error_history[0])
+      T2 = 2026-01-01T00:02:00  READY — VALIDATING's re-entry (stale for REVIEWING)
+      T3 = 2026-01-01T00:03:00  REVIEWING stage start
+      T4 = 2026-01-01T00:04:00  REVIEWING gate fail — before REVIEWING's own park
+      T5 = 2026-01-01T00:05:00  REVIEWING parks  (error_history[1])
+      T6 = 2026-01-01T00:06:00  REVIEWING gate pass — after REVIEWING's park
     """
-    stage = "VALIDATING"
+    stage = "REVIEWING"
     spec = "test-spec"
 
-    park_ts = "2026-01-01T00:01:00+00:00"
-    reentry_ts = "2026-01-01T00:02:00+00:00"
+    # Full ISO timestamps for each point in the scenario.
+    T0 = "2026-01-01T00:00:00+00:00"  # VALIDATING start
+    T1 = "2026-01-01T00:01:00+00:00"  # VALIDATING first park (error_history[0])
+    T2 = "2026-01-01T00:02:00+00:00"  # READY — VALIDATING's re-entry; stale for REVIEWING
+    T3 = "2026-01-01T00:03:00+00:00"  # REVIEWING stage start
+    T4 = "2026-01-01T00:04:00+00:00"  # gate fail — after stale READY(T2), before REVIEWING's park
+    T5 = "2026-01-01T00:05:00+00:00"  # REVIEWING first park (error_history[1])
+    T6 = "2026-01-01T00:06:00+00:00"  # gate pass — after REVIEWING's park
 
-    # Two gate attempts — one before park, one after re-entry.
+    # Production VERIFICATION_RESULT shape with task_completed source and tests_passed key.
     events = [
         capture_fixtures.build_event(
             "VERIFICATION_RESULT",
-            source="fbk-implementer",
+            source="task_completed",       # production source label
             spec=spec,
             stage=stage,
-            timestamp="2026-01-01T00:00:30+00:00",
-            data={"passed": False},
+            timestamp=T4,                  # after stale READY, before REVIEWING's park
+            data={"tests_passed": False, "out_of_scope_files": []},
         ),
         capture_fixtures.build_event(
             "VERIFICATION_RESULT",
-            source="fbk-implementer",
+            source="task_completed",
             spec=spec,
             stage=stage,
-            timestamp="2026-01-01T00:02:30+00:00",
-            data={"passed": True},
+            timestamp=T6,                  # after REVIEWING's park
+            data={"tests_passed": True, "out_of_scope_files": []},
         ),
     ]
 
-    # State: stage was parked then READY re-entered, stage restarted.
+    # Production state shape after two stages and two parks.
     state = capture_fixtures.build_state(
         spec=spec,
         stage_timestamps={
-            stage: "2026-01-01T00:00:00+00:00",
-            "PARKED": park_ts,
-            "READY": "2026-01-01T00:01:30+00:00",
+            "VALIDATING": T0,  # VALIDATING started
+            "READY": T2,       # READY holds VALIDATING's re-entry — stale and earlier than REVIEWING's park (T5)
+            "REVIEWING": T3,   # REVIEWING started
+            "PARKED": T5,      # last PARKED timestamp (REVIEWING's park)
         },
         error_history=[
-            {"stage": stage, "error": "gate failed", "timestamp": park_ts},
+            # VALIDATING's park — stage matches "VALIDATING", not "REVIEWING".
+            {"stage": "VALIDATING", "error": "early park", "timestamp": T1},
+            # REVIEWING's park — this is the first-park boundary for the stage under test.
+            {"stage": "REVIEWING", "error": "gate failed", "timestamp": T5},
         ],
-        current_state=stage,
+        current_state="REVIEWING",
     )
 
     attempts = report.classify_gate_attempts(events, state, stage)
 
-    after_rework = [a for a in attempts if a["phase"] == "after_rework"]
-    assert len(after_rework) >= 1, (
-        "expected at least one after_rework attempt following re-entry"
+    # Exact assertion: T4 is first_try (before REVIEWING's first park at T5);
+    # T6 is after_rework (at or after that boundary).
+    assert [a["phase"] for a in attempts] == ["first_try", "after_rework"], (
+        f"expected phases ['first_try', 'after_rework'] but got "
+        f"{[a['phase'] for a in attempts]!r}; "
+        "pre-fix: T4 >= READY(T2) misclassifies T4 as after_rework"
     )
-    for entry in after_rework:
-        assert "passed" in entry
+    assert [a["passed"] for a in attempts] == [False, True], (
+        f"expected passed [False, True] but got {[a['passed'] for a in attempts]!r}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -226,63 +253,181 @@ def test_park_with_empty_reason_renders_no_reason_row():
 
 
 def test_rework_derived_from_repeated_stage_entry():
-    """derive_rework returns >= 1 for a stage that appears twice, guarding last-write-wins.
+    """derive_rework counts exactly 1 park; classify_gate_attempts labels T4 first_try.
 
-    Also calls classify_gate_attempts to confirm at least one after_rework
-    attempt is produced for the same state.  This catches a state-store
-    regression that drops repeated entries.
+    Uses the same stale-READY fixture as test_attempt_after_ready_reentry_classifies_after_rework
+    (fresh state per test).  Guards two contracts together:
+      1. derive_rework returns exactly 1 (one error_history entry for REVIEWING).
+      2. classify_gate_attempts uses the first-park boundary from error_history —
+         the T4 attempt (before REVIEWING's park at T5) is first_try, not after_rework.
+
+    The first_try-at-T4 assertion is intentionally duplicated here because this
+    test guards the derive+classify pairing: if either function misreads the
+    stale READY timestamp instead of the first error_history entry, the paired
+    assertion catches it.
     """
-    stage = "VALIDATING"
+    stage = "REVIEWING"
     spec = "test-spec"
 
-    park_ts = "2026-01-01T00:01:00+00:00"
-    reentry_ts = "2026-01-01T00:02:00+00:00"
+    # Same timestamps as the stale-READY rebuild above.
+    T0 = "2026-01-01T00:00:00+00:00"  # VALIDATING start
+    T1 = "2026-01-01T00:01:00+00:00"  # VALIDATING first park (error_history[0])
+    T2 = "2026-01-01T00:02:00+00:00"  # READY — VALIDATING's re-entry; stale for REVIEWING
+    T3 = "2026-01-01T00:03:00+00:00"  # REVIEWING stage start
+    T4 = "2026-01-01T00:04:00+00:00"  # gate fail — after stale READY(T2), before REVIEWING's park
+    T5 = "2026-01-01T00:05:00+00:00"  # REVIEWING first park (error_history[1])
+    T6 = "2026-01-01T00:06:00+00:00"  # gate pass — after REVIEWING's park
 
     state = capture_fixtures.build_state(
         spec=spec,
         stage_timestamps={
-            stage: "2026-01-01T00:00:00+00:00",
-            "PARKED": park_ts,
-            "READY": "2026-01-01T00:01:30+00:00",
+            "VALIDATING": T0,
+            "READY": T2,       # stale — holds VALIDATING's re-entry, not REVIEWING's
+            "REVIEWING": T3,
+            "PARKED": T5,
         },
         error_history=[
-            {"stage": stage, "error": "gate failed", "timestamp": park_ts},
+            {"stage": "VALIDATING", "error": "early park", "timestamp": T1},
+            {"stage": "REVIEWING", "error": "gate failed", "timestamp": T5},
         ],
-        current_state=stage,
+        current_state="REVIEWING",
     )
 
+    # Exact count: one error_history entry for REVIEWING.
     rework_count = report.derive_rework(state, stage)
-
-    assert rework_count >= 1, (
-        f"expected rework count >= 1 for re-entered stage, got {rework_count}"
+    assert rework_count == 1, (
+        f"expected derive_rework == 1 for one REVIEWING park entry, got {rework_count}"
     )
 
-    # Gate attempts: one before park, one after re-entry.
+    # Same two events as the stale-READY rebuild.
     events = [
         capture_fixtures.build_event(
             "VERIFICATION_RESULT",
-            source="fbk-implementer",
+            source="task_completed",
             spec=spec,
             stage=stage,
-            timestamp="2026-01-01T00:00:30+00:00",
-            data={"passed": False},
+            timestamp=T4,
+            data={"tests_passed": False, "out_of_scope_files": []},
         ),
         capture_fixtures.build_event(
             "VERIFICATION_RESULT",
-            source="fbk-implementer",
+            source="task_completed",
             spec=spec,
             stage=stage,
-            timestamp="2026-01-01T00:02:30+00:00",
-            data={"passed": True},
+            timestamp=T6,
+            data={"tests_passed": True, "out_of_scope_files": []},
         ),
     ]
 
     attempts = report.classify_gate_attempts(events, state, stage)
-    after_rework = [a for a in attempts if a["phase"] == "after_rework"]
 
-    assert len(after_rework) >= 1, (
-        "classify_gate_attempts must label at least one attempt after_rework "
-        "for a stage with a recorded park + re-entry"
+    # Load-bearing first_try-at-T4 assertion: T4 < first-park(T5) → first_try.
+    assert [a["phase"] for a in attempts] == ["first_try", "after_rework"], (
+        f"expected phases ['first_try', 'after_rework'] but got "
+        f"{[a['phase'] for a in attempts]!r}; "
+        "pre-fix: stale READY(T2) < T4 misclassifies T4 as after_rework"
+    )
+    assert [a["passed"] for a in attempts] == [False, True], (
+        f"expected passed [False, True] but got {[a['passed'] for a in attempts]!r}"
+    )
+
+
+def test_two_parks_boundary_is_first_park():
+    """First-park boundary is stable across a second park and later transitions.
+
+    A stage that parks twice still uses its FIRST park timestamp as the
+    after_rework boundary.  Any attempt that falls between the second park and
+    the first park is after_rework (the re-entry after the first park already
+    crossed the boundary), and the boundary does not advance to the second park.
+
+    Boundary-stability note: this test may be green at the pre-fix commit because
+    the pre-fix READY-based fallback also labels post-park attempts after_rework
+    in the straightforward single-stage case.  The red demonstration for AC-06
+    is carried by the two stale-READY rebuilds above.  This test pins the
+    first-park boundary-stability contract independently.
+
+    Fixture shape — three error_history entries across two stages:
+      T0 = 2026-01-01T00:00:00  VALIDATING start
+      T1 = 2026-01-01T00:01:00  VALIDATING first park   (error_history[0])
+      T2 = 2026-01-01T00:02:00  IMPLEMENTING stage start
+      T2.5=2026-01-01T00:02:30  gate pass — before IMPLEMENTING's first park
+      T3 = 2026-01-01T00:03:00  IMPLEMENTING first park (error_history[1]) — boundary
+      T5 = 2026-01-01T00:05:00  gate fail — after first park, before second park
+      T7 = 2026-01-01T00:07:00  IMPLEMENTING second park (error_history[2])
+      T8 = 2026-01-01T00:08:00  READY — re-entry after second park
+      T9 = 2026-01-01T00:09:00  gate pass — after second park
+    """
+    stage = "IMPLEMENTING"
+    spec = "test-spec"
+
+    T0  = "2026-01-01T00:00:00+00:00"  # VALIDATING start
+    T1  = "2026-01-01T00:01:00+00:00"  # VALIDATING first park (error_history[0])
+    T2  = "2026-01-01T00:02:00+00:00"  # IMPLEMENTING stage start
+    T2h = "2026-01-01T00:02:30+00:00"  # gate pass — before IMPLEMENTING's first park
+    T3  = "2026-01-01T00:03:00+00:00"  # IMPLEMENTING first park (error_history[1]) — boundary
+    T5  = "2026-01-01T00:05:00+00:00"  # gate fail — between re-entry and second park
+    T7  = "2026-01-01T00:07:00+00:00"  # IMPLEMENTING second park (error_history[2])
+    T8  = "2026-01-01T00:08:00+00:00"  # READY — re-entry after second park
+    T9  = "2026-01-01T00:09:00+00:00"  # gate pass — after second park
+
+    events = [
+        capture_fixtures.build_event(
+            "VERIFICATION_RESULT",
+            source="task_completed",
+            spec=spec,
+            stage=stage,
+            timestamp=T2h,   # before IMPLEMENTING's first park — first_try
+            data={"tests_passed": True, "out_of_scope_files": []},
+        ),
+        capture_fixtures.build_event(
+            "VERIFICATION_RESULT",
+            source="task_completed",
+            spec=spec,
+            stage=stage,
+            timestamp=T5,    # between re-entry and second park — after_rework
+            data={"tests_passed": False, "out_of_scope_files": []},
+        ),
+        capture_fixtures.build_event(
+            "VERIFICATION_RESULT",
+            source="task_completed",
+            spec=spec,
+            stage=stage,
+            timestamp=T9,    # after second park — still after_rework (boundary did not advance)
+            data={"tests_passed": True, "out_of_scope_files": []},
+        ),
+    ]
+
+    state = capture_fixtures.build_state(
+        spec=spec,
+        stage_timestamps={
+            "VALIDATING":   T0,  # VALIDATING visited
+            "IMPLEMENTING": T2,  # IMPLEMENTING started
+            "PARKED":       T7,  # last PARKED timestamp (second park)
+            "READY":        T8,  # READY — re-entry after second park
+        },
+        error_history=[
+            # VALIDATING's park — does not affect IMPLEMENTING boundary.
+            {"stage": "VALIDATING",  "error": "early park",   "timestamp": T1},
+            # IMPLEMENTING's first park — this is the boundary.
+            {"stage": "IMPLEMENTING","error": "first park",   "timestamp": T3},
+            # IMPLEMENTING's second park — must NOT advance the boundary.
+            {"stage": "IMPLEMENTING","error": "second park",  "timestamp": T7},
+        ],
+        current_state="IMPLEMENTING",
+    )
+
+    # Exact phase order: first_try at T2.5, after_rework at T5, after_rework at T9.
+    attempts = report.classify_gate_attempts(events, state, stage)
+    assert [a["phase"] for a in attempts] == ["first_try", "after_rework", "after_rework"], (
+        f"expected ['first_try', 'after_rework', 'after_rework'] but got "
+        f"{[a['phase'] for a in attempts]!r}; "
+        "boundary must be the first park (T3) and must not advance to the second park (T7)"
+    )
+
+    # Exact rework count: two error_history entries for IMPLEMENTING.
+    rework_count = report.derive_rework(state, stage)
+    assert rework_count == 2, (
+        f"expected derive_rework == 2 for two IMPLEMENTING park entries, got {rework_count}"
     )
 
 

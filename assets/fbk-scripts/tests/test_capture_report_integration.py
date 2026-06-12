@@ -13,7 +13,8 @@ the moment producer and consumer envelopes drift apart.
 
 It exercises the three cleanly-drivable Theme-A rows:
   - tasks completed   (PIPELINE_COMMAND, command_name "task-completed")
-  - gate first-try rate (VERIFICATION_RESULT, attributed to the active stage)
+  - gate first-try rate (VERIFICATION_RESULT, attributed to the active stage;
+                         also PIPELINE_COMMAND for gate commands in GATE_COMMAND_NAMES)
   - code-review kill rate (CODE_REVIEW_ROUNDS, total_raised / total_survived)
 """
 
@@ -112,6 +113,14 @@ def test_real_producers_drive_nonzero_report_rows(tmp_path):
     with open(os.path.join(feature_dir, ".code-review-rounds.json"), "w") as f:
         json.dump({"spec": _SPEC, "rounds": [{"raised": 5, "survived": 2}]}, f)
 
+    # Gate pass artifacts: quality-scan.md (must contain "Severity:") and
+    # test-review-final.md (any content).  An absent test-hashes.json manifest
+    # yields only non-blocking "missing" findings, so no hash manifest is needed.
+    with open(os.path.join(feature_dir, "quality-scan.md"), "w") as f:
+        f.write("Severity: minor\n")
+    with open(os.path.join(feature_dir, "test-review-final.md"), "w") as f:
+        f.write("# Test review — final pass\n")
+
     # --- Drive the real task-completed hook through the chokepoint ---
     # No test runner or linter is present, so both checks are skipped and the hook
     # exits 0: one PIPELINE_COMMAND (command_name "task-completed", outcome pass)
@@ -126,7 +135,12 @@ def test_real_producers_drive_nonzero_report_rows(tmp_path):
     assert tc.returncode == 0, f"task-completed should pass cleanly; stderr={tc.stderr!r}"
 
     # --- Drive the real code-review gate (emits CODE_REVIEW_ROUNDS as a side effect) ---
-    _run_fbk(["code-review-gate", f"ai-docs/{_SPEC}"], project, state_dir)
+    # The gate artifacts written above make it pass deterministically.
+    cr = _run_fbk(["code-review-gate", f"ai-docs/{_SPEC}"], project, state_dir)
+    assert cr.returncode == 0, (
+        f"code-review-gate should pass with quality-scan.md and test-review-final.md present; "
+        f"stdout={cr.stdout!r}; stderr={cr.stderr!r}"
+    )
 
     # Sanity: the real producers wrote the three event types we will read back.
     events = _events(project)
@@ -135,22 +149,38 @@ def test_real_producers_drive_nonzero_report_rows(tmp_path):
         f"expected all three producer events in the stream, got {types}; events={events!r}"
     )
 
+    # Sanity: exactly one code-review-gate PIPELINE_COMMAND with outcome=pass on IMPLEMENTING.
+    cr_gate_events = [
+        e for e in events
+        if e.get("event_type") == "PIPELINE_COMMAND"
+        and e.get("data", {}).get("command_name") == "code-review-gate"
+        and e.get("stage") == _STAGE
+    ]
+    assert len(cr_gate_events) == 1, (
+        f"expected exactly 1 code-review-gate PIPELINE_COMMAND on {_STAGE}, "
+        f"got {len(cr_gate_events)}: {cr_gate_events!r}"
+    )
+    assert cr_gate_events[0].get("data", {}).get("outcome") == "pass", (
+        f"expected code-review-gate outcome=pass, got: {cr_gate_events[0].get('data')!r}"
+    )
+
     # --- Run the real report and read its rows ---
     rep = _run_fbk(["report", _SPEC], project, state_dir)
     assert rep.returncode == 0, f"report failed: {rep.stderr!r}"
     out = rep.stdout
 
-    # 1) Tasks completed: the real task-completion must register on the IMPLEMENTING row.
+    # 1) Tasks completed: exactly 1 real task-completion on the IMPLEMENTING row.
     completed = _row_value(out, rf"{_STAGE}\s+tasks completed:\s*(\d+)")
-    assert completed is not None and int(completed) >= 1, (
-        f"expected IMPLEMENTING tasks-completed >= 1 from a real task-completion, "
+    assert completed is not None and int(completed) == 1, (
+        f"expected IMPLEMENTING tasks-completed == 1 from a real task-completion, "
         f"got {completed!r}\n--- report ---\n{out}"
     )
 
-    # 2) First-try gate rate: one passing verification on the active stage → 1.00.
+    # 2) First-try gate rate: two first-try attempts on IMPLEMENTING — the passing
+    #    verification plus the passing code-review-gate dispatch → 2/2 = 1.00.
     rate = _row_value(out, rf"{_STAGE}\s+first-try rate:\s*([\d.]+)")
     assert rate is not None and float(rate) == pytest.approx(1.0), (
-        f"expected IMPLEMENTING first-try rate 1.00 from a passing verification, "
+        f"expected IMPLEMENTING first-try rate 1.00 (2/2: verification + code-review-gate), "
         f"got {rate!r}\n--- report ---\n{out}"
     )
 
@@ -159,4 +189,82 @@ def test_real_producers_drive_nonzero_report_rows(tmp_path):
     assert kr is not None and float(kr) == pytest.approx(0.60), (
         f"expected kill rate 0.60 from 5 raised / 2 survived, got {kr!r}\n"
         f"--- report ---\n{out}"
+    )
+
+
+def test_gate_outcomes_drive_exact_first_try_fraction(tmp_path):
+    """Gate PIPELINE_COMMAND events on spec/task-reviewer/code-review gates count in the rate.
+
+    Drives the real gate-fail → park → recover cycle via capture_fixtures.drive_gate_fail_park_recover,
+    then runs the real report and pins VALIDATING first-try rate to exactly 0.50.
+
+    Red mechanics: the pre-fix classify_gate_attempts ignores PIPELINE_COMMAND events
+    entirely — it reads only VERIFICATION_RESULT.  With only the one passing verification
+    visible, it reports first-try rate 1.00, not 0.50, so this test fails at the pre-fix
+    commit when the 0.50 pin is checked.
+    """
+    project = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
+    state_dir = os.path.join(project, ".claude", "automation", "state")
+
+    # drive_gate_fail_park_recover creates the state from scratch via state-create and
+    # state-transition; it does not need a pre-written state file.
+    events = capture_fixtures.drive_gate_fail_park_recover(project, state_dir, _SPEC)
+
+    # Sanity: the fixture produced the expected event mix for VALIDATING.
+    # The chokepoint writes one PIPELINE_COMMAND per spec-gate call with the real
+    # stage; spec.py also writes one with stage=None.  Filtering by stage=VALIDATING
+    # isolates the two chokepoint-written events (one fail before park, one pass after).
+    spec_gate_events = [
+        e for e in events
+        if e.get("event_type") == "PIPELINE_COMMAND"
+        and e.get("data", {}).get("command_name") == "spec-gate"
+        and e.get("stage") == "VALIDATING"
+    ]
+    assert len(spec_gate_events) == 2, (
+        f"expected exactly 2 spec-gate PIPELINE_COMMAND events on VALIDATING, "
+        f"got {len(spec_gate_events)}: {spec_gate_events!r}"
+    )
+
+    passing_verifications = [
+        e for e in events
+        if e.get("event_type") == "VERIFICATION_RESULT"
+        and e.get("stage") == "VALIDATING"
+        and (
+            e.get("data", {}).get("tests_passed")
+            or e.get("data", {}).get("passed")
+            or e.get("data", {}).get("result") == "pass"
+        )
+    ]
+    assert len(passing_verifications) == 1, (
+        f"expected exactly 1 passing VERIFICATION_RESULT on VALIDATING, "
+        f"got {len(passing_verifications)}: {passing_verifications!r}"
+    )
+
+    # Run the real report and read the VALIDATING rows.
+    rep = _run_fbk(["report", _SPEC], project, state_dir)
+    assert rep.returncode == 0, f"report failed: {rep.stderr!r}"
+    out = rep.stdout
+
+    # First-try rate for VALIDATING:
+    #   - Before the park: passing verification (attempt 1, pass) + spec-gate fail (attempt 2, fail) → 1/2 = 0.50
+    #   - After the park (after-rework): spec-gate pass → 1/1 = 1.00
+    ftr = _row_value(out, r"VALIDATING\s+first-try rate:\s*([\d.]+)")
+    assert ftr is not None and float(ftr) == pytest.approx(0.50), (
+        f"expected VALIDATING first-try rate 0.50 "
+        f"(1 passing verification + 1 spec-gate fail before park = 1/2), "
+        f"got {ftr!r}\n--- report ---\n{out}"
+    )
+
+    # After-rework rate: spec-gate pass is the sole after-rework attempt → 1/1 = 1.00.
+    arr = _row_value(out, r"VALIDATING\s+first-try rate:.*?after-rework rate:\s*([\d.]+)")
+    assert arr is not None and float(arr) == pytest.approx(1.00), (
+        f"expected VALIDATING after-rework rate 1.00 (spec-gate pass after re-entry), "
+        f"got {arr!r}\n--- report ---\n{out}"
+    )
+
+    # Tasks reworked: one park-driven re-entry of VALIDATING.
+    reworked = _row_value(out, r"VALIDATING\s+tasks completed:.*?tasks reworked:\s*(\d+)")
+    assert reworked is not None and int(reworked) == 1, (
+        f"expected VALIDATING tasks reworked == 1 (one park-driven re-entry), "
+        f"got {reworked!r}\n--- report ---\n{out}"
     )

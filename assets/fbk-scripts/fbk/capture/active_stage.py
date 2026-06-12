@@ -3,20 +3,18 @@
 Several producers need to stamp an event with the spec and stage that is
 currently running: the dispatch chokepoint, the standalone hook router, and the
 task-completed verification hook.  They must agree on one rule — including which
-states count as terminal — so events from different producers in the same cycle
-carry consistent attribution.  Keeping that rule in one place stops the
-producers from drifting apart.
+states carry an active working stage — so events from different producers in the
+same cycle carry consistent attribution.  Keeping that rule in one place stops
+the producers from drifting apart.
 
-A state counts as terminal (no active stage) when a run has finished, failed, or
-been parked.  An event firing during a terminal or idle period carries no stage.
+The resolver returns a stage only for an active working stage.  Events during
+checkpoint, idle, parked, or terminal periods carry no stage.
 """
 
 import json
 import os
 
-# States that mean "no stage is actively running" — an event seen during any of
-# these is attributed to no stage (spec/stage resolve to None).
-TERMINAL_STATES = ("DONE", "FAILED", "PARKED")
+from fbk.state import NON_ACTIVE_STATES
 
 
 def resolve_active_stage(cwd: str):
@@ -24,8 +22,9 @@ def resolve_active_stage(cwd: str):
 
     Reads state files from <cwd>/.claude/automation/state/ and returns the
     spec_name and current_state of the most-recently-modified file whose state
-    is not terminal.  Returns (None, None) on any error, when no state files
-    exist, or when every run is in a terminal state.
+    is an active working stage.  Returns (None, None) on any error, when no
+    state files exist, or when every run is in a checkpoint, idle, parked, or
+    terminal state.
     """
     try:
         state_dir = os.path.join(cwd, ".claude", "automation", "state")
@@ -53,7 +52,7 @@ def resolve_active_stage(cwd: str):
                     state = json.load(fh)
                 spec = state.get("spec_name")
                 stage = state.get("current_state")
-                if spec and stage and stage not in TERMINAL_STATES:
+                if spec and stage and stage not in NON_ACTIVE_STATES:
                     return spec, stage
             except Exception:
                 continue

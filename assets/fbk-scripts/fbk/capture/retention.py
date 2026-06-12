@@ -18,7 +18,7 @@ import os
 try:
     import fcntl
 except ImportError:  # pragma: no cover — non-Unix fallback
-    fcntl = None
+    fcntl = None  # type: ignore[assignment]
 
 # Default byte cap for the events file (~5 MB).
 DEFAULT_MAX_BYTES = 5 * 1024 * 1024
