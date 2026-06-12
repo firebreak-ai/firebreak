@@ -441,8 +441,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Rate arithmetic spanning two event types; depends on resolved stages and single-writer events",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "classify_gate_attempts in fbk/report.py now collects PIPELINE_COMMAND events whose command_name is in the new GATE_COMMAND_NAMES constant (spec-gate, task-reviewer-gate, code-review-gate — verified against COMMAND_MAP) alongside VERIFICATION_RESULT events, sorted together by timestamp, with a type-dependent pass read (outcome=='pass' for gate dispatches; task-completed dispatches excluded by the name allowlist). READY-based boundary logic untouched per the wave-6 handoff. Both gate-rate tests green (0.50 fraction; strengthened real-producer row test); must-stay-green arithmetic tests pass; the three wave-6/8 reds confirmed pre-existing. mypy clean. Team lead re-verified via full suite: zero regressions.",
       "note": "Slice is contract-evolving with no retired tests (existing rate tests are confirm-green only); legacy gate path",
       "test_tasks": [
         "task-13"

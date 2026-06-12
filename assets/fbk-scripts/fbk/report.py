@@ -24,13 +24,23 @@ from fbk.state import NON_ACTIVE_STATES
 from fbk.capture import known_agents, token_harvester
 
 
+# Gate dispatch command names whose PIPELINE_COMMAND outcomes count as gate attempts.
+GATE_COMMAND_NAMES = ("spec-gate", "task-reviewer-gate", "code-review-gate")
+
 # ---------------------------------------------------------------------------
 # Pure computation helpers
 # ---------------------------------------------------------------------------
 
 
 def classify_gate_attempts(events, st, stage):
-    """Classify VERIFICATION_RESULT events for a stage as first_try or after_rework.
+    """Classify gate attempt events for a stage as first_try or after_rework.
+
+    Attempts are collected from two event types:
+    - ``VERIFICATION_RESULT`` events for the stage (task-completion verification).
+    - ``PIPELINE_COMMAND`` events for the stage whose ``data["command_name"]`` is
+      a known gate name (``GATE_COMMAND_NAMES``).  ``task-completed`` dispatches
+      are excluded to avoid double-counting — their outcome already reaches the
+      rate through the accompanying ``VERIFICATION_RESULT``.
 
     A "first try" attempt is any gate attempt that occurred before the stage's
     first park.  An "after rework" attempt is any gate attempt from the moment
@@ -44,11 +54,18 @@ def classify_gate_attempts(events, st, stage):
     Returns:
         List of dicts, each {"phase": "first_try" | "after_rework", "passed": bool}.
     """
-    # Collect VERIFICATION_RESULT events for this stage, sorted by timestamp.
+    # Collect VERIFICATION_RESULT and gate PIPELINE_COMMAND events for this stage,
+    # sorted by timestamp.
     gate_events = [
         e for e in events
-        if e.get("event_type") == "VERIFICATION_RESULT"
-        and e.get("stage") == stage
+        if e.get("stage") == stage
+        and (
+            e.get("event_type") == "VERIFICATION_RESULT"
+            or (
+                e.get("event_type") == "PIPELINE_COMMAND"
+                and e.get("data", {}).get("command_name") in GATE_COMMAND_NAMES
+            )
+        )
     ]
     gate_events.sort(key=lambda e: e.get("timestamp", ""))
 
@@ -69,7 +86,10 @@ def classify_gate_attempts(events, st, stage):
         data = ev.get("data", {})
 
         # Determine pass/fail from the event data.
-        passed = _event_passed(data)
+        if ev.get("event_type") == "PIPELINE_COMMAND":
+            passed = data.get("outcome") == "pass"
+        else:
+            passed = _event_passed(data)
 
         # Classify the attempt phase.
         if first_park_ts is None:
