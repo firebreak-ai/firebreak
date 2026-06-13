@@ -147,6 +147,22 @@ class TestDecisionsRecordedCount:
         result = validate_design(str(feature_dir))
         assert result["result"] == "fail"
 
+    def test_one_decision_recorded_passes(self, tmp_path):
+        """Exactly 1 decision is the smallest passing count — pins the 0-fails/1-passes edge.
+
+        The happy-path fixture uses 2, so without this the fail-to-pass boundary
+        is never exercised at its true edge.
+        """
+        if validate_design is None:
+            pytest.skip("fbk.gates.design not yet implemented")
+        _, feature_dir = make_design_dir(tmp_path)
+        manifest_path = feature_dir / "design-manifest.md"
+        manifest_path.write_text(
+            manifest_path.read_text().replace("Decisions recorded: 2", "Decisions recorded: 1")
+        )
+        result = validate_design(str(feature_dir))
+        assert result["result"] == "pass"
+
 
 class TestFreshEyesGate:
     def test_open_critical_design_observation_fails(self, tmp_path):
@@ -159,6 +175,23 @@ class TestFreshEyesGate:
         )
         result = validate_design(str(feature_dir))
         assert result["result"] == "fail"
+
+    def test_empty_critical_section_at_end_of_file_passes(self, tmp_path):
+        """A present-but-empty Critical section as the final section passes.
+
+        The happy-path fixture puts Critical first (Substantive follows), so the
+        scanner exits on the next '## ' heading. Here Critical is last, so the
+        scanner runs to end-of-file instead — a distinct exit path that the
+        happy path never exercises.
+        """
+        if validate_design is None:
+            pytest.skip("fbk.gates.design not yet implemented")
+        _, feature_dir = make_design_dir(tmp_path)
+        (feature_dir / "fresh-eyes-design.md").write_text(
+            "## Substantive\n\n- One substantive observation.\n\n## Critical\n"
+        )
+        result = validate_design(str(feature_dir))
+        assert result["result"] == "pass"
 
 
 class TestInjectionScan:

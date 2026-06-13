@@ -267,6 +267,25 @@ class TestFreshEyesGate:
         result = validate_intent(str(feature_dir))
         assert result["result"] == "fail"
 
+    def test_empty_critical_section_at_end_of_file_passes(self, tmp_path):
+        """A present-but-empty Critical section as the final section passes.
+
+        The valid fixture puts Critical first (Substantive follows), so the body
+        scanner stops at the next '## ' heading. Here Critical is last, so the
+        scanner reads the section body to end-of-file — a distinct path the
+        happy path never exercises.
+        """
+        _, feature_dir = make_feature_dir(tmp_path)
+        fresh_eyes_critical_last = (
+            "# Fresh Eyes Report — Intent\n\n"
+            "## Substantive\n"
+            "- Minor improvement suggestion.\n\n"
+            "## Critical\n"
+        )
+        (feature_dir / "fresh-eyes-intent.md").write_text(fresh_eyes_critical_last)
+        result = validate_intent(str(feature_dir))
+        assert result["result"] == "pass"
+
 
 
 @requires_intent
