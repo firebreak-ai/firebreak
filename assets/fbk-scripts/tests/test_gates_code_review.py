@@ -171,10 +171,11 @@ class TestNonFailingConditions:
         )
 
     def test_test_review_drift_finding_does_not_fail_gate(self, tmp_path):
-        """A test-review verdict whose body documents a drift finding does not fail the gate.
+        """A test-review verdict whose body documents a drift finding does not fail the gate
+        AND surfaces a non-blocking advisory finding naming the needs-revision verdict.
 
-        Per AC-09/AC-11, only hash mismatches (modified/unexpected) or shadow tests fail the
-        gate.  A needs-revision verdict flagging drift is for operator triage — not a blocker.
+        Per the advisory-signal spec: drift is a human judgment call (rename legitimate?),
+        not agent-fixable, so it must appear in findings, never in failures.
         """
         _, feature_dir = make_code_review_dir(tmp_path)
         (feature_dir / "test-review-final.md").write_text(
@@ -186,6 +187,50 @@ class TestNonFailingConditions:
         )
         result = validate_code_review(str(feature_dir))
         assert result["result"] == "pass"
+        verdict_findings = [
+            f for f in result.get("findings", []) if "needs-revision" in f.lower()
+        ]
+        assert verdict_findings, (
+            "Gate must surface a non-blocking finding naming the needs-revision verdict; "
+            f"got findings={result.get('findings', [])}"
+        )
+
+    def test_accepted_verdict_emits_no_advisory_finding(self, tmp_path):
+        """An accepted verdict passes silently — no verdict-related finding is added.
+
+        This pins the allowlist: the gate must not make every verdict noisy.
+        """
+        _, feature_dir = make_code_review_dir(tmp_path)
+        # make_code_review_dir writes Verdict: accepted — leave it intact
+        result = validate_code_review(str(feature_dir))
+        assert result["result"] == "pass"
+        verdict_findings = [
+            f for f in result.get("findings", [])
+            if "verdict" in f.lower() and "non-blocking" in f
+        ]
+        assert not verdict_findings, (
+            "Accepted verdict must not produce a non-blocking verdict finding; "
+            f"got findings={result.get('findings', [])}"
+        )
+
+    def test_artifact_with_no_verdict_line_surfaces_finding(self, tmp_path):
+        """An existing test-review artifact that carries no Verdict: line surfaces a
+        non-blocking finding and still passes (default-deny edge case).
+        """
+        _, feature_dir = make_code_review_dir(tmp_path)
+        (feature_dir / "test-review-final.md").write_text(
+            "# Test Review\n\nNo verdict line present in this document.\n"
+        )
+        result = validate_code_review(str(feature_dir))
+        assert result["result"] == "pass"
+        verdict_findings = [
+            f for f in result.get("findings", [])
+            if "verdict" in f.lower() and "non-blocking" in f
+        ]
+        assert verdict_findings, (
+            "Gate must surface a non-blocking finding when no Verdict: line is found; "
+            f"got findings={result.get('findings', [])}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -248,7 +293,11 @@ class TestPathGuard:
         assert proc.returncode == 2
 
     def test_binary_quality_scan_degrades_gracefully(self, tmp_path):
-        """Gate does not raise an unhandled traceback when quality-scan.md contains binary data."""
+        """Gate exits 2 (fails) without an unhandled traceback when quality-scan.md is binary.
+
+        A binary/unreadable quality scan is agent-fixable (redo the scan), so the gate
+        blocks (returncode 2). It must not crash with an unhandled exception.
+        """
         _, feature_dir = make_code_review_dir(tmp_path)
         (feature_dir / "quality-scan.md").write_bytes(b"\x00\xff\xfe\xfd binary garbage")
         proc = subprocess.run(
@@ -256,5 +305,9 @@ class TestPathGuard:
             capture_output=True,
             text=True,
         )
-        assert "Traceback" not in proc.stderr
-        assert proc.returncode in (0, 2)
+        assert "Traceback" not in proc.stderr, (
+            f"Gate must not crash with a traceback; stderr={proc.stderr!r}"
+        )
+        assert proc.returncode == 2, (
+            f"Binary quality-scan must block the gate (returncode 2); got {proc.returncode}"
+        )
