@@ -11,12 +11,13 @@ jobs:
     name: Python Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          cache-suffix: python-tests
 
       - name: Run pytest
         working-directory: assets/fbk-scripts
@@ -26,12 +27,13 @@ jobs:
     name: SDL Workflow Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          cache-suffix: sdl-workflow-tests
 
       - name: Run SDL workflow tests
         run: |
@@ -55,12 +57,13 @@ jobs:
     name: Installer Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          cache-suffix: installer-tests
 
       - name: Run installer tests
         run: |
