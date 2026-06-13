@@ -216,11 +216,6 @@ class TestPRDInventoryConsistency:
             f"Expected failure mentioning B-999 or mismatch, got: {result['failures']}"
         )
 
-    def test_consistent_bidirectional_references_passes(self, tmp_path):
-        """PRD and inventory with matching IDs on both sides passes."""
-        _, feature_dir = make_feature_dir(tmp_path)
-        result = validate_intent(str(feature_dir))
-        assert result["result"] == "pass"
 
 
 @requires_intent
@@ -253,11 +248,6 @@ class TestGrillingLog:
             for f in result["failures"]
         ), f"Expected failure mentioning malformed grilling log, got: {result['failures']}"
 
-    def test_well_formed_grilling_log_passes(self, tmp_path):
-        """Grilling log with a well-formed '### ' decision block and 'Confirmed:' line passes."""
-        _, feature_dir = make_feature_dir(tmp_path)
-        result = validate_intent(str(feature_dir))
-        assert result["result"] == "pass"
 
 
 @requires_intent
@@ -277,11 +267,6 @@ class TestFreshEyesGate:
         result = validate_intent(str(feature_dir))
         assert result["result"] == "fail"
 
-    def test_empty_critical_section_passes(self, tmp_path):
-        """Fresh-eyes report with an empty Critical section (no bullets) passes."""
-        _, feature_dir = make_feature_dir(tmp_path)
-        result = validate_intent(str(feature_dir))
-        assert result["result"] == "pass"
 
 
 @requires_intent
@@ -310,18 +295,18 @@ class TestPathGuard:
         )
 
     def test_binary_prd_degrades_to_structural_failure(self, tmp_path):
-        """Binary garbage in prd.md does not raise an unhandled exception — exits 0 or 2 with valid JSON or code 2."""
+        """Binary garbage in prd.md causes all PRD sections to be reported missing — exits 2."""
         _, feature_dir = make_feature_dir(tmp_path)
         (feature_dir / "prd.md").write_bytes(b'\x89PNG\r\n\x1a\n' + b'\x00' * 100)
         proc = _call_gate_subprocess(str(feature_dir))
-        assert proc.returncode in (0, 2), (
-            f"Expected exit code 0 or 2 for binary input, got {proc.returncode}. "
-            f"stderr: {proc.stderr}"
+        assert proc.returncode == 2, (
+            f"Expected exit code 2 for binary prd.md (structural failures), "
+            f"got {proc.returncode}. stderr: {proc.stderr}"
         )
-        if proc.returncode == 0:
-            try:
-                json.loads(proc.stdout)
-            except json.JSONDecodeError:
-                pytest.fail(
-                    f"Exit code 0 but stdout is not valid JSON: {proc.stdout!r}"
-                )
+        result = json.loads(proc.stdout)
+        assert any(
+            "Missing PRD section" in f for f in result.get("failures", [])
+        ), (
+            f"Expected at least one 'Missing PRD section' failure for binary prd.md, "
+            f"got: {result.get('failures', [])}"
+        )

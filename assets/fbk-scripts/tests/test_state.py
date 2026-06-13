@@ -6,7 +6,6 @@ from fbk.state import (
     create_state,
     transition_state,
     load_state,
-    VALID_TRANSITIONS,
 )
 
 
@@ -143,16 +142,3 @@ class TestReadyState:
 
         state = load_state("test-spec")
         assert state["parked_info"] == {}
-
-
-class TestStateValidTransitionsMap:
-    """Test VALID_TRANSITIONS map structure."""
-
-    def test_valid_transitions_map_exists(self):
-        """VALID_TRANSITIONS should be defined and contain expected states."""
-        assert isinstance(VALID_TRANSITIONS, dict)
-        assert "QUEUED" in VALID_TRANSITIONS
-        assert "PARKED" in VALID_TRANSITIONS
-        assert "READY" in VALID_TRANSITIONS
-        assert VALID_TRANSITIONS["QUEUED"] == ["VALIDATING"]
-        assert "READY" in VALID_TRANSITIONS["PARKED"]

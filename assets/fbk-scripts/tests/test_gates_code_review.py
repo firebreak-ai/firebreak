@@ -162,13 +162,13 @@ class TestNonFailingConditions:
         (feature_dir / "tests" / "test_module.py").unlink()
         result = validate_code_review(str(feature_dir))
         assert result["result"] == "pass"
-        # The missing path should appear somewhere in findings/warnings, not failures
-        all_failures = result.get("failures", [])
-        assert len(all_failures) == 0 or not any(
-            "missing" in f.lower() and "fail" in f.lower() for f in all_failures
+        # The missing path must be routed to findings (non-blocking), never to failures.
+        assert result.get("failures", []) == [], (
+            "A 'missing' discrepancy must not appear in failures"
         )
-        findings_or_warnings = result.get("findings", result.get("warnings", []))
-        assert len(findings_or_warnings) > 0 or "test_module" not in str(result.get("failures", []))
+        assert any("test_module" in f for f in result.get("findings", [])), (
+            "A 'missing' discrepancy must surface in findings so the operator can see it"
+        )
 
     def test_test_review_drift_finding_does_not_fail_gate(self, tmp_path):
         """A test-review verdict whose body documents a drift finding does not fail the gate.

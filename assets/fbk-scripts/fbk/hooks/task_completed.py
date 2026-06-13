@@ -91,13 +91,16 @@ def _extract_declared_files(task_file_path: str) -> list[str]:
     return sorted(set(declared))
 
 
+TASK_PATH_PATTERN = r"ai-docs/\S+?/\S*tasks/task-\S*\.md"
+
+
 def main() -> None:
     data = json.load(sys.stdin)
 
     task_description = data.get("task_description", "")
     cwd = data.get("cwd", ".")
 
-    match = re.search(r"ai-docs/\S+?/\S*tasks/task-\S*\.md", task_description)
+    match = re.search(TASK_PATH_PATTERN, task_description)
     if not match:
         sys.exit(0)
 

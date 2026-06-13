@@ -3,9 +3,7 @@
 import re
 
 import pytest
-from fbk.hooks.task_completed import detect_test_cmd, detect_lint_cmd
-
-TASK_PATH_PATTERN = r"ai-docs/\S+?/\S*tasks/task-\S*\.md"
+from fbk.hooks.task_completed import detect_test_cmd, detect_lint_cmd, TASK_PATH_PATTERN
 
 
 class TestTaskPathRegex:

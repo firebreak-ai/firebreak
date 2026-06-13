@@ -165,9 +165,22 @@ class TestSliceBlockDetection:
         assert result.returncode == 0
 
     def test_slices_block_with_valid_slice_passes(self, tmp_path):
-        """Spec with a well-formed ## Slices block and one complete valid slice passes."""
+        """Spec with a well-formed ## Slices block and one complete valid slice passes.
+
+        Distinct from the discipline-parametrize tests: verifies the hinge
+        activation itself by checking the gate returns structured JSON (feature
+        scope, pass result) rather than a slice-related error to stderr.
+        """
+        import json as _json
         result = run_spec_gate(tmp_path, make_spec_with_slices())
         assert result.returncode == 0
+        assert result.stderr == "", (
+            f"Expected no stderr on a valid slices spec; got: {result.stderr!r}"
+        )
+        data = _json.loads(result.stdout)
+        assert data["gate"] == "spec"
+        assert data["scope"] == "feature"
+        assert data["result"] == "pass"
 
 
 # ---------------------------------------------------------------------------
@@ -200,26 +213,6 @@ class TestSliceDisciplineValidation:
         assert "unknown-value" in combined or any(
             v in combined for v in ["new-contract", "contract-preserving", "contract-evolving", "cross-cutting"]
         )
-
-    def test_valid_new_contract_discipline_passes(self, tmp_path):
-        """Slice with test-discipline: new-contract passes."""
-        result = run_spec_gate(tmp_path, make_spec_with_slices(discipline="new-contract"))
-        assert result.returncode == 0
-
-    def test_valid_contract_preserving_discipline_passes(self, tmp_path):
-        """Slice with test-discipline: contract-preserving passes."""
-        result = run_spec_gate(tmp_path, make_spec_with_slices(discipline="contract-preserving"))
-        assert result.returncode == 0
-
-    def test_valid_contract_evolving_discipline_passes(self, tmp_path):
-        """Slice with test-discipline: contract-evolving passes."""
-        result = run_spec_gate(tmp_path, make_spec_with_slices(discipline="contract-evolving"))
-        assert result.returncode == 0
-
-    def test_valid_cross_cutting_discipline_passes(self, tmp_path):
-        """Slice with test-discipline: cross-cutting passes."""
-        result = run_spec_gate(tmp_path, make_spec_with_slices(discipline="cross-cutting"))
-        assert result.returncode == 0
 
 
 # ---------------------------------------------------------------------------

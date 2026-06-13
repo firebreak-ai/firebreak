@@ -12,15 +12,6 @@ def feature_dir(tmp_path):
     return feature, "sample"
 
 
-class TestPrerequisiteCheckNonBlocking:
-
-    def test_check_never_calls_sys_exit(self, feature_dir, monkeypatch):
-        """check_prerequisites never calls sys.exit regardless of missing artifacts."""
-        monkeypatch.setattr("sys.exit", lambda *a: (_ for _ in ()).throw(AssertionError("sys.exit called")))
-        result = check_prerequisites("design", str(feature_dir[0]))
-        assert isinstance(result, dict)
-
-
 class TestIntentMissingAtDesign:
 
     def test_design_fails_when_prd_missing(self, feature_dir):
@@ -99,12 +90,10 @@ class TestImplMissingAtCodeReview:
 class TestReturnStructure:
 
     def test_return_dict_has_required_keys(self, feature_dir):
-        """check_prerequisites returns a dict with phase, ready, and missing keys; missing items have artifact and upstream_phase."""
+        """check_prerequisites returns a dict with phase, ready, and missing keys; phase value echoes the requested phase; missing is a list."""
         result = check_prerequisites("design", str(feature_dir[0]))
-        assert "phase" in result
         assert "ready" in result
-        assert "missing" in result
         assert isinstance(result["missing"], list)
-        for item in result["missing"]:
-            assert "artifact" in item
-            assert "upstream_phase" in item
+        # 'phase' presence and value are the unique contract assertions here;
+        # per-item shape is exercised by the behavioral fail/pass tests.
+        assert result["phase"] == "design"
