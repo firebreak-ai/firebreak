@@ -19,10 +19,17 @@ def set_log_dir(tmp_path, monkeypatch):
 
 @pytest.fixture
 def set_state_dir(tmp_path, monkeypatch):
-    """Set STATE_DIR env var to a tmp_path subdirectory via monkeypatch."""
+    """Set STATE_DIR env var to a tmp_path subdirectory via monkeypatch.
+
+    Also chdir into tmp_path so any cwd-relative side effect of a state
+    transition — notably the per-stage retrospective metrics injector, which
+    resolves its ai-docs/ path from os.getcwd() — lands in the temp tree
+    rather than leaking into the repository working copy.
+    """
     state_dir = tmp_path / "state"
     state_dir.mkdir()
     monkeypatch.setenv("STATE_DIR", str(state_dir))
+    monkeypatch.chdir(tmp_path)
     return state_dir
 
 

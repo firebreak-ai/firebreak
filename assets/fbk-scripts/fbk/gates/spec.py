@@ -289,11 +289,6 @@ def main():
     if fails:
         for f in fails:
             print(f, file=sys.stderr)
-        try:
-            from fbk import audit
-            audit.log_event(spec_name, "gate_result", json.dumps({"gate": "spec", "result": "fail"}))
-        except Exception:
-            pass
         sys.exit(2)
 
     # Injection detection (only on structural pass)
@@ -306,12 +301,6 @@ def main():
         "injection_warnings": injection_warnings,
     }
     print(json.dumps(result))
-
-    try:
-        from fbk import audit
-        audit.log_event(spec_name, "gate_result", json.dumps(result))
-    except Exception:
-        pass
 
 
 if __name__ == "__main__":

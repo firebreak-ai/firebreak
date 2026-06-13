@@ -7,6 +7,8 @@ import json
 import os
 import sys
 
+from fbk.capture import retro_injector
+
 VALID_TRANSITIONS = {
     "QUEUED": ["VALIDATING"],
     "VALIDATING": ["VALIDATED", "PARKED"],
@@ -30,6 +32,16 @@ VALID_TRANSITIONS = {
 }
 
 ALL_STATES = set(VALID_TRANSITIONS.keys())
+
+# Working stages: those whose VALID_TRANSITIONS entry includes PARKED.
+# Derived from the map so this set stays aligned with any future additions.
+WORKING_STAGES = {s for s, nexts in VALID_TRANSITIONS.items() if "PARKED" in nexts}
+
+# States that are not an active working stage — every state that is not in
+# WORKING_STAGES (checkpoint, idle, parked, and terminal states). Derived from
+# the same transition map so the two sets can never drift. frozenset so both
+# consumers share one immutable object and can be checked by identity.
+NON_ACTIVE_STATES = frozenset(ALL_STATES - WORKING_STAGES)
 
 
 def now_iso():
@@ -128,6 +140,13 @@ def transition_state(spec_name, new_state, reason=None):
         state["parked_info"] = {}
 
     save_state(spec_name, state)
+
+    if prev_state in WORKING_STAGES and new_state != "PARKED":
+        try:
+            retro_injector.inject_stage_metrics(spec_name, prev_state)
+        except Exception:
+            pass
+
     print(json.dumps(state, indent=2))
     return 0
 
