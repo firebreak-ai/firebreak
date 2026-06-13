@@ -80,15 +80,65 @@ def _extract_declared_files(task_file_path: str) -> list[str]:
     declared = []
     in_section = False
     for line in content.splitlines():
-        if re.match(r"^## Files to.*create.*modify", line, re.IGNORECASE):
+        if re.match(r"^#{1,3} Files to.*create.*modify", line, re.IGNORECASE):
             in_section = True
             continue
         if in_section:
-            if re.match(r"^## ", line):
+            if re.match(r"^#+ ", line):
                 break
             matches = re.findall(r"`([^`]+)`", line)
             declared.extend(matches)
     return sorted(set(declared))
+
+
+def count_test_failures(test_cmd: str, output: str) -> int:
+    """Return the number of failing tests parsed from a runner's output.
+
+    Keyed on the detected runner so the summary line is parsed in the right
+    format.  Always returns at least 1 when called (this is only invoked after a
+    non-zero exit), so a real failure is never under-reported as zero even when
+    the summary cannot be parsed.
+    """
+    patterns = {
+        "python -m pytest": r"(\d+)\s+failed",
+        "npm test": r"(\d+)\s+(?:failing|failed)",
+        "cargo test": r";\s*(\d+)\s+failed",
+        "make test": r"(\d+)\s+(?:failing|failed)",
+    }
+    pat = patterns.get(test_cmd)
+    if pat:
+        matches = re.findall(pat, output)
+        if matches:
+            return max(int(m) for m in matches)
+    if test_cmd == "go test ./...":
+        # go prints one "--- FAIL" line per failing test.
+        fail_lines = re.findall(r"^--- FAIL", output, re.MULTILINE)
+        if fail_lines:
+            return len(fail_lines)
+    return 1
+
+
+def count_lint_errors(lint_cmd: str, output: str) -> int:
+    """Return the number of lint errors parsed from a linter's output.
+
+    Always returns at least 1 when called (only invoked after a non-zero exit),
+    so a real lint failure is never under-reported as zero when the summary
+    cannot be parsed.
+    """
+    patterns = {
+        "ruff check .": r"Found (\d+) error",
+        "npx eslint .": r"\d+\s+problems?\s+\((\d+)\s+error",
+    }
+    pat = patterns.get(lint_cmd)
+    if pat:
+        m = re.search(pat, output)
+        if m:
+            return int(m.group(1))
+    # Generic fallback: a "(\d+) errors" summary if the linter printed one.
+    m = re.search(r"(\d+)\s+errors?\b", output)
+    if m:
+        return int(m.group(1))
+    return 1
 
 
 def main() -> None:
@@ -106,6 +156,8 @@ def main() -> None:
         task_file = os.path.join(cwd, task_file)
 
     failures = []
+    failing_test_count = 0
+    lint_error_count = 0
 
     test_cmd = detect_test_cmd(cwd)
     if not test_cmd:
@@ -115,6 +167,7 @@ def main() -> None:
         if result.returncode != 0:
             output = (result.stdout + result.stderr).strip()
             failures.append(f"TEST SUITE FAILED:\n{output}")
+            failing_test_count = count_test_failures(test_cmd, output)
 
     lint_cmd = detect_lint_cmd(cwd)
     if not lint_cmd:
@@ -124,7 +177,9 @@ def main() -> None:
         if result.returncode != 0:
             output = (result.stdout + result.stderr).strip()
             failures.append(f"LINT ERRORS:\n{output}")
+            lint_error_count = count_lint_errors(lint_cmd, output)
 
+    out_of_scope_files: list = []
     if os.path.isfile(task_file):
         declared_files = _extract_declared_files(task_file)
         if declared_files:
@@ -144,6 +199,7 @@ def main() -> None:
                 if modified:
                     undeclared = [f for f in modified if f not in declared_files]
                     if undeclared:
+                        out_of_scope_files = undeclared
                         task_basename = os.path.basename(task_file)
                         print(
                             f"[WARN] Task {task_basename} modified files outside declared scope:\n"
@@ -151,12 +207,45 @@ def main() -> None:
                             file=sys.stderr,
                         )
 
+    verification_data = {
+        "failing_test_count": failing_test_count,
+        "lint_error_count": lint_error_count,
+        "out_of_scope_files": out_of_scope_files,
+        "tests_passed": failing_test_count == 0 and lint_error_count == 0,
+    }
+
+    def _write_verification_event():
+        try:
+            # Imported inside the guard so a broken or absent capture install
+            # cannot crash the verification hook — capture is fail-silent.
+            from fbk.capture import active_stage, event_writer, gate_check
+
+            level = gate_check.resolve_capture_level(cwd)
+            events_path = os.path.join(cwd, ".fbk-capture", "events.jsonl")
+            # Stamp the active spec/stage so the report can attribute this
+            # gate attempt to the stage that produced it (a null stage row
+            # would never match the report's per-stage gate-rate filter).
+            spec, stage = active_stage.resolve_active_stage(cwd)
+            event_writer.write(
+                "VERIFICATION_RESULT",
+                "task_completed",
+                verification_data,
+                spec,
+                stage,
+                level,
+                events_path,
+            )
+        except Exception:
+            pass
+
     if failures:
         print("TaskCompleted validation failed:\n", file=sys.stderr)
         for f in failures:
             print(f + "\n", file=sys.stderr)
+        _write_verification_event()
         sys.exit(2)
 
+    _write_verification_event()
     sys.exit(0)
 
 

@@ -1,11 +1,27 @@
 """Tests for fbk.gates.spec section validation and open-questions logic."""
 
+import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 from fbk.gates.spec import check_section, check_open_questions
+import fbk.gates.spec as _spec_gate_mod
+
+from tests import capture_fixtures
+
+# ---------------------------------------------------------------------------
+# event_writer availability guard — red-phase: module present but audit
+# call-sites not yet migrated
+# ---------------------------------------------------------------------------
+
+try:
+    from fbk.capture import event_writer as _event_writer  # noqa: F401
+    _EVENT_WRITER_AVAILABLE = True
+except ImportError:
+    _EVENT_WRITER_AVAILABLE = False
 
 
 # ---------------------------------------------------------------------------
@@ -317,3 +333,71 @@ class TestTestingStrategyRetainedForSliceSpecs:
         result = run_spec_gate(tmp_path, SLICES_SPEC_WITHOUT_TS_AC)
         assert result.returncode == 2
         assert "Testing strategy" in (result.stdout + result.stderr)
+
+
+# ---------------------------------------------------------------------------
+# Envelope write assertions — spec gate (AC-12)
+# ---------------------------------------------------------------------------
+
+# The spec gate must write NO PIPELINE_COMMAND of its own.  One dispatch
+# through fbk.py yields exactly one PIPELINE_COMMAND, written by the
+# chokepoint; the chokepoint-side positive assertion lives in
+# tests/test_capture_chokepoint_integration.py.  These tests pin the negative
+# half: calling the gate directly (bypassing the chokepoint) must leave the
+# events file empty.
+
+@pytest.mark.skipif(
+    not _EVENT_WRITER_AVAILABLE,
+    reason="fbk.capture.event_writer not available",
+)
+class TestSpecGateWritesNoEnvelope:
+    """Spec gate writes no PIPELINE_COMMAND of its own on pass or fail (AC-12).
+
+    One dispatch yields exactly one PIPELINE_COMMAND, written by the
+    chokepoint; the chokepoint-side positive assertion lives in
+    tests/test_capture_chokepoint_integration.py.
+    """
+
+    def _events_path(self, project_root):
+        return os.path.join(project_root, ".fbk-capture", "events.jsonl")
+
+    def _read_envelopes(self, project_root):
+        path = self._events_path(project_root)
+        if not os.path.exists(path):
+            return []
+        with open(path) as fh:
+            return [json.loads(line) for line in fh if line.strip()]
+
+    def test_spec_gate_pass_writes_no_envelope(self, tmp_path, monkeypatch):
+        """Spec-gate pass path writes no PIPELINE_COMMAND when called directly."""
+        project_root = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
+
+        spec_file = Path(project_root) / "sample-spec.md"
+        spec_file.write_text(_make_minimal_spec())
+
+        monkeypatch.chdir(project_root)
+        monkeypatch.setattr(sys, "argv", ["spec-gate", str(spec_file)])
+
+        # Pass path returns normally (no sys.exit) — call directly.  Invoked
+        # without fbk.py, the gate is the only possible writer, so the events
+        # file must hold zero envelopes.
+        _spec_gate_mod.main()
+
+        assert self._read_envelopes(project_root) == []
+
+    def test_spec_gate_fail_writes_no_envelope(self, tmp_path, monkeypatch):
+        """Spec-gate fail path writes no PIPELINE_COMMAND when called directly."""
+        project_root = capture_fixtures.make_project(str(tmp_path), instrumented=True, marked=True)
+
+        # A spec missing required sections — will fail structural validation.
+        spec_file = Path(project_root) / "broken-spec.md"
+        spec_file.write_text("# Feature Specification\n\n## Problem\nOnly one section present.\n")
+
+        monkeypatch.chdir(project_root)
+        monkeypatch.setattr(sys, "argv", ["spec-gate", str(spec_file)])
+
+        with pytest.raises(SystemExit) as exc_info:
+            _spec_gate_mod.main()
+        assert exc_info.value.code == 2
+
+        assert self._read_envelopes(project_root) == []
