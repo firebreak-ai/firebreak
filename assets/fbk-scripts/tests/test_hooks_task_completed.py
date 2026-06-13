@@ -14,6 +14,7 @@ from fbk.hooks.task_completed import (
     count_test_failures,
     detect_lint_cmd,
     detect_test_cmd,
+    TASK_PATH_PATTERN,
 )
 
 try:
@@ -28,8 +29,6 @@ from tests import capture_fixtures
 # ---------------------------------------------------------------------------
 
 FBK_PY = Path(__file__).parent.parent / "fbk.py"
-
-TASK_PATH_PATTERN = r"ai-docs/\S+?/\S*tasks/task-\S*\.md"
 
 
 class TestFailureCountParsing:

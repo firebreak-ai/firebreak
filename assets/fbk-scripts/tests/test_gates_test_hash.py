@@ -1,7 +1,6 @@
 """Tests for fbk.gates.test_hash manifest creation and modification detection."""
 
 import json
-import pytest
 from pathlib import Path
 from fbk.gates.test_hash import compute_hashes, create_manifest, verify_manifest
 
@@ -45,7 +44,11 @@ class TestComputeHashesAndCreateManifest:
         assert result == []
 
     def test_modified_file_returns_modified_discrepancy(self, tmp_path):
-        """Verification returns a discrepancy with kind 'modified' for a changed file."""
+        """Verification returns a discrepancy with kind 'modified' for a changed file.
+
+        Also verifies that the return value is a list of dicts each carrying 'kind' and 'path',
+        and that 'kind' is drawn from the allowed set {'modified', 'unexpected', 'missing'}.
+        """
         test_dir = tmp_path / "tests"
         test_dir.mkdir()
         (test_dir / "test_file.py").write_text("# original content\n")
@@ -56,7 +59,16 @@ class TestComputeHashesAndCreateManifest:
         (test_dir / "test_file.py").write_text("# modified content\n")
 
         result = verify_manifest(tmp_path, manifest_path)
+        assert isinstance(result, list)
         assert len(result) > 0
+
+        allowed_kinds = {"modified", "unexpected", "missing"}
+        for item in result:
+            assert isinstance(item, dict), f"Item is not a dict: {item}"
+            assert "kind" in item, f"Item missing 'kind': {item}"
+            assert "path" in item, f"Item missing 'path': {item}"
+            assert item["kind"] in allowed_kinds, f"Unexpected kind value: {item['kind']}"
+
         assert any(item["kind"] == "modified" for item in result)
 
     def test_deleted_file_returns_missing_discrepancy(self, tmp_path):
@@ -163,32 +175,6 @@ class TestShadowTestDetection:
         assert len(unexpected) == 0, (
             f"Expected no unexpected items for file outside locked scope, got: {unexpected}"
         )
-
-
-class TestVerifyManifestReturnStructure:
-    """Tests for the structure of verify_manifest return values."""
-
-    def test_discrepancy_dict_has_kind_and_path(self, tmp_path):
-        """Each discrepancy item is a dict with 'kind' and 'path' keys; 'kind' is one of the allowed values."""
-        test_dir = tmp_path / "tests"
-        test_dir.mkdir()
-        (test_dir / "test_structured.py").write_text("# original\n")
-
-        manifest_path = tmp_path / "test-hashes.json"
-        create_manifest(tmp_path, manifest_path)
-
-        (test_dir / "test_structured.py").write_text("# modified\n")
-
-        result = verify_manifest(tmp_path, manifest_path)
-        assert isinstance(result, list)
-        assert len(result) > 0
-
-        allowed_kinds = {"modified", "unexpected", "missing"}
-        for item in result:
-            assert isinstance(item, dict), f"Item is not a dict: {item}"
-            assert "kind" in item, f"Item missing 'kind': {item}"
-            assert "path" in item, f"Item missing 'path': {item}"
-            assert item["kind"] in allowed_kinds, f"Unexpected kind value: {item['kind']}"
 
 
 class TestManifestDiscoveryAndExternalResolution:

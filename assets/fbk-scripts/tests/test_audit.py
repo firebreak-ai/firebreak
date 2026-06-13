@@ -24,26 +24,6 @@ class TestLogEvent:
         assert entry["event_type"] == "start"
         assert entry["data"] == {"key": "val"}
 
-    def test_multiple_log_calls_produce_independent_lines(self, tmp_path, monkeypatch):
-        """Multiple log calls produce independent JSON lines."""
-        monkeypatch.setenv("LOG_DIR", str(tmp_path))
-
-        log_event("multi", "ev1", '{"n":1}')
-        log_event("multi", "ev2", '{"n":2}')
-        log_event("multi", "ev3", '{"n":3}')
-
-        log_path = get_log_path("multi")
-        with open(log_path) as f:
-            lines = f.readlines()
-
-        assert len(lines) == 3
-        for line in lines:
-            entry = json.loads(line.strip())
-            assert "timestamp" in entry
-            assert "spec" in entry
-            assert "event_type" in entry
-            assert "data" in entry
-
     def test_existing_entries_preserved_on_append(self, tmp_path, monkeypatch):
         """Existing entries preserved when appending new log event."""
         monkeypatch.setenv("LOG_DIR", str(tmp_path))

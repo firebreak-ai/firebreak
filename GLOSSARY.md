@@ -159,6 +159,14 @@ Both uses are valid instances of the same underlying concept. The wave term is r
 
 ---
 
+### advisory finding
+
+**Definition**: A gate signal that surfaces a problem for human triage without blocking the gate — added to the result's `findings` list, not `failures`. A gate emits one only when the problem needs human judgment (e.g. test drift: a locked test renamed but content-identical). When a problem is instead agent-fixable (missing or unreadable artifact, hash mismatch), the gate blocks via a failure so the agent redoes the work. The rule: block when agent-fixable, advise when it needs a human.
+
+**LLM priors activated**: "Advisory" and "finding" read as generic. Risk: mistaken for a mere lower-severity failure. It is not a severity level — it is a routing decision about *who acts*. The code-review gate derives one from the test-review artifact's `Verdict:` line, making that line a vocabulary contract between the test-reviewer agent and the gate — the same guide↔gate drift the slice-shape sentinel guards.
+
+---
+
 ### design manifest
 
 **Definition**: A per-feature index file at `ai-docs/<feature-name>/design-manifest.md` listing every design page the design phase produced under `ai-docs/<feature-name>/design/`. The mechanical anchor for the design-phase hybrid gate's bidirectional check (every manifest entry exists as a page in the feature directory; every design page in that directory appears in the manifest). A ceremony product — deleted at squash-merge along with the rest of the feature directory.

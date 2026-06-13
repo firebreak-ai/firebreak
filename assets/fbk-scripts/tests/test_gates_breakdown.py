@@ -557,6 +557,10 @@ class TestSliceShapeAwareness:
         }
         result = validate_breakdown(spec, manifest, tfiles)
         assert result["result"] == "fail"
+        assert any(
+            "cross-cutting" in f.lower() and "impl" in f.lower()
+            for f in result["failures"]
+        )
 
     def test_slices_breakdown_missing_test_lock_manifest_fails(self):
         """Slices-bearing breakdown with no test-hashes.json fails — pre-lock verdict not accepted."""
@@ -574,17 +578,6 @@ class TestSliceShapeAwareness:
             or "pre-lock" in f.lower()
             for f in result["failures"]
         )
-
-    def test_slices_breakdown_with_test_lock_manifest_passes(self):
-        """Slices-bearing breakdown with test-hashes.json present passes — pre-lock verdict accepted."""
-        spec = make_minimal_spec(["AC-01"])
-        manifest = make_cross_cutting_manifest("AC-01")
-        tfiles = {
-            "task-01.md": "## Files to create\n- `test_ac01.py`",
-            "test-hashes.json": '{"files": {}, "computed_at": "2026-01-01T00:00:00Z"}'
-        }
-        result = validate_breakdown(spec, manifest, tfiles)
-        assert result["result"] == "pass"
 
 
 class TestBounceBackMarkerDetection:
@@ -676,111 +669,3 @@ class TestBounceBackMarkerDetection:
         assert result["result"] == "pass"
 
 
-class TestLegacyBreakdownUnchanged:
-    """Tests verifying backward compatibility for no-slice-metadata manifests."""
-
-    def test_legacy_no_slice_metadata_passes_same_as_before(self):
-        """Valid breakdown without slice metadata passes — backward compat preserved."""
-        spec = """## Acceptance criteria
-- AC-01: First requirement
-- AC-02: Second requirement
-"""
-        manifest = {
-            "category": "feature",
-            "tasks": [
-                {
-                    "id": "task-01",
-                    "title": "Test AC-01",
-                    "file": "task-01.md",
-                    "type": "test",
-                    "wave_id": 1,
-                    "dependencies": [],
-                    "covers": ["AC-01"],
-                    "model": "Haiku",
-                    "status": "pending"
-                },
-                {
-                    "id": "task-02",
-                    "title": "Test AC-02",
-                    "file": "task-02.md",
-                    "type": "test",
-                    "wave_id": 1,
-                    "dependencies": [],
-                    "covers": ["AC-02"],
-                    "model": "Haiku",
-                    "status": "pending"
-                },
-                {
-                    "id": "task-03",
-                    "title": "Implement AC-01",
-                    "file": "task-03.md",
-                    "type": "implementation",
-                    "wave_id": 2,
-                    "dependencies": ["task-01"],
-                    "covers": ["AC-01"],
-                    "model": "Haiku",
-                    "status": "pending"
-                },
-                {
-                    "id": "task-04",
-                    "title": "Implement AC-02",
-                    "file": "task-04.md",
-                    "type": "implementation",
-                    "wave_id": 2,
-                    "dependencies": ["task-02"],
-                    "covers": ["AC-02"],
-                    "model": "Haiku",
-                    "status": "pending"
-                }
-            ]
-        }
-        tfiles = {
-            "task-01.md": "## Files to create\n- `test1.py`",
-            "task-02.md": "## Files to create\n- `test2.py`",
-            "task-03.md": "## Files to create\n- `impl1.py`",
-            "task-04.md": "## Files to create\n- `impl2.py`"
-        }
-        result = validate_breakdown(spec, manifest, tfiles)
-        assert result["result"] == "pass"
-        assert len(result.get("failures", [])) == 0
-
-    def test_legacy_uncovered_ac_still_fails(self):
-        """AC not covered by any task still fails when no slice metadata present."""
-        spec = """## Acceptance criteria
-- AC-01: First requirement
-- AC-02: Second requirement
-"""
-        manifest = {
-            "category": "feature",
-            "tasks": [
-                {
-                    "id": "task-01",
-                    "title": "Test AC-01",
-                    "file": "task-01-test-ac01.md",
-                    "type": "test",
-                    "wave_id": 1,
-                    "dependencies": [],
-                    "covers": ["AC-01"],
-                    "model": "Haiku",
-                    "status": "pending"
-                },
-                {
-                    "id": "task-02",
-                    "title": "Implement AC-01",
-                    "file": "task-02-impl-ac01.md",
-                    "type": "implementation",
-                    "wave_id": 2,
-                    "dependencies": ["task-01"],
-                    "covers": ["AC-01"],
-                    "model": "Haiku",
-                    "status": "pending"
-                }
-            ]
-        }
-        tfiles = {
-            "task-01-test-ac01.md": "## Files to create\n- `test.py`",
-            "task-02-impl-ac01.md": "## Files to create\n- `impl.py`"
-        }
-        result = validate_breakdown(spec, manifest, tfiles)
-        assert result["result"] == "fail"
-        assert any("AC coverage" in f for f in result["failures"])

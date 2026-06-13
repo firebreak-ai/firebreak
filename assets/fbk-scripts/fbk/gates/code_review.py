@@ -115,14 +115,33 @@ def validate_code_review(feature_dir: str) -> dict:
         if "Severity:" not in text:
             failures.append("quality-scan artifact missing Severity: field")
 
-    # Check 2: test-review final-pass artifact present.
+    # Check 2: test-review final-pass artifact present; read and parse its verdict.
     test_review_canonical = base / "test-review-final.md"
     if test_review_canonical.exists():
-        pass  # found canonical name
+        test_review_path = test_review_canonical
     else:
         fallback_matches = sorted(glob.glob(str(base / "test-review-*.md")))
         if not fallback_matches:
             failures.append("test-review verdict artifact missing: test-review-final.md not found")
+            test_review_path = None
+        else:
+            test_review_path = Path(fallback_matches[-1])
+
+    if test_review_path is not None:
+        text = test_review_path.read_text(encoding="utf-8", errors="replace")
+        verdict = None
+        for line in text.splitlines():
+            if line.lower().startswith("verdict:"):
+                verdict = line.split(":", 1)[1].strip()
+                break
+        if verdict is None:
+            findings.append(
+                "test-review verdict not found (non-blocking): see test-review artifact for operator triage"
+            )
+        elif verdict.lower() != "accepted":
+            findings.append(
+                f"test-review verdict {verdict} (non-blocking): see test-review artifact for operator triage"
+            )
 
     # Check 3: delegate hash + shadow-test check to test_hash.verify_manifest.
     discrepancies = test_hash.verify_manifest(feature_dir)

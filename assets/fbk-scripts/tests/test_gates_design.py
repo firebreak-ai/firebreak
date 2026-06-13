@@ -52,7 +52,7 @@ class TestDesignGatePassesFull:
         _, feature_dir = make_design_dir(tmp_path)
         result = validate_design(str(feature_dir))
         assert result["result"] == "pass"
-        assert result["injection_warnings"] >= 0
+        assert result["injection_warnings"] == 0
 
 
 class TestManifestToDirDrift:
@@ -121,13 +121,6 @@ class TestDecompositionRationale:
         result = validate_design(str(feature_dir))
         assert result["result"] == "fail"
 
-    def test_decomposition_rationale_present_passes(self, tmp_path):
-        if validate_design is None:
-            pytest.skip("fbk.gates.design not yet implemented")
-        _, feature_dir = make_design_dir(tmp_path)
-        result = validate_design(str(feature_dir))
-        assert result["result"] == "pass"
-
 
 class TestDecisionsRecordedCount:
     def test_zero_decisions_recorded_fails(self, tmp_path):
@@ -154,13 +147,6 @@ class TestDecisionsRecordedCount:
         result = validate_design(str(feature_dir))
         assert result["result"] == "fail"
 
-    def test_nonzero_decisions_recorded_passes(self, tmp_path):
-        if validate_design is None:
-            pytest.skip("fbk.gates.design not yet implemented")
-        _, feature_dir = make_design_dir(tmp_path)
-        result = validate_design(str(feature_dir))
-        assert result["result"] == "pass"
-
 
 class TestFreshEyesGate:
     def test_open_critical_design_observation_fails(self, tmp_path):
@@ -173,13 +159,6 @@ class TestFreshEyesGate:
         )
         result = validate_design(str(feature_dir))
         assert result["result"] == "fail"
-
-    def test_empty_critical_section_passes(self, tmp_path):
-        if validate_design is None:
-            pytest.skip("fbk.gates.design not yet implemented")
-        _, feature_dir = make_design_dir(tmp_path)
-        result = validate_design(str(feature_dir))
-        assert result["result"] == "pass"
 
 
 class TestInjectionScan:
