@@ -21,6 +21,7 @@ if sys.version_info < (3, 11):
     sys.exit(2)
 
 from fbk import COMMAND_MAP
+from fbk.capture import chokepoint
 
 if len(sys.argv) < 2 or sys.argv[1] not in COMMAND_MAP:
     command = sys.argv[1] if len(sys.argv) > 1 else None
@@ -39,5 +40,5 @@ module_path = COMMAND_MAP[command_name]
 
 module = importlib.import_module(module_path)
 sys.argv = [command_name] + remaining_args
-result = module.main()
+result = chokepoint.record_dispatch(command_name, remaining_args, module.main, os.getcwd())
 sys.exit(result if result is not None else 0)

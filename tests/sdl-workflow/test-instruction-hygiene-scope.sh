@@ -60,12 +60,12 @@ else
   not_ok "AC-11: ai-failure-modes.md item 10 references quality-detection.md"
 fi
 
-# Test 6: AC-09 count - assert exactly 14 numbered items
+# Test 6: AC-09 count - assert exactly 15 numbered items
 count=$(grep -cE '^[0-9]+\.' "$CHECKLIST")
-if [ "$count" -eq 14 ]; then
-  ok "AC-09: ai-failure-modes.md contains exactly 14 numbered items"
+if [ "$count" -eq 15 ]; then
+  ok "AC-09: ai-failure-modes.md contains exactly 15 numbered items"
 else
-  not_ok "AC-09: ai-failure-modes.md contains exactly 14 numbered items (found $count)"
+  not_ok "AC-09: ai-failure-modes.md contains exactly 15 numbered items (found $count)"
 fi
 
 # Test 7: AC-09 item 12 - assert contains "Semantically incoherent"

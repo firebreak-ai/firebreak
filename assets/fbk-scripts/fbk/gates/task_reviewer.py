@@ -155,12 +155,9 @@ def _run_validations(
                 failures.append(f"AC coverage: {ac} not covered by any test task")
             if ac not in impl_acs:
                 failures.append(f"AC coverage: {ac} not covered by any implementation task")
-        elif category == "corrective":
-            # Corrective: test tasks can cover ACs without paired implementation
-            if ac not in test_acs and ac not in impl_acs:
-                failures.append(f"AC coverage: {ac} not covered by any test task or implementation task")
-        elif category == "testing-infrastructure":
-            # Testing infra: test tasks can satisfy ACs directly
+        elif category in ("corrective", "testing-infrastructure"):
+            # Both categories share one rule: a test task can satisfy an AC
+            # directly, without a paired implementation task.
             if ac not in test_acs and ac not in impl_acs:
                 failures.append(f"AC coverage: {ac} not covered by any test task or implementation task")
 
@@ -337,20 +334,7 @@ def main() -> None:
 
     print(json.dumps(result))
 
-    if result["result"] == "pass":
-        try:
-            from fbk.audit import log_event
-            spec_name = os.path.splitext(os.path.basename(args.spec_path))[0]
-            log_event(
-                spec_name,
-                "gate_result",
-                json.dumps({"gate": "task-reviewer", "result": "pass"}),
-            )
-        except Exception:
-            pass
-        sys.exit(0)
-    else:
-        sys.exit(2)
+    sys.exit(0 if result["result"] == "pass" else 2)
 
 
 if __name__ == "__main__":

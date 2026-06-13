@@ -51,3 +51,7 @@ Update the Authentication Guide with refresh token flow diagrams.
 
 - Should we support offline refresh for mobile PWA? Deferring to a
   follow-up since it requires service worker changes.
+
+## Interface contracts
+
+No new or changed contracts in this feature.

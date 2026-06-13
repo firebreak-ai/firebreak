@@ -176,3 +176,81 @@ class TestShadowTestDetection:
             f"Expected no unexpected items for file outside locked scope, got: {unexpected}"
         )
 
+
+class TestManifestDiscoveryAndExternalResolution:
+    """The code-review gate calls verify_manifest(feature_dir) with no explicit
+    manifest path. These tests pin the discovery contract: the manifest is found
+    where the breakdown stage writes it (a *-tasks/ subdirectory), entries
+    resolve against the manifest's own directory, and outside-scope locked files
+    resolve from the working directory without their shared suite directories
+    being shadow-swept. Before this contract, a -tasks manifest degraded the
+    gate's hash check to a non-blocking missing-manifest no-op."""
+
+    def _make_feature_with_tasks_manifest(self, tmp_path):
+        feature_dir = tmp_path / "demo-feature"
+        tasks_dir = feature_dir / "demo-feature-tasks"
+        tasks_dir.mkdir(parents=True)
+        task_file = tasks_dir / "task-01-test-resolver.md"
+        task_file.write_text("## Objective\nauthor the resolver tests\n")
+        result = create_manifest(str(tasks_dir))
+        assert result["result"] == "pass" and result["files"] == 1
+        return feature_dir, task_file
+
+    def test_manifest_in_tasks_subdir_is_found_and_verified(self, tmp_path):
+        """verify_manifest(feature_dir) finds the breakdown-written -tasks manifest
+        and verifies clean — not a missing-manifest no-op."""
+        feature_dir, _ = self._make_feature_with_tasks_manifest(tmp_path)
+
+        assert verify_manifest(str(feature_dir)) == []
+
+    def test_modified_task_file_under_tasks_manifest_is_caught(self, tmp_path):
+        """A locked task file modified after lock is reported 'modified' when
+        verification anchors on the -tasks manifest."""
+        feature_dir, task_file = self._make_feature_with_tasks_manifest(tmp_path)
+
+        task_file.write_text("## Objective\nweakened after lock\n")
+
+        assert verify_manifest(str(feature_dir)) == [
+            {"kind": "modified", "path": "task-01-test-resolver.md"}
+        ]
+
+    def test_external_entry_resolves_from_cwd_without_sweeping_siblings(
+        self, tmp_path, monkeypatch
+    ):
+        """A last-two-components entry (locked file outside the feature dir)
+        resolves via the bounded-depth search from the working directory, its
+        hash is checked, and its shared suite directory is NOT shadow-swept."""
+        import hashlib
+
+        monkeypatch.chdir(tmp_path)
+
+        suite_dir = tmp_path / "pkg" / "scripts" / "tests"
+        suite_dir.mkdir(parents=True)
+        locked = suite_dir / "test_locked_module.py"
+        locked.write_text("def test_locked():\n    assert True\n")
+        (suite_dir / "test_unrelated_sibling.py").write_text(
+            "def test_sibling():\n    assert True\n"
+        )
+
+        feature_dir = tmp_path / "demo-feature"
+        feature_dir.mkdir()
+        manifest = {
+            "computed_at": "2026-06-12T00:00:00+00:00",
+            "files": {
+                "tests/test_locked_module.py": {
+                    "sha256": hashlib.sha256(locked.read_bytes()).hexdigest(),
+                    "slice": "",
+                    "test-discipline": "new-contract",
+                }
+            },
+        }
+        (feature_dir / "test-hashes.json").write_text(json.dumps(manifest))
+
+        assert verify_manifest(str(feature_dir)) == [], (
+            "external locked entry should resolve clean without flagging suite siblings"
+        )
+
+        locked.write_text("def test_locked():\n    assert False\n")
+        assert verify_manifest(str(feature_dir)) == [
+            {"kind": "modified", "path": "tests/test_locked_module.py"}
+        ]

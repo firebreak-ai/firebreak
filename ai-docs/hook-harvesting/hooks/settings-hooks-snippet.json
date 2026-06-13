@@ -1,0 +1,50 @@
+{
+  "_comment": "INERT SNIPPET — not loaded by Claude Code from this location. To activate the capture router, merge the `hooks` object below into /opt/code/.claude/settings.json (create the file with exactly this content if it doesn't exist), then start a fresh session. Claude was denied writing the live settings file directly (auto-mode self-modification gate), so activation is deliberately a human step.",
+  "hooks": {
+    "SessionStart": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "SessionEnd": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "UserPromptSubmit": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "PreToolUse": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "PostToolUse": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "PostToolUseFailure": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "Stop": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "SubagentStart": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "SubagentStop": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "PreCompact": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "PermissionRequest": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "Notification": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "TaskCompleted": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "ConfigChange": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ],
+    "CwdChanged": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/hooks/hook_router.py", "timeout": 15}]}
+    ]
+  }
+}

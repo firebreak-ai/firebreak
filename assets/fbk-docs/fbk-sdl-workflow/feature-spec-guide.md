@@ -55,6 +55,12 @@ Write each section. Do not skip or combine sections.
 
 **7. Acceptance criteria** — List independently verifiable conditions for "done." Use short identifiers: AC-01, AC-02, ... Each AC must be testable by a single automated check or a reproducible manual step. Avoid vague qualities ("fast," "easy to use").
 
+## Interface contracts
+
+**Required section — present in every feature spec.** A feature with no new or changed contracts writes one sentence as the entire body: `No new or changed contracts in this feature.`
+
+When the author enumerates contracts, excludes a design contract, or leaves an acceptance criterion uncovered, read `interface-contracts-format.md` for the full section schema, field rules, and blast-radius derivation step.
+
 **8. Open questions** — List unresolved decisions the user or stakeholders must answer before Stage 2. Before approving the gate, every item must either be resolved or have explicit rationale for deferral. When a question is resolved, move its conclusion into the relevant spec section and remove it from this list. An empty list is valid and expected when the spec is complete.
 
 The gate checks every bullet in this section and demands rationale per item. Do not accumulate resolved decisions here as bullets — the gate cannot distinguish a resolved decision from a pending one. When all questions are resolved, write `None.` in §8. Place any resolved-decisions summary in a separate section after §9, for example:

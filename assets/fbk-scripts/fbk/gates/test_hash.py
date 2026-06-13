@@ -95,6 +95,11 @@ def create_manifest(feature_dir, manifest_path=None, locked_files=None) -> dict:
 def verify_manifest(feature_dir, manifest_path=None) -> list[dict]:
     """Verify current test files against existing manifest.
 
+    The manifest is looked up at feature_dir/test-hashes.json first; when absent,
+    at a single ``*-tasks/`` subdirectory of feature_dir — the location the
+    breakdown stage writes it to. Entries resolve against the manifest's own
+    directory, so both layouts verify instead of degrading to a no-op.
+
     Returns a list of discrepancy dicts with keys 'kind' and 'path'.
     kind is one of: 'modified', 'missing', 'unexpected'.
     Empty list means clean.
@@ -102,6 +107,10 @@ def verify_manifest(feature_dir, manifest_path=None) -> list[dict]:
     base = Path(feature_dir)
     if manifest_path is None:
         manifest_path = base / "test-hashes.json"
+        if not manifest_path.is_file():
+            tasks_manifests = sorted(base.glob("*-tasks/test-hashes.json"))
+            if len(tasks_manifests) == 1:
+                manifest_path = tasks_manifests[0]
     if not Path(manifest_path).is_file():
         return [{"kind": "missing", "path": str(manifest_path)}]
     with open(manifest_path, encoding="utf-8", errors="replace") as f:
@@ -110,25 +119,38 @@ def verify_manifest(feature_dir, manifest_path=None) -> list[dict]:
     old = manifest.get("files", {})
     discrepancies = []
 
+    # Relpaths in the manifest are relative to the directory it was computed in,
+    # so resolution anchors on the manifest's directory, not on feature_dir.
+    entry_base = Path(manifest_path).parent
+
     # Resolve each recorded relpath to an actual file path and check modified/missing.
-    # For inside-feature_dir entries, actual path = feature_dir / relpath.
-    # For outside-feature_dir entries (last-two-components keys), we use feature_dir / relpath
-    # as a best-effort resolution; callers using truly external locked files should verify
-    # via their own mechanism.
-    # Fallback: when the manifest was created with a subdirectory as scope (so relpaths are
-    # bare filenames), but verify is called with a parent dir, search the subtree by filename.
+    # For inside-scope entries, actual path = entry_base / relpath.
+    # Fallback 1: when the manifest was created with a subdirectory as scope (so
+    # relpaths are bare filenames) but verify anchors on a parent dir, search the
+    # subtree by filename.
+    # Fallback 2: outside-scope entries (last-two-components keys, see _relpath_for)
+    # are searched from the working directory at bounded depth — deep trees like
+    # venv/ fall outside the bound, keeping the search cheap and unambiguous.
     actual_paths = {}
     for relpath, entry in old.items():
-        actual = base / relpath
+        actual = entry_base / relpath
         if not actual.exists():
-            # Fallback: search subtree for the bare filename.
             fname = Path(relpath).name
             candidates = sorted(
-                p for p in base.rglob(fname)
+                p for p in entry_base.rglob(fname)
                 if p.is_file() and _is_test_file(p)
             )
             if candidates:
                 actual = candidates[0]
+        if not actual.exists():
+            for prefix in ("", "*/", "*/*/", "*/*/*/"):
+                external = sorted(
+                    p for p in Path.cwd().glob(f"{prefix}{relpath}")
+                    if p.is_file() and _is_test_file(p)
+                )
+                if external:
+                    actual = external[0]
+                    break
         actual_paths[relpath] = actual
 
         if not actual.exists():
@@ -138,8 +160,10 @@ def verify_manifest(feature_dir, manifest_path=None) -> list[dict]:
             if _sha256(actual) != recorded_hash:
                 discrepancies.append({"kind": "modified", "path": relpath})
 
-    # Shadow-test detection scoped to locked set's directories only.
-    # scope_dirs = parent dirs of actual files for every recorded relpath.
+    # Shadow-test detection scoped to locked set's directories only — and only
+    # to directories inside the feature dir. Externally-resolved locked files
+    # (the last-two-components entries) live in shared suite directories whose
+    # other test files are legitimate; sweeping those would flag every sibling.
     known_actual_paths = {
         actual_paths[relpath].resolve()
         for relpath in old
@@ -149,6 +173,7 @@ def verify_manifest(feature_dir, manifest_path=None) -> list[dict]:
         actual_paths[relpath].parent
         for relpath in old
         if actual_paths[relpath].exists()
+        and actual_paths[relpath].resolve().is_relative_to(base.resolve())
     }
 
     for scope_dir in scope_dirs:

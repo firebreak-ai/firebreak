@@ -13,3 +13,6 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "flaky_quarantine: marks test as non-gating for wall-clock assertions; timing flakes on shared CI do not block suite",
+]

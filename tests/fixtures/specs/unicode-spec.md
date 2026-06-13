@@ -61,3 +61,7 @@ Add a "Localization Guide" for translators explaining message format.
 
 - Should we support user-contributed translations? Starting with vendor
   translations ensures quality; community contributions can follow later.
+
+## Interface contracts
+
+No new or changed contracts in this feature.
