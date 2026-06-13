@@ -34,42 +34,6 @@ def set_state_dir(tmp_path, monkeypatch):
 
 
 @pytest.fixture
-def valid_spec_text():
-    """Return a minimal valid feature spec string with all required sections."""
-    return """# Feature Specification
-
-## Problem
-Describes the issue or gap being addressed.
-
-## Goals
-- Primary objective of the feature
-
-## User-facing behavior
-Describes how end users interact with the feature.
-
-## Technical approach
-Details the implementation strategy.
-
-## Testing strategy
-- AC-01: Test criterion 1
-- AC-02: Test criterion 2
-
-## Documentation impact
-Expected changes to user documentation.
-
-## Acceptance criteria
-- AC-01: Feature works as specified
-- AC-02: Feature passes all test criteria
-
-## Dependencies
-None
-
-## Open questions
-None
-"""
-
-
-@pytest.fixture
 def valid_sighting():
     """Return a dict with all required pipeline sighting fields."""
     return {

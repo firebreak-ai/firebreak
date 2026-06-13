@@ -12,6 +12,8 @@ from fbk.gates.contracts import NO_CONTRACTS_SENTENCE
 import fbk.gates.spec as _spec_gate_mod
 
 from tests import capture_fixtures
+from tests import spec_fixtures
+from tests.spec_fixtures import make_spec_with_slices
 
 # ---------------------------------------------------------------------------
 # event_writer availability guard — red-phase: module present but audit
@@ -31,65 +33,25 @@ except ImportError:
 
 FBK_PY = Path(__file__).parent.parent / "fbk.py"
 
-_MINIMAL_VALID_SECTIONS = (
-    "## Problem\n"
-    "Describes the issue or gap being addressed.\n\n"
-    "## Goals\n"
-    "- Primary objective of the feature\n\n"
-    "## User-facing behavior\n"
-    "Describes how end users interact with the feature.\n\n"
-    "## Technical approach\n"
-    "Details the implementation strategy.\n\n"
-    "## Testing strategy\n"
-    "- AC-01: Test criterion 1\n\n"
-    "## Documentation impact\n"
-    "Expected changes to user documentation.\n\n"
-    "## Acceptance criteria\n"
-    "- AC-01: Feature works as specified\n\n"
-    "## Dependencies\n"
-    "None\n\n"
-    "## Open questions\n"
-    "None\n\n"
-    "## Interface contracts\n"
-    + NO_CONTRACTS_SENTENCE + "\n"
-)
-
-_SLICES_BLOCK = """\
-## Slices
-- name: slice-alpha
-  test-discipline: {discipline}
-  covers: [{covers}]
-"""
-
-
-def _make_minimal_spec(extra_sections=""):
-    return "# Feature Specification\n\n" + _MINIMAL_VALID_SECTIONS + extra_sections
-
-
-def make_spec_with_slices(discipline="new-contract", covers="B-001", include_slices=True):
-    """Build a minimal valid 8-section feature spec, optionally with a Slices block."""
-    base = _make_minimal_spec()
-    if include_slices:
-        slices_block = _SLICES_BLOCK.format(discipline=discipline, covers=covers)
-        base += slices_block
-    return base
+# The canonical minimal-spec text and its builders live in tests/spec_fixtures.py
+# so every gate-running test shares one definition. _make_minimal_spec is kept as
+# a thin local alias because this file references it in several places.
+_make_minimal_spec = spec_fixtures.make_minimal_spec
 
 
 def run_spec_gate(tmp_path, spec_text, name="sample-spec.md", inventory_ids=None):
     """Write spec to a temp file and run the gate, returning CompletedProcess.
 
     Unconditionally creates design/contracts.md under tmp_path so the
-    design-anchor check (task-10) finds the page and passes for contract-clean
-    specs. The file contains the no-contracts sentence, meaning a spec that
-    carries the no-contracts ## Interface contracts section satisfies both
-    the structural check and the design-anchor check.
+    design-anchor check finds the page and passes for contract-clean specs. The
+    file contains the no-contracts sentence, meaning a spec that carries the
+    no-contracts ## Interface contracts section satisfies both the structural
+    check and the design-anchor check.
     """
     spec_file = tmp_path / name
     spec_file.write_text(spec_text)
     # Create design/contracts.md so the design-anchor check passes for clean specs.
-    design_dir = tmp_path / "design"
-    design_dir.mkdir(parents=True, exist_ok=True)
-    (design_dir / "contracts.md").write_text(NO_CONTRACTS_SENTENCE + "\n")
+    spec_fixtures.write_design_contracts_page(tmp_path)
     if inventory_ids is not None:
         inv_lines = "\n".join(f"- id: {bid}\n  short-handle: x" for bid in inventory_ids)
         (tmp_path / "behavior-inventory.yaml").write_text(inv_lines + "\n")
@@ -503,12 +465,9 @@ class TestSpecGateWritesNoEnvelope:
         spec_file = Path(project_root) / "sample-spec.md"
         spec_file.write_text(_make_minimal_spec())
 
-        # The merged spec gate runs the contract design-anchor check, which
-        # requires a design/contracts.md page beside the spec.  Create it with
-        # the no-contracts sentence so the contract-clean minimal spec passes.
-        design_dir = Path(project_root) / "design"
-        design_dir.mkdir(parents=True, exist_ok=True)
-        (design_dir / "contracts.md").write_text(NO_CONTRACTS_SENTENCE + "\n")
+        # The spec gate runs the contract design-anchor check, which requires a
+        # design/contracts.md page beside the spec so the clean minimal spec passes.
+        spec_fixtures.write_design_contracts_page(project_root)
 
         monkeypatch.chdir(project_root)
         monkeypatch.setattr(sys, "argv", ["spec-gate", str(spec_file)])

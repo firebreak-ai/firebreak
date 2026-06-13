@@ -10,6 +10,7 @@ from fbk.gates.task_reviewer import validate_tasks, parse_frontmatter
 import fbk.gates.task_reviewer as _task_reviewer_mod
 
 from tests import capture_fixtures
+from tests.spec_fixtures import MINIMAL_VALID_SPEC
 
 # ---------------------------------------------------------------------------
 # event_writer availability guard — red-phase: module present but audit
@@ -282,36 +283,9 @@ class TestValidateTasks:
 # Minimal passing fixture helpers (reuses the shapes from TestValidateTasks)
 # ---------------------------------------------------------------------------
 
-_TASK_REVIEWER_SPEC = """\
-# Feature Specification
-
-## Problem
-Describes the issue or gap being addressed.
-
-## Goals
-- Primary objective of the feature
-
-## User-facing behavior
-Describes how end users interact with the feature.
-
-## Technical approach
-Details the implementation strategy.
-
-## Testing strategy
-- AC-01: Test criterion 1
-
-## Documentation impact
-Expected changes to user documentation.
-
-## Acceptance criteria
-- AC-01: Feature works as specified
-
-## Dependencies
-None
-
-## Open questions
-None
-"""
+# The task-reviewer gate only reads the spec's acceptance criteria, so it reuses
+# the canonical gate-passing spec from tests/spec_fixtures.py.
+_TASK_REVIEWER_SPEC = MINIMAL_VALID_SPEC
 
 _TASK_TEST_CONTENT = """\
 ---
