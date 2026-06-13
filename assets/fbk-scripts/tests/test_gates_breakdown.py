@@ -344,6 +344,81 @@ class TestBreakdownGateValidation:
         assert result["result"] == "pass"
         assert len(result.get("failures", [])) == 0
 
+    def test_prose_mention_of_ac_heading_is_not_parsed_as_the_section(self):
+        """A mid-line prose mention of the AC heading must not be read as the section.
+
+        The AC-section regex is anchored to the start of a line. Without that
+        anchor, the inline "## Acceptance criteria" below is matched first and the
+        decoy id in that prose (AC-99) is read as the requirement set — masking the
+        real AC-01/AC-02 section, which no task covers AC-99, so coverage fails.
+        With the anchor, only the real heading is parsed and the breakdown passes.
+        """
+        spec = """## Overview
+This spec discusses the ## Acceptance criteria AC-99 only in passing.
+
+## Acceptance criteria
+- AC-01: First requirement
+- AC-02: Second requirement
+"""
+        manifest = {
+            "category": "feature",
+            "tasks": [
+                {
+                    "id": "task-01",
+                    "title": "Test AC-01",
+                    "file": "task-01.md",
+                    "type": "test",
+                    "wave_id": 1,
+                    "dependencies": [],
+                    "covers": ["AC-01"],
+                    "model": "Haiku",
+                    "status": "pending"
+                },
+                {
+                    "id": "task-02",
+                    "title": "Test AC-02",
+                    "file": "task-02.md",
+                    "type": "test",
+                    "wave_id": 1,
+                    "dependencies": [],
+                    "covers": ["AC-02"],
+                    "model": "Haiku",
+                    "status": "pending"
+                },
+                {
+                    "id": "task-03",
+                    "title": "Implement AC-01",
+                    "file": "task-03.md",
+                    "type": "implementation",
+                    "wave_id": 2,
+                    "dependencies": ["task-01"],
+                    "covers": ["AC-01"],
+                    "model": "Haiku",
+                    "status": "pending"
+                },
+                {
+                    "id": "task-04",
+                    "title": "Implement AC-02",
+                    "file": "task-04.md",
+                    "type": "implementation",
+                    "wave_id": 2,
+                    "dependencies": ["task-02"],
+                    "covers": ["AC-02"],
+                    "model": "Haiku",
+                    "status": "pending"
+                }
+            ]
+        }
+        tfiles = {
+            "task-01.md": "## Files to create\n- `test1.py`",
+            "task-02.md": "## Files to create\n- `test2.py`",
+            "task-03.md": "## Files to create\n- `impl1.py`",
+            "task-04.md": "## Files to create\n- `impl2.py`"
+        }
+        result = validate_breakdown(spec, manifest, tfiles)
+        assert result["result"] == "pass"
+        assert len(result.get("failures", [])) == 0
+
 
 class TestSliceShapeAwareness:
     """Tests for slice-shape-aware breakdown gate checks (AC-05)."""

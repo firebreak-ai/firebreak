@@ -18,8 +18,8 @@ import re
 # Hardcoded fallback set
 # ---------------------------------------------------------------------------
 
-# Derived from assets/agents/*.md frontmatter at authoring time.
-# Update this set when agents are added or removed from assets/agents/.
+# Derived from the agent definition frontmatter at authoring time.
+# Update this set when agents are added or removed.
 FALLBACK_AGENTS = frozenset({
     "fbk-implementer",
     "fbk-architect",

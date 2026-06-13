@@ -13,6 +13,8 @@ import stat
 import subprocess
 import sys
 
+from tests.spec_fixtures import MINIMAL_VALID_SPEC, write_design_contracts_page
+
 # ---------------------------------------------------------------------------
 # Event envelope helpers
 # ---------------------------------------------------------------------------
@@ -267,36 +269,9 @@ FBK_PY = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))
 
 # Source of truth for a gate-passing spec is _make_minimal_spec() in
 # tests/test_gates_spec.py — the header plus _MINIMAL_VALID_SECTIONS.
-MINIMAL_VALID_SPEC_MD = """\
-# Feature Specification
-
-## Problem
-Describes the issue or gap being addressed.
-
-## Goals
-- Primary objective of the feature
-
-## User-facing behavior
-Describes how end users interact with the feature.
-
-## Technical approach
-Details the implementation strategy.
-
-## Testing strategy
-- AC-01: Test criterion 1
-
-## Documentation impact
-Expected changes to user documentation.
-
-## Acceptance criteria
-- AC-01: Feature works as specified
-
-## Dependencies
-None
-
-## Open questions
-None
-"""
+# The canonical gate-passing spec lives in tests/spec_fixtures.py so every
+# gate-running test shares one definition.
+MINIMAL_VALID_SPEC_MD = MINIMAL_VALID_SPEC
 
 BROKEN_SPEC_MD = "# Feature Specification\n\n## Problem\nOnly one section present.\n"
 
@@ -394,6 +369,9 @@ def drive_gate_fail_park_recover(project_root, state_dir, spec):
     sample_path = os.path.join(project_root, "sample-spec.md")
     with open(sample_path, "w") as fh:
         fh.write(MINIMAL_VALID_SPEC_MD)
+    # The spec gate's contract design-anchor check requires a design/contracts.md
+    # page beside the spec; the no-contracts sentence makes the clean spec pass.
+    write_design_contracts_page(project_root)
     r = run_fbk(["spec-gate", "sample-spec.md"], project_root, state_dir)
     assert r.returncode == 0, (
         f"spec-gate on valid spec failed (rc {r.returncode}): {r.stderr!r}"

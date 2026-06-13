@@ -251,4 +251,60 @@ See [quality scan technique](#quality-scan-technique).
 
 ---
 
+### interface contract
+
+**Definition**: A declared, named boundary between two components — a function signature, HTTP route, message schema, or equivalent — together with the invariants both sides agree to honor. In the firebreak SDL, interface contracts are authored in the design phase (on the design contracts page) and carried or minted in the spec. The `## Interface contracts` section of a feature spec is the per-feature record of every new, changed, or blast-radius contract the feature touches.
+
+**LLM priors activated**: "Contract" activates Eiffel/design-by-contract connotations (preconditions, postconditions, invariants), which are the intended priors — both sides of a seam must uphold the invariants. Risk: conflated with legal contracts or SLAs; "interface" narrows the scope to a code-level boundary.
+
+---
+
+### design contracts page
+
+**Definition**: The per-feature file at `design/contracts.md` produced during the design phase. Enumerates every interface the design introduces or modifies, each identified by an `IF-D-NN` id. The canonical source for `IF-D-NN` entries carried into the spec. A ceremony artifact — lives in the feature directory and is deleted at squash-merge.
+
+**LLM priors activated**: "Contracts page" reads as a structured reference document, which is the intended use. Risk: confused with a project-level contract registry — the design contracts page is feature-scoped and ephemeral, not a persistent project artifact.
+
+---
+
+### IF-D-NN / IF-S-NN identifier scheme
+
+**Definition**: The two-namespace identifier scheme for interface contracts. `IF-D-NN` identifies a contract authored on the design contracts page (`design/contracts.md`), where `NN` is the zero-padded two-digit sequence number assigned there. `IF-S-NN` identifies a contract minted by the spec author — either a spec-discovered new contract or a pre-existing blast-radius contract — where `NN` is assigned sequentially within the spec. The prefix distinguishes origin: design-originated versus spec-originated.
+
+**LLM priors activated**: Identifier patterns activate counting/sequencing priors. The `D` / `S` split is the load-bearing detail: `D` = design namespace, `S` = spec namespace. Risk: agents may assume a single flat namespace; the two-prefix distinction must be stated explicitly when consuming or minting ids.
+
+---
+
+### blast radius
+
+**Definition**: The dependent set of a module the feature declares changed — all callers, consumers, and other modules that rely on an interface the changed module exposes. Deriving the blast radius surfaces pre-existing contracts that must be recorded in `## Interface contracts` as `IF-S-NN` entries with `design-ref: pre-existing`, ensuring the spec accounts for breakage risk beyond the directly touched modules.
+
+**LLM priors activated**: "Blast radius" activates destructive-change risk connotations, which are the intended priors — the term signals that a change propagates outward and the author must assess the extent. Risk: read as catastrophist; in context, blast radius is a neutral enumeration step, not a warning that the change is dangerous.
+
+---
+
+### design-anchor check
+
+**Definition**: A spec-review verification that each `IF-D-NN` entry in `## Interface contracts` matches its counterpart on the design contracts page — same signature, same invariants, same covers list. Catches contract drift introduced when the spec author edits a carried contract without updating the design page (or vice versa). Performed by the spec reviewer as part of the hybrid gate semantic check.
+
+**LLM priors activated**: "Anchor" signals a tethering relationship — the spec entry is anchored to the design entry and must not drift. Risk: read as a mechanical hash check; the design-anchor check is a semantic comparison of human-readable fields, not a hash equality assertion.
+
+---
+
+### contract drift
+
+**Definition**: The condition where an interface contract as written in the spec diverges from the same contract on the design contracts page — different signature, changed invariants, or mismatched covers list. Contract drift is the defect class the design-anchor check detects. Drift can also emerge between the spec and the implementation when a coder edits the implementation without updating the spec or the design page.
+
+**LLM priors activated**: "Drift" activates gradual-divergence connotations, which are intended. Risk: read as always gradual or accidental; drift can also be introduced intentionally (a deliberate change to one document without updating the other), which is a process failure rather than an oversight.
+
+---
+
+### integration seam
+
+**Definition**: A declared pair of interacting components identified in `## Technical approach`, together with the convention both sides must honor — the shared state or interface and the specific data shape, key string, event name, or API path that crosses the boundary. Each seam appears as a checklist entry in the integration seam declaration. The test reviewer at the first checkpoint validates that every declared seam has integration or end-to-end test coverage.
+
+**LLM priors activated**: "Seam" activates Michael Feathers's seam concept (a place where behavior can be observed or altered) — this loading is partially intended, but firebreak's use is narrower: a seam here is a declared, named interface boundary between two specific components in the spec, not a general code-seam in the Feathers sense. Risk: read as a testing artifact only; the seam is first a specification artifact (the declaration in `## Technical approach`) that the test coverage requirement is derived from.
+
+---
+
 *(Additional entries accrete as specs and context assets introduce vetted terms.)*

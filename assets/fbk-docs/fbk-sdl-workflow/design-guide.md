@@ -12,7 +12,9 @@ Design phase output lives in `ai-docs/<feature-name>/design/` (individual design
 
 - `overview.md` — module shape, component boundaries, and entry points
 - `module-shape.md` — data structures and interfaces the implementation will depend on
-- `contracts.md` — invariants, pre/post-conditions, error conditions
+- `contracts.md` — **required on every feature.** A feature that introduces or changes contracts documents each one as a structured entry. A feature that changes no contracts writes one sentence. See the no-contracts form in `design-contracts-standard.md`.
+
+  When the feature introduces or changes contracts, read `design-contracts-standard.md` for the entry schema and identifier scheme — this route applies only when the feature has contracts to document.
 
 Add pages when a distinct concern warrants its own document. Split when a page exceeds one scrollable screen of meaningful content.
 

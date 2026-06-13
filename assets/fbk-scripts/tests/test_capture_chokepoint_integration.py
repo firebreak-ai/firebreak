@@ -31,6 +31,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 from tests import capture_fixtures  # noqa: E402 — after guard
+from tests.spec_fixtures import MINIMAL_VALID_SPEC, write_design_contracts_page  # noqa: E402
 
 
 FBK_PY = Path(__file__).parent.parent / "fbk.py"
@@ -249,36 +250,8 @@ class TestRealStateTransitionChokepoint:
 #
 # Minimal valid spec content is copied from _make_minimal_spec() in
 # tests/test_gates_spec.py, which is the canonical source of truth.
-_MINIMAL_VALID_SPEC = """\
-# Feature Specification
-
-## Problem
-Describes the issue or gap being addressed.
-
-## Goals
-- Primary objective of the feature
-
-## User-facing behavior
-Describes how end users interact with the feature.
-
-## Technical approach
-Details the implementation strategy.
-
-## Testing strategy
-- AC-01: Test criterion 1
-
-## Documentation impact
-Expected changes to user documentation.
-
-## Acceptance criteria
-- AC-01: Feature works as specified
-
-## Dependencies
-None
-
-## Open questions
-None
-"""
+# The canonical gate-passing spec lives in tests/spec_fixtures.py.
+_MINIMAL_VALID_SPEC = MINIMAL_VALID_SPEC
 
 _BROKEN_SPEC = "# Feature Specification\n\n## Problem\nOnly one section present.\n"
 
@@ -327,6 +300,10 @@ class TestSpecGateSingleWriter:
         spec_path = os.path.join(project, "sample-spec.md")
         with open(spec_path, "w") as fh:
             fh.write(_MINIMAL_VALID_SPEC)
+
+        # The gate's contract design-anchor check requires design/contracts.md
+        # beside the spec; the no-contracts sentence makes the clean spec pass.
+        write_design_contracts_page(project)
 
         result = _run_fbk(["spec-gate", "sample-spec.md"], project, state_dir)
         assert result.returncode == 0, (
