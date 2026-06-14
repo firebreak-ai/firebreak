@@ -84,3 +84,7 @@ widgets containing up to 500 DOM nodes.
   manageable, but sales has flagged PDF as a frequent request.
 - How do we handle widgets with real-time data streams during export? Freezing
   the data at snapshot time is simplest, but users may expect live values.
+
+## Interface contracts
+
+No new or changed contracts in this feature.

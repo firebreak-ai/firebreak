@@ -1,0 +1,55 @@
+# Behavior inventory — deterministic metrics plane (hook harvesting)
+# Every B-NNN here is referenced in prd.md; every B-NNN referenced in prd.md appears here.
+
+behaviors:
+  B-001:
+    description: Per-project capture gate — the globally-installed router checks for a Firebreak-managed project or explicit capture marker and exits immediately, recording nothing, when neither is present.
+    prd_reference: prd.md
+  B-002:
+    description: Hook router event recorder — records Claude-level harness events (tool use, lifecycle, subagent completions, prompt submissions) to a project-local gitignored capture file; never writes to the global config dir, never emits to stdout, fails silently.
+    prd_reference: prd.md
+  B-003:
+    description: Pipeline chokepoint recorder — wraps the single dispatch point so every gate, hook, and state transition records command name, arguments, outcome, and duration.
+    prd_reference: prd.md
+  B-004:
+    description: Verification result persistence — the per-task verification hook persists its results (test pass/fail with failing count, lint errors, files touched outside declared scope) instead of discarding them.
+    prd_reference: prd.md
+  B-005:
+    description: Code-review round logging — the code-review gate records per detection round the issues raised, survivors after challenge, severity mix, and rounds to quiescence.
+    prd_reference: prd.md
+  B-006:
+    description: Post-hoc token harvester — after a session, reads session and subagent transcripts for tokens by type and model, tool calls, and tool errors, joined to stages via state timestamps.
+    prd_reference: prd.md
+  B-007:
+    description: Report command — aggregates all capture sources plus state timestamps into a metrics table (stage durations, gate attempts/first-pass, parks with reasons, tasks completed/reworked, scope violations, detection rounds with counts, tokens per stage).
+    prd_reference: prd.md
+  B-008:
+    description: Ad-hoc report invocation — the report command runs at any pipeline point with no special mode, producing partial rows mid-cycle.
+    prd_reference: prd.md
+  B-009:
+    description: Auto-injection at retrospective — the retrospective phase calls the report from code and writes the table into the retrospective file independent of the agent; the table carries a machine-generated provenance marker that confirms it was not hand-authored.
+    prd_reference: prd.md
+  B-010:
+    description: Three capture levels — off, standard (lifecycle, failures, subagent results, chokepoint events; no tool payloads or prompt text), and full (every event with full payloads including tool-call detail and prompt text); mutually exclusive, project-local.
+    prd_reference: prd.md
+  B-011:
+    description: Shipped default capture level — standard inside a Firebreak-managed project; full requires explicit operator action; uninstrumented projects are always off.
+    prd_reference: prd.md
+  B-012:
+    description: Common event schema — hook router and chokepoint events share a versioned envelope and fixed event-type vocabulary guarded by a drift check, so the report can join both sources.
+    prd_reference: prd.md
+  B-013:
+    description: Stage stamping — each event carries the active pipeline stage read from the state engine at write time; events recorded outside an SDL run carry no stage field and are still recorded.
+    prd_reference: prd.md
+  B-014:
+    description: Automatic retention cap — the per-project capture file self-prunes at a size or age threshold so it never grows unbounded without operator action.
+    prd_reference: prd.md
+  B-015:
+    description: Duplicate registration removal — shipping the global router install removes any leftover project-level router registration so events are not captured twice in a previously-instrumented project.
+    prd_reference: prd.md
+  B-016:
+    description: Subagent identity filtering — the report counts only subagent-completion events whose agent identity matches a known Firebreak agent; events with empty or unrecognized identity (harness-internal helpers) are recorded but excluded from aggregated subagent counts and results.
+    prd_reference: prd.md
+  B-017:
+    description: State-derived park and rework metrics — the report derives parks-per-stage with reasons from the state engine's existing park/error history, and rework from stage re-entry in the state timestamps; no new logging is added for these rows.
+    prd_reference: prd.md

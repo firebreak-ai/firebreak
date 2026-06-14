@@ -26,11 +26,13 @@ GITHUB_BRANCH="${FIREBREAK_GITHUB_BRANCH:-main}"
 MERGE_OUTPUT_FILE=""
 SETTINGS_JSON_FILE=""
 MANIFEST_RECORD_FILE=""
+SETTINGS_TMP_FILE=""
 
 cleanup_temps() {
   [ -n "$MERGE_OUTPUT_FILE" ] && rm -f "$MERGE_OUTPUT_FILE"
   [ -n "$SETTINGS_JSON_FILE" ] && rm -f "$SETTINGS_JSON_FILE"
   [ -n "$MANIFEST_RECORD_FILE" ] && rm -f "$MANIFEST_RECORD_FILE"
+  [ -n "$SETTINGS_TMP_FILE" ] && rm -f "$SETTINGS_TMP_FILE"
   [ -n "$DOWNLOAD_TMPDIR" ] && rm -rf "$DOWNLOAD_TMPDIR"
 }
 trap cleanup_temps EXIT
@@ -129,6 +131,22 @@ if [ "$MODE" != "uninstall" ] && [ "$SOURCE_EXPLICIT" = "0" ] && { [ -z "$SOURCE
   download_source
 fi
 
+# Normalize SOURCE_DIR: strip trailing slash and resolve to absolute path.
+# Without this, --source "assets/" leaves SOURCE_DIR with a trailing slash, which
+# breaks the rel_path strip in enumerate_assets (the prefix pattern stops matching),
+# causing all files to be copied to $TARGET_DIR/assets/... instead of $TARGET_DIR/...
+if [ -n "$SOURCE_DIR" ] && [ -d "$SOURCE_DIR" ]; then
+  SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd)"
+fi
+# Same normalization for TARGET_DIR so dst paths are predictable.
+if [ -n "$TARGET_DIR" ]; then
+  # Strip trailing slash; absolutify only if the directory already exists.
+  TARGET_DIR="${TARGET_DIR%/}"
+  if [ -d "$TARGET_DIR" ]; then
+    TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
+  fi
+fi
+
 # Determine install mode from target path
 if [ -n "$TARGET_DIR" ]; then
   if [ "$TARGET_DIR" = "$HOME/.claude" ]; then
@@ -139,38 +157,53 @@ if [ -n "$TARGET_DIR" ]; then
 fi
 
 # --- Prerequisite checking ---
-check_pyyaml() {
-  if python3 -c "import yaml" >/dev/null 2>&1; then
+check_uv() {
+  if command -v uv >/dev/null 2>&1; then
     return 0
   fi
+  echo "Error: Firebreak requires 'uv' for Python dependency management." >&2
+  echo "  uv creates a project-local virtualenv so Firebreak's Python deps (pyyaml)" >&2
+  echo "  do not depend on system-wide packages — which is incompatible with PEP 668" >&2
+  echo "  (externally-managed) Python installations on recent Arch/Debian/Ubuntu/macOS." >&2
+  echo "" >&2
+  echo "Install uv: https://docs.astral.sh/uv/getting-started/installation/" >&2
+  echo "Then re-run this installer." >&2
+  exit 1
+}
 
-  echo "Firebreak requires Python's pyyaml package at runtime (used by fbk/config.py)." >&2
+# Create a project-local venv inside the install target and populate it with
+# Firebreak's Python deps. Called after install_files copies pyproject.toml to
+# the target. The dispatcher (fbk.py) discovers this venv via sys.path injection.
+setup_python_venv() {
+  local fbk_scripts_dir="$TARGET_DIR/fbk-scripts"
+  local venv_dir="$fbk_scripts_dir/.venv"
+
+  if [ ! -d "$fbk_scripts_dir" ]; then
+    echo "Warning: $fbk_scripts_dir does not exist; skipping venv setup." >&2
+    return 0
+  fi
 
   if [ "$DRY_RUN" = "1" ]; then
-    echo "[dry-run] Would prompt to install pyyaml; skipping in dry-run." >&2
+    echo "[dry-run] Would create venv at $venv_dir and install pyyaml via uv." >&2
     return 0
   fi
 
-  if [ ! -t 0 ]; then
-    echo "  Install later with:  python3 -m pip install --user pyyaml" >&2
-    return 0
+  # Create venv if it doesn't already exist (idempotent for upgrades).
+  if [ ! -d "$venv_dir" ]; then
+    echo "Creating Python venv at $venv_dir..." >&2
+    if ! uv venv "$venv_dir" --python ">=3.11" --quiet 2>&1; then
+      echo "Error: failed to create venv at $venv_dir." >&2
+      echo "  Run 'uv venv $venv_dir --python \">=3.11\"' manually to diagnose." >&2
+      exit 1
+    fi
   fi
 
-  printf 'Install pyyaml now via python3 -m pip install --user pyyaml? [Y/n] ' >&2
-  read -r answer
-  case "$answer" in
-    ""|y|Y|yes|YES)
-      if python3 -m pip install --user pyyaml >&2; then
-        echo "pyyaml installed." >&2
-      else
-        echo "Warning: pip install failed. Install manually: python3 -m pip install --user pyyaml" >&2
-        echo "  (If your system uses PEP 668 externally-managed Python, use pipx or a venv.)" >&2
-      fi
-      ;;
-    *)
-      echo "Skipped. Install manually before running firebreak: python3 -m pip install --user pyyaml" >&2
-      ;;
-  esac
+  echo "Installing Firebreak Python dependencies into venv..." >&2
+  if ! uv pip install --python "$venv_dir/bin/python" --quiet "pyyaml>=6.0" 2>&1; then
+    echo "Error: failed to install pyyaml into $venv_dir." >&2
+    echo "  Run 'uv pip install --python $venv_dir/bin/python pyyaml>=6.0' to diagnose." >&2
+    exit 1
+  fi
 }
 
 check_prerequisites() {
@@ -201,7 +234,7 @@ check_prerequisites() {
     fi
   fi
 
-  check_pyyaml
+  check_uv
 }
 
 # --- Interactive target selection ---
@@ -251,7 +284,11 @@ enumerate_assets() {
     SRC_FILES+=("$src_file")
     DST_FILES+=("$dst_file")
   done < <(find "$SOURCE_DIR" \
-    \( -type d \( -name .venv -o -name __pycache__ -o -name .pytest_cache \) -prune \) \
+    \( -type d \( \
+         -name .venv -o -name venv -o -name __pycache__ -o -name .pytest_cache \
+         -o -name .ruff_cache -o -name '*.egg-info' -o -name tests \
+         -o -name .claude -o -name .git \
+       \) -prune \) \
     -o \( -type f ! -name '*.pyc' ! -name '.DS_Store' -print \))
 }
 
@@ -291,6 +328,9 @@ merge_settings() {
     return
   fi
 
+  # The same-directory temp file below requires the target directory to exist.
+  mkdir -p "$TARGET_DIR"
+
   # Create backup of existing settings.json
   if [ -f "$TARGET_DIR/settings.json" ]; then
     if [ ! -f "$TARGET_DIR/settings.json.pre-firebreak" ]; then
@@ -309,7 +349,9 @@ merge_settings() {
   local merge_source="$firebreak_settings"
   if [ "$INSTALL_MODE" = "project" ]; then
     merge_source="$(mktemp)"
-    sed 's|\\"\$HOME\\"/\.claude/|\\"\$CLAUDE_PROJECT_DIR\\"/\.claude/|g' "$firebreak_settings" > "$merge_source"
+    # Rewrite "$HOME"/.claude/ → "$CLAUDE_PROJECT_DIR"/.claude/ for project installs,
+    # but skip hook_router.py lines — the router always resolves to the global fbk-scripts tree.
+    sed '/hook_router\.py/!s|\\"\$HOME\\"/\.claude/|\\"\$CLAUDE_PROJECT_DIR\\"/\.claude/|g' "$firebreak_settings" > "$merge_source"
   fi
 
   # Run merge script — stdout gets merged JSON, stderr gets errors
@@ -332,8 +374,84 @@ merge_settings() {
   awk '/^---MANIFEST---$/{exit} {print}' "$MERGE_OUTPUT_FILE" > "$SETTINGS_JSON_FILE"
   awk 'found{print} /^---MANIFEST---$/{found=1}' "$MERGE_OUTPUT_FILE" > "$MANIFEST_RECORD_FILE"
 
-  # Write merged settings
-  cp "$SETTINGS_JSON_FILE" "$TARGET_DIR/settings.json"
+  # Write merged settings atomically: temp file in the SAME directory as the
+  # target, then rename. Same-directory placement is load-bearing — a /tmp
+  # temp would sit on another filesystem and mv would silently degrade to a
+  # non-atomic copy, recreating the truncation hazard this exists to close.
+  SETTINGS_TMP_FILE="$(mktemp "$TARGET_DIR/.settings.json.tmp.XXXXXX")" || {
+    echo "Error: failed to create temp file in $TARGET_DIR." >&2
+    exit 1
+  }
+  if ! cp "$SETTINGS_JSON_FILE" "$SETTINGS_TMP_FILE"; then
+    echo "Error: failed to stage merged settings.json." >&2
+    exit 1
+  fi
+  # The rename must not fail silently: the script does not run set -e, and a
+  # quiet mv failure would leave capture disarmed while the install reports
+  # success — the pre-merge backup stays intact, so failing loudly is safe.
+  if ! mv -f "$SETTINGS_TMP_FILE" "$TARGET_DIR/settings.json"; then
+    echo "Error: failed to rename merged settings.json into place." >&2
+    exit 1
+  fi
+  SETTINGS_TMP_FILE=""
+}
+
+# --- Capture sentinel ---
+# Marks the target as Firebreak-managed so the per-project capture gate arms
+# with no manual step. The filename is the shared token the gate keys on:
+# gate_check.FBK_MARKER_SENTINEL = ".fbk-managed"
+# (assets/fbk-scripts/fbk/capture/gate_check.py). $TARGET_DIR is the .claude
+# directory, so this lands at .claude/automation/.fbk-managed in the project.
+create_capture_sentinel() {
+  if [ "$DRY_RUN" = "1" ]; then
+    echo "Would create capture sentinel at $TARGET_DIR/automation/.fbk-managed"
+    return
+  fi
+  mkdir -p "$TARGET_DIR/automation"
+  : > "$TARGET_DIR/automation/.fbk-managed"
+}
+
+# --- Gitignore ---
+write_gitignore() {
+  # Read gitignore entries from the merged settings JSON and append any missing
+  # lines to the target directory's .gitignore file.
+  if [ -z "$SETTINGS_JSON_FILE" ] || [ ! -f "$SETTINGS_JSON_FILE" ]; then
+    return
+  fi
+
+  if [ "$DRY_RUN" = "1" ]; then
+    echo "Would write gitignore entries from merged settings to $TARGET_DIR/.gitignore"
+    return
+  fi
+
+  local gitignore_path="$TARGET_DIR/.gitignore"
+
+  python3 - "$SETTINGS_JSON_FILE" "$gitignore_path" <<'EOF'
+import json, sys
+from pathlib import Path
+
+settings_path = sys.argv[1]
+gitignore_path = Path(sys.argv[2])
+
+with open(settings_path) as f:
+    settings = json.load(f)
+
+entries = settings.get("gitignore", [])
+if not entries:
+    sys.exit(0)
+
+existing_lines = set()
+if gitignore_path.exists():
+    existing_lines = {line.rstrip("\n") for line in gitignore_path.read_text().splitlines()}
+
+to_add = [e for e in entries if e not in existing_lines]
+if not to_add:
+    sys.exit(0)
+
+with open(gitignore_path, "a") as f:
+    for entry in to_add:
+        f.write(entry + "\n")
+EOF
 }
 
 # --- Manifest writing ---
@@ -523,6 +641,22 @@ print(str(hooks_removed) + ' hooks removed, ' + str(env_removed) + ' env keys re
     fi
   fi
 
+  # Remove the project-local venv the installer created under fbk-scripts.
+  # It is generated by setup_python_venv after the file copy, so it is not in
+  # the manifest; without this the fbk-scripts directory is left orphaned and
+  # the empty-directory prune below cannot remove it.
+  if [ -d "$TARGET_DIR/fbk-scripts/.venv" ]; then
+    rm -rf "$TARGET_DIR/fbk-scripts/.venv"
+  fi
+
+  # Remove runtime-generated bytecode caches under fbk-scripts. Like the venv,
+  # these appear after install (the first time fbk.py runs) and are not in the
+  # manifest, so without this the empty-directory prune below cannot remove the
+  # fbk-scripts tree — leaving it orphaned exactly as the venv once was.
+  if [ -d "$TARGET_DIR/fbk-scripts" ]; then
+    find "$TARGET_DIR/fbk-scripts" -type d -name __pycache__ -prune -exec rm -rf {} + 2>/dev/null || true
+  fi
+
   # Remove empty directories that held firebreak files (bottom-up by depth)
   # Collect unique parent dirs from manifest, then rmdir deepest-first
   while IFS= read -r empty_dir; do
@@ -564,6 +698,15 @@ fi
 
 check_prerequisites
 
+# Create the target directory before merging settings or writing the manifest.
+# Both merge_settings and write_manifest write into TARGET_DIR but run before
+# install_files, which is otherwise what first creates it via mkdir -p. On a
+# fresh target those earlier writes fail silently (set -e is off), leaving no
+# settings.json and no manifest — and a manifest-less install cannot be uninstalled.
+if [ "$DRY_RUN" != "1" ]; then
+  mkdir -p "$TARGET_DIR"
+fi
+
 # Detect upgrade
 IS_UPGRADE=0
 if [ -f "$TARGET_DIR/.firebreak-manifest.json" ]; then
@@ -573,6 +716,8 @@ fi
 
 enumerate_assets
 merge_settings
+create_capture_sentinel
+write_gitignore
 
 # Pre-populate MANIFEST_FILES from enumerated assets so write_manifest can record them
 MANIFEST_FILES=()
@@ -585,6 +730,7 @@ done
 
 write_manifest
 install_files
+setup_python_venv
 
 # Build summary counts
 hooks_added_count=0

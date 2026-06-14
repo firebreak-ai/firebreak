@@ -9,8 +9,10 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Define the 11 context asset files with absolute paths
+# Define the context asset files with absolute paths
 declare -a files=(
+  "$PROJECT_ROOT/assets/skills/fbk-intent/SKILL.md"
+  "$PROJECT_ROOT/assets/skills/fbk-design/SKILL.md"
   "$PROJECT_ROOT/assets/skills/fbk-spec/SKILL.md"
   "$PROJECT_ROOT/assets/skills/fbk-spec-review/SKILL.md"
   "$PROJECT_ROOT/assets/skills/fbk-breakdown/SKILL.md"

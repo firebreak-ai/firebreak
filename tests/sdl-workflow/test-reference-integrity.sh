@@ -138,6 +138,34 @@ while IFS= read -r source_file; do
   )
 done < <(find "$ASSETS_DIR" -name "*.md" -type f | sort)
 
+# --- Part 3: No source-path prefix in asset bodies ---
+# Scan every .md file in assets/ for path references that use the source-tree
+# 'assets/' prefix. Any such reference would install with the wrong path.
+# Exempt: comment lines (starting with #), YAML front-matter lines, and the
+# installer script itself (which legitimately references assets/).
+leaked=0
+while IFS= read -r source_file; do
+  # Skip the installer itself
+  [[ "$source_file" == *"installer/"* ]] && continue
+  while IFS= read -r matched_line; do
+    # Strip leading whitespace for comment detection
+    trimmed="${matched_line#"${matched_line%%[![:space:]]*}"}"
+    # Skip comment lines and metadata lines
+    [[ "$trimmed" == "#"* ]] && continue
+    [[ "$trimmed" == ">"* ]] && continue
+    TOTAL=$((TOTAL + 1))
+    FAIL=$((FAIL + 1))
+    leaked=$((leaked + 1))
+    echo "not ok $TOTAL - Source-path leak in ${source_file#$ASSETS_DIR/}: $matched_line"
+  done < <(grep -nE '(^|[^a-zA-Z0-9_-])assets/[a-zA-Z]' "$source_file" 2>/dev/null)
+done < <(find "$ASSETS_DIR" -name "*.md" -type f | sort)
+
+if [ "$leaked" -eq 0 ]; then
+  TOTAL=$((TOTAL + 1))
+  PASS=$((PASS + 1))
+  echo "ok $TOTAL - No source-path 'assets/' prefix found in any asset body"
+fi
+
 # --- Summary ---
 echo ""
 echo "# $PASS/$TOTAL tests passed"

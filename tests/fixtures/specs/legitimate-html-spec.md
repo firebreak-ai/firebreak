@@ -65,3 +65,7 @@ Add rate limiting section to the API Reference with tier tables.
 
 - Should we allow burst allowances above the sustained rate? Starting
   without burst keeps the implementation simple and predictable.
+
+## Interface contracts
+
+No new or changed contracts in this feature.

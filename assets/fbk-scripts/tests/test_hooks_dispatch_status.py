@@ -1,7 +1,5 @@
 """Tests for fbk.hooks.dispatch_status output formatting."""
 
-import pytest
-import json
 from fbk.hooks.dispatch_status import format_status
 
 
@@ -76,7 +74,7 @@ class TestDispatchStatusFormatting:
         assert "missing required section" in output
 
     def test_completed_state_formatted(self):
-        """Test completed state contains COMPLETED."""
+        """Test completed state renders status, full stage history, and correct ordering."""
         state = {
             "spec_name": "completed-spec",
             "current_state": "COMPLETED",
@@ -105,22 +103,13 @@ class TestDispatchStatusFormatting:
             "parked_info": {}
         }
         output = format_status(state)
-        assert "COMPLETED" in output
-
-    def test_output_contains_spec_name_and_state(self):
-        """Test output includes both the spec name and the current state in readable form."""
-        state = {
-            "spec_name": "queued-spec",
-            "current_state": "QUEUED",
-            "stage_timestamps": {"QUEUED": "2026-03-14T10:00:00+00:00"},
-            "agent_ids": [],
-            "verification_results": {},
-            "error_history": [],
-            "parked_info": {}
-        }
-        output = format_status(state)
-        assert "queued-spec" in output, "Output should contain the spec name"
-        assert "QUEUED" in output, "Output should contain the current state"
+        assert "Status: COMPLETED" in output
+        assert "Stage history:" in output
+        # Early and late stages must both appear in the rendered history.
+        assert "QUEUED" in output
+        assert "VERIFYING" in output
+        # Stage history must be ordered: QUEUED timestamp appears before VERIFYING timestamp.
+        assert output.index("2026-03-14T10:00:00") < output.index("2026-03-14T11:15:00")
 
     def test_error_history_displayed_for_parked_spec(self):
         """Test error history is displayed for parked spec."""

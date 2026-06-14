@@ -97,4 +97,5 @@ class TestValidateSighting:
         }
         result = validate_sighting(sighting)
         assert result is not None
-        assert "invalid type" in result
+        assert "invalid type 'performance'" in result
+        assert "type-severity" not in result

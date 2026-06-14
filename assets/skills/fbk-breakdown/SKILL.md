@@ -15,6 +15,16 @@ Set `FEATURE=$ARGUMENTS`. Locate inputs:
 - Review: `ai-docs/$FEATURE/$FEATURE-review.md`
 - Threat model (if present): `ai-docs/$FEATURE/$FEATURE-threat-model.md`
 
+## Prerequisite probe (mid-pipeline entry)
+
+When this skill is invoked directly (not chained from `/fbk-spec-review`), call the capability-entry prerequisite probe before proceeding:
+
+```
+fbk.precheck.check_prerequisites("breakdown", <feature_dir>)
+```
+
+If the spec artifact (`ai-docs/$FEATURE/$FEATURE-spec.md`) is missing, name that file explicitly and offer to run the upstream phase: "The spec file is missing — would you like me to run `/fbk-spec` to produce it?" This is non-blocking: never hard-block on a missing spec; always offer rather than halt.
+
 Verify both the spec and review files exist. If either is missing, report which file is absent and stop.
 
 Run the Stage 2 gate:
@@ -26,11 +36,44 @@ python3 "$HOME"/.claude/fbk-scripts/fbk.py review-gate \
 ```
 Read the `Perspectives:` metadata line from the first line of the review file and pass its value as the comma-separated perspectives string. If the gate fails, report which checks failed and offer to run `/fbk-spec-review $FEATURE`.
 
+## Slice identification
+
+Before authoring any work units, read the `## Slices` section of the spec. For each slice entry:
+
+1. Record the slice name and its `test-discipline` value (one of: `new-contract`, `contract-preserving`, `contract-evolving`, `cross-cutting`).
+2. Record the slice's `covers:` list (the behavior IDs it owns from `behavior-inventory.yaml`).
+3. For `contract-evolving` slices, also record the `retired-tests:` list — every entry must carry per-test rationale.
+
+Produce a slice list before continuing. This identification step completes first; per-slice authoring follows.
+
+## Per-slice work-unit authoring
+
+For each slice identified above, load the routing index at `.claude/fbk-docs/fbk-sdl-workflow/slice-shapes.md` and follow the routing rule for the slice's `test-discipline`:
+
+| `test-discipline` | Shape leaf |
+|---|---|
+| `new-contract` | `slice-shapes/new-contract.md` |
+| `contract-preserving` | `slice-shapes/contract-preserving.md` |
+| `contract-evolving` | `slice-shapes/contract-evolving.md` |
+| `cross-cutting` | `slice-shapes/cross-cutting.md` |
+
+Load **only** the leaf for the current slice's discipline. Author the test task + implementation task pair for that slice according to the leaf's instructions. Process one slice at a time; do not load all four leaves at once.
+
+**Bounce-back-to-spec**: If breakdown cannot write a work unit executable by a less-familiar agent — because the spec is too vague to produce unambiguous instructions — do not produce an oversized or open-ended task. Instead, name the specific gap ("spec section X does not define the error shape for Y") and emit a `BOUNCE-BACK:` marker in the task file:
+
+```
+<!-- BOUNCE-BACK: <specific spec gap that prevents unambiguous authoring> -->
+```
+
+The breakdown gate fails on any unresolved `BOUNCE-BACK:` marker (see task-30). Resolve by returning to spec.
+
 ## Test task agent
 
 Invoke an Agent Teams teammate with independent context. The teammate receives only the spec file (`ai-docs/$FEATURE/$FEATURE-spec.md`). It does NOT receive the review document, threat model, or any other artifacts.
 
 Load brownfield instructions from `.claude/fbk-docs/fbk-brownfield-breakdown.md` and include them in the teammate's prompt.
+
+Load the test-authoring rules from `.claude/fbk-docs/fbk-design-guidelines/test-authoring.md` and include them in the teammate's prompt. Test tasks must conform to those rules — including the mocks rule (stand-ins only for code we don't own).
 
 The teammate produces test tasks from the spec's testing strategy and acceptance criteria. One task per AC or logical test group. Each test task specifies: files to create, test framework conventions to follow, AC identifiers covered, and a completion gate (tests compile and fail before implementation).
 
@@ -49,6 +92,16 @@ Each implementation task references specific test task IDs. The completion gate 
 Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-impl-<behavior>.md`. Task files use the frontmatter schema and body sections defined in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`.
 
 Wave N+1 tasks may reference files or behaviors produced by Wave N.
+
+## Pre-lock test review
+
+Before populating the test-lock manifest for any slice, invoke `fbk-test-review` in pre-lock mode over the full set of tests covering the changed module — including pre-existing tests that a contract-preserving slice will lock:
+
+```
+/fbk-test-review --mode pre-lock <module>
+```
+
+Only an `accepted` verdict from `fbk-test-review` triggers `test-hash-gate` manifest population. If the verdict is not `accepted`, report the findings and do not populate the lock manifest for that slice. The `test-hash-gate` command writes the manifest only after a confirmed `accepted` verdict.
 
 ## Task manifest assembly
 

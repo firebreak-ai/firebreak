@@ -82,62 +82,69 @@ else
   not_ok "body contains agent role (test + review/validate)" "test=$has_test review=$has_review"
 fi
 
-# --- Test 6: Checkpoint 1 (spec review) ---
-cp1=$(awk '/^## .*[Cc]heckpoint 1/,/^## .*[Cc]heckpoint 2/' "$AGENT_FILE")
-cp1_spec=$(echo "$cp1" | grep -ciE 'spec')
-cp1_schema=$(echo "$cp1" | grep -ciE 'schema')
-cp1_strat=$(echo "$cp1" | grep -ciE 'testing strategy|AC|acceptance criteria')
-if [ "$cp1_spec" -gt 0 ] && [ "$cp1_schema" -gt 0 ] && [ "$cp1_strat" -gt 0 ]; then
-  ok "checkpoint 1 mentions spec, schema, and testing strategy/AC"
+# --- Test 6: Pre-lock mode section exists ---
+if grep -q '^## Pre-lock mode' "$AGENT_FILE"; then
+  ok "Pre-lock mode section exists"
 else
-  not_ok "checkpoint 1 mentions spec, schema, and testing strategy/AC" "spec=$cp1_spec schema=$cp1_schema strat=$cp1_strat"
+  not_ok "Pre-lock mode section exists"
 fi
 
-# --- Test 7: Checkpoint 2 (task review) ---
-cp2=$(awk '/^## .*[Cc]heckpoint 2/,/^## .*[Cc]heckpoint 3/' "$AGENT_FILE")
-cp2_task=$(echo "$cp2" | grep -ciE 'task files')
-cp2_strat=$(echo "$cp2" | grep -ciE 'testing strategy|breakdown')
-if [ "$cp2_task" -gt 0 ] && [ "$cp2_strat" -gt 0 ]; then
-  ok "checkpoint 2 mentions task files and testing strategy/breakdown"
+# --- Test 7: Final mode section exists ---
+if grep -q '^## Final mode' "$AGENT_FILE"; then
+  ok "Final mode section exists"
 else
-  not_ok "checkpoint 2 mentions task files and testing strategy/breakdown" "task=$cp2_task strat=$cp2_strat"
+  not_ok "Final mode section exists"
 fi
 
-# --- Test 8: Checkpoint 3 (test code review) ---
-cp3=$(awk '/^## .*[Cc]heckpoint 3/,/^## .*[Cc]heckpoint 4/' "$AGENT_FILE")
-cp3_code=$(echo "$cp3" | grep -ciE 'test code')
-cp3_fail=$(echo "$cp3" | grep -ciE 'compile|fail|trace')
-if [ "$cp3_code" -gt 0 ] && [ "$cp3_fail" -gt 0 ]; then
-  ok "checkpoint 3 mentions test code and compile/fail/trace"
+# --- Test 8: Pre-lock mode — fail before implementation discipline ---
+prelock=$(awk '/^## Pre-lock mode/,/^## Final mode/' "$AGENT_FILE")
+if echo "$prelock" | grep -qE 'fail before implementation|red before implementation'; then
+  ok "pre-lock mode mentions fail before implementation"
 else
-  not_ok "checkpoint 3 mentions test code and compile/fail/trace" "code=$cp3_code fail=$cp3_fail"
+  not_ok "pre-lock mode mentions fail before implementation"
 fi
 
-# --- Test 9: Checkpoint 4 (test integrity) ---
-cp4=$(awk '/^## .*[Cc]heckpoint 4/,/^## .*[Cc]heckpoint 5/' "$AGENT_FILE")
-cp4_impl=$(echo "$cp4" | grep -ciE 'implementation|implemented')
-cp4_qual=$(echo "$cp4" | grep -ciE 'weaken|coverage|trivial|quality|regression|adequate')
-if [ "$cp4_impl" -gt 0 ] && [ "$cp4_qual" -gt 0 ]; then
-  ok "checkpoint 4 mentions implementation and quality/coverage/weaken"
+# --- Test 9: Pre-lock mode — four catching-power criteria present ---
+prelock_impl=$(echo "$prelock" | grep -ci 'implementation-embedding')
+prelock_assert=$(echo "$prelock" | grep -ci 'assertion strength')
+prelock_cov=$(echo "$prelock" | grep -ci 'coverage-versus-claim')
+prelock_mock=$(echo "$prelock" | grep -ci 'mocking and contradiction')
+if [ "$prelock_impl" -gt 0 ] && [ "$prelock_assert" -gt 0 ] && [ "$prelock_cov" -gt 0 ] && [ "$prelock_mock" -gt 0 ]; then
+  ok "pre-lock mode names all four catching-power criteria"
 else
-  not_ok "checkpoint 4 mentions implementation and quality/coverage/weaken" "impl=$cp4_impl qual=$cp4_qual"
+  not_ok "pre-lock mode names all four catching-power criteria" "impl=$prelock_impl assert=$prelock_assert cov=$prelock_cov mock=$prelock_mock"
 fi
 
-# --- Test 10: Checkpoint 5 (mutation testing) ---
-cp5=$(awk '/^## .*[Cc]heckpoint 5/,/^## [^C]/' "$AGENT_FILE")
-cp5_impl=$(echo "$cp5" | grep -ciE 'implemented code|implementation')
-cp5_mut=$(echo "$cp5" | grep -ciE 'mutation')
-cp5_det=$(echo "$cp5" | grep -ciE 'detection rate|hash|verified|kill|survive')
-cp5_no_test_input=$(echo "$cp5" | grep -ciE 'does not receive test code|no test code as input|without.*test code input|not receive test code')
-# Check it does NOT indicate it receives test code as input (negative check)
-cp5_receives_test=$(echo "$cp5" | grep -ciE 'receives test code|test code as input')
-if [ "$cp5_impl" -gt 0 ] && [ "$cp5_mut" -gt 0 ] && [ "$cp5_det" -gt 0 ] && [ "$cp5_receives_test" -eq 0 ]; then
-  ok "checkpoint 5 mentions implementation, mutation, detection/hash/kill, no test code input"
+# --- Test 10: Pre-lock mode — verdict line present ---
+if echo "$prelock" | grep -qE 'accepted \| needs-revision'; then
+  ok "pre-lock mode contains accepted | needs-revision verdict line"
 else
-  not_ok "checkpoint 5 mentions implementation, mutation, detection/hash/kill, no test code input" "impl=$cp5_impl mut=$cp5_mut det=$cp5_det receives_test=$cp5_receives_test"
+  not_ok "pre-lock mode contains accepted | needs-revision verdict line"
 fi
 
-# --- Test 11: Pipeline-blocking authority specified ---
+# --- Test 11: Final mode — verify_manifest present ---
+final=$(awk '/^## Final mode/,/^## Output format/' "$AGENT_FILE")
+if echo "$final" | grep -q 'verify_manifest'; then
+  ok "final mode mentions verify_manifest"
+else
+  not_ok "final mode mentions verify_manifest"
+fi
+
+# --- Test 12: Final mode — drift check present ---
+if echo "$final" | grep -qi 'drift'; then
+  ok "final mode mentions drift"
+else
+  not_ok "final mode mentions drift"
+fi
+
+# --- Test 13: Final mode — verdict line present ---
+if echo "$final" | grep -qE 'accepted \| needs-revision'; then
+  ok "final mode contains accepted | needs-revision verdict line"
+else
+  not_ok "final mode contains accepted | needs-revision verdict line"
+fi
+
+# --- Test 14: Pipeline-blocking authority specified ---
 blocking=$(grep -ciE 'pipeline.blocking|blocking authority' "$AGENT_FILE")
 if [ "$blocking" -gt 0 ]; then
   ok "pipeline-blocking authority specified"
@@ -145,7 +152,7 @@ else
   not_ok "pipeline-blocking authority specified"
 fi
 
-# --- Test 12: Context isolation specified ---
+# --- Test 15: Context isolation specified ---
 isolation=$(grep -ciE 'context isolation|isolated context|isolation' "$AGENT_FILE")
 if [ "$isolation" -gt 0 ]; then
   ok "context isolation specified"
@@ -153,7 +160,7 @@ else
   not_ok "context isolation specified"
 fi
 
-# --- Test 13: Output format specified (pass/fail with findings) ---
+# --- Test 16: Output format specified (pass/fail with findings) ---
 output_pass=$(grep -ciE 'pass' "$AGENT_FILE")
 output_fail=$(grep -ciE 'fail' "$AGENT_FILE")
 output_findings=$(grep -ciE 'finding' "$AGENT_FILE")
@@ -163,27 +170,16 @@ else
   not_ok "output format specifies pass/fail with findings" "pass=$output_pass fail=$output_fail findings=$output_findings"
 fi
 
-# --- Test 14: Each checkpoint specifies artifact set ---
-artifacts_ok=true
-for i in 1 2 3 4 5; do
-  next=$((i + 1))
-  if [ "$i" -eq 5 ]; then
-    cp_section=$(awk "/^## .*[Cc]heckpoint $i/,/^## [^C]/" "$AGENT_FILE")
-  else
-    cp_section=$(awk "/^## .*[Cc]heckpoint $i/,/^## .*[Cc]heckpoint $next/" "$AGENT_FILE")
-  fi
-  art_count=$(echo "$cp_section" | grep -ciE 'artifact|receives|input')
-  if [ "$art_count" -eq 0 ]; then
-    artifacts_ok=false
-  fi
-done
-if $artifacts_ok; then
-  ok "each checkpoint specifies artifact set"
+# --- Test 17: Each mode specifies artifact set ---
+prelock_art=$(echo "$prelock" | grep -ciE 'artifact|receives|input')
+final_art=$(echo "$final" | grep -ciE 'artifact|receives|input')
+if [ "$prelock_art" -gt 0 ] && [ "$final_art" -gt 0 ]; then
+  ok "each mode specifies artifact set"
 else
-  not_ok "each checkpoint specifies artifact set"
+  not_ok "each mode specifies artifact set" "prelock=$prelock_art final=$final_art"
 fi
 
-# --- Test 15: Brownfield mode mentioned ---
+# --- Test 18: Brownfield mode mentioned ---
 brownfield=$(grep -ciE 'brownfield' "$AGENT_FILE")
 if [ "$brownfield" -gt 0 ]; then
   ok "brownfield mode mentioned"
@@ -191,7 +187,7 @@ else
   not_ok "brownfield mode mentioned"
 fi
 
-# --- Test 16: On-demand invocation pattern (test-review) ---
+# --- Test 19: On-demand invocation pattern (test-review) ---
 invocation=$(grep -ciE 'test-review' "$AGENT_FILE")
 if [ "$invocation" -gt 0 ]; then
   ok "on-demand invocation pattern (test-review) mentioned"

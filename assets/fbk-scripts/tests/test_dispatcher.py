@@ -22,8 +22,8 @@ class TestDispatcherCommandMap:
         except ImportError:
             pytest.skip("fbk module not yet implemented")
 
-    def test_command_map_contains_all_14_commands(self):
-        """COMMAND_MAP contains all 14 commands from spec."""
+    def test_command_map_contains_all_19_commands(self):
+        """COMMAND_MAP contains exactly all 19 commands from spec."""
         try:
             import fbk
         except ImportError:
@@ -43,12 +43,53 @@ class TestDispatcherCommandMap:
             "state",
             "session-logger",
             "session-manager",
+            "session-state",
             "ralph",
+            "intent-gate",
+            "design-gate",
+            "code-review-gate",
+            "report",
         }
 
         actual_commands = set(fbk.COMMAND_MAP.keys())
-        assert expected_commands.issubset(actual_commands), \
-            f"Missing commands: {expected_commands - actual_commands}"
+        assert actual_commands == expected_commands, (
+            f"COMMAND_MAP mismatch — extra: {actual_commands - expected_commands}, "
+            f"missing: {expected_commands - actual_commands}"
+        )
+        assert fbk.COMMAND_MAP["report"] == "fbk.report"
+
+    def test_intent_gate_maps_to_exact_module(self):
+        """COMMAND_MAP["intent-gate"] == "fbk.gates.intent"."""
+        try:
+            import fbk
+        except ImportError:
+            pytest.skip("fbk module not yet implemented")
+        assert "intent-gate" in fbk.COMMAND_MAP, \
+            "intent-gate missing from COMMAND_MAP"
+        assert fbk.COMMAND_MAP["intent-gate"] == "fbk.gates.intent", \
+            f"Expected 'fbk.gates.intent', got '{fbk.COMMAND_MAP.get('intent-gate')}'"
+
+    def test_design_gate_maps_to_exact_module(self):
+        """COMMAND_MAP["design-gate"] == "fbk.gates.design"."""
+        try:
+            import fbk
+        except ImportError:
+            pytest.skip("fbk module not yet implemented")
+        assert "design-gate" in fbk.COMMAND_MAP, \
+            "design-gate missing from COMMAND_MAP"
+        assert fbk.COMMAND_MAP["design-gate"] == "fbk.gates.design", \
+            f"Expected 'fbk.gates.design', got '{fbk.COMMAND_MAP.get('design-gate')}'"
+
+    def test_code_review_gate_maps_to_exact_module(self):
+        """COMMAND_MAP["code-review-gate"] == "fbk.gates.code_review" (underscore)."""
+        try:
+            import fbk
+        except ImportError:
+            pytest.skip("fbk module not yet implemented")
+        assert "code-review-gate" in fbk.COMMAND_MAP, \
+            "code-review-gate missing from COMMAND_MAP"
+        assert fbk.COMMAND_MAP["code-review-gate"] == "fbk.gates.code_review", \
+            f"Expected 'fbk.gates.code_review', got '{fbk.COMMAND_MAP.get('code-review-gate')}'"
 
 
 class TestDispatcherModuleResolution:
@@ -62,11 +103,7 @@ class TestDispatcherModuleResolution:
             pytest.skip("fbk module not yet implemented")
 
         for command, module_path in fbk.COMMAND_MAP.items():
-            try:
-                importlib.import_module(module_path)
-            except ImportError as e:
-                # Expected to fail until implementation phase completes
-                pytest.skip(f"Module {module_path} for command {command} not yet implemented: {e}")
+            importlib.import_module(module_path)
 
 
 class TestDispatcherBehavior:
@@ -126,19 +163,35 @@ class TestDispatcherIntegration:
         pytest.skip("fbk.py dispatcher not found")
 
     def test_stdin_passthrough_to_module(self, dispatcher_path):
-        """stdin is passed through to module (integration test)."""
-        # This test validates that stdin from dispatcher is passed to the target module
-        # It requires the task-completed module to exist and accept JSON input
-        test_input = json.dumps({"id": "test-001", "status": "completed"})
+        """stdin JSON is passed through to the task-completed module and parsed.
+
+        Uses a task_description containing a valid SDL task path so the module
+        moves past the early-exit guard and attempts test/lint detection.  The
+        resulting WARN lines on stderr are the only observable signal that the
+        module actually consumed the stdin payload.
+        """
+        test_input = json.dumps({
+            "task_description": "Implement ai-docs/myfeature/tasks/task-01-setup.md",
+            # Use a directory with no test runner / linter so the hook returns
+            # quickly without spawning an actual test suite.
+            "cwd": "/tmp",
+        })
 
         result = subprocess.run(
             [sys.executable, str(dispatcher_path), "task-completed"],
             input=test_input,
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=10,
         )
-        # Test will skip if module not yet implemented
-        # Otherwise, verify that input was processed without error
-        if result.returncode != 0:
-            pytest.skip(f"task-completed module not yet available: {result.stderr}")
+        assert result.returncode == 0, (
+            f"task-completed exited {result.returncode}; stderr: {result.stderr}"
+        )
+        # The module emits this WARN when it parsed a task path but found no test
+        # runner in cwd.  Its presence proves stdin was read, JSON-decoded, and the
+        # task_description field was actually used by the hook logic.
+        assert "No recognized test runner" in result.stderr, (
+            "Expected WARN about missing test runner on stderr — "
+            "this proves stdin was received and parsed by the module. "
+            f"Got stderr: {result.stderr!r}"
+        )

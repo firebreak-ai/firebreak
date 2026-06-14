@@ -7,86 +7,185 @@ import json
 import sys
 from pathlib import Path
 
+from fbk.slices import TEST_DISCIPLINES
 
-def compute_hashes(feature_dir) -> dict:
+
+def _is_test_file(path: Path) -> bool:
+    return path.name != "test-hashes.json" and (
+        "/tests/" in str(path.as_posix()) or "test" in path.name
+    )
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _relpath_for(file_path: Path, feature_dir: Path) -> str:
+    # Relpath rule — see §Interface contracts #5.
+    # Inside feature_dir: path relative to feature_dir (e.g. "tests/test_module.py").
+    # Outside feature_dir: last two path components joined with "/" (e.g. "existing_tests/test_existing.py").
+    try:
+        return str(file_path.relative_to(feature_dir))
+    except ValueError:
+        return "/".join(file_path.parts[-2:])
+
+
+def compute_hashes(feature_dir, locked_files=None) -> dict:
     """Find test files and compute SHA-256 hex digests.
 
     Matches files where the path contains /tests/ or the filename contains
     'test', excluding test-hashes.json. Returns {relative_path: hex_hash}.
+    locked_files: optional list of absolute paths to include on top of rglob discovery.
     """
     base = Path(feature_dir)
     candidates = sorted(
         p for p in base.rglob("*")
-        if p.is_file()
-        and p.name != "test-hashes.json"
-        and ("/tests/" in str(p.as_posix()) or "test" in p.name)
+        if p.is_file() and _is_test_file(p)
     )
 
     hashes = {}
     for path in candidates:
-        digest = hashlib.sha256(path.read_bytes()).hexdigest()
-        rel = path.relative_to(base)
+        digest = _sha256(path)
+        rel = _relpath_for(path, base)
         hashes[str(rel)] = digest
+
+    if locked_files:
+        for lf in locked_files:
+            path = Path(lf)
+            if path.is_file() and _is_test_file(path):
+                rel = _relpath_for(path, base)
+                hashes[str(rel)] = _sha256(path)
+
     return hashes
 
 
-def create_manifest(feature_dir, manifest_path=None) -> dict:
+def create_manifest(feature_dir, manifest_path=None, locked_files=None) -> dict:
     """Create test-hashes.json manifest in feature_dir.
 
     Args:
-        feature_dir: Directory to scan for test files
+        feature_dir: Directory to scan for test files.
         manifest_path: Where to write the manifest. Defaults to feature_dir/test-hashes.json.
+        locked_files: Optional list of absolute paths to pre-existing test files to include.
 
     Returns gate result dict.
     """
-    files = compute_hashes(str(feature_dir))
+    base = Path(feature_dir)
+    flat_hashes = compute_hashes(feature_dir, locked_files=locked_files)
+
+    files = {
+        relpath: {
+            "sha256": digest,
+            "slice": "",
+            "test-discipline": TEST_DISCIPLINES[0],
+        }
+        for relpath, digest in flat_hashes.items()
+    }
+
     manifest = {
-        "files": files,
         "computed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "files": files,
     }
     if manifest_path is None:
-        manifest_path = Path(feature_dir) / "test-hashes.json"
+        manifest_path = base / "test-hashes.json"
     with open(manifest_path, "w") as f:
         json.dump(manifest, f, indent=2)
     return {"gate": "test-hash", "result": "pass", "action": "created", "files": len(files)}
 
 
-def verify_manifest(feature_dir, manifest_path=None) -> dict:
+def verify_manifest(feature_dir, manifest_path=None) -> list[dict]:
     """Verify current test files against existing manifest.
 
-    Args:
-        feature_dir: Directory to scan for test files
-        manifest_path: Path to manifest file. Defaults to feature_dir/test-hashes.json.
+    The manifest is looked up at feature_dir/test-hashes.json first; when absent,
+    at a single ``*-tasks/`` subdirectory of feature_dir — the location the
+    breakdown stage writes it to. Entries resolve against the manifest's own
+    directory, so both layouts verify instead of degrading to a no-op.
 
-    Returns 'pass' string on success, or error string describing discrepancies.
+    Returns a list of discrepancy dicts with keys 'kind' and 'path'.
+    kind is one of: 'modified', 'missing', 'unexpected'.
+    Empty list means clean.
     """
+    base = Path(feature_dir)
     if manifest_path is None:
-        manifest_path = Path(feature_dir) / "test-hashes.json"
-    with open(manifest_path) as f:
+        manifest_path = base / "test-hashes.json"
+        if not manifest_path.is_file():
+            tasks_manifests = sorted(base.glob("*-tasks/test-hashes.json"))
+            if len(tasks_manifests) == 1:
+                manifest_path = tasks_manifests[0]
+    if not Path(manifest_path).is_file():
+        return [{"kind": "missing", "path": str(manifest_path)}]
+    with open(manifest_path, encoding="utf-8", errors="replace") as f:
         manifest = json.load(f)
 
-    old_files = manifest.get("files", {})
-    current = compute_hashes(feature_dir)
+    old = manifest.get("files", {})
+    discrepancies = []
 
-    errors = []
-    for path in sorted(old_files):
-        if path not in current:
-            errors.append(f"MISSING: {path}")
+    # Relpaths in the manifest are relative to the directory it was computed in,
+    # so resolution anchors on the manifest's directory, not on feature_dir.
+    entry_base = Path(manifest_path).parent
 
-    for path in sorted(current):
-        if path not in old_files:
-            errors.append(f"UNEXPECTED: {path}")
-
-    for path in sorted(current):
-        if path in old_files and current[path] != old_files[path]:
-            errors.append(
-                f"MODIFIED: {path} (expected: {old_files[path]}, actual: {current[path]})"
+    # Resolve each recorded relpath to an actual file path and check modified/missing.
+    # For inside-scope entries, actual path = entry_base / relpath.
+    # Fallback 1: when the manifest was created with a subdirectory as scope (so
+    # relpaths are bare filenames) but verify anchors on a parent dir, search the
+    # subtree by filename.
+    # Fallback 2: outside-scope entries (last-two-components keys, see _relpath_for)
+    # are searched from the working directory at bounded depth — deep trees like
+    # venv/ fall outside the bound, keeping the search cheap and unambiguous.
+    actual_paths = {}
+    for relpath, entry in old.items():
+        actual = entry_base / relpath
+        if not actual.exists():
+            fname = Path(relpath).name
+            candidates = sorted(
+                p for p in entry_base.rglob(fname)
+                if p.is_file() and _is_test_file(p)
             )
+            if candidates:
+                actual = candidates[0]
+        if not actual.exists():
+            for prefix in ("", "*/", "*/*/", "*/*/*/"):
+                external = sorted(
+                    p for p in Path.cwd().glob(f"{prefix}{relpath}")
+                    if p.is_file() and _is_test_file(p)
+                )
+                if external:
+                    actual = external[0]
+                    break
+        actual_paths[relpath] = actual
 
-    if errors:
-        return "\n".join(errors)
+        if not actual.exists():
+            discrepancies.append({"kind": "missing", "path": relpath})
+        else:
+            recorded_hash = entry["sha256"]
+            if _sha256(actual) != recorded_hash:
+                discrepancies.append({"kind": "modified", "path": relpath})
 
-    return "pass"
+    # Shadow-test detection scoped to locked set's directories only — and only
+    # to directories inside the feature dir. Externally-resolved locked files
+    # (the last-two-components entries) live in shared suite directories whose
+    # other test files are legitimate; sweeping those would flag every sibling.
+    known_actual_paths = {
+        actual_paths[relpath].resolve()
+        for relpath in old
+        if actual_paths[relpath].exists()
+    }
+    scope_dirs = {
+        actual_paths[relpath].parent
+        for relpath in old
+        if actual_paths[relpath].exists()
+        and actual_paths[relpath].resolve().is_relative_to(base.resolve())
+    }
+
+    for scope_dir in scope_dirs:
+        if not scope_dir.is_dir():
+            continue
+        for path in scope_dir.iterdir():
+            if path.is_file() and _is_test_file(path):
+                if path.resolve() not in known_actual_paths:
+                    rel = _relpath_for(path, base)
+                    discrepancies.append({"kind": "unexpected", "path": rel})
+
+    return discrepancies
 
 
 def main():
@@ -115,12 +214,13 @@ def main():
         result = create_manifest(feature_dir)
         print(json.dumps(result))
     else:
-        verify_result = verify_manifest(feature_dir)
-        if verify_result == "pass":
-            print(json.dumps({"gate": "test-hash", "result": "pass", "action": "verified", "files": len(compute_hashes(feature_dir))}))
+        discrepancies = verify_manifest(feature_dir)
+        if not discrepancies:
+            current_count = len(compute_hashes(feature_dir))
+            print(json.dumps({"gate": "test-hash", "result": "pass", "action": "verified", "files": current_count}))
         else:
-            for line in verify_result.splitlines():
-                print(line, file=sys.stderr)
+            for d in discrepancies:
+                print(f"{d['kind'].upper()}: {d['path']}", file=sys.stderr)
             sys.exit(2)
 
 

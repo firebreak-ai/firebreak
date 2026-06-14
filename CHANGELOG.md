@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.5.1]
+
+### Added
+- **Intent and Design phases — the SDL is now a six-phase loop.** Work can start at intent (ground the change in project context, surface ambiguity through grilling and a cold fresh-eyes read before any spec is written) or at design (explore approaches, produce design pages and a manifest), then flow through spec → breakdown → code-review → implement. The operator enters at whichever phase fits the work — a small bugfix can still start at spec. New phase skills `/fbk-intent` and `/fbk-design` drive the two new phases, each with its own gate, backed by new architect, product-author, and fresh-eyes reviewer personas. Full overview in `docs/architecture-overview.md`.
+
+- **Technique skills — a reusable capability layer between phases and agent personas.** Five skills any phase can call with a stable interface: `/fbk-grilling` (one-question-at-a-time ambiguity resolution, also available out-of-ceremony as `/grill-me`), `/fbk-fresh-eyes` (a context-clear subagent reads an artifact cold and returns severity-ranked observations), `/fbk-quality-scan` (top-five code-quality scan at review time), `/fbk-test-review` (validates AI-written tests for known failure modes — pre-lock at breakdown and a final pass at code review), and `/fbk-doc-reconcile` (reconciles shipped code against the durable docs).
+
+- **Interface contracts gate.** The spec gate now checks that declared module seams — the contracts between components — are actually covered: a contracts page in design, a contracts section in spec, and elevation of any contract drift through the architecture reviewer's brief. Blast radius is derived with reference tooling rather than guessed.
+
+- **Deterministic metrics plane — the pipeline measures itself from code.** A Claude-level hook router and a wrapper around the dispatcher's command chokepoint feed one `report` command that aggregates per-stage durations, gate first-pass rates, parks, rework, scope violations, code-review detection rounds, and token usage. The report runs ad-hoc and is auto-injected into the retrospective, replacing agent-narrated metrics. Capture is globally armed but records only in Firebreak-managed or explicitly-marked projects, always into a project-local gitignored directory; tool-call and prompt payloads are captured only at the `full` level (default is `standard`).
+
+- **Drift advisory signal in the code-review gate.** The gate now reads the verdict inside the test-review artifact instead of only checking that it exists. A non-accepted verdict — the signature of a renamed-but-content-identical locked test — raises a non-blocking advisory finding for operator triage while the gate still passes. This formalizes one rule across all gates: block when the problem is agent-fixable (missing artifact, hash mismatch), advise when it needs human judgment.
+
+- **Durable docs.** Three small, git-tracked, in-branch-maintained docs now outlive each feature: `GLOSSARY.md` (canonical terminology), `docs/decisions-log.md` (append-only record of constraining decisions), and `docs/architecture-overview.md` (living project overview). Cold-agent and new-hire onboarding starts here.
+
+### Changed
+- **All phase gates follow one hybrid pattern.** Each gate pairs a mechanical anchor (deterministic structure check — file presence, hash match, manifest bidirectionality) with a semantic anchor tied to a concrete artifact a technique skill produced, so judgment inspects something verifiable rather than re-running from scratch.
+- **Per-task breakdown files are no longer tracked in git.** The single-use task scaffolding each feature generates is now ignored; specs, designs, reviews, retrospectives, and the task manifest stay tracked.
+
+### Fixed
+- **Installer writes a manifest on a fresh target.** Settings-merge and manifest-write previously ran before the target directory existed, silently leaving a fresh install with no settings and no manifest — and a manifest-less install can't be uninstalled. The target directory is now created up front.
+- **Installer no longer ships dev cruft.** The prune set now also drops caches, build metadata, nested `.claude`, `.git`, and the dev-only test tree.
+- **Uninstall no longer orphans `fbk-scripts/`.** Runtime-generated `__pycache__` bytecode — written the first time `fbk.py` runs — was absent from the manifest, so uninstall couldn't remove it and the empty-directory prune left the tree behind. Uninstall now clears those caches, the same fix class as the venv-orphan removal.
+- **Breakdown gate reads the right heading.** The acceptance-criteria section match is anchored to a heading start, so a mid-line prose mention can no longer be mistaken for the section.
+
 ## [0.5.0]
 
 ### Changed

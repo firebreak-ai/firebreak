@@ -39,7 +39,7 @@ Write each section. Do not skip or combine sections.
 - **New tests needed**: For each test, state what behavior it validates, at what level (unit / integration / e2e), and which AC it covers. Before listing a test, verify the code path produces a testable return value or observable state change — code paths that only write to a logger require test infrastructure changes or an AC revision. Example: "Unit test: `parseToken()` returns null for expired JWTs — covers AC-03."
 - **Existing tests impacted**: In brownfield, search the test suite for tests that cover the files and functions this feature modifies. When the feature removes or renames a symbol, grep for all call sites of that symbol across test files — not just the definition site — and include every caller in this list. List each test file or test name, the affected code path, and the expected change (update assertions / fixtures / mocks). In greenfield, write: "None — no existing test suite."
 - **Test infrastructure changes**: List new fixtures, mocks, test utilities, or test data needed. In greenfield, include bootstrapping the test framework if no test infrastructure exists.
-- **Mocking justifications**: For each mock listed under "Test infrastructure changes," name the property of the real collaborator that justifies the mock — slowness (network I/O, expensive computation), non-determinism (current time, random generation, external service responses), or unavailability (paid third-party service, hardware not present in the test environment). Default to using the real collaborator. Example: "Mock for `PaymentGateway` — justified by external network call (real gateway requires sandbox credentials and 2-3s latency per test)." See `fbk-design-guidelines/test-authoring.md` "Real collaborators where fast" for the implementation-side counterpart.
+- **Mocking justifications**: For each mock listed under "Test infrastructure changes," confirm two things. First, the mocked collaborator is code we do not own — an external service, the operating system, the file system, the clock, random-number generation, or a third-party library with side effects the test must control. Second, name the property of the real collaborator that justifies preferring a stand-in over a real-call integration test — slowness (network I/O, expensive computation), non-determinism (current time, random generation, external service responses), or unavailability (paid third-party service, hardware not present in the test environment). Mocks for code we own are not permitted; refactor for testability, integrate at a higher level, or accept the cost. Example: "Mock for `PaymentGateway` — external service; justified over real-call integration by sandbox credentials and 2-3s latency per test." See `fbk-design-guidelines/test-authoring.md` "Stand-ins only for code we don't own" for the implementation-side counterpart.
 - **User verification steps**: "How would a human verify this feature works?" Numbered steps, each following a structured **action → observable outcome** format:
   > UV-1: Press spacebar → projectile fires and moves upward
   > UV-2: Projectile hits invader → invader is destroyed and explosion particles appear
@@ -54,6 +54,12 @@ Write each section. Do not skip or combine sections.
 - **New documentation to create**: List any new doc artifacts the feature requires (e.g., runbook, ADR, user guide section).
 
 **7. Acceptance criteria** — List independently verifiable conditions for "done." Use short identifiers: AC-01, AC-02, ... Each AC must be testable by a single automated check or a reproducible manual step. Avoid vague qualities ("fast," "easy to use").
+
+## Interface contracts
+
+**Required section — present in every feature spec.** A feature with no new or changed contracts writes one sentence as the entire body: `No new or changed contracts in this feature.`
+
+When the author enumerates contracts, excludes a design contract, or leaves an acceptance criterion uncovered, read `interface-contracts-format.md` for the full section schema, field rules, and blast-radius derivation step.
 
 **8. Open questions** — List unresolved decisions the user or stakeholders must answer before Stage 2. Before approving the gate, every item must either be resolved or have explicit rationale for deferral. When a question is resolved, move its conclusion into the relevant spec section and remove it from this list. An empty list is valid and expected when the spec is complete.
 
@@ -153,6 +159,57 @@ Project-level:
 - Testing strategy: identifies specific behavioral coverage with AC traceability; no generic phrases.
 - Technical approach: specific enough for a reviewer and task compiler to work from without additional questions.
 - Feature boundaries (project-level): cohesive capabilities, not arbitrary splits.
+
+---
+
+## Slices Declaration Format
+
+A `## Slices` block is required in every feature-level spec. Each slice declares one independently testable unit of the feature:
+
+```yaml
+slices:
+  - name: <slice-name>
+    description: <what this slice delivers>
+    test-discipline: <new-contract | contract-preserving | contract-evolving | cross-cutting>
+    covers: [<behavior-id>, ...]
+```
+
+The four `test-discipline` values describe the *shape* of the slice — what kind of work it produces and how the breakdown agent should pair tests with implementation:
+
+| Value | When to use |
+|---|---|
+| `new-contract` | The slice introduces an interface that does not exist in the codebase yet. Produces a test task and an impl task. |
+| `contract-preserving` | The slice changes implementation while the existing observable contract is preserved. Produces an impl task only; existing tests stay green. |
+| `contract-evolving` | The slice changes both implementation and the existing contract. Some prior behavior is no longer guaranteed; new behavior is introduced. Produces a retired-tests list, new test tasks, and an impl task. |
+| `cross-cutting` | The slice validates behavior that spans multiple modules or seams. Produces seam tests only — no paired impl task. Also the home for pure coverage-backfill against existing untouched code. |
+
+`covers:` is a list of behavior IDs from the feature's `behavior-inventory.yaml`. The spec gate verifies that every behavior in the inventory is covered by at least one slice.
+
+When `test-discipline` is `contract-evolving`, add a `retired-tests:` field listing the existing tests this slice retires (one entry per test, with a one-line rationale). The breakdown agent and test reviewer both consume this list. Example:
+
+```yaml
+slices:
+  - name: rename-parse-token
+    description: parse_token() returns claims object instead of raw payload
+    test-discipline: contract-evolving
+    covers: [B-014, B-015]
+    retired-tests:
+      - test_parse_token_returns_payload: covered the old return shape; no longer applies
+```
+
+The spec gate validates the `## Slices` block: every slice must have `name`, `test-discipline`, and `covers`, and the `test-discipline` value must be one of the four shapes above.
+
+---
+
+## Narrowed Grilling (Spec Phase)
+
+The spec phase narrows to "how." Use the `fbk-grilling` technique, constrained to these question categories:
+
+- **Technical choices**: Which approach, library, pattern, or algorithm? What are the trade-offs?
+- **File and module organization**: Where does new code live? Which existing modules are touched and under what policy?
+- **Integration decisions**: What are the shared interfaces, data shapes, and conventions across component boundaries?
+
+Do not re-ask intent or behavior questions already resolved in the PRD or behavior inventory. If a "how" question cannot be answered because the design under-specifies something, name the gap and offer to return to the design phase before continuing.
 
 ---
 

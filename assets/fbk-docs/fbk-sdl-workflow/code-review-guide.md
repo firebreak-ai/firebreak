@@ -118,6 +118,18 @@ Only verified findings surface to the user. Rejected sightings and internal sigh
 1. Append a findings summary to the review report file: finding count, rejection count, false positive rate, and each verified finding's ID, type, severity, and one-line description.
 2. If a retrospective exists, offer: "Would you like to run `/fbk-improve` to analyze this retrospective for workflow improvements?"
 
+## Quality Scan, Final Test-Review, and Gate
+
+After the detection-verification loop terminates, code review runs three additional passes before closing:
+
+1. **Quality scan** (`fbk-quality-scan`): A surface-level top-five quality analysis of the change set. Surface-only — not a deep structural audit. Output written to `ai-docs/<feature>/quality-scan.md`.
+
+2. **Final test-review** (`fbk-test-review`, final mode): Reviews the tests covering the changed module for drift — tests that no longer accurately reflect the behavior they claim to test. Produces the final test-review verdict artifact.
+
+3. **Gate** (`code-review-gate`): Evaluates whether the review as a whole meets the promotion threshold. Run as `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>`. The gate reads the feature directory and emits a pass/fail verdict.
+
+These three passes run in the order listed, after the bug-finding loop has converged and fixes have been applied. The existing bug-finding methodology sections above remain unchanged.
+
 ## Source of Truth Handling
 
 **Spec available**: Use the spec's acceptance criteria (ACs) and user-visible (UV) steps as the primary comparison target. These define the intended behavior against which the code is measured.

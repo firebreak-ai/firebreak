@@ -19,47 +19,18 @@ def set_log_dir(tmp_path, monkeypatch):
 
 @pytest.fixture
 def set_state_dir(tmp_path, monkeypatch):
-    """Set STATE_DIR env var to a tmp_path subdirectory via monkeypatch."""
+    """Set STATE_DIR env var to a tmp_path subdirectory via monkeypatch.
+
+    Also chdir into tmp_path so any cwd-relative side effect of a state
+    transition — notably the per-stage retrospective metrics injector, which
+    resolves its ai-docs/ path from os.getcwd() — lands in the temp tree
+    rather than leaking into the repository working copy.
+    """
     state_dir = tmp_path / "state"
     state_dir.mkdir()
     monkeypatch.setenv("STATE_DIR", str(state_dir))
+    monkeypatch.chdir(tmp_path)
     return state_dir
-
-
-@pytest.fixture
-def valid_spec_text():
-    """Return a minimal valid feature spec string with all required sections."""
-    return """# Feature Specification
-
-## Problem
-Describes the issue or gap being addressed.
-
-## Goals
-- Primary objective of the feature
-
-## User-facing behavior
-Describes how end users interact with the feature.
-
-## Technical approach
-Details the implementation strategy.
-
-## Testing strategy
-- AC-01: Test criterion 1
-- AC-02: Test criterion 2
-
-## Documentation impact
-Expected changes to user documentation.
-
-## Acceptance criteria
-- AC-01: Feature works as specified
-- AC-02: Feature passes all test criteria
-
-## Dependencies
-None
-
-## Open questions
-None
-"""
 
 
 @pytest.fixture

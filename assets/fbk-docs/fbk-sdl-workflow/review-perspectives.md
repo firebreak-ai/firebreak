@@ -30,6 +30,16 @@ Present the classification with rationale and proceed. The user can intervene to
 | Measurability | Analyst | Guardian | "Verify that acceptance criteria are quantifiable and that success can be measured, not just asserted" |
 | Documentation impact | (deterministic) | — | Verify the spec's documentation impact section is present and specific — not "update docs" but which documents and what changes. Cross-check against the feature's scope to catch missing doc impacts. |
 
+## Architecture Reviewer Brief — Contract Drift
+
+When the feature has a `design/contracts.md`, the architect additionally checks for contract drift between the design and the spec. Report each of the following as an `informational` finding — the reviewer surfaces; the operator decides:
+
+- A spec-added `IF-S-NN` contract that is absent from design (the spec minted an interface the design never enumerated). Report the specific `IF-S-` identifier and note that design has no corresponding entry.
+- An `IF-D-NN` entry whose identifier is preserved in the spec but whose name or signature has materially changed from the design's original. Report the `IF-D-` identifier, the design value, and the spec value so the operator can confirm the change is intentional.
+- A count or name mismatch between the design page's `IF-D-NN` entries and what the spec carries or excludes. Report the totals on each side and name the entries that appear in one but not the other.
+
+All three conditions are `informational`, not blocking. Record them in the review document under the Architectural soundness concern so they are visible at Stage 3.
+
 ## Classification signals
 
 | Agent | Invoke when... |
