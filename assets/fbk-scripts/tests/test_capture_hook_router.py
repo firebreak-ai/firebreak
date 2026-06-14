@@ -438,6 +438,96 @@ def test_event_source_is_exact_hook_router_literal(tmp_path):
     )
 
 
+def test_subagent_stop_records_agent_id_and_session_id(tmp_path):
+    """A SubagentStop payload carrying agent_id and session_id produces a written
+    SUBAGENT_STOP event whose data contains both fields with the original values.
+
+    These are identifier fields used for cross-event correlation; they must NOT
+    be stripped by the redaction layer at standard capture level.
+    """
+    project = capture_fixtures.make_project(
+        str(tmp_path), instrumented=True, marked=True, capture_cfg="standard"
+    )
+
+    payload = capture_fixtures.hook_payload(
+        "SubagentStop",
+        agent_type="fbk-implementer",
+        extra={
+            "agent_id": "agent-abc-123",
+            "session_id": "session-xyz-789",
+        },
+    )
+
+    result = run_router(payload, project)
+
+    assert result.returncode == 0, (
+        f"router exited {result.returncode}, stderr: {result.stderr!r}"
+    )
+
+    events = _read_events(project)
+    subagent_events = [e for e in events if e.get("event_type") == "SUBAGENT_STOP"]
+    assert len(subagent_events) >= 1, (
+        f"expected a SUBAGENT_STOP event to be written; events: {events!r}"
+    )
+
+    data = subagent_events[0].get("data", {})
+    assert "agent_id" in data, (
+        f"agent_id missing from SUBAGENT_STOP data; data: {data!r}"
+    )
+    assert data["agent_id"] == "agent-abc-123", (
+        f"expected agent_id 'agent-abc-123', got: {data['agent_id']!r}"
+    )
+    assert "session_id" in data, (
+        f"session_id missing from SUBAGENT_STOP data; data: {data!r}"
+    )
+    assert data["session_id"] == "session-xyz-789", (
+        f"expected session_id 'session-xyz-789', got: {data['session_id']!r}"
+    )
+
+
+def test_subagent_stop_identifiers_survive_standard_redaction(tmp_path):
+    """agent_id and session_id on a SubagentStop event are NOT stripped at
+    the default standard capture level.
+
+    The redaction layer strips a fixed set of free-text keys (e.g. tool_input).
+    Identifier fields like agent_id and session_id must pass through untouched
+    so events can be correlated after capture.
+    """
+    project = capture_fixtures.make_project(
+        str(tmp_path), instrumented=True, marked=True, capture_cfg="standard"
+    )
+
+    payload = capture_fixtures.hook_payload(
+        "SubagentStop",
+        agent_type="fbk-reviewer",
+        extra={
+            "agent_id": "agent-redact-check",
+            "session_id": "session-redact-check",
+        },
+    )
+
+    result = run_router(payload, project)
+
+    assert result.returncode == 0, (
+        f"router exited {result.returncode}, stderr: {result.stderr!r}"
+    )
+
+    events = _read_events(project)
+    subagent_events = [e for e in events if e.get("event_type") == "SUBAGENT_STOP"]
+    assert len(subagent_events) >= 1, (
+        f"expected a SUBAGENT_STOP event at standard level; events: {events!r}"
+    )
+
+    data = subagent_events[0].get("data", {})
+    # At standard level the redaction layer must leave identifier fields intact.
+    assert data.get("agent_id") == "agent-redact-check", (
+        f"agent_id was stripped or altered at standard level; data: {data!r}"
+    )
+    assert data.get("session_id") == "session-redact-check", (
+        f"session_id was stripped or altered at standard level; data: {data!r}"
+    )
+
+
 def test_router_fail_silent_on_unwritable(tmp_path):
     """When the events path is unwritable, the router exits 0, no stdout, no traceback."""
     project = capture_fixtures.make_project(
