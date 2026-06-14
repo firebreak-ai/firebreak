@@ -117,9 +117,13 @@ def _assemble_data(hook_event_name, payload):
     if event_type == "SUBAGENT_STOP":
         # agent_type may be empty string — always preserve it (even empty identity
         # is recorded; the report excludes unknowns from counts, not the router).
+        # agent_id and session_id are identifier fields for cross-event correlation;
+        # they mirror the same fields captured in the LIFECYCLE branch.
         return {
             "agent_type": payload.get("agent_type", ""),
             "is_known_agent": known_agents.is_known_agent(payload.get("agent_type")),
+            "agent_id": payload.get("agent_id"),
+            "session_id": payload.get("session_id"),
         }
 
     # LIFECYCLE: carry non-free-text contextual fields only.
