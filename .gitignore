@@ -20,3 +20,19 @@ Thumbs.db
 __pycache__/
 *.pyc
 assets/fbk-scripts/.venv/
+assets/fbk-scripts/venv/
+assets/fbk-scripts/*.egg-info/
+
+# Project wiki
+.firebreak-wiki
+
+# Threat models — document attack surface; never commit (see fbk-sdl-workflow/threat-modeling.md)
+*threat-model*
+
+# SDL task scaffolding — single-use implementation breakdowns, one set per feature.
+# Each feature's spec, design, review, retrospective, and task.json manifest stay
+# tracked (the design record); only the verbose per-task files are ignored. They're
+# still written to the working tree during a feature run, so the pipeline and gates
+# work unchanged. Forward-only: task files already committed stay tracked until
+# explicitly removed.
+ai-docs/**/*-tasks/task-[0-9]*.md

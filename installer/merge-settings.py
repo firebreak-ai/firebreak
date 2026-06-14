@@ -7,6 +7,14 @@ import os
 import sys
 
 
+# Stable identifier for the capture hook router, used to find and strip any
+# prior router registration during a merge so a leftover project-scoped
+# registration cannot survive alongside the canonical global one. The script
+# name is the same across the global ("$HOME"/.claude/...) and any legacy
+# project-scoped ("$CLAUDE_PROJECT_DIR"/.claude/...) command form.
+ROUTER_ANCHOR = "hook_router.py"
+
+
 def load_json(file_path):
     if not os.path.exists(file_path):
         return {}
@@ -44,6 +52,23 @@ def merge_hooks(existing_hooks, new_hooks):
     return merged, hooks_added
 
 
+def remove_hook_command(existing_hooks, command_anchor):
+    """Return a copy of existing_hooks with any hook group whose command equals or
+    contains command_anchor removed.  Operates on the per-event dict (event →
+    list-of-groups); all other groups are left byte-intact and in order."""
+    result = {}
+    for event, groups in existing_hooks.items():
+        kept = [
+            g for g in groups
+            if not any(
+                command_anchor in hook.get("command", "")
+                for hook in g.get("hooks", [])
+            )
+        ]
+        result[event] = kept
+    return result
+
+
 def merge_env(existing_env, new_env):
     merged = dict(existing_env)
     env_added = {}
@@ -56,9 +81,40 @@ def merge_env(existing_env, new_env):
     return merged, env_added
 
 
+def merge_gitignore(existing_entries, new_entries):
+    """Return a deduplicated union of two gitignore entry lists, preserving order."""
+    seen = set(existing_entries)
+    merged = list(existing_entries)
+    for entry in new_entries:
+        if entry not in seen:
+            merged.append(entry)
+            seen.add(entry)
+    return merged
+
+
+def _registers_router(hooks):
+    """True when any hook group's command references the capture router."""
+    for groups in hooks.values():
+        for group in groups:
+            for hook in group.get("hooks", []):
+                if ROUTER_ANCHOR in hook.get("command", ""):
+                    return True
+    return False
+
+
 def merge_settings(existing, new_entries):
+    existing_hooks = existing.get("hooks", {})
+
+    # Migration: when the incoming template registers the capture router, strip
+    # any prior router registration first — including a leftover project-scoped
+    # one from an earlier install — so the merge below re-adds exactly the one
+    # canonical global registration rather than leaving a duplicate behind. This
+    # keeps repeated installs idempotent (strip-then-re-add yields the same set).
+    if _registers_router(new_entries.get("hooks", {})):
+        existing_hooks = remove_hook_command(existing_hooks, ROUTER_ANCHOR)
+
     merged_hooks, hooks_added = merge_hooks(
-        existing.get("hooks", {}), new_entries.get("hooks", {})
+        existing_hooks, new_entries.get("hooks", {})
     )
     merged_env, env_added = merge_env(
         existing.get("env", {}), new_entries.get("env", {})
@@ -69,6 +125,12 @@ def merge_settings(existing, new_entries):
         result["hooks"] = merged_hooks
     if merged_env:
         result["env"] = merged_env
+
+    # Propagate gitignore entries from the template into the merged output.
+    if "gitignore" in new_entries:
+        result["gitignore"] = merge_gitignore(
+            existing.get("gitignore", []), new_entries["gitignore"]
+        )
 
     manifest = {"hooks_added": hooks_added, "env_added": env_added}
     return result, manifest

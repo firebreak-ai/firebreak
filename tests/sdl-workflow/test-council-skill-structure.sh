@@ -231,21 +231,21 @@ fi
 # ── Dispatch references to each conditional leaf (AC-09 reachability) ─────────
 
 # 28: SKILL contains dispatch path for consensus-failure.md
-if grep -F 'assets/fbk-docs/fbk-council/consensus-failure.md' "$SKILL" >/dev/null 2>&1; then
+if grep -F '.claude/fbk-docs/fbk-council/consensus-failure.md' "$SKILL" >/dev/null 2>&1; then
   ok "SKILL contains dispatch path for consensus-failure.md"
 else
   not_ok "SKILL contains dispatch path for consensus-failure.md"
 fi
 
 # 29: SKILL contains dispatch path for compaction-recovery.md
-if grep -F 'assets/fbk-docs/fbk-council/compaction-recovery.md' "$SKILL" >/dev/null 2>&1; then
+if grep -F '.claude/fbk-docs/fbk-council/compaction-recovery.md' "$SKILL" >/dev/null 2>&1; then
   ok "SKILL contains dispatch path for compaction-recovery.md"
 else
   not_ok "SKILL contains dispatch path for compaction-recovery.md"
 fi
 
 # 30: SKILL contains dispatch path for ralph-integration.md
-if grep -F 'assets/fbk-docs/fbk-council/ralph-integration.md' "$SKILL" >/dev/null 2>&1; then
+if grep -F '.claude/fbk-docs/fbk-council/ralph-integration.md' "$SKILL" >/dev/null 2>&1; then
   ok "SKILL contains dispatch path for ralph-integration.md"
 else
   not_ok "SKILL contains dispatch path for ralph-integration.md"
@@ -450,21 +450,21 @@ else
 fi
 
 # 57: test-no-old-path-patterns.sh contains consensus-failure.md path
-if grep -F 'assets/fbk-docs/fbk-council/consensus-failure.md' "$PROJECT_ROOT/tests/sdl-workflow/test-no-old-path-patterns.sh" >/dev/null 2>&1; then
+if grep -F 'fbk-council/consensus-failure.md' "$PROJECT_ROOT/tests/sdl-workflow/test-no-old-path-patterns.sh" >/dev/null 2>&1; then
   ok "test-no-old-path-patterns.sh contains consensus-failure.md path"
 else
   not_ok "test-no-old-path-patterns.sh contains consensus-failure.md path"
 fi
 
 # 58: test-no-old-path-patterns.sh contains compaction-recovery.md path
-if grep -F 'assets/fbk-docs/fbk-council/compaction-recovery.md' "$PROJECT_ROOT/tests/sdl-workflow/test-no-old-path-patterns.sh" >/dev/null 2>&1; then
+if grep -F 'fbk-council/compaction-recovery.md' "$PROJECT_ROOT/tests/sdl-workflow/test-no-old-path-patterns.sh" >/dev/null 2>&1; then
   ok "test-no-old-path-patterns.sh contains compaction-recovery.md path"
 else
   not_ok "test-no-old-path-patterns.sh contains compaction-recovery.md path"
 fi
 
 # 59: test-no-old-path-patterns.sh contains ralph-integration.md path
-if grep -F 'assets/fbk-docs/fbk-council/ralph-integration.md' "$PROJECT_ROOT/tests/sdl-workflow/test-no-old-path-patterns.sh" >/dev/null 2>&1; then
+if grep -F 'fbk-council/ralph-integration.md' "$PROJECT_ROOT/tests/sdl-workflow/test-no-old-path-patterns.sh" >/dev/null 2>&1; then
   ok "test-no-old-path-patterns.sh contains ralph-integration.md path"
 else
   not_ok "test-no-old-path-patterns.sh contains ralph-integration.md path"

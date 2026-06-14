@@ -9,38 +9,20 @@ Exit 0 on pass, exit 2 on failure.
 import argparse
 import json
 import os
+import pathlib
 import re
 import sys
-from typing import List, Optional
+from typing import List
 
-
-# ---------------------------------------------------------------------------
-# Heading and section helpers
-# ---------------------------------------------------------------------------
-
-def heading_line(spec_text: str, heading: str) -> Optional[int]:
-    """Return 1-based line number of first line matching heading prefix (case-insensitive), or None."""
-    heading_lower = heading.lower()
-    for i, line in enumerate(spec_text.splitlines(), 1):
-        if line.lower().startswith(heading_lower):
-            return i
-    return None
-
-
-def section_body(spec_text: str, line_number: int) -> str:
-    """Return content between heading at line_number and next '## ' heading."""
-    lines = spec_text.splitlines()
-    result = []
-    in_section = False
-    for i, line in enumerate(lines, 1):
-        if i == line_number:
-            in_section = True
-            continue
-        if in_section:
-            if line.startswith("## "):
-                break
-            result.append(line)
-    return "\n".join(result)
+from fbk.gates.sections import heading_line, section_body
+from fbk.injection import detect_injections
+from fbk.slices import TEST_DISCIPLINES
+from fbk.gates.contracts import (
+    check_interface_contracts_structure,
+    check_design_anchor,
+    check_ac_coverage,
+    check_seam_coverage,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -155,133 +137,75 @@ def _check_testing_strategy_traceability(spec_text: str) -> List[str]:
 
 
 # ---------------------------------------------------------------------------
-# Injection detection
+# Slice validation
 # ---------------------------------------------------------------------------
 
-def detect_injections(spec_path_or_text: str) -> int:
-    """Detect injection patterns in spec file or text. Prints WARNINGs to stderr. Returns warning count.
+def check_slices(spec_text: str, inventory_behaviors: set = None) -> List[str]:
+    """Return failure strings for slice-block violations; empty list = no failures.
 
-    Accepts either a file path or raw spec text string. If the argument is an
-    existing file path, reads and decodes it; otherwise treats it as raw text.
+    Only activates when the spec contains a '## Slices' heading. Legacy specs
+    with no such heading return [] immediately (backward-compatible hinge).
     """
-    import os as _os
-    warnings = 0
+    if inventory_behaviors is None:
+        inventory_behaviors = set()
 
-    if _os.path.isfile(spec_path_or_text):
-        with open(spec_path_or_text, "rb") as f:
-            raw = f.read()
-        text = raw.decode("utf-8", errors="replace")
-    else:
-        text = spec_path_or_text
-        raw = text.encode("utf-8")
+    slices_ln = heading_line(spec_text, "## slices")
+    if slices_ln is None:
+        return []
 
-    lines = text.split("\n")
+    body = section_body(spec_text, slices_ln)
+    lines = body.splitlines()
 
-    # 1. Control character detection (U+0000-U+0008, U+000B-U+000C, U+000E-U+001F)
-    for i, line in enumerate(lines, 1):
-        for ch in line:
-            code = ord(ch)
-            if (0x00 <= code <= 0x08) or (0x0B <= code <= 0x0C) or (0x0E <= code <= 0x1F):
-                print(
-                    f"WARNING: [injection] control character U+{code:04X} detected (line {i})",
-                    file=sys.stderr,
-                )
-                warnings += 1
-                break  # one warning per line
+    failures = []
+    slices = []
+    current = None
 
-    # 2. Zero-width character detection
-    zw_chars = {
-        "\u200B": "zero-width space",
-        "\u200C": "zero-width non-joiner",
-        "\u200D": "zero-width joiner",
-        "\u2060": "word joiner",
-    }
-    for i, line in enumerate(lines, 1):
-        for ch, name in zw_chars.items():
-            if ch in line:
-                print(
-                    f"WARNING: [injection] {name} (U+{ord(ch):04X}) detected (line {i})",
-                    file=sys.stderr,
-                )
-                warnings += 1
-                break
-
-    # BOM not at position 0
-    if len(raw) > 3:
-        bom = "\uFEFF"
-        for i, line in enumerate(lines, 1):
-            if bom in line and not (i == 1 and line.startswith(bom)):
-                print(
-                    f"WARNING: [injection] BOM/zero-width no-break space in non-BOM position (line {i})",
-                    file=sys.stderr,
-                )
-                warnings += 1
-                break
-
-    # 3. HTML comment instruction detection
-    comment_pattern = re.compile(r"<!--(.*?)-->", re.DOTALL)
-    exempt_words = {"todo", "fixme", "note", "hack"}
-    instruction_words = [
-        "ignore", "disregard", "override", "new instructions",
-        "forget", "approve", "you are", "act as", "pretend",
-    ]
-
-    for m in comment_pattern.finditer(text):
-        content = m.group(1).strip().lower()
-        words = set(re.findall(r"\w+", content))
-        if words and words.issubset(exempt_words | {"", " "}):
-            continue
-        for phrase in instruction_words:
-            if phrase in content:
-                start = m.start()
-                line_num = text[:start].count("\n") + 1
-                print(
-                    f"WARNING: [injection] HTML comment contains instruction-like phrase '{phrase}' (line {line_num})",
-                    file=sys.stderr,
-                )
-                warnings += 1
-                break
-
-    # 4. Embedded instruction patterns outside code blocks
-    instruction_patterns = [
-        "ignore previous instructions",
-        "ignore previous",
-        "disregard above",
-        "disregard all",
-        "you are now",
-        "new instructions:",
-        "forget everything",
-        "override all constraints",
-        "act as if",
-        "disregard above constraints",
-    ]
-
-    # Strip fenced code blocks
-    in_fence = False
-    clean_lines = []
     for line in lines:
-        if line.strip().startswith("```"):
-            in_fence = not in_fence
-            clean_lines.append("")
+        # Detect slice entry boundary: "- name: <x>" or "  - name: <x>"
+        name_match = re.match(r"^\s*-\s+name:\s+(\S+)", line)
+        if name_match:
+            if current is not None:
+                slices.append(current)
+            current = {"name": name_match.group(1), "test-discipline": None, "covers": []}
             continue
-        if in_fence:
-            clean_lines.append("")
-        else:
-            # Strip inline code
-            clean_lines.append(re.sub(r"`[^`]+`", "", line))
 
-    for i, line in enumerate(clean_lines, 1):
-        lower = line.lower()
-        for pattern in instruction_patterns:
-            if pattern in lower:
-                print(
-                    f"WARNING: [injection] embedded instruction pattern '{pattern}' (line {i})",
-                    file=sys.stderr,
-                )
-                warnings += 1
-                break
+        if current is None:
+            continue
 
-    return warnings
+        td_match = re.match(r"^\s+test-discipline:\s+(\S+)", line)
+        if td_match:
+            current["test-discipline"] = td_match.group(1)
+            continue
+
+        covers_match = re.match(r"^\s+covers:\s*\[([^\]]*)\]", line)
+        if covers_match:
+            ids_text = covers_match.group(1)
+            current["covers"] = [v.strip() for v in ids_text.split(",") if v.strip()]
+            continue
+
+    if current is not None:
+        slices.append(current)
+
+    all_covered = set()
+    for s in slices:
+        name = s["name"]
+        td = s["test-discipline"]
+        if td is None:
+            failures.append(
+                f"Slice '{name}': missing test-discipline field"
+            )
+        elif td not in TEST_DISCIPLINES:
+            valid = ", ".join(TEST_DISCIPLINES)
+            failures.append(
+                f"Slice '{name}': invalid test-discipline '{td}' (valid: {valid})"
+            )
+        all_covered.update(s["covers"])
+
+    for bid in sorted(inventory_behaviors):
+        if bid not in all_covered:
+            failures.append(f"Behavior '{bid}' not covered by any slice")
+
+    return failures
 
 
 # ---------------------------------------------------------------------------
@@ -334,6 +258,19 @@ def main():
         fails.extend(check_open_questions(spec_text))
         fails.extend(_check_ac_format(spec_text))
         fails.extend(_check_testing_strategy_traceability(spec_text))
+
+        feature_dir = pathlib.Path(spec_path).parent
+        inv_path = feature_dir / "behavior-inventory.yaml"
+        if inv_path.exists():
+            inv_text = inv_path.read_text(encoding="utf-8", errors="replace")
+            inventory_behaviors = set(re.findall(r"^\s*-\s*id:\s*(\S+)", inv_text, re.M))
+        else:
+            inventory_behaviors = set()
+        fails.extend(check_slices(spec_text, inventory_behaviors))
+        fails.extend(check_interface_contracts_structure(spec_text))
+        fails.extend(check_design_anchor(spec_text, str(feature_dir)))
+        fails.extend(check_ac_coverage(spec_text))
+        fails.extend(check_seam_coverage(spec_text))
     else:
         for heading in [
             "## Vision",
@@ -352,11 +289,6 @@ def main():
     if fails:
         for f in fails:
             print(f, file=sys.stderr)
-        try:
-            from fbk import audit
-            audit.log_event(spec_name, "gate_result", json.dumps({"gate": "spec", "result": "fail"}))
-        except Exception:
-            pass
         sys.exit(2)
 
     # Injection detection (only on structural pass)
@@ -369,12 +301,6 @@ def main():
         "injection_warnings": injection_warnings,
     }
     print(json.dumps(result))
-
-    try:
-        from fbk import audit
-        audit.log_event(spec_name, "gate_result", json.dumps(result))
-    except Exception:
-        pass
 
 
 if __name__ == "__main__":

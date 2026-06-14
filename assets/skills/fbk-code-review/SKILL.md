@@ -9,6 +9,10 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash, Agent
 
 Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral comparison methodology, finding format, sighting format, orchestration protocol, and retrospective fields. Read `.claude/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md` for the AI failure mode checklist used when no specs are available. Read `.claude/fbk-docs/fbk-sdl-workflow/security-patterns.md` for security detection targets applied to all code reviews. Read `.claude/fbk-docs/fbk-sdl-workflow/detection-audits.md` for procedural audit passes the Detector runs before emitting sightings. Read `.claude/fbk-docs/fbk-design-guidelines/quality-detection.md` for structural detection targets applicable to all code reviews.
 
+## Mid-Pipeline Entry: Prerequisite Check
+
+Read `.claude/fbk-docs/fbk-sdl-workflow/capability-entry.md` for the prerequisite-probe contract this section implements. When invoked directly (not as part of the post-implementation pipeline), call `fbk.precheck.check_prerequisites("code-review", <feature_dir>)` before running. If the implementation artifact is missing (no `implementation/` directory under the feature dir), name what is missing and offer to run the upstream phase (implement) first — non-blocking, never a hard block. Proceed if the user confirms or if the artifact is present.
+
 ## Entry and Path Routing
 
 Determine the invocation context:
@@ -86,15 +90,30 @@ Run the iterative detection and verification loop:
 6. Filter to `status: verified` or `verified-pending-execution`. Assign sequential finding IDs (F-01, F-02...).
 7. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline to-markdown` to convert verified findings to markdown once for the review report. Adjacent observations from the Challenger are rendered at the end of each finding and accumulated into the retrospective.
 7a. After each verification round, append verified findings to the review report file.
-8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
+8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern and apply the fix to every instance. The Consistency audit normally surfaces siblings as separate sightings during detection; this fix-time sweep remains as a safety net for sites the audit missed.
 9. Run additional rounds for weakened but unrejected sightings.
 10. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds.
+11. After the loop terminates, write `.code-review-rounds.json` in the feature directory recording the full detection-round history. The file must include `schema_version` (value `"1.0"`), `spec` (the feature name), and `rounds` — an array with one entry per round, each carrying `round` (1-based integer), `raised` (sighting count before Challenger filtering), `survived` (verified count after filtering), and `severity_breakdown` (an object mapping severity labels to counts for that round). The code-review gate reads this file at check time to emit the detection-round metrics event.
 
 Only verified findings surface to the user. Rejected sightings are excluded. JSON is the working format throughout the pipeline. Markdown conversion happens once for the human-facing review report.
 
 ## Post-Fix Verification
 
 After all fixes from a review session are applied, run the full test suite and confirm zero failures before closing the review.
+
+## Quality scan, final test-review, doc reconcile, and gate
+
+After the detection-verification loop terminates and all fixes are applied, run the following passes in order:
+
+1. **Quality scan**: Invoke `fbk-quality-scan` on the change set. It produces a surface-level top-five quality analysis and writes its output to `ai-docs/<feature>/quality-scan.md`.
+
+2. **Final test-review**: Invoke `fbk-test-review` in its final mode over the tests covering the changed module. It flags drifted tests and writes the final test-review verdict artifact.
+
+3. **Doc reconcile**: Invoke `fbk-doc-reconcile` on the shipped module. It compares the project's durable docs (decisions ledger, contracts, package layout, changelog, spec) against the actual code and writes advisory drift findings to `ai-docs/<feature>/doc-reconcile.md`. Output is advisory only — it does not gate.
+
+4. **Gate**: Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>` to evaluate whether the review meets the threshold for promotion. The gate receives the feature directory path and writes a pass/fail verdict.
+
+Do not run the gate until fbk-quality-scan, fbk-test-review, and fbk-doc-reconcile have all completed.
 
 ## Broad-Scope Reviews
 
