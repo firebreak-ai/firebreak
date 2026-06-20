@@ -337,9 +337,9 @@ See [quality scan technique](#quality-scan-technique).
 
 ### asset bundle
 
-**Definition**: The identity of the context assets loaded for a workflow unit — in this slice, the persona name; structurally reserved (present but null) for the instruction-file identity and decision-tree identity that a future dynamic assembler will stamp. Carried in a run record unit's `asset_bundle` object.
+**Definition**: The identity of the context assets loaded for a workflow unit — in this slice, the persona name, taken from the launch-prompt attribution descriptor the workflow glue emits (`asset_bundle.persona`); null when no descriptor carries it. The instruction-file identity and decision-tree identity are structurally reserved (present but always null) for a future dynamic assembler to stamp. Carried in a run record unit's `asset_bundle` object. Note the asymmetry with [shape]: shape resolves from the descriptor persona *or*, failing that, the recorded `agent_type`, so a unit can have a non-null shape while its `asset_bundle.persona` is null.
 
-**LLM priors activated**: "Bundle" signals a grouped set of things loaded together — intended. Risk: read as fully populated today; in the thin first slice only `persona` is set, with `instructions` and `decision_tree` deliberately reserved null until an assembler can stamp them truthfully. The null fields are forward-compatibility reservations, not missing data.
+**LLM priors activated**: "Bundle" signals a grouped set of things loaded together — intended. Risk: read as always populated; `persona` is only as present as the descriptor that carries it, and `instructions`/`decision_tree` are deliberately reserved null until an assembler can stamp them truthfully. The null fields are forward-compatibility reservations, not missing data.
 
 ---
 
