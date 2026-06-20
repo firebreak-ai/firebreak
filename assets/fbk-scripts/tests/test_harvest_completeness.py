@@ -341,3 +341,56 @@ class TestUnreadableEventsErrorPath:
         assert not os.path.exists(record_path), (
             "harvest must write no record file when events.jsonl is unreadable"
         )
+
+
+# ---------------------------------------------------------------------------
+# Test: a present result with an unreadable transcript is truncated, not clean
+# ---------------------------------------------------------------------------
+
+
+class TestUnreadableTranscriptForcesTruncated:
+    """clean-complete requires readable transcripts as well as journal results.
+
+    Regression guard for record-schema.md / decision D-04: a run where every
+    started agent has a journal result but one transcript cannot be read is
+    'truncated', not 'clean-complete'. A deleted transcript makes the trigger
+    deterministic across platforms (no chmod dependency). Removing the
+    transcript-readable check from harvest.py turns this test red.
+    """
+
+    def test_unreadable_transcript_yields_truncated(self, tmp_path, monkeypatch):
+        """All agents have results, but one transcript is missing, so the run is truncated."""
+        projects_root = str(tmp_path / "projects")
+        project_root = _make_instrumented_project(tmp_path)
+        run_id = "run-unreadable-transcript-001"
+
+        run_dir = capture_fixtures.make_workflow_run(
+            projects_root,
+            run_id=run_id,
+            agents=[
+                {
+                    "agent_id": "agent-alpha",
+                    "first_message": _VALID_ATTR_DESCRIPTOR + "\nDo task A.",
+                    "turns": [_TURN],
+                    "result": _RESULT_SUCCESS,
+                },
+                {
+                    "agent_id": "agent-beta",
+                    "first_message": _VALID_ATTR_DESCRIPTOR + "\nDo task B.",
+                    "turns": [_TURN],
+                    "result": _RESULT_SUCCESS,
+                },
+            ],
+        )
+
+        # Remove one agent's transcript so it is unreadable (deterministic).
+        beta_transcript = os.path.join(run_dir, "agent-agent-beta.jsonl")
+        os.remove(beta_transcript)
+
+        monkeypatch.setenv("FBK_PROJECTS_ROOT", projects_root)
+        result = harvest.harvest(run_id, project_root)
+
+        assert result.completeness == "truncated", (
+            "a run with an unreadable transcript must be truncated, not clean-complete; "
+            f"got {result.completeness!r}"
+        )

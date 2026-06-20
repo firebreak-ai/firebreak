@@ -288,3 +288,48 @@ class TestAtomicWriteLeavesNoTempResidue:
         assert record.get("run_id") == _RUN_ID, (
             f"record run_id should be {_RUN_ID!r}; got {record.get('run_id')!r}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Test: an existing record that cannot be read is not overwritten
+# ---------------------------------------------------------------------------
+
+
+class TestUnreadableExistingRecordRefused:
+    """harvest refuses to overwrite an existing record it cannot parse.
+
+    Regression guard for the preserve-by-value contract (AC-05 / IF-D-03):
+    a temporarily-corrupt or unreadable finalized record must NOT be silently
+    re-harvested with a fresh harvested_at. A corrupt record makes the trigger
+    deterministic across platforms (no chmod dependency). Removing the refusal
+    branch from harvest.py turns this test red.
+    """
+
+    def test_corrupt_existing_record_is_not_overwritten(self, tmp_path, monkeypatch):
+        """A second harvest over an unparseable record returns an error and
+        leaves the file byte-for-byte unchanged rather than re-harvesting."""
+        projects_root = str(tmp_path / "projects")
+        monkeypatch.setenv("FBK_PROJECTS_ROOT", projects_root)
+        monkeypatch.setattr(harvest, "_utcnow", lambda: _T1)
+
+        project_cwd, _run_dir, _journal_path, runs_dir = _build_project_and_run(tmp_path)
+
+        first = harvest.harvest(_RUN_ID, project_cwd)
+        assert first.error is None, "first harvest should succeed"
+
+        record_path = os.path.join(runs_dir, f"{_RUN_ID}.json")
+        corrupt_bytes = b"{ this is not valid json"
+        with open(record_path, "wb") as fh:
+            fh.write(corrupt_bytes)
+
+        # A different clock value so a (wrong) re-harvest would be detectable.
+        monkeypatch.setattr(harvest, "_utcnow", lambda: _T2)
+        second = harvest.harvest(_RUN_ID, project_cwd)
+
+        assert second.error, (
+            "harvest must return an error when the existing record is unreadable"
+        )
+        with open(record_path, "rb") as fh:
+            assert fh.read() == corrupt_bytes, (
+                "harvest must not overwrite an unreadable existing record"
+            )
