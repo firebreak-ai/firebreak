@@ -190,5 +190,8 @@ All six verified findings fixed (full suite 524 passed, ruff+mypy clean on chang
 
 Note on F-02 design fit: the fix does NOT reintroduce the dependency the spec rejected. The spec's ban was on trusting `payload['cwd']` / the project-hash algorithm to decide the *write destination*; here the write target stays the router's `os.getcwd()`, and the cwd→folder name mapping is used only to decide *which on-disk runs are ours* — with a session-id fallback and a fail-safe so a wrong guess skips a recovery (caught by the normal close path) rather than contaminating.
 
+Operator follow-up resolved:
+- **AC-04 wording** — the acceptance-criterion text now states `clean-complete` requires both a result and a readable transcript per started agent, matching record-schema.md, decision D-04, and the shipped code. Spec edit only; the F-05 regression test already locks the behavior.
+
 Operator follow-up still open:
-- **AC-04 wording** — reconcile the acceptance-criterion text (results-only) with record-schema.md / decision D-04 / the code (results + readable transcript). Spec edit, not code.
+- **Durable-doc drift** — architecture-overview, CHANGELOG (0.5.2), GLOSSARY, README (see `doc-reconcile.md`); discuss-before-apply.
