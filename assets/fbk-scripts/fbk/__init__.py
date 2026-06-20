@@ -20,4 +20,5 @@ COMMAND_MAP = {
     "session-state": "fbk.council.session_state",
     "ralph": "fbk.council.ralph",
     "report": "fbk.report",
+    "run-retro": "fbk.run_retro",
 }

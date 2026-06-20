@@ -22,8 +22,8 @@ class TestDispatcherCommandMap:
         except ImportError:
             pytest.skip("fbk module not yet implemented")
 
-    def test_command_map_contains_all_19_commands(self):
-        """COMMAND_MAP contains exactly all 19 commands from spec."""
+    def test_command_map_contains_all_20_commands(self):
+        """COMMAND_MAP contains exactly all 20 commands from spec."""
         try:
             import fbk
         except ImportError:
@@ -49,6 +49,7 @@ class TestDispatcherCommandMap:
             "design-gate",
             "code-review-gate",
             "report",
+            "run-retro",
         }
 
         actual_commands = set(fbk.COMMAND_MAP.keys())
@@ -57,6 +58,7 @@ class TestDispatcherCommandMap:
             f"missing: {expected_commands - actual_commands}"
         )
         assert fbk.COMMAND_MAP["report"] == "fbk.report"
+        assert fbk.COMMAND_MAP["run-retro"] == "fbk.run_retro"
 
     def test_intent_gate_maps_to_exact_module(self):
         """COMMAND_MAP["intent-gate"] == "fbk.gates.intent"."""
@@ -96,7 +98,12 @@ class TestDispatcherModuleResolution:
     """Tests for command-to-module resolution (AC-04)."""
 
     def test_each_command_resolves_to_importable_module(self):
-        """Each command in COMMAND_MAP resolves to an importable module."""
+        """Each command in COMMAND_MAP resolves to an importable module.
+
+        Note: This test now also covers run-retro by iteration; it requires
+        fbk.run_retro to be importable and will fail until the reader module
+        is registered in COMMAND_MAP and the module is implemented.
+        """
         try:
             import fbk
         except ImportError:
@@ -104,6 +111,16 @@ class TestDispatcherModuleResolution:
 
         for command, module_path in fbk.COMMAND_MAP.items():
             importlib.import_module(module_path)
+
+    def test_run_retro_module_importable_with_main(self):
+        """fbk.run_retro is importable and exposes a callable main function."""
+        try:
+            import fbk.run_retro
+        except ImportError:
+            pytest.skip("fbk.run_retro module not yet implemented")
+
+        assert callable(fbk.run_retro.main), \
+            "fbk.run_retro.main must be callable"
 
 
 class TestDispatcherBehavior:

@@ -78,8 +78,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Integration with real run-dir fixtures",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "tests/test_harvest_join.py \u2014 5 tests (roster filter, non-overlap, first-msg attribution, timing join, dup dedup). Collects; skips pending harvest.",
       "note": null
     },
     {
@@ -96,8 +96,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Drives the real router end to end",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "tests/test_harvest_roundtrip.py \u2014 2 tests driving real hook_router\u2192harvest join-key round trip (match + mismatch null timing). Collects; skips pending harvest.",
       "note": null
     },
     {
@@ -114,8 +114,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Integration with run-dir fixtures",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "tests/test_harvest_completeness.py \u2014 9 tests (clean-complete, truncated gap, D-17 attribution independence, missing-journal, unreadable-events). Collects; skips pending harvest.",
       "note": null
     },
     {
@@ -132,8 +132,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Mutation-between-harvests and clock seam",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "tests/test_harvest_idempotent.py \u2014 4 tests (first-harvest clock, no-op preserves harvested_at after mutation, content identical, no temp residue). Collects; skips pending harvest.",
       "note": null
     },
     {
@@ -150,8 +150,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Capture-level branches need judgment",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "tests/test_harvest_redaction.py \u2014 7 tests (off writes no record, standard redacts via schema.redact, parity anchor). Collects; skips pending harvest.",
       "note": null
     },
     {
@@ -168,8 +168,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Symlink confinement and concurrent temp names",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "tests/test_harvest_confinement.py \u2014 3 tests (realpath capture dir, symlinked runs/ refused, distinct pid/uuid temp names no residue). Collects; skips pending harvest.",
       "note": null
     },
     {
@@ -186,8 +186,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Event-name gating plus payload run-id parse and SessionStart sweep",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "tests/test_finalize_runs.py \u2014 7 tests (PostToolUse targeted finalize no sweep, SessionStart newest sweep + catchup, event gate, never raises). Collects; skips pending finalize.",
       "note": null
     },
     {
@@ -204,8 +204,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Crash-recovery sweep path",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "tests/test_finalize_crash_recovery.py \u2014 5 tests (orphaned started-no-result finalized truncated on SessionStart, D-17 attribution preserved). Collects; skips pending finalize.",
       "note": null
     },
     {
@@ -220,8 +220,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Router resilience integration",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified tests/test_capture_hook_router.py \u2014 3 new resilience tests (router exit 0 when finalize raises/unreadable transcript/bad journal). 15 existing pass, 3 new skip pending finalize wiring.",
       "note": null
     },
     {
@@ -236,8 +236,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Two-clock determinism and ordering",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "tests/test_run_retro.py \u2014 8 tests (em-dash null, byte-identical determinism, content-derived ordering, no-harvest-record/malformed/partial literals, no agent invocation). Collects; skips pending run_retro.",
       "note": null
     },
     {
@@ -252,8 +252,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded edit of dispatcher test",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Modified tests/test_dispatcher.py \u2014 evolved 19\u219220 command count, added run-retro to expected set + importable main() test. Intended RED until run-retro registered.",
       "note": null
     },
     {
@@ -270,8 +270,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Extensibility seam",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "tests/test_record_extensibility.py \u2014 schema_version presence (passes) + 2 reader unknown-key-tolerance tests (skip pending run_retro). Collects.",
       "note": null
     },
     {
@@ -342,8 +342,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Cohesive multi-concern module write",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/harvest.py: glob run-dir resolver (FBK_PROJECTS_ROOT seam), journal-roster join, events filter, attribution+shape+token joins, capture-level redaction, confined atomic write (pid/uuid temp + os.replace, symlink-refusal), idempotent no-op preserving harvested_at via _utcnow seam. 30 paired harvest tests pass.",
       "note": null
     },
     {
@@ -360,8 +360,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Reader plus orchestrator registration",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/run_retro.py (run_retro + main()) and registered run-retro in COMMAND_MAP. Deterministic reader, em-dash nulls, content-derived ordering, fixed literals (no harvest record / malformed record / partial record). test_run_retro, test_dispatcher, test_record_extensibility green.",
       "note": null
     },
     {
@@ -417,5 +417,8 @@
       "summary": null,
       "note": null
     }
+  ],
+  "_lead_notes": [
+    "Wave2: lead-fixed 3 test-authoring defects post-impl: task-05 read unit['persona']\u2192asset_bundle.persona (schema parity; removed harvest redundant top-level persona write); task-16 import bound module not function + captured.stderr\u2192.err."
   ]
 }

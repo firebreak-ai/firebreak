@@ -19,6 +19,25 @@ import pytest
 from tests import capture_fixtures
 
 # ---------------------------------------------------------------------------
+# Guarded import for finalize_runs — not yet implemented; new tests skip when absent
+# ---------------------------------------------------------------------------
+
+try:
+    from fbk import finalize as _finalize_module
+
+    _finalize_runs = _finalize_module.finalize_runs
+except (ImportError, AttributeError):
+    _finalize_module = None
+    _finalize_runs = None
+
+_FINALIZE_ABSENT = _finalize_runs is None
+
+_requires_finalize = pytest.mark.skipif(
+    _FINALIZE_ABSENT,
+    reason="fbk.finalize.finalize_runs not yet implemented",
+)
+
+# ---------------------------------------------------------------------------
 # Router location and red-phase gate
 # ---------------------------------------------------------------------------
 
@@ -555,4 +574,179 @@ def test_router_fail_silent_on_unwritable(tmp_path):
     )
     assert "Traceback" not in result.stderr, (
         f"expected no traceback in stderr on write failure, got: {result.stderr!r}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# finalize_runs resilience tests (red phase — skips until finalize_runs is wired in)
+#
+# Each test is individually guarded with _requires_finalize so the existing
+# tests above are never affected.  All three are subprocess-driven: the router
+# process calls finalize_runs after its event write; the test observes the
+# observable outcomes (exit code, event file, run record file).
+# ---------------------------------------------------------------------------
+
+
+@_requires_finalize
+def test_router_exits_0_and_writes_event_after_workflow_finalize(tmp_path, monkeypatch):
+    """Router exits 0, writes the TOOL_USE event, and produces the run record after finalize.
+
+    Drives the router with a PostToolUse payload for the Workflow tool against an
+    instrumented project.  A closed run directory is planted under a tmp projects
+    root; the payload's tool response names that run's id.  After the router runs:
+    - exit code must be 0 (finalize must not break the router)
+    - the TOOL_USE event must be present in events.jsonl (the write path is intact)
+    - the run record must exist at .fbk-capture/runs/<run_id>.json (finalize was
+      invoked and did real work, proving the wiring is live)
+    """
+    projects_root = str(tmp_path / "projects")
+    project = capture_fixtures.make_project(
+        str(tmp_path), instrumented=True, marked=True, capture_cfg="standard"
+    )
+
+    run_id = "run-router-finalize-001"
+    capture_fixtures.make_workflow_run(
+        projects_root,
+        run_id,
+        [
+            {
+                "agent_id": "agent-alpha",
+                "first_message": "Run agent alpha.",
+                "turns": [],
+                "result": {"outcome": "success"},
+            }
+        ],
+    )
+
+    # The tool response text that finalize_runs parses to extract the run id.
+    tool_response_text = f"Transcript dir: {projects_root}/proj/sess/subagents/workflows/{run_id}"
+
+    payload = capture_fixtures.hook_payload(
+        "PostToolUse",
+        tool_name="Workflow",
+        extra={"tool_response": tool_response_text},
+    )
+
+    monkeypatch.setenv("FBK_PROJECTS_ROOT", projects_root)
+
+    result = run_router(payload, project)
+
+    assert result.returncode == 0, (
+        f"router exited {result.returncode} after finalize call; stderr: {result.stderr!r}"
+    )
+
+    events = _read_events(project)
+    tool_use_events = [e for e in events if e.get("event_type") == "TOOL_USE"]
+    assert len(tool_use_events) >= 1, (
+        f"expected at least one TOOL_USE event after finalize; events: {events!r}"
+    )
+
+    run_record_path = os.path.join(project, ".fbk-capture", "runs", f"{run_id}.json")
+    assert os.path.exists(run_record_path), (
+        f"expected run record at {run_record_path} after finalize_runs; "
+        "this means finalize_runs was not invoked or did not produce a record"
+    )
+
+
+@_requires_finalize
+def test_router_exits_0_with_unreadable_transcript_in_run_dir(tmp_path, monkeypatch):
+    """Router exits 0 on SessionStart when the run directory contains an unreadable transcript.
+
+    An instrumented project has a closed run directory whose agent transcript file
+    is chmod 0o000.  The router must absorb the OS error from finalize_runs and
+    still exit 0.
+    """
+    projects_root = str(tmp_path / "projects")
+    project = capture_fixtures.make_project(
+        str(tmp_path), instrumented=True, marked=True, capture_cfg="standard"
+    )
+
+    run_id = "run-router-unreadable-001"
+    run_dir = capture_fixtures.make_workflow_run(
+        projects_root,
+        run_id,
+        [
+            {
+                "agent_id": "agent-beta",
+                "first_message": "Run agent beta.",
+                "turns": [],
+                "result": {"outcome": "success"},
+            }
+        ],
+    )
+
+    # Make the agent transcript unreadable so finalize_runs hits an OSError.
+    unreadable_path = os.path.join(run_dir, "agent-agent-beta.jsonl")
+    capture_fixtures.write_unreadable_transcript(unreadable_path)
+
+    payload = capture_fixtures.hook_payload("SessionStart")
+
+    monkeypatch.setenv("FBK_PROJECTS_ROOT", projects_root)
+
+    try:
+        result = run_router(payload, project)
+    finally:
+        # Restore read permission so pytest can clean up tmp_path.
+        os.chmod(unreadable_path, stat.S_IRUSR | stat.S_IWUSR)
+
+    assert result.returncode == 0, (
+        f"router exited {result.returncode} with unreadable transcript; "
+        f"stderr: {result.stderr!r}"
+    )
+
+
+@_requires_finalize
+def test_router_exits_0_and_writes_lifecycle_when_finalize_fails_internally(
+    tmp_path, monkeypatch
+):
+    """Router exits 0 and still writes its lifecycle event when finalize_runs fails internally.
+
+    The run directory contains a journal.jsonl that is not valid JSONL, so any
+    attempt to parse it will raise.  The router must isolate that failure and:
+    - still exit 0
+    - still write its own LIFECYCLE event (the event write happens before finalize,
+      so finalize failure must not unwrite it)
+
+    This proves finalize failure is quarantined inside the router's outer try/except.
+    """
+    projects_root = str(tmp_path / "projects")
+    project = capture_fixtures.make_project(
+        str(tmp_path), instrumented=True, marked=True, capture_cfg="standard"
+    )
+
+    run_id = "run-router-malformed-001"
+    run_dir = capture_fixtures.make_workflow_run(
+        projects_root,
+        run_id,
+        [
+            {
+                "agent_id": "agent-gamma",
+                "first_message": "Run agent gamma.",
+                "turns": [],
+                "result": {"outcome": "success"},
+            }
+        ],
+    )
+
+    # Overwrite journal.jsonl with content that is not valid JSONL.
+    journal_path = os.path.join(run_dir, "journal.jsonl")
+    with open(journal_path, "w") as fh:
+        fh.write("this is not valid json\n{also broken\n")
+
+    payload = capture_fixtures.hook_payload("SessionStart")
+
+    monkeypatch.setenv("FBK_PROJECTS_ROOT", projects_root)
+
+    result = run_router(payload, project)
+
+    assert result.returncode == 0, (
+        f"router exited {result.returncode} when finalize_runs failed internally; "
+        f"stderr: {result.stderr!r}"
+    )
+
+    events = _read_events(project)
+    lifecycle_events = [e for e in events if e.get("event_type") == "LIFECYCLE"]
+    assert len(lifecycle_events) >= 1, (
+        f"expected at least one LIFECYCLE event even when finalize fails; "
+        f"events: {events!r}"
     )
