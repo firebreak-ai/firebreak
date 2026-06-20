@@ -50,6 +50,7 @@ for _site_pkg in glob.glob(
 
 # Now that sys.path is set up, import fbk.capture modules.
 from fbk.capture import active_stage, event_writer, gate_check, known_agents  # noqa: E402
+from fbk import finalize  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Event-type mapping
@@ -183,6 +184,14 @@ def main():
             level,
             events_path,
         )
+
+        # Trigger finalization after the event write, inside the instrumented
+        # gate (decision D-13).  Wrapped so any failure cannot affect the
+        # write path or the exit code.
+        try:
+            finalize.finalize_runs(hook_event_name, cwd, payload)
+        except Exception:
+            pass
 
     except Exception:
         # Fail-silent: absorb everything, never raise, never write stdout.

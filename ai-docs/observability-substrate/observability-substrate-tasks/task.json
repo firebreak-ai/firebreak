@@ -379,8 +379,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Orchestrator wiring; routed to Sonnet",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/finalize.py: finalize_runs() event-gated trigger (PostToolUse parses run id from Workflow response via json-serialize+regex, finalizes only that run, no sweep; SessionStart sweeps newest closed-unfinalized by mtime; other events no-op; whole body fail-silent so never raises into router). Wired into hook_router.py after event write, inside instrumentation gate, forwarding payload. test_finalize_runs 7/7, crash_recovery 5/5, hook_router 18/18. Full suite 518 passed, 0 skipped.",
       "note": null
     },
     {
