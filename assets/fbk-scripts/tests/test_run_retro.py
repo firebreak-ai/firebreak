@@ -313,16 +313,16 @@ class TestContentDerivedOrdering:
         run_retro(run_id, str(tmp_path))
         out = capsys.readouterr().out
 
-        pos_a = out.find("unit-a")
-        pos_m = out.find("unit-m")
-        pos_z = out.find("unit-z")
+        pos_a = out.find("agent-a")
+        pos_m = out.find("agent-m")
+        pos_z = out.find("agent-z")
 
-        assert pos_a != -1, "'unit-a' must appear in output"
-        assert pos_m != -1, "'unit-m' must appear in output"
-        assert pos_z != -1, "'unit-z' must appear in output"
+        assert pos_a != -1, "'agent-a' must appear in output"
+        assert pos_m != -1, "'agent-m' must appear in output"
+        assert pos_z != -1, "'agent-z' must appear in output"
         assert pos_a < pos_m < pos_z, (
-            "units must render in content-sorted order (unit-a before unit-m before unit-z); "
-            f"found positions: unit-a={pos_a}, unit-m={pos_m}, unit-z={pos_z}"
+            "units must render in content-sorted order by agent_id (agent-a before agent-m before agent-z); "
+            f"found positions: agent-a={pos_a}, agent-m={pos_m}, agent-z={pos_z}"
         )
 
 

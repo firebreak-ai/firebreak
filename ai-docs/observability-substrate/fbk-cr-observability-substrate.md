@@ -177,3 +177,15 @@ graph TD
 ### Triage note
 
 F-01, F-03, F-04, F-06 each have a small, safe, localized fix. F-02 (cross-project sweep) is the most material — it is real and is recorded in the retrospective as accepted thin-slice scope, but it is undocumented in AC-06 and causes record contamination plus endless re-sweeps on multi-project machines. F-05 is a spec-internal contradiction (AC-04 vs. record-schema.md) to reconcile, not purely a code fix.
+
+## Remediation Status
+
+Applied (full suite 518 passed, ruff+mypy clean on changed files):
+- **F-01** — harvest now returns an error instead of re-harvesting when an existing record is present but unreadable (preserves harvested_at; aligns with IF-D-03).
+- **F-03** — `_finalize_post_tool_use` returns early unless `payload.tool_name == "Workflow"`, so a non-Workflow tool response mentioning a workflow path can no longer finalize a possibly-live run.
+- **F-04** — `run_retro` catches `OSError` and prints a graceful line, honoring its no-raise contract for permission/TOCTOU failures.
+- **F-05** — `harvest` completeness now requires every unit's transcript to be readable (`tokens_available`) in addition to a journal result, matching record-schema.md and the technical-approach prose. (The AC-04 one-liner is the out-of-step statement; reconciling its wording is a spec edit left for the operator.)
+- **F-06** — removed the dead `unit_id` read/print from the reader and corrected the docstring; the ordering test now asserts on `agent_id` (the real schema identifier), which is also what the reader sorts by.
+
+Held for an operator decision:
+- **F-02 (cross-project SessionStart sweep)** — a correct project-scoped sweep needs to map the current cwd to its `~/.claude/projects/<project-dir>` subtree, which the spec deliberately avoided ("avoiding any dependency on the undocumented project-hash algorithm"), and the sweep test fixtures use `project_hash="proj"` decoupled from cwd. Guessing the path-mangle risks silently breaking SessionStart finalization (records never finalized) — a worse failure than the current over-broad sweep. The two alternatives — (a) adopt the project-dir convention and realign the sweep fixtures, or (b) scope by intersecting each candidate run's roster with the current project's recorded agent ids — both reverse a documented design decision and/or rework fixtures. This is a design call, not a safe one-line fix, so it is surfaced rather than forced. The retrospective already records non-project-isolation as accepted thin-slice scope.

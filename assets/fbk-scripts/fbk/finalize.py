@@ -134,6 +134,11 @@ def _finalize_post_tool_use(cwd: str, payload: dict | None) -> None:
     run.  When absent or unparseable, returns without sweeping — a mid-session
     sweep could touch still-live concurrent runs.
     """
+    # Gate on the Workflow tool: only a returned Workflow call proves a run is
+    # closed. Any other tool whose response merely mentions a workflow path
+    # must not trigger finalization of a possibly-live run (AC-06/AC-07).
+    if payload is None or payload.get("tool_name") != "Workflow":
+        return
     run_id = _parse_run_id_from_payload(payload)
     if run_id is None:
         return

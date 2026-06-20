@@ -32,13 +32,12 @@ def _fmt(value):
 def _render_unit(unit):
     """Print one unit block from a record unit dict.
 
-    Reads the canonical schema fields: agent_id, unit_id, shape,
+    Reads the canonical schema fields: agent_id, shape,
     topology.cardinality, topology.stance, asset_bundle.persona,
     started_at, stopped_at, duration_s, tokens (all sub-keys verbatim),
     and gate_outcome.  Unknown keys inside the unit are ignored.
     """
     agent_id = _fmt(unit.get("agent_id"))
-    unit_id = _fmt(unit.get("unit_id"))
     shape = _fmt(unit.get("shape"))
 
     topology = unit.get("topology") or {}
@@ -55,8 +54,6 @@ def _render_unit(unit):
     gate_outcome = _fmt(unit.get("gate_outcome"))
 
     print(f"  agent_id:    {agent_id}")
-    if unit.get("unit_id") is not None:
-        print(f"  unit_id:     {unit_id}")
     print(f"  shape:       {shape}")
     print(f"  cardinality: {cardinality}")
     print(f"  stance:      {stance}")
@@ -95,6 +92,11 @@ def run_retro(run_id: str, project_cwd: str) -> None:
             record = json.load(fh)
     except (json.JSONDecodeError, ValueError):
         print(f"malformed record: {run_id} — file present but JSON could not be parsed")
+        return
+    except OSError:
+        # File vanished between the exists check and open (TOCTOU), or is
+        # present but unreadable. Honor the no-raise contract with a line.
+        print(f"unreadable record: {run_id} — file present but could not be read")
         return
 
     # Partial-record warning: unfinalized OR truncated.

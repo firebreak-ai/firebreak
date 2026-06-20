@@ -608,7 +608,14 @@ def harvest(run_id: str, project_cwd: str) -> HarvestResult:
                     error=None,
                 )
         except (OSError, json.JSONDecodeError):
-            pass  # Fall through to re-harvest if we can't read the existing record
+            # An existing record file we cannot read must not be silently
+            # overwritten — re-harvesting would stamp a new harvested_at and
+            # break the preserve-by-value guarantee (AC-05 / IF-D-03). Refuse
+            # the write and report; the next trigger retries.
+            return HarvestResult(
+                record_path=record_path_candidate,
+                error="existing record present but unreadable; refusing to overwrite",
+            )
 
     # --- Resolve run directory ---
     run_dir = _resolve_run_dir(run_id)
@@ -666,8 +673,18 @@ def harvest(run_id: str, project_cwd: str) -> HarvestResult:
         units.append(unit)
 
     # --- Determine completeness ---
+    # clean-complete requires both a journal result AND a readable transcript
+    # for every started agent (record-schema.md field semantics); an unreadable
+    # transcript is a gap, marked truncated so the operator sees the partial.
     all_have_results = all(agent_id in results_by_agent for agent_id in roster)
-    completeness = "clean-complete" if all_have_results else "truncated"
+    all_transcripts_readable = all(
+        u.get("tokens_available", False) for u in units
+    )
+    completeness = (
+        "clean-complete"
+        if all_have_results and all_transcripts_readable
+        else "truncated"
+    )
 
     # --- harvested_at: wall-clock time of this harvest ---
     harvested_at = _utcnow().isoformat()
