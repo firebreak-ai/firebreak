@@ -7,7 +7,7 @@ gate here (decision D-16) reduces the call to exactly two real triggers:
   PostToolUse  — targeted single-run finalize via run id parsed from the
                  Workflow tool response; no sweep.
   SessionStart — recovery sweep of the newest closed-unfinalized run under
-                 FBK_PROJECTS_ROOT.
+                 the current project's subtree only (never other projects').
 
 Every other event is a no-op.  This function never raises into the router.
 """
@@ -81,12 +81,55 @@ def _is_finalized(project_cwd: str, run_id: str) -> bool:
         return False
 
 
-def _glob_run_dirs() -> list[str]:
-    """Return all run-directory paths under FBK_PROJECTS_ROOT."""
-    projects_root = os.environ.get(
+def _projects_root() -> str:
+    """Return the projects root (FBK_PROJECTS_ROOT, default ~/.claude/projects)."""
+    return os.environ.get(
         "FBK_PROJECTS_ROOT", os.path.expanduser("~/.claude/projects")
     )
-    pattern = os.path.join(projects_root, "*", "*", "subagents", "workflows", "*")
+
+
+def _resolve_project_dir(cwd: str, payload: dict | None) -> str | None:
+    """Resolve the current project's folder under the projects root.
+
+    Claude Code stores each project's sessions and runs under a folder named
+    after the project's working directory with path separators replaced by '-'.
+    The recovery sweep is scoped to that single folder so a session never
+    finalizes another project's runs — a real hazard when several sandboxed
+    projects share one global Firebreak install.
+
+    Resolution order:
+      1. cwd — the design's source of truth (the router's os.getcwd(), never
+         payload['cwd']). The project folder is cwd with '/' replaced by '-'.
+         This is preferred because the folder always exists (prior sessions)
+         even when the current session's own folder has not been written yet.
+      2. session id — the folder that physically holds this session's files,
+         used only when the cwd-derived name is not present (e.g. a path the
+         naming scheme rewrites differently).
+      3. neither resolves — return None so the caller sweeps nothing rather
+         than risk finalizing another project's runs.
+    """
+    projects_root = _projects_root()
+
+    candidate = os.path.join(projects_root, cwd.replace("/", "-"))
+    if os.path.isdir(candidate):
+        return candidate
+
+    session_id = payload.get("session_id") if payload else None
+    if session_id:
+        for hit in (
+            glob.glob(os.path.join(projects_root, "*", session_id))
+            + glob.glob(os.path.join(projects_root, "*", f"{session_id}.jsonl"))
+        ):
+            parent = os.path.dirname(hit)
+            if os.path.isdir(parent):
+                return parent
+
+    return None
+
+
+def _glob_run_dirs(project_dir: str) -> list[str]:
+    """Return run-directory paths under one project's subtree only."""
+    pattern = os.path.join(project_dir, "*", "subagents", "workflows", "*")
     return [p for p in glob.glob(pattern) if os.path.isdir(p)]
 
 
@@ -116,7 +159,7 @@ def finalize_runs(
         if hook_event_name == "PostToolUse":
             _finalize_post_tool_use(cwd, payload)
         elif hook_event_name == "SessionStart":
-            _finalize_session_start(cwd)
+            _finalize_session_start(cwd, payload)
         # All other events: no-op.
     except Exception:
         pass
@@ -154,19 +197,29 @@ def _finalize_post_tool_use(cwd: str, payload: dict | None) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _finalize_session_start(cwd: str) -> None:
+def _finalize_session_start(cwd: str, payload: dict | None) -> None:
     """Sweep for the newest closed-unfinalized run and finalize it.
 
-    Reads all run directories under FBK_PROJECTS_ROOT, filters to those
-    without a finalized record, picks the newest by directory modification
-    time, and calls harvest for only that one run.  A second SessionStart
-    catches the next-newest (catch-up).
+    Reads the run directories under the CURRENT project's subtree only,
+    filters to those without a finalized record, picks the newest by directory
+    modification time, and calls harvest for only that one run.  A second
+    SessionStart catches the next-newest (catch-up).
 
-    The closed-forever invariant makes the full sweep safe at session start:
-    no live process can extend an on-disk run directory once a new session
-    begins (single-session-per-project sandbox).
+    Project scoping matters: several sandboxed projects can share one global
+    Firebreak install under a single projects root, so an unscoped sweep would
+    finalize another project's runs into this project's capture dir.  When the
+    current project's folder cannot be resolved, the sweep does nothing rather
+    than risk that contamination.
+
+    The closed-forever invariant makes the sweep safe at session start: no live
+    process can extend an on-disk run directory once a new session begins
+    (single-session-per-project sandbox).
     """
-    run_dirs = _glob_run_dirs()
+    project_dir = _resolve_project_dir(cwd, payload)
+    if project_dir is None:
+        return
+
+    run_dirs = _glob_run_dirs(project_dir)
 
     # Filter to unfinalized runs; collect (mtime, run_id, run_dir) tuples.
     unfinalized = []

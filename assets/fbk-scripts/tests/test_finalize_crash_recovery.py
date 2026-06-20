@@ -94,6 +94,14 @@ def orphaned_run_env(tmp_path, monkeypatch):
     projects_root = str(tmp_path / "projects")
     os.makedirs(projects_root, exist_ok=True)
 
+    # The project the new session runs in. Its runs live under a projects-root
+    # folder named after this working directory (the SessionStart sweep scope).
+    project_root = capture_fixtures.make_project(
+        str(tmp_path / "project"),
+        instrumented=True,
+        capture_cfg="standard",
+    )
+
     run_id = "orphaned-run-A"
     capture_fixtures.make_workflow_run(
         projects_root,
@@ -106,14 +114,8 @@ def orphaned_run_env(tmp_path, monkeypatch):
                 "result": None,  # no result line — simulates session crash
             }
         ],
-        project_hash="proj",
+        project_hash=project_root.replace("/", "-"),
         session_uuid="sess",
-    )
-
-    project_root = capture_fixtures.make_project(
-        str(tmp_path / "project"),
-        instrumented=True,
-        capture_cfg="standard",
     )
 
     monkeypatch.setenv("FBK_PROJECTS_ROOT", projects_root)

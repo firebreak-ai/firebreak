@@ -106,6 +106,15 @@ def _make_instrumented_project(tmp_path):
     )
 
 
+def _project_hash(project_cwd):
+    """The projects-root folder name Claude Code derives from a working dir.
+
+    Path separators become '-'. The SessionStart sweep resolves the current
+    project's folder this way, so runs must live under it to be swept.
+    """
+    return project_cwd.replace("/", "-")
+
+
 # ---------------------------------------------------------------------------
 # PostToolUse targeted finalize
 # ---------------------------------------------------------------------------
@@ -197,6 +206,7 @@ class TestSessionStartSweep:
             projects_root,
             run_id=run_id,
             agents=[_simple_agent("agent-1")],
+            project_hash=_project_hash(project_cwd),
         )
 
         finalize.finalize_runs("SessionStart", project_cwd, None)
@@ -229,16 +239,18 @@ class TestNewestOnlyBoundAndCatchup:
 
         older_run_id = "run-older"
         newer_run_id = "run-newer"
+        ph = _project_hash(project_cwd)
 
         capture_fixtures.make_workflow_run(
             projects_root,
             run_id=older_run_id,
             agents=[_simple_agent("agent-old")],
+            project_hash=ph,
         )
         # Ensure distinguishable modification times: older run directory is touched first,
         # then a small delay, then the newer run is created.
         older_run_dir = os.path.join(
-            projects_root, "proj", "sess", "subagents", "workflows", older_run_id
+            projects_root, ph, "sess", "subagents", "workflows", older_run_id
         )
         # Backdate the older run directory so mtime is clearly earlier.
         old_mtime = time.time() - 10
@@ -248,6 +260,7 @@ class TestNewestOnlyBoundAndCatchup:
             projects_root,
             run_id=newer_run_id,
             agents=[_simple_agent("agent-new")],
+            project_hash=ph,
         )
         # The newer run directory retains its current mtime (more recent than older_run_dir).
 
@@ -273,14 +286,16 @@ class TestNewestOnlyBoundAndCatchup:
 
         older_run_id = "run-older-cu"
         newer_run_id = "run-newer-cu"
+        ph = _project_hash(project_cwd)
 
         capture_fixtures.make_workflow_run(
             projects_root,
             run_id=older_run_id,
             agents=[_simple_agent("agent-old")],
+            project_hash=ph,
         )
         older_run_dir = os.path.join(
-            projects_root, "proj", "sess", "subagents", "workflows", older_run_id
+            projects_root, ph, "sess", "subagents", "workflows", older_run_id
         )
         old_mtime = time.time() - 10
         os.utime(older_run_dir, (old_mtime, old_mtime))
@@ -289,6 +304,7 @@ class TestNewestOnlyBoundAndCatchup:
             projects_root,
             run_id=newer_run_id,
             agents=[_simple_agent("agent-new")],
+            project_hash=ph,
         )
 
         # First call: newest run is finalized.
@@ -358,4 +374,130 @@ class TestNeverRaises:
 
         assert result is None, (
             "finalize_runs must return None even when the target run directory is absent"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Project scoping: the SessionStart sweep stays inside the current project
+# ---------------------------------------------------------------------------
+
+
+class TestSessionStartProjectScoping:
+    """The SessionStart sweep finalizes only the current project's runs.
+
+    Several sandboxed projects can share one global Firebreak install under a
+    single projects root. The sweep must resolve the current project's folder
+    (from the working dir, or the session id as a fallback) and never finalize
+    another project's runs into this project's capture dir.
+    """
+
+    def test_foreign_project_run_is_not_swept(self, tmp_path, monkeypatch):
+        """A run that belongs to a different project is never finalized by our sweep."""
+        projects_root = str(tmp_path / "projects")
+        project_cwd = _make_instrumented_project(tmp_path)
+        monkeypatch.setenv("FBK_PROJECTS_ROOT", projects_root)
+
+        # A run under a DIFFERENT project's folder (not our cwd-derived folder).
+        foreign_run_id = "run-foreign"
+        capture_fixtures.make_workflow_run(
+            projects_root,
+            run_id=foreign_run_id,
+            agents=[_simple_agent("agent-foreign")],
+            project_hash="-some-other-project",
+        )
+
+        finalize.finalize_runs("SessionStart", project_cwd, None)
+
+        assert not _record_exists(project_cwd, foreign_run_id), (
+            "the sweep must not finalize another project's run into our capture dir; "
+            f"found unexpected record at .fbk-capture/runs/{foreign_run_id}.json"
+        )
+
+    def test_only_our_run_swept_when_foreign_run_is_newer(self, tmp_path, monkeypatch):
+        """A newer foreign run does not preempt our older run — scope is applied before newest-pick."""
+        projects_root = str(tmp_path / "projects")
+        project_cwd = _make_instrumented_project(tmp_path)
+        monkeypatch.setenv("FBK_PROJECTS_ROOT", projects_root)
+
+        ours_run_id = "run-ours"
+        foreign_run_id = "run-foreign-newer"
+
+        # Our run, backdated so it is clearly older than the foreign run.
+        capture_fixtures.make_workflow_run(
+            projects_root,
+            run_id=ours_run_id,
+            agents=[_simple_agent("agent-ours")],
+            project_hash=_project_hash(project_cwd),
+        )
+        ours_dir = os.path.join(
+            projects_root, _project_hash(project_cwd), "sess",
+            "subagents", "workflows", ours_run_id,
+        )
+        old_mtime = time.time() - 10
+        os.utime(ours_dir, (old_mtime, old_mtime))
+
+        # A newer foreign run that an unscoped sweep would pick first.
+        capture_fixtures.make_workflow_run(
+            projects_root,
+            run_id=foreign_run_id,
+            agents=[_simple_agent("agent-foreign")],
+            project_hash="-some-other-project",
+        )
+
+        finalize.finalize_runs("SessionStart", project_cwd, None)
+
+        assert _record_exists(project_cwd, ours_run_id), (
+            "our run must be finalized even though a newer run exists in another project"
+        )
+        assert not _record_exists(project_cwd, foreign_run_id), (
+            "the newer foreign run must not be finalized; scope is applied before the newest-pick"
+        )
+
+    def test_session_id_resolves_project_when_cwd_name_absent(self, tmp_path, monkeypatch):
+        """When the cwd-derived folder is absent, the session id locates our project folder."""
+        projects_root = str(tmp_path / "projects")
+        project_cwd = _make_instrumented_project(tmp_path)
+        monkeypatch.setenv("FBK_PROJECTS_ROOT", projects_root)
+
+        # Run lives under a folder whose name is NOT the cwd mangle, so only the
+        # session-id fallback can resolve it. The run's session dir 'sess-x'
+        # exists, which is what the fallback globs for.
+        run_id = "run-via-session"
+        capture_fixtures.make_workflow_run(
+            projects_root,
+            run_id=run_id,
+            agents=[_simple_agent("agent-1")],
+            project_hash="-opaque-folder",
+            session_uuid="sess-x",
+        )
+
+        payload = {"hook_event_name": "SessionStart", "session_id": "sess-x"}
+        finalize.finalize_runs("SessionStart", project_cwd, payload)
+
+        assert _record_exists(project_cwd, run_id), (
+            "the session-id fallback must resolve our project folder and finalize the run"
+        )
+
+    def test_unresolvable_project_sweeps_nothing(self, tmp_path, monkeypatch):
+        """When neither the cwd folder nor the session id resolves, the sweep does nothing."""
+        projects_root = str(tmp_path / "projects")
+        project_cwd = _make_instrumented_project(tmp_path)
+        monkeypatch.setenv("FBK_PROJECTS_ROOT", projects_root)
+
+        run_id = "run-unresolvable"
+        capture_fixtures.make_workflow_run(
+            projects_root,
+            run_id=run_id,
+            agents=[_simple_agent("agent-1")],
+            project_hash="-opaque-folder",
+            session_uuid="sess-y",
+        )
+
+        # No payload (no session id) and the run's folder is not the cwd mangle,
+        # so the project cannot be identified — the sweep must finalize nothing.
+        finalize.finalize_runs("SessionStart", project_cwd, None)
+
+        assert not _record_exists(project_cwd, run_id), (
+            "an unidentifiable project must result in no sweep (fail safe); "
+            f"found unexpected record at .fbk-capture/runs/{run_id}.json"
         )
