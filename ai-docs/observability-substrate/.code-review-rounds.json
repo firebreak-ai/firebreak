@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "spec": "observability-substrate",
+  "rounds": [
+    {
+      "round": 1,
+      "raised": 9,
+      "survived": 6,
+      "severity_breakdown": {"major": 4, "minor": 2}
+    }
+  ]
+}
