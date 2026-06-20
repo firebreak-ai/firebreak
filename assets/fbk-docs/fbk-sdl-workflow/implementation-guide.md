@@ -18,7 +18,11 @@ For each wave:
 
 **Step 1 — Test tasks**: Create native tasks for the wave's test tasks. Each task description includes the path to its task file. Teammates claim and execute.
 
-**Step 2 — Test compilation check**: When all test tasks complete, verify that the new tests exist and compile. Tests are expected to fail at this point — the implementation does not exist yet. If tests do not compile, treat as a task failure and invoke the escalation protocol.
+**Step 2 — Test red-state check**: When all test tasks complete, verify the new tests exist and are red — failing or held pending — rather than already passing. Red tests prove they run and catch the absence of the behavior.
+
+In a compiled or strongly-typed language, a brand-new module's tests cannot compile until the types and signatures they reference are declared. Because a test task touches only test files, those declarations arrive with the paired implementation task, so the new tests stay red — failing or skipped/pending — until implementation begins. Expect the new tests at this checkpoint to be present and red, not necessarily compiling.
+
+If the new tests pass before any implementation exists, treat as a task failure and invoke the escalation protocol.
 
 **Step 3 — Implementation tasks**: Create native tasks for the wave's implementation tasks. Teammates claim and execute.
 
@@ -135,6 +139,12 @@ Run all verification commands in the foreground. Background execution can produc
 The TaskCompleted hook catches test and lint failures per-task. Per-wave verification adds the aggregate cross-task checks: merge conflicts and file scope.
 
 When the spec defines schema constants, naming conventions, or shared string values, spot-check modified files for bare string literals that should reference those constants.
+
+### A convention fix needs a use-site sweep
+
+When a fix touches a normalization or convention — lowercasing a value at lookup time, a field path, the name of a shared constant — confirm the change reached every place that depends on it before closing the wave. Grep for all use sites of the thing that changed and check that each one was updated. A wave can pass its own tests and still ship a serious defect when a fix landed at one site but the same pattern lived at three others; the wave's tests only exercise the site they were written for.
+
+This is a coordination check, not a place to start editing directly. When the sweep finds sites that were missed, route each fix back through the task structure so a teammate owns the edit with that file in its declared scope — keeping the per-wave file-scope check meaningful. When the sweep turns up many sites, split them across teammates in disjoint, non-overlapping slices rather than loading one agent with the whole set; a large sweep crammed into a single context risks degraded quality and made-up edits.
 
 ---
 
