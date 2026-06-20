@@ -1,0 +1,421 @@
+{
+  "spec": "ai-docs/observability-substrate/observability-substrate-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Fixture builder for a fake workflow run directory",
+      "file": "task-01-test-workflow-run-fixture-builder.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [],
+      "model": "Sonnet",
+      "model_rationale": "Extends shared test fixtures; multi-shape builder needs judgment",
+      "status": "complete",
+      "summary": "Added make_workflow_run() builder + 3 helpers to tests/capture_fixtures.py; extended build_transcript to accept non-zero cache token fields; 3 smoke tests added. 5 passed, token harvester regressions green.",
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Test: shape vocabulary and resolver",
+      "file": "task-02-test-shape-vocabulary.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file unit test",
+      "status": "complete",
+      "summary": "Created tests/test_shapes.py (14 tests, guarded-skipif on fbk.shapes). Collects clean; skips pending impl.",
+      "note": null
+    },
+    {
+      "id": "task-03",
+      "title": "Test: attribution descriptor parse",
+      "file": "task-03-test-attribution-descriptor-parse.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file unit test; forgery case is small",
+      "status": "complete",
+      "summary": "Created tests/test_harvest_attribution.py (5 tests: valid/forgery/missing/malformed/asset_bundle, guarded-skipif on fbk.attribution). Collects clean; skips pending impl.",
+      "note": null
+    },
+    {
+      "id": "task-04",
+      "title": "Test: per-transcript token accessor",
+      "file": "task-04-test-per-transcript-token-accessor.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-12"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file unit test",
+      "status": "complete",
+      "summary": "Created tests/test_token_accessor.py (3 tests for transcript_token_totals, guarded-skipif). Collects clean; skips pending impl.",
+      "note": null
+    },
+    {
+      "id": "task-05",
+      "title": "Test: harvest roster join and non-overlap",
+      "file": "task-05-test-harvest-roster-join.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Integration with real run-dir fixtures",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-06",
+      "title": "Test: harvest join-key real-router round trip",
+      "file": "task-06-test-harvest-join-key-roundtrip.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Drives the real router end to end",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-07",
+      "title": "Test: harvest completeness clean vs truncated",
+      "file": "task-07-test-harvest-completeness.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-04"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Integration with run-dir fixtures",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-08",
+      "title": "Test: harvest atomic write and idempotent no-op",
+      "file": "task-08-test-harvest-atomic-idempotent.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-05"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Mutation-between-harvests and clock seam",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-09",
+      "title": "Test: harvest capture-level redaction parity",
+      "file": "task-09-test-harvest-capture-level-redaction.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-13"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Capture-level branches need judgment",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-10",
+      "title": "Test: harvest confined write and symlink refusal",
+      "file": "task-10-test-harvest-confined-write.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-14"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Symlink confinement and concurrent temp names",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-11",
+      "title": "Test: finalize_runs event-name gate (targeted PostToolUse finalize, SessionStart sweep)",
+      "file": "task-11-test-finalize-runs-trigger.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Event-name gating plus payload run-id parse and SessionStart sweep",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-12",
+      "title": "Test: finalize crash recovery as truncated",
+      "file": "task-12-test-finalize-crash-recovery.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-07"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Crash-recovery sweep path",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-13",
+      "title": "Test: router stays exit 0 when finalize raises",
+      "file": "task-13-test-router-finalize-resilience.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Router resilience integration",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-14",
+      "title": "Test: run_retro reader rendering and determinism",
+      "file": "task-14-test-run-retro-reader.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Two-clock determinism and ordering",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-15",
+      "title": "Test: COMMAND_MAP registers run-retro (evolves 19->20)",
+      "file": "task-15-test-command-map-run-retro.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-09"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded edit of dispatcher test",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-16",
+      "title": "Test: record schema_version and reader key tolerance",
+      "file": "task-16-test-record-extensibility.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [
+        "task-01"
+      ],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Extensibility seam",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-18",
+      "title": "Impl: shape vocabulary and resolver",
+      "file": "task-18-impl-shape-vocabulary.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-01"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file module",
+      "status": "complete",
+      "summary": "Created fbk/shapes.py: SHAPE_VOCABULARY frozenset {distill,implement,review,synthesize,gate} + resolve_shape() with persona/self mappings, stderr warning on unknown, None-safe. 14 paired tests pass; full suite green.",
+      "note": null
+    },
+    {
+      "id": "task-19",
+      "title": "Impl: per-transcript token accessor",
+      "file": "task-19-impl-token-accessor.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-12"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Additive single-file function",
+      "status": "complete",
+      "summary": "Added transcript_token_totals() public accessor to fbk/capture/token_harvester.py reusing _parse_transcript; available-vs-zero semantics, sums 4 token fields across turns. Paired+existing token tests pass; full suite green.",
+      "note": null
+    },
+    {
+      "id": "task-20",
+      "title": "Impl: attribution descriptor parse module",
+      "file": "task-20-impl-attribution-parse.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-02"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Forgery-resistance parse logic",
+      "status": "complete",
+      "summary": "Created fbk/attribution.py: parse_attribution() with compiled re.DOTALL regex, first-match-only forgery resistance, asset_bundle pass-through, attribution_absent sentinel, never raises. 5 paired tests pass; full suite green.",
+      "note": null
+    },
+    {
+      "id": "task-21",
+      "title": "Impl: harvest join, record, redaction, confined write",
+      "file": "task-21-impl-harvest-join.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-18",
+        "task-19",
+        "task-20"
+      ],
+      "covers": [
+        "AC-03",
+        "AC-04",
+        "AC-05",
+        "AC-13",
+        "AC-14"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Cohesive multi-concern module write",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-22",
+      "title": "Impl: run_retro reader and COMMAND_MAP registration",
+      "file": "task-22-impl-run-retro-reader.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-08",
+        "AC-09",
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Reader plus orchestrator registration",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-23",
+      "title": "Impl: finalize_runs trigger module and hook_router wiring",
+      "file": "task-23-impl-finalize-and-router.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-21"
+      ],
+      "covers": [
+        "AC-06",
+        "AC-07"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Orchestrator wiring; routed to Sonnet",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-17",
+      "title": "Conformance: manual operator verification procedure",
+      "file": "task-17-test-conformance-e2e.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [],
+      "covers": [
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Net-new manual verification procedure",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-24",
+      "title": "Impl: conformance workflow (end-to-end test bed)",
+      "file": "task-24-impl-conformance-workflow.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-23"
+      ],
+      "covers": [
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Net-new code-defined workflow with descriptor glue",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    }
+  ]
+}
