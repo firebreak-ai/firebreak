@@ -315,4 +315,40 @@ See [quality scan technique](#quality-scan-technique).
 
 ---
 
+### shape
+
+**Definition**: The kind of work a single unit in a workflow run performed, drawn from a closed five-member vocabulary — distill, implement, review, synthesize, gate. In the observability substrate the shape is resolved from the unit's recorded persona name (`resolve_shape` in `fbk/shapes.py`); a persona that maps to nothing yields null, never an invented shape. Distinct from [slice shape], which is a test-discipline category.
+
+**LLM priors activated**: "Shape" signals a discrete category from a fixed set, not a position on a continuum — intended. Risk: conflation with the other firebreak uses of "shape" (slice shape, work shape, code shape). The vocabulary here is specifically the five *work-capability* shapes of a harvested run unit; surrounding context names "shape" against the unit/record vocabulary, and the closed five-member set is the disambiguator. A null shape means "this persona is not in the vocabulary," not "low quality."
+
+**Usage examples in firebreak**:
+- A run record unit's `shape` field, set by `harvest` from the persona via `resolve_shape`
+- `run-retro` renders each unit's shape; a persona outside the vocabulary renders as an em dash
+
+---
+
+### topology
+
+**Definition**: How a workflow unit was organized, recorded as two facts the harness cannot otherwise expose: *cardinality* (single or fan-out) and *stance* (collaborative or adversarial). Carried in a run record unit's `topology` object, parsed from the launch-prompt attribution descriptor the workflow glue prepends to each agent prompt.
+
+**LLM priors activated**: "Topology" activates network/graph-structure priors. Risk: read as a rich graph of inter-agent connections; here it is narrowly the two deployment-level facts (cardinality, stance) for one unit, not a full dependency graph. The surrounding record schema bounds the meaning.
+
+---
+
+### asset bundle
+
+**Definition**: The identity of the context assets loaded for a workflow unit — in this slice, the persona name; structurally reserved (present but null) for the instruction-file identity and decision-tree identity that a future dynamic assembler will stamp. Carried in a run record unit's `asset_bundle` object.
+
+**LLM priors activated**: "Bundle" signals a grouped set of things loaded together — intended. Risk: read as fully populated today; in the thin first slice only `persona` is set, with `instructions` and `decision_tree` deliberately reserved null until an assembler can stamp them truthfully. The null fields are forward-compatibility reservations, not missing data.
+
+---
+
+### workflow journal
+
+**Definition**: The Claude Code session-runtime file (`journal.jsonl`) inside a workflow run directory that records each agent's `started` and `result` lines. In the observability substrate it is the authoritative *agent roster* for a run: harvest reads it to learn which agents belong to the run, then filters the event stream to those agent ids. External and undocumented — the substrate locates the run directory by glob-and-match on the run id rather than depending on the project-hash naming scheme.
+
+**LLM priors activated**: "Journal" activates append-only-log priors, which fit. Risk: conflated with the firebreak event stream (`events.jsonl`) — they are different files from different writers. The journal is written by the Claude Code runtime and is the roster; the event stream is the firebreak capture plane joined against that roster.
+
+---
+
 *(Additional entries accrete as specs and context assets introduce vetted terms.)*
