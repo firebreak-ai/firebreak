@@ -66,7 +66,7 @@ After the final wave checkpoint, run the structural and semantic checks per the 
 
 ## Retrospective
 
-Write the Stage 4 section per the implementation guide.
+Write the Stage 6 section per the implementation guide.
 
 ## Team Shutdown
 

@@ -198,9 +198,9 @@ Run after the final wave's checkpoint.
 
 ## Retrospective
 
-Write the Stage 4 section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verification, following `fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+Write the Stage 6 section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verification, following `fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
-**Stage 4 fields:**
+**Stage 6 fields:**
 
 **Factual data** (no AI judgment):
 
@@ -213,9 +213,9 @@ Write the Stage 4 section to `ai-docs/<feature-name>/<feature-name>-retrospectiv
 
 **Upstream traceability** (factual):
 
-- Stage 2 review iterations before advancing.
+- Stage 4 review iterations before advancing.
 - Blocking findings count and how many led to spec revisions.
-- Stage 3 compilation attempts before gate passed.
+- Stage 5 compilation attempts before gate passed.
 
 **Failure attribution** (AI judgment):
 
