@@ -1,6 +1,6 @@
 ## Entry
 
-Read the spec from `ai-docs/<feature-name>/<feature-name>-spec.md`. Fail fast if the Stage 1 verification gate does not pass — do not proceed to classification without a structurally complete spec.
+Read the spec from `ai-docs/<feature-name>/<feature-name>-spec.md`. Fail fast if the spec gate does not pass — do not proceed to classification without a structurally complete spec.
 
 ## Classification process
 
@@ -38,7 +38,7 @@ When the feature has a `design/contracts.md`, the architect additionally checks 
 - An `IF-D-NN` entry whose identifier is preserved in the spec but whose name or signature has materially changed from the design's original. Report the `IF-D-` identifier, the design value, and the spec value so the operator can confirm the change is intentional.
 - A count or name mismatch between the design page's `IF-D-NN` entries and what the spec carries or excludes. Report the totals on each side and name the entries that appear in one but not the other.
 
-All three conditions are `informational`, not blocking. Record them in the review document under the Architectural soundness concern so they are visible at Stage 3.
+All three conditions are `informational`, not blocking. Record them in the review document under the Architectural soundness concern so they are visible at breakdown.
 
 ## Classification signals
 
@@ -100,7 +100,7 @@ Organize findings by SDL concern, not by agent.
 When titling a finding-grouping section with an SDL concern name, use the exact concern name from the table above. Do not paraphrase or shorten it to a form that begins with the word "Testing" — the gate parser reserves `## Test*` headings for the canonical testing-strategy section.
 
 Each finding includes:
-- **Severity**: `blocking` (must resolve before Stage 3), `important` (should address), or `informational` (note for awareness)
+- **Severity**: `blocking` (must resolve before breakdown), `important` (should address), or `informational` (note for awareness)
 - **Category**: which SDL concern from the table above
 - **Description**: actionable and specific — not generic observations
 
@@ -108,7 +108,7 @@ Generic observations ("consider adding more tests") do not constitute findings. 
 
 ## On re-run
 
-When the user revises a spec and re-runs Stage 2, replace the review document entirely. Do not append to or merge with the prior review. The review reflects the current spec state — stale findings create confusion. Previous reviews are recoverable from git history.
+When the user revises a spec and re-runs the spec review, replace the review document entirely. Do not append to or merge with the prior review. The review reflects the current spec state — stale findings create confusion. Previous reviews are recoverable from git history.
 
 ## Verification gate
 

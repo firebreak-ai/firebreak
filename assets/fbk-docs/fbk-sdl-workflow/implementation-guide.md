@@ -1,6 +1,6 @@
 ## Team Setup
 
-Verify Stage 3 gate passes before proceeding. Read `task.json` in the task directory (`ai-docs/<feature-name>/<feature-name>-tasks/task.json`) to understand wave structure, task count, model assignments, and current task statuses.
+Verify the breakdown gate passes before proceeding. Read `task.json` in the task directory (`ai-docs/<feature-name>/<feature-name>-tasks/task.json`) to understand wave structure, task count, model assignments, and current task statuses.
 
 If any tasks have `status` other than `not_started`, a prior session was interrupted. See "Resuming Interrupted Sessions" below.
 
@@ -72,7 +72,7 @@ Each teammate reads its task file as its sole instruction context, plus `fbk-doc
 
 Spawn a fresh agent for each task. Do not reuse workers across tasks — context pollution from a prior task's code, errors, or partial reasoning can cause the agent to make incorrect assumptions about the current task's codebase state. Each task execution starts with a clean agent context containing only the task file and the designated reference files.
 
-Stage 3 guarantees non-overlapping file scopes within the same wave. Concurrent-edit conflicts cannot occur within a wave.
+Breakdown guarantees non-overlapping file scopes within the same wave. Concurrent-edit conflicts cannot occur within a wave.
 
 ---
 
@@ -198,9 +198,9 @@ Run after the final wave's checkpoint.
 
 ## Retrospective
 
-Write the Stage 6 section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verification, following `fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+Write the Implementation section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verification, following `fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
-**Stage 6 fields:**
+**Implementation fields:**
 
 **Factual data** (no AI judgment):
 
@@ -213,9 +213,9 @@ Write the Stage 6 section to `ai-docs/<feature-name>/<feature-name>-retrospectiv
 
 **Upstream traceability** (factual):
 
-- Stage 4 review iterations before advancing.
+- Spec review iterations before advancing.
 - Blocking findings count and how many led to spec revisions.
-- Stage 5 compilation attempts before gate passed.
+- Breakdown compilation attempts before the gate passed.
 
 **Failure attribution** (AI judgment):
 

@@ -63,7 +63,7 @@ Omit the third argument if no threat model was created. Report any failures from
 
 ## Retrospective
 
-After the review completes, write the Stage 2 section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+After the review completes, write the Spec Review section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
 ## Transition
 

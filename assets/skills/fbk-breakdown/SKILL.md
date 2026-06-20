@@ -27,7 +27,7 @@ If the spec artifact (`ai-docs/$FEATURE/$FEATURE-spec.md`) is missing, name that
 
 Verify both the spec and review files exist. If either is missing, report which file is absent and stop.
 
-Run the Stage 2 gate:
+Run the review gate:
 ```
 python3 "$HOME"/.claude/fbk-scripts/fbk.py review-gate \
   "ai-docs/$FEATURE/$FEATURE-review.md" \
@@ -131,7 +131,7 @@ Invoke the test reviewer agent (`test-reviewer`) as an Agent Teams teammate with
 
 If both pass, proceed to the existing breakdown gate.
 
-Run the Stage 3 gate:
+Run the breakdown gate:
 ```
 python3 "$HOME"/.claude/fbk-scripts/fbk.py breakdown-gate \
   "ai-docs/$FEATURE/$FEATURE-spec.md" \
@@ -141,7 +141,7 @@ If the gate fails, report each failure and fix before proceeding.
 
 ## Retrospective
 
-After the breakdown gate passes, write the Stage 3 section to `ai-docs/$FEATURE/$FEATURE-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+After the breakdown gate passes, write the Breakdown section to `ai-docs/$FEATURE/$FEATURE-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
 ## Transition
 

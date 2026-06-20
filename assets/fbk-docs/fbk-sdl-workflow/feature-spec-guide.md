@@ -61,7 +61,7 @@ Write each section. Do not skip or combine sections.
 
 When the author enumerates contracts, excludes a design contract, or leaves an acceptance criterion uncovered, read `interface-contracts-format.md` for the full section schema, field rules, and blast-radius derivation step.
 
-**8. Open questions** — List unresolved decisions the user or stakeholders must answer before Stage 2. Before approving the gate, every item must either be resolved or have explicit rationale for deferral. When a question is resolved, move its conclusion into the relevant spec section and remove it from this list. An empty list is valid and expected when the spec is complete.
+**8. Open questions** — List unresolved decisions the user or stakeholders must answer before spec review. Before approving the gate, every item must either be resolved or have explicit rationale for deferral. When a question is resolved, move its conclusion into the relevant spec section and remove it from this list. An empty list is valid and expected when the spec is complete.
 
 The gate checks every bullet in this section and demands rationale per item. Do not accumulate resolved decisions here as bullets — the gate cannot distinguish a resolved decision from a pending one. When all questions are resolved, write `None.` in §8. Place any resolved-decisions summary in a separate section after §9, for example:
 
@@ -93,9 +93,9 @@ The gate checks every bullet in this section and demands rationale per item. Do 
 
 **5. Cross-cutting concerns** — Shared infrastructure, conventions, and patterns that apply across features (e.g., auth, logging, error handling, CI/CD).
 
-**6. Open questions** — Unresolved project-level decisions. Apply the same resolution requirement as feature-level open questions before Stage 2.
+**6. Open questions** — Unresolved project-level decisions. Apply the same resolution requirement as feature-level open questions before spec review.
 
-After the user agrees on the overview and feature decomposition, ask: "Which feature would you like to spec first?" That feature enters Stage 1 as a feature-level spec.
+After the user agrees on the overview and feature decomposition, ask: "Which feature would you like to spec first?" That feature enters the spec phase as a feature-level spec.
 
 ---
 
@@ -109,7 +109,7 @@ Do not ask about: naming conventions, internal variable types, or choices that h
 
 Surface open questions explicitly in section 8 rather than silently assuming an answer.
 
-Refuse to write code. Stage 1 produces specification artifacts only. If the user asks for code, explain that implementation begins in Stage 3 after review.
+Refuse to write code. The spec phase produces specification artifacts only. If the user asks for code, explain that implementation begins after review.
 
 ---
 

@@ -76,7 +76,7 @@ python3 "$HOME"/.claude/fbk-scripts/fbk.py spec-gate <spec-path>
 
 ## Retrospective
 
-After the gate passes, write the Stage 1 section to `ai-docs/$ARGUMENTS/$ARGUMENTS-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+After the gate passes, write the Spec section to `ai-docs/$ARGUMENTS/$ARGUMENTS-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
 ## Transition
 

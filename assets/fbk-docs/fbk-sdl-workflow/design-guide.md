@@ -104,4 +104,4 @@ When the design gate passes:
 1. Confirm the gate output shows `"result": "pass"`.
 2. Confirm all decisions are recorded in `<feature-name>-decisions.md`.
 3. Ask: "Would you like to move to the spec phase?"
-4. If agreed: invoke `/fbk-spec <feature-name>` to begin Stage 2 spec authoring per `fbk-docs/fbk-sdl-workflow/feature-spec-guide.md`.
+4. If agreed: invoke `/fbk-spec <feature-name>` to begin spec authoring per `fbk-docs/fbk-sdl-workflow/feature-spec-guide.md`.

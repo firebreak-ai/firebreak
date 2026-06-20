@@ -1,6 +1,6 @@
 ## Compilation Principle
 
-Tasks are compiled executable specifications, not summaries. Every instruction must be explicit enough that the implementation agent makes no design decisions. Ambiguity in a task is a compilation error — if you cannot write clear instructions for a task, the spec is underspecified. Stop and report the ambiguity; do not guess. Resolution requires returning to Stage 1 or Stage 2 before compilation continues.
+Tasks are compiled executable specifications, not summaries. Every instruction must be explicit enough that the implementation agent makes no design decisions. Ambiguity in a task is a compilation error — if you cannot write clear instructions for a task, the spec is underspecified. Stop and report the ambiguity; do not guess. Resolution requires returning to the spec or design phase before compilation continues.
 
 Choose one implementation approach during compilation. If multiple valid approaches exist, select the one most consistent with the existing codebase and spec intent. Document the choice in the task's Context section.
 
@@ -283,7 +283,7 @@ The gate script validates these properties from task.json:
 
 When you encounter a spec section that could be interpreted multiple ways, or a task where the instructions would require the implementation agent to make a design choice, stop.
 
-Report the specific ambiguity: quote the ambiguous spec text, describe the two or more valid interpretations, and state the information needed to resolve it. Include which AC is affected. Do not choose an interpretation and continue. Compilation resumes only after the ambiguity is resolved in Stage 1 or Stage 2.
+Report the specific ambiguity: quote the ambiguous spec text, describe the two or more valid interpretations, and state the information needed to resolve it. Include which AC is affected. Do not choose an interpretation and continue. Compilation resumes only after the ambiguity is resolved in the spec or design phase.
 
 ## Verification Gate
 

@@ -23,7 +23,7 @@ Set `FEATURE=$ARGUMENTS`. Paths used throughout:
 
 Read `task.json`. Verify it exists and is valid JSON conforming to the task manifest schema in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`. If missing or malformed, stop and tell the user what is absent.
 
-## Stage 3 Gate
+## Breakdown Gate
 
 Run:
 
@@ -66,7 +66,7 @@ After the final wave checkpoint, run the structural and semantic checks per the 
 
 ## Retrospective
 
-Write the Stage 6 section per the implementation guide.
+Write the Implementation section per the implementation guide.
 
 ## Team Shutdown
 
