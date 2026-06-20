@@ -171,3 +171,36 @@ The one systemic signal: the single compilation gap was a schema-nesting detail.
 ### Documentation impact — pending operator review
 
 The spec lists four durable-doc updates (architecture-overview measurement section, GLOSSARY entries for shape/topology/asset-bundle/workflow-journal, CHANGELOG under Added for 0.5.2, README command-list check). These are deliberately **not** auto-applied: the spec flags the architecture overview as an operator-review change and the project convention is to discuss README changes before applying. They are best handled at the upcoming code-review / doc-reconcile step.
+
+## Stage 7: Code Review
+
+Full report: `fbk-cr-observability-substrate.md`. Gate: **pass**.
+
+### Sighting counts
+- Raised (round 1): 9, across 4 parallel Detectors (harvest; finalize+router; run_retro+init; leaf modules).
+- Verified findings: 6 — 4 behavioral/major, 2 structural/minor.
+- Rejected: 3 (false-positive rate 33%) — roster non-dedup (runtime emits one started per agent), realpath-vs-write TOCTOU (outside the single-user threat model), non-dict usage AttributeError (runtime never emits a non-dict usage; nit).
+- Detection-source breakdown: spec-ac = F-01, F-03, F-05, F-06; audit-pass = F-02, F-04. Pre-spawn ruff + mypy clean, so no linter-sourced findings.
+
+### Verification rounds
+- One thorough round to convergence (per-file targeted detectors plus an adversarial Challenger pass). Convergence was judged sufficient because the four detectors collectively covered every changed production module with the spec ACs as the comparison target.
+
+### Findings and disposition
+- F-01 (behavioral/major) — harvest silently overwrote an unreadable existing record with a new harvested_at. Fixed: refuse and return an error. Regression test added and proven non-vacuous.
+- F-02 (behavioral/major) — SessionStart sweep harvests other projects' runs into the current project's capture dir. **Held for an operator decision**: a correct fix reverses the spec's deliberate no-project-hash decision and reworks fixtures; documented as accepted thin-slice scope in the breakdown.
+- F-03 (behavioral/major) — PostToolUse finalize had no Workflow tool-name gate, so any tool response mentioning a workflow path could finalize a possibly-live run. Fixed: gate on tool_name == "Workflow".
+- F-04 (behavioral/major) — run_retro raised on a PermissionError/TOCTOU instead of printing a line. Fixed: catch OSError.
+- F-05 (structural/minor) — completeness ignored transcript readability; root cause is a spec-internal contradiction (AC-04 text vs record-schema.md / decision D-04 / technical-approach prose). Fixed the code to require readable transcripts (matching the majority intent); regression test added and proven non-vacuous. The AC-04 wording still needs an operator edit to fully reconcile.
+- F-06 (structural/minor) — reader read/printed a unit_id field absent from the schema (dead code). Fixed: removed; ordering test now asserts on agent_id.
+
+### Finding quality
+- Origin: all 6 introduced by this feature. False-positive rate this round 33% — the three rejects were all "real mechanism, unrealistic trigger" calls the Challenger made correctly against the runtime contract and threat model.
+- False negatives surfaced by later passes: the final test-review (run independently) caught that the F-01 and F-05 fixes shipped without regression coverage — a real gap the detection loop did not flag because it reviewed the pre-fix code. Both gaps were closed and the tests verified to catch the regression. Process note: applying a fix should always pair with a regression test, and the final test-review is the backstop that enforces it.
+
+### Closeout passes
+- Quality scan: 5 minor/info opportunities, dominated by duplicated path/glob/env knowledge between harvest and finalize and twin timestamp helpers (no action taken; advisory).
+- Final test-review: changes-requested → after adding the two regression tests, re-run returned **accepted**.
+- Doc reconcile (advisory): 4 durable-doc drifts — architecture-overview, CHANGELOG (no 0.5.2 section), GLOSSARY (missing shape/topology/asset-bundle/workflow-journal), README (no run-retro) — plus confirmation of the AC-04 spec inconsistency. All left for operator review per the discuss-before-apply convention.
+
+### Tooling
+- Project-native ruff and mypy run pre-spawn (both clean on production modules); pytest used as the test runner; Read/Grep/Glob for navigation. No fallbacks needed.
