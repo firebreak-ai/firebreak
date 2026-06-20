@@ -395,8 +395,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Net-new manual verification procedure",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created conformance/MANUAL-VERIFICATION.md: operator procedure mapping Step1\u2192UV-1 (run dir+journal+transcripts), Step2\u2192UV-2 (record under .fbk-capture/runs/ no command typed), Step3\u2192UV-3 (run-retro shows 3 units, 1 single/2 fan-out, 1 adversarial, persona each), Step4\u2192UV-5 (move project, re-read identical). Reader command + literals taken verbatim from run_retro.py. Human-run, not pytest.",
       "note": null
     },
     {
@@ -413,8 +413,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Net-new code-defined workflow with descriptor glue",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created conformance/workflow.mjs: 3-unit code-defined Firebreak workflow (implement=single/collaborative/fbk-implementer; 2 reviews=fan-out, one collaborative/test-reviewer + one adversarial/code-review-detector). Glue prepends <!--fbk-attr {json}--> with cardinality/stance/asset_bundle.persona; verified to parse against live attribution.py+shapes.py (all 3 resolve non-null shape). Follows remediation-exec.js DSL idiom (top-level await/return). Verified manually per task-17.",
       "note": null
     }
   ],
