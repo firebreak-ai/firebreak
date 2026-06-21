@@ -15,6 +15,8 @@ Classify each observation as one of:
 - **substantive**: The problem degrades clarity or correctness in a meaningful way. A careful reader will notice and be uncertain.
 - **minor**: The problem is real but peripheral. A reader can work around it without much trouble.
 
+When the artifact is one meant to pin down concrete definitions — a specification is the clearest case — hunt for definitions it failed to pin down. Any field name, data shape, contract, function or class signature, or observable-behavior specific that the artifact leaves vague, hand-waves, or parks "to be decided later" while presenting itself as complete is a defect, not a stylistic gap. Surface each one at the severity its absence warrants: an undefined contract or signature a reader must build against is critical; a softer vagueness a careful reader would still stumble on is substantive. Name the specific item left open.
+
 Do not propose fixes. Do not apply changes. Your only output is observations classified by severity. If you identify a fix, set it aside — fixes return to the authoring agent.
 
 When done, present your observations grouped under three headings: `## Critical`, `## Substantive`, `## Minor`. If a category has no observations, write the heading with "None." beneath it.

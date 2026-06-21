@@ -36,15 +36,19 @@ When the spec states it carries a contract inherited from a broader project scop
 
 ## Finding synthesis
 
-Write `ai-docs/<feature-name>/<feature-name>-review.md` per `review-perspectives.md` §"Review document structure" before invoking the test-reviewer. The required testing strategy coverage entries are enumerated in §"Verification gate" of the same guide.
+Write `ai-docs/<feature-name>/<feature-name>-review.md` per `review-perspectives.md` §"Review document structure". The required testing strategy coverage entries are enumerated in §"Verification gate" of the same guide.
 
-## Test strategy review
+## Council-clean confirmation
 
-Invoke the test reviewer agent (`test-reviewer`) as an Agent Teams teammate with checkpoint 1 context. Pass the spec file and the spec schema as the artifact set. The test reviewer evaluates independently — it has no memory of the council review discussion and no access to council findings.
+Confirm the council has reached a clean state before the independent test-review runs: every blocking finding is resolved in the spec or accepted with documented rationale and risk owner, and the review document is stabilized — no further synthesis edits pending. The test-review reads the stabilized spec, so it must not run while findings are still in motion.
 
-If the test reviewer returns FAIL: add its findings to the review document under a "Test Strategy Review" heading within the findings. Set the overall review result to fail. Include each defect the test reviewer identified, tagged with the AC it affects.
+## Independent test-review
 
-If the test reviewer returns PASS: add "Test strategy review: pass" to the review document as an informational note.
+With the council clean and the review document stable, invoke the test reviewer agent (`test-reviewer`) in its **spec checkpoint** mode as an Agent Teams teammate. Pass the spec file and the spec schema as the artifact set. The test reviewer evaluates independently — it has no memory of the council discussion and no access to council findings; it asks, for each requirement, whether the planned test would actually prove the behavior.
+
+The load-bearing output is the artifact: the reviewer writes `ai-docs/<feature-name>/test-review-spec.md` with a `Verdict:` line of `accepted` or `needs-revision`. The gate reads that file, not the conversation. A short human-readable summary may also be folded into the review document, but the artifact is authoritative.
+
+If the verdict is `needs-revision`: surface the reviewer's defects, address them in the spec, then re-run the test-review pass until the artifact records `accepted`. The gate blocks until the verdict is `accepted`.
 
 ## Threat model determination
 
@@ -62,6 +66,8 @@ python3 "$HOME"/.claude/fbk-scripts/fbk.py review-gate \
 ```
 
 Omit the third argument if no threat model was created. Report any failures from stderr.
+
+The gate also verifies the independent test-review verdict. It finds `test-review-spec.md` in the review file's own folder — no extra argument is needed. A missing artifact or a verdict other than `accepted` is a blocking gate failure.
 
 ## Retrospective
 

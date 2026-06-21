@@ -40,6 +40,18 @@ When the feature has a `design/contracts.md`, the architect additionally checks 
 
 All three conditions are `informational`, not blocking. Record them in the review document under the Architectural soundness concern so they are visible at breakdown.
 
+## Residual ambiguity hunt
+
+A complete spec has driven every requirement down to concrete definitions: every field name, data shape, contract, function or class signature, and the specifics of any observable behavior is pinned down — extracted from the existing code when the feature integrates with it, or decided with the operator when the piece is new.
+
+The reviewing perspectives actively hunt for the opposite: any name, shape, contract, signature, or observable behavior that is still vague, hand-waved, or parked "to be decided later" while the spec claims to be done. The architecture perspective owns the structural side — undefined contracts, signatures, field names, and data shapes. The quality perspective owns the behavioral side — an asserted behavior (a component logs, emits, records, retries, validates) that never says what is recorded or how a test would catch it breaking.
+
+Treat each such gap as a blocking finding, not a nitpick. Name the specific undefined item and what concrete definition would resolve it. A spec carrying this kind of open vagueness has not passed — this is the floor the reviewers carry, and there is no automated check behind it.
+
+## Independent test-review
+
+After the council reaches a clean state and the review document is stabilized, an independent test-review runs against the stabilized spec. It is distinct from the council: it carries no council memory and no council findings, and it reads the spec on its own. For each requirement it asks one question — does its planned test actually prove the behavior, such that the test would fail if that behavior broke? It also checks that every declared integration seam has end-to-end coverage planned. The pass emits a verdict that the gate verifies, so an unproven testing strategy stops the spec from advancing rather than slipping through to breakdown.
+
 ## Classification signals
 
 | Agent | Invoke when... |
@@ -118,10 +130,12 @@ When the user revises a spec and re-runs the spec review, replace the review doc
 - Threat model determination recorded: decision + rationale
 - If threat model requested: document exists with required sections (assets, threat actors, trust boundaries, threats)
 - Testing strategy coverage entries for all three categories (new tests, impacted tests, infrastructure) — empty categories have explicit "none" with justification
+- Independent test-review reached an `accepted` verdict — `test-review-spec.md` is present in the feature folder and its verdict is accepted
 
 **Semantic evaluation** (human decides):
 - Blocking findings genuinely resolved — addressed in spec revision or accepted with documented rationale and risk owner
 - Findings are actionable and specific, not generic observations
+- No residual ambiguity remains — every name, shape, contract, signature, and observable-behavior specific is concrete, with any leftover vagueness raised as a blocking finding (see the residual ambiguity hunt above)
 
 ## Transition
 

@@ -77,6 +77,29 @@ For each finding, include these structured fields in your output:
 
 Include these fields for every finding, including findings that pass. This enables override frequency tracking across reviews.
 
+## Spec checkpoint
+
+**Artifacts received:** spec file and spec schema. No test code exists yet — you evaluate the spec's planned testing strategy, not implemented tests.
+
+The spec checkpoint runs during spec review, after the council is clean and the review document is stable. It gates the spec/review gate: an `accepted` verdict is required for that gate to pass, and a `needs-revision` verdict blocks it.
+
+Evaluate the spec's planned tests against its own requirements, acceptance criteria, and declared integration seams:
+
+- **Behavioral completeness (Criterion 6).** For each user verification step in the spec, name the planned test that covers it and the failure mode — what observable result would change if the behavior were removed or broken. A requirement whose planned test would still pass with the behavior broken is a defect.
+- **Integration seam coverage (Criterion 7).** For each declared integration seam, verify the strategy plans at least one end-to-end test that exercises the full chain rather than mocking across it. Flag declared seams with no planned e2e coverage.
+- **Seam declaration completeness (Criterion 8).** Flag module interactions the technical approach describes but the seam declaration omits.
+
+Work from the spec alone — you have no council memory and no council findings.
+
+**Pass condition:** every requirement maps to a planned test that would catch its behavior breaking; every declared seam has planned end-to-end coverage; no undeclared cross-module seam.
+
+**Fail condition:** any requirement whose planned test would not prove its behavior, any declared seam without planned e2e coverage, or any undeclared seam. Report each defect with specific findings using the override output format.
+
+**Verdict line:** the output must include a verdict line, exactly one of, emitted as a `Verdict:` line so the spec gate can read it:
+```
+accepted | needs-revision
+```
+
 ## Pre-lock mode
 
 **Artifacts received:** spec file, test task files from `ai-docs/<feature>/tasks/`, test code files.
@@ -143,7 +166,7 @@ On pass: state "PASS" with a one-line summary of what was validated. Include the
 
 On fail: state "FAIL" followed by a numbered list of defects. Each defect includes: the AC it affects, what the defect is, and what needs to change. Include the mode name in the output header.
 
-The final line of every output must be the verdict: `accepted` or `needs-revision`.
+Every output must carry a verdict line of the form `Verdict: accepted` or `Verdict: needs-revision`. The gates locate this line by its `Verdict:` prefix, so emit it exactly that way.
 
 ## Brownfield projects
 
