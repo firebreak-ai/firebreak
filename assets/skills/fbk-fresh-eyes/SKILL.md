@@ -15,7 +15,7 @@ If `$ARGUMENTS` is empty, ask: "Which artifact or feature would you like a fresh
 
 ## Spawn the reviewer
 
-Invoke the `fbk-fresh-eyes-reviewer` agent in an isolated context. Pass it only the artifact under review — no other files, no authoring history, no prior conversation context. The reviewer reads cold.
+Invoke the `fbk-fresh-eyes-reviewer` agent in an isolated context. Pass it the artifact under review, plus any cross-cutting convention files the artifact consumes — an authoritative conventions document, a shared config or interface definition, a naming or event registry the artifact builds on — so the reviewer can check the artifact against the convention it should follow rather than re-deriving it. Pass nothing else: no authoring history, no prior conversation context, no review of how the artifact came to be. The reviewer reads cold, and the convention files are reference material to compare against, not a record of the author's reasoning.
 
 ## Collect observations
 

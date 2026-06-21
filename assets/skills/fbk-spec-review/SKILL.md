@@ -32,6 +32,8 @@ If `ai-docs/<feature-name>/<feature-name>-review.md` already exists, warn the us
 
 Classify which agents to invoke and in which mode per `review-perspectives.md` §"Classification process"; present the classification rationale before proceeding. Invoke `/fbk-council` with the classified agents per §"Invoking the council". For any spec that removes, renames, or changes a symbol's signature, additionally instruct the Architect agent to grep for all callers of the changed symbol and flag any the spec does not enumerate.
 
+When the spec states it carries a contract inherited from a broader project scope verbatim, instruct the Architect agent to locate that original contract and diff the spec's entry against it field by field — signature, every invariant, and every constant. A review anchored only to the spec's own copy cannot catch a transcription divergence: a dropped field, a renamed field, a widened type, or a changed constant.
+
 ## Finding synthesis
 
 Write `ai-docs/<feature-name>/<feature-name>-review.md` per `review-perspectives.md` §"Review document structure" before invoking the test-reviewer. The required testing strategy coverage entries are enumerated in §"Verification gate" of the same guide.

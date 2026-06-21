@@ -15,6 +15,7 @@ When compiling interface contracts for existing files:
 - **Compile every spec-identified impact into an explicit task.** When the spec's testing strategy, impact analysis, or dependency sections identify existing files that will be affected by the changes (tests requiring mock migration, assertions needing updates, callers requiring signature changes), create a task for each. Spec impact entries are mandatory work items, not informational context — if the spec says a file is affected, the breakdown must include a task that addresses it.
 - **When a task removes, renames, or changes the signature of any symbol** (struct field, function, type), grep the codebase for all call sites of that symbol. Do not rely solely on the spec's impact analysis. Create a task for each call site not already covered. Spec impact sections are a starting point, not a complete enumeration.
 - **When a task instruction requires passing or using a specific value** (a context object, a reference, a constructed instance), verify that value is reachable in the target file at compilation time. If the value does not yet exist — because it must be threaded through constructors or other files not yet modified — create a prerequisite task that establishes it and add it as a dependency. State the intended final value in the task instruction, even when a prerequisite must deliver it first.
+- **When a task names an agent persona or a built-in workflow, copy the real identifier exactly.** A task that tells an agent to spawn a persona must use that installed agent's `name:` field verbatim; a task that builds a workflow defined in code must use the harness's actual workflow vocabulary. Read the installed agent file or the harness reference to confirm the spelling — a near-miss name or an invented workflow term produces an artifact that looks right and silently fails to run.
 
 ## Preparatory Refactor Compilation
 
@@ -50,6 +51,10 @@ When a task references files created or modified by other tasks, the task instru
 
 **New interfaces**: When a test task and implementation task share a function or interface that does not yet exist in the codebase at compilation time, state the exact signature in both task files. The test task declares the signature; the implementation task copies it verbatim. Do not leave the signature for either agent to infer from the spec — agents compiling independently from the same spec text will produce incompatible signatures.
 
+**Nested field paths**: When a task reads or writes a field inside a structured record, quote the full path to that field — `bundle.persona`, not "the persona field." An agent given the short name guesses the nesting, and the one place a task leaves the path implicit is the place a test drifts from the schema. Restate the nesting in every task that touches the field.
+
+**Shared test helpers**: When several test tasks call the same shared helper, pin the helper's exact signature in each of those task files. Independent test authors who are left to infer a helper's shape invent slightly different versions, and the drift only surfaces when their tasks link against each other. Stating the signature in full at every call site keeps the parallel authors aligned.
+
 **Orchestrator tasks**: When a task modifies the orchestrator file (the file that wires all modules together), it is higher-risk and requires additional specification: an explicit wiring checklist stating what must be imported, what must be initialized, what must be updated per frame/tick, and what must be cleaned up. Orchestrator tasks are routed to Sonnet minimum (regardless of other sizing heuristics) and include the wiring checklist as a dedicated section in the task file.
 
 ## Sizing Constraints
@@ -72,6 +77,12 @@ When a task changes an interface (function signature, constructor, API contract)
 Migration batches that modify the same file must be assigned to sequential waves. Each migration test task verifies only that its batch's callers use the new interface — do not assert absence of the old interface until the final verification gate.
 
 When a task removes a struct field or makes a field unexported, the implementing agent will fix all downstream compile errors in the same pass rather than leaving the build broken — downstream caller-migration tasks will be superseded. Either combine the field removal and all caller migrations into one task (document the file-scope justification), or mark each downstream caller task as `expected-superseded` in the task.json `note` field.
+
+### Same-Wave Same-File Writes
+
+When two or more tasks in the same wave would each edit the same file — for example, each task removing its own stub from a shared registry — they race against each other, and the parallel teammates have no way to coordinate. Detect this during compilation by checking whether any file appears in more than one task's scope within a wave.
+
+When you find it, restructure so the shared edit happens once. Move the common change into a single prep task in an earlier wave (it does the whole shared edit), then leave each remaining task to create only its own file. This keeps every wave's file scopes disjoint, which is what lets the per-wave file-scope check stay meaningful.
 
 ## Task File Structure
 
@@ -181,6 +192,12 @@ When the behavior is embedded inside a non-importable function (module-level sid
 3. Add the extraction task as a dependency of the test task.
 
 Do not create a test task that requires simulating a side effect from another module. If the test cannot call the production function that produces the behavior, the test task is not ready.
+
+## Manual Operator-Verification Gate
+
+Some behavior only runs end to end when the real wiring and real fixtures are in play — the glue between live components that no isolated test reaches. When automated tests can cover everything else and only this final glue needs a live run, a written manual procedure the operator follows is a legitimate completion gate. State it as concrete steps with an observable expected result.
+
+Reach for this only when the genuine glue is what's under test. Do not write a test that mocks the very wiring it claims to verify — a test that stands in a fake for the connection it exists to check passes whether or not the real connection works, which is worse than an honest manual step.
 
 ## Quantifier ACs
 
@@ -306,6 +323,13 @@ Report the specific ambiguity: quote the ambiguous spec text, describe the two o
 - Task boundaries are natural — splits don't create artificial seams
 - Impacted existing tests from the spec's testing strategy are assigned to test tasks
 - Test tasks cover behavioral intent of referenced ACs, not just surface assertions
+
+### Known Gate-Tooling Limitations
+
+Two gaps in the current gate tooling are worth routing around until the tooling itself is repaired. These are stopgap notes, not the permanent answer — the real fix is to harden the gate.
+
+- **The files-to-modify existence check can't tell a typo from a not-yet-created file.** The check confirms each listed file exists, but a file an earlier task is meant to create does not exist yet at check time, and that looks identical to a misspelled path. Double-check by hand that every `files_to_modify` path is either present now or genuinely produced by a declared earlier task.
+- **The per-task reviewer gate lacks the cross-cutting exemption the breakdown gate has.** The breakdown gate knows a cross-cutting slice has a test task with no paired implementation task; the task reviewer does not, and may flag the missing pair as an error. Expect that false flag on cross-cutting work and confirm the pairing is intentional rather than reshaping the task to satisfy the reviewer.
 
 ## Transition
 

@@ -132,7 +132,7 @@ These three passes run in the order listed, after the bug-finding loop has conve
 
 ## Source of Truth Handling
 
-**Spec available**: Use the spec's acceptance criteria (ACs) and user-visible (UV) steps as the primary comparison target. These define the intended behavior against which the code is measured.
+**Spec available**: Use the spec's acceptance criteria (ACs) and user-visible (UV) steps as the primary comparison target. These define the intended behavior against which the code is measured. When the spec states it carries a contract inherited from a broader project scope verbatim, do not treat the spec's copy as the source of truth for that contract — locate the original and diff the code against it field by field (signature, every invariant, every constant). A review that stays inside the spec cannot catch a transcription divergence: a dropped field, a renamed field, a widened type, or a changed constant looks correct against the spec's own copy.
 
 **No spec available**: Use both the AI failure mode checklist (`fbk-docs/fbk-sdl-workflow/ai-failure-modes.md`) and the structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` for structural issue detection.
 

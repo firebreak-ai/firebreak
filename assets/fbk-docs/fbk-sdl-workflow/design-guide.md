@@ -16,6 +16,8 @@ Design phase output lives in `ai-docs/<feature-name>/design/` (individual design
 
   When the feature introduces or changes contracts, read `design-contracts-standard.md` for the entry schema and identifier scheme — this route applies only when the feature has contracts to document.
 
+  When a contract is shared — a config shape, a constructor signature, a naming scheme, a shared sentinel set, an event registry that other parts of the project also use — compare the design's version against the project's established convention before recording it. Find that convention in this order: prefer an authoritative conventions document if one exists; if none exists, infer the convention from the dominant pattern in the existing code; if neither exists, say plainly that you are setting a new convention, so the choice is visible rather than buried. Checking the feature's own foundational contract is not enough — a shared convention reinvented here slips through unless you compare against where it already lives. If a conventions document and the live code disagree, surface the conflict to the user with a recommendation: name what the document says, note that the code does something different and roughly how widely, recommend which to align to and why, and ask for confirmation. Do not silently pick a side, and do not hand over the raw conflict without a recommendation.
+
 Add pages when a distinct concern warrants its own document. Split when a page exceeds one scrollable screen of meaningful content.
 
 **Design manifest** — `ai-docs/<feature-name>/design-manifest.md`. Lists every design page, states the decomposition rationale, and counts decisions recorded. Format:
@@ -54,9 +56,25 @@ After each decision is recorded, increment `Decisions recorded:` in the manifest
 
 ---
 
+## Establishing Ground Truth Before You Commit
+
+When a design choice rests on how a dependency or some external behavior actually works, find out the truth early — before the design is committed — rather than carrying an unverified assumption into implementation, where it surfaces as a late failure that is far more expensive to fix.
+
+Establish that ground truth the cheapest way that settles the question, escalating only if a cheaper check leaves it open:
+
+1. **Read the dependency's own source directly.** The cheapest answer is usually already written down in the code you depend on. Open it and look.
+2. **Run a small experiment script.** When reading the source does not settle it, write a few lines that exercise the real behavior and observe what actually happens.
+3. **Run an evaluation.** When the behavior is large or statistical, stand up a proper evaluation against it.
+
+Do the cheap end of this ladder on your own — reading a dependency or running a quick script needs no permission. When establishing the ground truth would take non-trivial effort — a sizable experiment, an evaluation that costs real time or money — raise it with the user first and agree it is worth the cost, rather than unilaterally sinking significant effort into it.
+
+---
+
 ## Fresh-Eyes Anchor
 
 Before the design gate runs, a fresh-eyes review of the design artifacts is required. The review output is `ai-docs/<feature-name>/fresh-eyes-design.md`. The gate requires this file and checks that the `## Critical` section is empty — no open critical observations may remain.
+
+When the design touches a shared contract, give the cold reviewer the convention it should compare against — the authoritative conventions document if one exists, otherwise the existing code that carries the dominant pattern — so the review can catch a reinvented shared convention. A reviewer who sees only the design artifact has no way to notice that the design quietly re-derived a convention that already lives elsewhere.
 
 If the fresh-eyes review surfaces critical observations, resolve them before calling the gate.
 
