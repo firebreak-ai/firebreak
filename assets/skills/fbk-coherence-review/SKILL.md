@@ -19,7 +19,7 @@ Before spawning the review loop, check whether the feature has any contracts or 
 
 **Condition:** the feature declares no contracts and no seams — both of the following hold:
 
-1. The spec's interface-contracts section carries only the no-contracts sentence ("No new or changed contracts in this feature.") **or** `design/contracts.md` is absent entirely. An absent `design/contracts.md` is treated as "no design contract entries" and routes to trivial-accept — not to a missing-source loud failure.
+1. The spec's interface-contracts section carries only the no-contracts sentence ("No new or changed contracts in this feature.") **and** the design contracts page has no contract entries. Both sides must hold: if the spec declares any interface contract, this condition fails even when `design/contracts.md` is absent. An absent `design/contracts.md` counts only as "no design contract entries" (the design side of this condition) — it does not by itself satisfy condition 1, and it is never a missing-source loud failure.
 2. The spec's technical approach declares no integration seams (the producer→consumer seam checklist is empty).
 
 **When both hold:** skip the review loop. Write a one-line trivial-accept note plus `Verdict: accepted` to `ai-docs/<feature>/coherence-review.md`:

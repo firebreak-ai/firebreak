@@ -21,12 +21,13 @@ A finding at researcher output has no verdict field. Verdict fields are added by
 
 ### Challenger verdict
 
-The challenger produces exactly one of four outcomes for each candidate finding:
+The challenger produces exactly one of five outcomes for each candidate finding:
 
 - **Verified**: the challenger independently confirmed the mechanism by reading the artifact and, when applicable, the cited source. The challenger can describe the trigger and consequence in its own words, not the researcher's.
 - **Verified-pending-execution**: the finding is credible from reading but requires test execution to confirm fully. Treated as verified with a caveat marker.
 - **Rejected**: the challenger found concrete counter-evidence — the artifact does not behave as described, the trigger is unrealistic, or the behavior aligns with explicitly documented intent.
 - **Rejected-as-nit**: the observation is technically accurate but functionally irrelevant. Counted separately; does not enter the findings list.
+- **Unresolvable**: the finding turns on a cited source the challenger could not locate, so it can neither confirm nor reject. The challenger issues no verified-or-rejected ruling; the finding is surfaced as unadjudicated (the cited source could not be located) and remains open. See "The challenger reads cited sources before ruling" below.
 
 The challenger does not generate new findings. It only rules on candidates it received.
 
