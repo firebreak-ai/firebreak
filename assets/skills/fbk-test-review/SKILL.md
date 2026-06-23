@@ -7,7 +7,7 @@ description: >-
 argument-hint: "[feature-name or test-path]"
 ---
 
-Route the `test-reviewer` agent in **spec**, **pre-lock**, or **final** mode. The caller or operator selects the mode based on where in the pipeline the review occurs.
+Route through the shared review-loop spine (`fbk-docs/fbk-review-lenses/review-loop.md`) with `test-lens.md` loaded. Spawn one `review-researcher` to surface candidate test-integrity findings and one `review-challenger` to verify them (cardinality 1 researcher / 1 challenger, round cap 5). The caller or operator selects the mode — **spec**, **pre-lock**, or **final** — based on where in the pipeline the review occurs.
 
 ## Mode routing
 

@@ -28,8 +28,8 @@ Check for existing specs — provided by the user or discovered in `ai-docs/`. I
 
 Spawn agents as a team with fresh context per invocation. Use two agents:
 
-- **Detector** (`code-review-detector`): Reads code, produces sightings with type and severity classification. Tools: Read, Grep, Glob.
-- **Challenger** (`code-review-challenger`): Verifies or rejects sightings using JSON verdict format. Tools: Read, Grep, Glob.
+- **Detector** (`review-researcher` loaded with `fbk-docs/fbk-review-lenses/code-lens.md`): Reads code, produces sightings with type and severity classification. Tools: Read, Grep, Glob.
+- **Challenger** (`review-challenger` loaded with `fbk-docs/fbk-review-lenses/code-lens.md`): Verifies or rejects sightings using JSON verdict format. Tools: Read, Grep, Glob.
 
 Inject the behavioral comparison methodology from `code-review-guide.md` and the relevant source of truth into each agent's spawn prompt. Agents do not inherit skills.
 
@@ -80,6 +80,8 @@ Where the intent register has gaps (modules with no documentation coverage), der
 
 Resolve the active preset and severity threshold at the start of the review. Defaults: preset=`behavioral-only`, severity=`minor`. Both are overridable by user instruction.
 
+This loop follows the shared spine defined in `fbk-docs/fbk-review-lenses/review-loop.md`, with `fbk-docs/fbk-review-lenses/code-lens.md` as the loaded lens. The numbered steps below are the code-review preset's concrete wiring for that spine.
+
 Run the iterative detection and verification loop:
 
 1. Spawn Detector with: target code file contents first, then tool output (if available), then intent register (from Intent Extraction), then source of truth + behavioral comparison instructions from `code-review-guide.md` + AI failure mode checklist from `ai-failure-modes.md` + security detection targets from `security-patterns.md` + procedural audit passes from `detection-audits.md` + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` + the JSON sighting schema and type/severity definitions last. Instruct the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, `audit-pass`, `intent`, or `linter`) and to output sightings as a JSON array.
@@ -93,7 +95,7 @@ Run the iterative detection and verification loop:
 8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern and apply the fix to every instance. The Consistency audit normally surfaces siblings as separate sightings during detection; this fix-time sweep remains as a safety net for sites the audit missed.
 9. Run additional rounds for weakened but unrejected sightings.
 10. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds.
-11. After the loop terminates, write `.code-review-rounds.json` in the feature directory recording the full detection-round history. The file must include `schema_version` (value `"1.0"`), `spec` (the feature name), and `rounds` — an array with one entry per round, each carrying `round` (1-based integer), `raised` (sighting count before Challenger filtering), `survived` (verified count after filtering), and `severity_breakdown` (an object mapping severity labels to counts for that round). The code-review gate reads this file at check time to emit the detection-round metrics event.
+11. After the loop terminates, write `.code-review-rounds.json` in the feature directory recording the full detection-round history. The file must include `schema_version` (value `"1.0"`), `spec` (the feature name), and `rounds` — an array with one entry per round, each carrying `round` (1-based integer), `raised` (sighting count before Challenger filtering), `survived` (verified count after filtering), and an optional `severity` scalar — the single highest severity among that round's confirmed findings (`critical`, `major`, `minor`, or `info`). Omit `severity` when the round produced no confirmed findings. The human-facing per-severity breakdown lives only in the review report, never in this file. The code-review gate reads this file at check time to emit the detection-round metrics event.
 
 Only verified findings surface to the user. Rejected sightings are excluded. JSON is the working format throughout the pipeline. Markdown conversion happens once for the human-facing review report.
 

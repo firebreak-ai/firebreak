@@ -28,6 +28,8 @@ _PERSONA_TO_SHAPE = {
     "fbk-implementer": "implement",
     "test-reviewer": "review",
     "code-review-detector": "review",
+    "review-researcher": "review",
+    "review-challenger": "review",
     "fbk-product-author": "distill",
     "fbk-architect": "distill",
     "fbk-task-compiler": "distill",

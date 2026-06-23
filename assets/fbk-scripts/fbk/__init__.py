@@ -9,6 +9,7 @@ COMMAND_MAP = {
     "intent-gate": "fbk.gates.intent",
     "design-gate": "fbk.gates.design",
     "code-review-gate": "fbk.gates.code_review",
+    "coherence-gate": "fbk.gates.coherence",
     "task-completed": "fbk.hooks.task_completed",
     "dispatch-status": "fbk.hooks.dispatch_status",
     "pipeline": "fbk.pipeline",

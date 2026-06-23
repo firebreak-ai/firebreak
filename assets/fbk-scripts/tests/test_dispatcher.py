@@ -22,8 +22,8 @@ class TestDispatcherCommandMap:
         except ImportError:
             pytest.skip("fbk module not yet implemented")
 
-    def test_command_map_contains_all_20_commands(self):
-        """COMMAND_MAP contains exactly all 20 commands from spec."""
+    def test_command_map_contains_all_21_commands(self):
+        """COMMAND_MAP contains exactly all 21 commands from spec (coherence-gate added)."""
         try:
             import fbk
         except ImportError:
@@ -50,6 +50,7 @@ class TestDispatcherCommandMap:
             "code-review-gate",
             "report",
             "run-retro",
+            "coherence-gate",
         }
 
         actual_commands = set(fbk.COMMAND_MAP.keys())
@@ -92,6 +93,17 @@ class TestDispatcherCommandMap:
             "code-review-gate missing from COMMAND_MAP"
         assert fbk.COMMAND_MAP["code-review-gate"] == "fbk.gates.code_review", \
             f"Expected 'fbk.gates.code_review', got '{fbk.COMMAND_MAP.get('code-review-gate')}'"
+
+    def test_coherence_gate_maps_to_exact_module(self):
+        """COMMAND_MAP["coherence-gate"] == "fbk.gates.coherence"."""
+        try:
+            import fbk
+        except ImportError:
+            pytest.skip("fbk module not yet implemented")
+        assert "coherence-gate" in fbk.COMMAND_MAP, \
+            "coherence-gate missing from COMMAND_MAP"
+        assert fbk.COMMAND_MAP["coherence-gate"] == "fbk.gates.coherence", \
+            f"Expected 'fbk.gates.coherence', got '{fbk.COMMAND_MAP.get('coherence-gate')}'"
 
 
 class TestDispatcherModuleResolution:

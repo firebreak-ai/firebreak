@@ -37,6 +37,8 @@ FALLBACK_AGENTS = frozenset({
     "code-review-challenger",
     "code-review-detector",
     "test-reviewer",
+    "review-researcher",
+    "review-challenger",
 })
 
 # Regex to extract the name: value from frontmatter (first occurrence).

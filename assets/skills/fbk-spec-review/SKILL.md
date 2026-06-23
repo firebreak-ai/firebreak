@@ -44,11 +44,11 @@ Confirm the council has reached a clean state before the independent test-review
 
 ## Independent test-review
 
-With the council clean and the review document stable, invoke the test reviewer agent (`test-reviewer`) in its **spec checkpoint** mode as an Agent Teams teammate. Pass the spec file and the spec schema as the artifact set. The test reviewer evaluates independently — it has no memory of the council discussion and no access to council findings; it asks, for each requirement, whether the planned test would actually prove the behavior.
+With the council clean and all blocking findings resolved, spawn the generic `review-researcher` loaded with `test-lens.md` in **spec-checkpoint** mode as an Agent Teams teammate. The spawn materials are the spec file (`<feature-name>-spec.md`), the test lens, and the spec schema — the council's synthesized findings are not included. The researcher reads cold with no council memory: it asks, for each requirement, whether the planned test would actually prove the behavior.
 
-The load-bearing output is the artifact: the reviewer writes `ai-docs/<feature-name>/test-review-spec.md` with a `Verdict:` line of `accepted` or `needs-revision`. The gate reads that file, not the conversation. A short human-readable summary may also be folded into the review document, but the artifact is authoritative.
+The load-bearing output is the artifact: the researcher writes `ai-docs/<feature-name>/test-review-spec.md` with a `Verdict:` line of `accepted` or `needs-revision`. The gate reads that file, not the conversation. A short human-readable summary may be folded into the stage artifact, but the `test-review-spec.md` file is authoritative.
 
-If the verdict is `needs-revision`: surface the reviewer's defects, address them in the spec, then re-run the test-review pass until the artifact records `accepted`. The gate blocks until the verdict is `accepted`.
+If the verdict is `needs-revision`: surface the researcher's defects, address them in the spec, then re-run the test-review pass until the artifact records `accepted`. The gate blocks until the verdict is `accepted`.
 
 ## Threat model determination
 

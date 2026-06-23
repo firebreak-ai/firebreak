@@ -195,8 +195,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Edited test_shapes.py: persona-to-shape assertions resolve review-researcher/review-challenger to review (2 fail-red until shapes.py updated); added is_known_agent fixture test (green via real FBK_AGENTS_DIR scan).",
       "note": null
     },
     {
@@ -211,9 +211,9 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
-      "status": "not_started",
-      "summary": null,
-      "note": null
+      "status": "superseded",
+      "summary": "Superseded by task-26 (test + impl arrived together in Wave 1).",
+      "note": "Folded into task-26: that implementation task added TestScanModeBypass (the exact three AC-18 tests \u2014 reject-negative, scan-accept, finding-mode-validates \u2014 plus _DOC_RECONCILE_RECORD fixture) to test_pipeline.py alongside the validate_against_mode implementation. Tests are green and AC-18 is covered; no separate red-phase task needed."
     },
     {
       "id": "task-10",
@@ -227,8 +227,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_fresh_eyes_equivalence.py + planted-defect fixtures. Characterization (4 green): pins fresh-eyes critical-section output contract for task-32 migration.",
       "note": null
     },
     {
@@ -244,8 +244,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_code_review_rounds_preserved.py. Characterization (4 green): pins project_round_entries allowlist; migration must keep .code-review-rounds.json shape compatible.",
       "note": null
     },
     {
@@ -260,8 +260,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_scan_preset_outputs.py + scan_outputs fixtures. Conformance (3 green): <=5 severity-tagged quality-scan sightings; doc-reconcile 5-field/drift-before-notes shape.",
       "note": null
     },
     {
@@ -276,8 +276,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_spec_review_handoff_asset.py (2 fail-red): handoff routes through shared shape and excludes council review-document reference.",
       "note": null
     },
     {
@@ -292,8 +292,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_verdict_line_discipline.py. Characterization (5 green): exactly-one anchored Verdict line across five verdict-bearing artifacts.",
       "note": null
     },
     {
@@ -308,8 +308,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_task_review_blocking.py (1 fail-red missing SKILL.md, 3 skip-red, 4 green shape): blocking needs-revision verdict.",
       "note": null
     },
     {
@@ -326,8 +326,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_gates_coherence.py (6 skip-red missing fbk.gates.coherence): accepted/missing/needs-revision/trivial-accept/final-line-authoritative.",
       "note": null
     },
     {
@@ -342,8 +342,8 @@
       ],
       "model": "Haiku",
       "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Edited test_dispatcher.py (2 fail-red): COMMAND_MAP 21 commands incl coherence-gate -> fbk.gates.coherence.",
       "note": null
     },
     {
@@ -358,8 +358,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_coherence_trivial_accept_asset.py (3 fail-red missing SKILL.md): trivial-accept, absent-contracts routes to accept not loud-fail, Verdict: accepted one-line.",
       "note": null
     },
     {
@@ -376,8 +376,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Added review-researcher/review-challenger to shapes.py _PERSONA_TO_SHAPE (->review) and known_agents FALLBACK_AGENTS; test_shapes.py 15/15.",
       "note": null
     },
     {
@@ -398,8 +398,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created code-lens.md (finding/findings-artifact); migrated fbk-code-review/SKILL.md to route detector+challenger through review-loop spine with code-lens; step 11 severity_breakdown->scalar severity. rounds-preserved 4/4 green.",
       "note": null
     },
     {
@@ -419,8 +419,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test-lens.md (finding/verdict-contract); migrated fbk-test-review/SKILL.md to thin preset over spine (review-researcher/challenger 1/1, cap 5); test-reviewer string gone. verdict-line 5/5.",
       "note": null
     },
     {
@@ -440,8 +440,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fresh-eyes-lens.md (scan/observation-format); migrated fbk-fresh-eyes/SKILL.md to degenerate 1-researcher/0-challenger cap-1 preset. equivalence 4/4. Caveat: scan lens carries sections 2/4/7 as N/A stubs.",
       "note": null
     },
     {
@@ -462,8 +462,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created quality-lens.md (scan/observation-format, critical/substantive/minor); migrated fbk-quality-scan/SKILL.md step1 to review-researcher scan-only. scan-outputs 3/3.",
       "note": null
     },
     {
@@ -484,8 +484,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created doc-reconcile-lens.md (scan/observation-format, 5-field schema); migrated fbk-doc-reconcile/SKILL.md step3 to review-researcher scan-only. scan-outputs 3/3.",
       "note": null
     },
     {
@@ -505,8 +505,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Rewrote Independent test-review handoff in fbk-spec-review/SKILL.md to spawn review-researcher+test-lens (spec-checkpoint mode), excluding council review-document; review document token removed. handoff 4/4.",
       "note": null
     },
     {
@@ -523,8 +523,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file Python change at an integration point.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created fbk/gates/coherence.py validate_coherence (final Verdict: line authoritative, accepted passes); registered coherence-gate in __init__.py COMMAND_MAP (21). coherence+dispatcher 17/17.",
       "note": null
     },
     {
@@ -544,8 +544,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created coherence-lens.md (finding/verdict-contract) + fbk-coherence-review/SKILL.md (1/1 cap5); trivial-accept routing with absent-contracts->accept and missing-lens loud-fail on separate line. trivial-accept 3/3. Caveat: UV-6 live run still manual.",
       "note": null
     },
     {
@@ -565,8 +565,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created task-lens.md (finding/verdict-contract) + fbk-task-review/SKILL.md (1/1 cap5, needs-revision blocking, writes task-review.md). task-review-blocking 8/8.",
       "note": null
     },
     {

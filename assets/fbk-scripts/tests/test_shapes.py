@@ -9,6 +9,8 @@ Tests cover:
 - resolve_shape() returns None for unknown inputs and None input (never invents
   a shape)
 - Return for unknown input is None specifically, not a falsy value
+- is_known_agent() recognizes the two new generic role agents: review-researcher
+  and review-challenger
 """
 
 import pytest
@@ -18,6 +20,12 @@ try:
     SHAPES_AVAILABLE = True
 except ImportError:
     SHAPES_AVAILABLE = False
+
+try:
+    from fbk.capture import known_agents
+    KNOWN_AGENTS_AVAILABLE = True
+except ImportError:
+    KNOWN_AGENTS_AVAILABLE = False
 
 pytestmark = pytest.mark.skipif(
     not SHAPES_AVAILABLE,
@@ -55,13 +63,13 @@ class TestAgentTypeResolution:
         """resolve_shape("fbk-implementer") returns "implement"."""
         assert shapes.resolve_shape("fbk-implementer") == "implement"
 
-    def test_resolve_test_reviewer_to_review(self):
-        """resolve_shape("test-reviewer") returns "review"."""
-        assert shapes.resolve_shape("test-reviewer") == "review"
+    def test_resolve_review_researcher_to_review(self):
+        """resolve_shape("review-researcher") returns "review"."""
+        assert shapes.resolve_shape("review-researcher") == "review"
 
-    def test_resolve_code_review_detector_to_review(self):
-        """resolve_shape("code-review-detector") returns "review"."""
-        assert shapes.resolve_shape("code-review-detector") == "review"
+    def test_resolve_review_challenger_to_review(self):
+        """resolve_shape("review-challenger") returns "review"."""
+        assert shapes.resolve_shape("review-challenger") == "review"
 
     def test_resolve_fbk_product_author_to_distill(self):
         """resolve_shape("fbk-product-author") returns "distill"."""
@@ -116,3 +124,35 @@ class TestUnknownInputResolution:
     def test_unknown_input_returns_none_not_falsy_value(self):
         """resolve_shape("xyz") returns None specifically (identity check, not falsy)."""
         assert shapes.resolve_shape("xyz") is None
+
+
+# ---------------------------------------------------------------------------
+# Known-agent recognition tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.skipif(
+    not KNOWN_AGENTS_AVAILABLE,
+    reason="fbk.capture.known_agents module not yet implemented",
+)
+class TestKnownAgentsRecognizesNewRoleAgents:
+    """is_known_agent() recognizes the two new generic role agents."""
+
+    def test_known_agents_recognizes_new_role_agents(self, tmp_path, monkeypatch):
+        """is_known_agent returns True for review-researcher and review-challenger.
+
+        Writes minimal persona files into a tmp dir, points FBK_AGENTS_DIR at
+        it, then asserts each new agent name is recognized.  This exercises the
+        live file-scan path in is_known_agent, not the hardcoded fallback.
+        """
+        persona_dir = tmp_path / "agents"
+        persona_dir.mkdir()
+
+        for name in ("review-researcher", "review-challenger"):
+            path = persona_dir / f"{name}.md"
+            path.write_text(f"---\nname: {name}\n---\n\nPersona body.\n")
+
+        monkeypatch.setenv("FBK_AGENTS_DIR", str(persona_dir))
+
+        assert known_agents.is_known_agent("review-researcher") is True
+        assert known_agents.is_known_agent("review-challenger") is True

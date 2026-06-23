@@ -10,7 +10,7 @@ Surface the top quality opportunities in the change set. This is a scan-only tec
 
 ## Workflow
 
-1. Spawn the `fbk-code-review-detector` agent in quality-opportunity mode via the spawn prompt. Instruct it to: read the target diff or change set, identify code-quality opportunities (readability, maintainability, structural clarity, naming, duplication, fragile patterns), and return at most 5 sightings ranked by priority. Each sighting must include a `Severity:` field tagged as `critical`, `substantive`, or `minor`.
+1. Spawn the generic `review-researcher` agent loaded with `assets/fbk-docs/fbk-review-lenses/quality-lens.md` at degenerate scan-only cardinality: zero challengers, round cap 1, per the shared review-loop spine in `assets/fbk-docs/fbk-review-lenses/review-loop.md`. Instruct the researcher to: read the target diff or change set, apply the quality-lens detection areas (readability, maintainability, structural clarity, naming, duplication, fragile patterns), and return at most 5 sightings ranked by priority. Each sighting must include a `Severity:` field tagged as `critical`, `substantive`, or `minor`. Because the lens declares `output_mode: scan`, output bypasses `validate_sighting()` and is checked only against the lens's own output schema.
 
 2. Collect the detector's output. If more than five sightings are returned, keep only the top five by severity and rank.
 
