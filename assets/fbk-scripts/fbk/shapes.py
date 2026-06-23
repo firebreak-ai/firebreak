@@ -26,8 +26,6 @@ _PERSONA_TO_SHAPE = {
     "gate": "gate",
     # Canonical persona-name entries
     "fbk-implementer": "implement",
-    "test-reviewer": "review",
-    "code-review-detector": "review",
     "review-researcher": "review",
     "review-challenger": "review",
     "fbk-product-author": "distill",

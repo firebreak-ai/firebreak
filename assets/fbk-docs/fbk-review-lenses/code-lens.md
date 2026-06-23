@@ -1,5 +1,7 @@
 # Code Review Lens
 
+## Lens identity
+
 This lens reviews implementation code to determine whether behavior diverges from the stated spec, introduces AI failure modes, carries security vulnerabilities, or degrades structural quality. The core question is: does this code do what it claims, and will it keep doing so under realistic conditions?
 
 ```

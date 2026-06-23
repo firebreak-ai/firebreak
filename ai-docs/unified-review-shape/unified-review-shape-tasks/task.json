@@ -637,8 +637,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_lens_format.py (28 assertions): enumerates universal sections from lens-format.md, respects output_mode/output_contract conditional split. Surfaced a real defect \u2014 code-lens.md lacked the ## Lens identity heading; fixed in code-lens.md (task-30 scope). Now 28/28 green.",
       "note": null
     },
     {
@@ -653,8 +653,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_shared_detection.py (8 green): test-integrity audit in shared-detection.md only, forwarding note in detection-audits.md, no lens re-embeds it. Single-source invariant already held from Wave 1.",
       "note": null
     },
     {
@@ -669,8 +669,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_removed_agents_zero_callers.py (4 fail-red, 5 guard-green): only remaining references to the four domain agents are their own definition-file frontmatter; no prose callers in skills. Turns green when task-42 deletes the files.",
       "note": null
     },
     {
@@ -685,8 +685,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_no_break_suite.py (3 green): runs gate + telemetry modules as subprocess asserting zero failures and non-vacuous counts. AC-11 no-regression guard.",
       "note": null
     },
     {
@@ -712,8 +712,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Terminal deletion: removed the four superseded domain agent files (fbk-code-review-detector/-challenger, fbk-test-reviewer, fbk-fresh-eyes-reviewer); removed their registry references from shapes.py _PERSONA_TO_SHAPE (test-reviewer, code-review-detector) and known_agents.py FALLBACK_AGENTS (4 entries). Readiness check confirmed no live callers. zero-caller test 9/9; full suite 650 pass.",
       "note": null
     }
   ]

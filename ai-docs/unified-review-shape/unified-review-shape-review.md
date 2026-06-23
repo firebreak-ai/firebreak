@@ -141,3 +141,9 @@ Council clean. Spec gate re-run: pass, zero injection warnings.
 2. `TestUnlocatableSourceRouting` requires, near `unresolvable`, both a not-located token and a no-ruling phrase (`does not issue|no ruling|without a ruling|...`). Neither the draft loop nor the challenger matched the no-ruling regex ("rather than ruling without the source" / "cannot rule ... without it").
 
 **Resolution:** Per the test author's stated intent (adjust the asset, not the regex) and because `source_of_truth_ref` is the real schema field `normalize()` preserves, revise `review-loop.md` with minimal prose edits to name the field by its identifier near the inject step and to state the unlocatable→unresolvable, no-ruling rule explicitly. Single-file edit, within task-24 scope.
+
+## Implementation defect — code-lens.md non-conformance (surfaced by task-04, Wave 4)
+
+**Check failed:** `test_lens_format.py` — 1 of 28 assertions: `code-lens.md` is missing the universal `## Lens identity` section heading. Its identity content sits in the document preamble with no heading; the other six lenses all carry the heading.
+
+**Attribution:** Implementation error in task-30's deliverable (`code-lens.md`). lens-format.md lists "Lens identity" as a universal section; the conformance test correctly pins it. Fix = wrap the existing preamble identity content under a `## Lens identity` heading. Single-file edit within task-30 scope; the test is not loosened.
