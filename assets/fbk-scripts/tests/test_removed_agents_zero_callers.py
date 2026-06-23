@@ -2,13 +2,14 @@
 
 The migration replaces four domain-named agents with two generic role agents.
 Once migration is complete, the bare registry names of the removed agents must
-not appear in any active context asset (assets/skills/** or assets/agents/**),
-in prose or in structured fields.
+not appear in any active context asset (assets/skills/**, assets/agents/**, or
+assets/fbk-docs/**), in prose or in structured fields.
 
-Scope: assets/skills/ and assets/agents/ — by limiting the walk to these two
-directories, ai-docs/ and assets/fbk-scripts/tests/ are excluded by construction.
-Those paths are legitimately allowed to mention the old names (historical breakdown
-notes and test fixtures); restricting the scope replaces an explicit allowlist.
+Scope: assets/skills/, assets/agents/, and assets/fbk-docs/ — by limiting the
+walk to these three directories, ai-docs/ and assets/fbk-scripts/tests/ are
+excluded by construction. Those paths are legitimately allowed to mention the
+old names (historical breakdown notes and test fixtures); restricting the scope
+replaces an explicit allowlist.
 
 Red phase: the old agent files still exist under assets/agents/ and their
 frontmatter name: fields contain the bare removed names, so these tests fail
@@ -39,6 +40,7 @@ REMOVED_NAMES = [
 _ACTIVE_DIRS = [
     _REPO_ROOT / "assets" / "skills",
     _REPO_ROOT / "assets" / "agents",
+    _REPO_ROOT / "assets" / "fbk-docs",
 ]
 
 # Segments whose presence in a scanned path would indicate a scope violation.
@@ -51,7 +53,7 @@ _EXCLUDED_SEGMENTS = {"ai-docs", "tests"}
 
 
 def _iter_active_md_files() -> Iterator[Path]:
-    """Yield every *.md file under assets/skills/ and assets/agents/ (recursive)."""
+    """Yield every *.md file under assets/skills/, assets/agents/, and assets/fbk-docs/ (recursive)."""
     for directory in _ACTIVE_DIRS:
         yield from directory.rglob("*.md")
 
@@ -76,8 +78,10 @@ class TestScopeExcludesHistoricalAndFixtures:
     """The active-file walk does not descend into ai-docs/ or tests/.
 
     Documents that the allowlist is the scope boundary itself: by restricting
-    the walk to assets/skills/ and assets/agents/, historical breakdown notes
-    and test fixtures are excluded without an explicit allowlist entry.
+    the walk to assets/skills/, assets/agents/, and assets/fbk-docs/, historical
+    breakdown notes and test fixtures are excluded without an explicit allowlist
+    entry. assets/fbk-docs/ is an active context asset directory, not a historical
+    or fixture path, so its inclusion does not weaken the exclusion boundary.
     """
 
     def test_scanned_paths_contain_no_excluded_segments(self):

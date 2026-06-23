@@ -46,15 +46,16 @@ class TestQualityScanOutputShape:
     """quality-scan report carries at most five severity-tagged sightings."""
 
     def test_quality_scan_has_at_most_five_severity_tagged_sightings(self):
-        """Severity-tagged sightings are >= 1 (present) and <= 5 (upper bound),
-        each value within the scan vocabulary critical/substantive/minor."""
+        """Severity-tagged sightings are <= 5 (upper bound); zero is permitted
+        when the change set has no quality opportunities.  Each value must be
+        within the scan vocabulary critical/substantive/minor.
+
+        The fixture carries five sightings (the maximum), so this test also
+        verifies the fixture itself is within the allowed range.
+        """
         text = QUALITY_SCAN_FIXTURE.read_text(encoding="utf-8")
         matches = _SEVERITY_LINE_RE.findall(text)
 
-        assert len(matches) >= 1, (
-            "quality-scan fixture carries no Severity: lines — fixture does not "
-            "represent the spec's required output"
-        )
         assert len(matches) <= 5, (
             f"quality-scan fixture has {len(matches)} severity-tagged sightings; "
             "the contract allows at most five"

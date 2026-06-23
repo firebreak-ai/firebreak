@@ -193,12 +193,12 @@ def normalize(finding):
         evidence = base_evidence
 
     return {
-        "mechanism": finding.get("mechanism"),
-        "consequence": finding.get("consequence"),
+        "mechanism": finding.get("mechanism", ""),
+        "consequence": finding.get("consequence", ""),
         "evidence": evidence,
-        "type": finding.get("type"),
-        "severity": finding.get("severity"),
-        "source_of_truth_ref": finding.get("source_of_truth_ref"),
+        "type": finding.get("type", ""),
+        "severity": finding.get("severity", ""),
+        "source_of_truth_ref": finding.get("source_of_truth_ref", ""),
     }
 
 
