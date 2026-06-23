@@ -583,8 +583,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Created test_coherence_wiring_asset.py; 7/7 fail-red: breakdown must spawn coherence-review after task-reviewer-gate before breakdown-gate, invoke task-review preset (task-review.md artifact, needs-revision blocking); implement must run coherence-gate prerequisite. No characterization greens.",
       "note": null
     },
     {
@@ -603,8 +603,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Orchestrator skill wiring \u2014 Sonnet per orchestrator rule.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Wired fbk-breakdown/SKILL.md: replaced direct test-reviewer invocation with fbk-task-review preset (reads task-review.md, needs-revision blocks); added Coherence review spawn (fresh subagent) after task-reviewer-gate and before breakdown-gate, then coherence-gate. 5 breakdown assertions green.",
       "note": null
     },
     {
@@ -621,8 +621,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Orchestrator skill wiring \u2014 Sonnet per orchestrator rule.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "Wired fbk-implement/SKILL.md: added Coherence Gate prerequisite (coherence-gate on ai-docs/$FEATURE, blocks on non-zero) alongside Breakdown Gate. 2 implement assertions green.",
       "note": null
     },
     {
