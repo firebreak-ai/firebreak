@@ -1,0 +1,720 @@
+{
+  "spec": "ai-docs/unified-review-shape/unified-review-shape-spec.md",
+  "category": "feature",
+  "tasks": [
+    {
+      "id": "task-01",
+      "title": "Creates `tests/test_pipeline_normalize.py` asserting that `pipeline.normalize(finding)` returns exactly the six allowlisted handoff fields, ",
+      "file": "task-01-test-normalize-strips-framing.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-05"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "complete",
+      "summary": "Created test_pipeline_normalize.py; 4 tests skip-red on missing pipeline.normalize.",
+      "note": null
+    },
+    {
+      "id": "task-02",
+      "title": "Adds tests to `tests/test_pipeline.py` for the new lens-matrix loader and the per-lens-parameterized validator: `load_lens_matrix()` parses ",
+      "file": "task-02-test-lens-matrix-loader-and-parameterized-validator.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-16"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "complete",
+      "summary": "Added TestParameterizedValidation to test_pipeline.py; 4 tests skip-red on missing load_lens_matrix/LensVocabulary; existing TestValidateSighting untouched.",
+      "note": null
+    },
+    {
+      "id": "task-03",
+      "title": "Adds a backward-compatibility characterization class to `tests/test_pipeline_backward_compat.py` (its own file, so it does not race task-02'",
+      "file": "task-03-test-validator-backward-compat.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-16"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "complete",
+      "summary": "Created test_pipeline_backward_compat.py; 4 characterization tests GREEN by design (pins existing validate_sighting/cmd_validate behavior across upcoming signature change). Noted conftest valid_sightings fixture uses string location vs required dict.",
+      "note": null
+    },
+    {
+      "id": "task-20",
+      "title": "Creates `tests/test_pipeline_missing_lens.py` (its own file, so it does not race task-02's edits to `test_pipeline.py`) asserting that `load",
+      "file": "task-20-test-missing-lens-loud-failure.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-06"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "complete",
+      "summary": "Created test_pipeline_missing_lens.py; 2 tests skip-red on missing load_lens_matrix (named-path-in-error + no-silent-fallback).",
+      "note": null
+    },
+    {
+      "id": "task-21",
+      "title": "Creates `tests/test_review_loop_cited_source_asset.py` parsing `review-loop.md` and the challenger role agent to assert two things: the loop",
+      "file": "task-21-test-cited-source-injection-and-unresolvable.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-07"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "complete",
+      "summary": "Created test_review_loop_cited_source_asset.py; 4 tests fail-red (FileNotFoundError) on missing review-loop.md and fbk-review-challenger.md.",
+      "note": null
+    },
+    {
+      "id": "task-22",
+      "title": "Creates `tests/test_role_agents_asset.py` asserting the two new generic role agents exist with the exact registry `name:` frontmatter (`revi",
+      "file": "task-22-test-role-agents-persona-structural.md",
+      "type": "test",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-05",
+        "AC-13"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "complete",
+      "summary": "Created test_role_agents_asset.py; 2 existence tests fail-red, 6 content tests skip-red on missing fbk-review-researcher.md/fbk-review-challenger.md.",
+      "note": null
+    },
+    {
+      "id": "task-24",
+      "title": "Installs `assets/fbk-docs/fbk-review-lenses/review-loop.md` \u2014 the shared review-loop spine that every review preset routes to \u2014 by adapting ",
+      "file": "task-24-impl-review-loop-spine.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-07"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "complete",
+      "summary": "Installed review-loop.md spine. Escalation attempt 1: revised prose to name source_of_truth_ref near inject step and state unlocatable->unresolvable/no-ruling rule; all 4 paired assertions green.",
+      "note": null
+    },
+    {
+      "id": "task-25",
+      "title": "Creates the two generic role agents \u2014 `assets/agents/fbk-review-researcher.md` (frontmatter `name: review-researcher`) and `assets/agents/fb",
+      "file": "task-25-impl-role-agents.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-05",
+        "AC-13"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "complete",
+      "summary": "Created fbk-review-researcher.md and fbk-review-challenger.md (read-only tools, no domain tokens); test_role_agents_asset.py 8/8 green.",
+      "note": null
+    },
+    {
+      "id": "task-26",
+      "title": "Generalizes `assets/fbk-scripts/fbk/pipeline.py` by adding a lens-matrix loader, a per-lens-parameterized validator, a scan-mode discriminat",
+      "file": "task-26-impl-pipeline-parameterization.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-05",
+        "AC-06",
+        "AC-16",
+        "AC-18"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file Python change at an integration point.",
+      "status": "complete",
+      "summary": "Generalized pipeline.py: added LensVocabulary, load_lens_matrix (named FileNotFoundError), validate_against_mode (scan bypass), normalize (6-field strip); validate_sighting now takes optional vocab with byte-identical default. NOTE: also appended TestScanModeBypass to test_pipeline.py (task-09 territory). 23 pipeline tests green, backward-compat preserved.",
+      "note": null
+    },
+    {
+      "id": "task-27",
+      "title": "Installs `assets/fbk-docs/fbk-review-lenses/lens-format.md` \u2014 the extension contract every review lens must follow \u2014 by adapting the drafted",
+      "file": "task-27-impl-lens-format.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-15"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "complete",
+      "summary": "Created lens-format.md with output_mode/output_contract field decls, universal/conditional section split, three-way output-contract kinds (verdict-contract/findings-artifact/observation-format). 4 grep checks pass. Extension beyond draft noted for task-04 conformance.",
+      "note": null
+    },
+    {
+      "id": "task-28",
+      "title": "Moves the test-integrity audit out of `assets/fbk-docs/fbk-sdl-workflow/detection-audits.md` into a new `assets/fbk-docs/fbk-review-lenses/s",
+      "file": "task-28-impl-shared-detection.md",
+      "type": "implementation",
+      "wave_id": 1,
+      "dependencies": [],
+      "covers": [
+        "AC-14"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "complete",
+      "summary": "Created shared-detection.md with the Test-integrity audit; removed it from detection-audits.md leaving a pointer note; other four audits intact. Single-source greps pass.",
+      "note": null
+    },
+    {
+      "id": "task-06",
+      "title": "Updates `tests/test_shapes.py` so the persona-to-shape assertions name the two new generic role agents \u2014 `resolve_shape(\"review-researcher\")",
+      "file": "task-06-test-telemetry-resolves-new-agents.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-13"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-09",
+      "title": "Adds tests to `tests/test_pipeline.py` proving the scan-mode validation bypass is real, not vacuous: a doc-reconcile record that the finding",
+      "file": "task-09-test-scan-mode-bypass.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-18"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-10",
+      "title": "Creates a fresh-eyes equivalence fixture (an artifact carrying one known-planted critical flaw plus its expected `## Critical` observation) ",
+      "file": "task-10-test-fresh-eyes-planted-defect-equivalence.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-04"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-11",
+      "title": "Creates `tests/test_code_review_rounds_preserved.py` pinning that a `.code-review-rounds.json` carrying the post-migration round fields (`ro",
+      "file": "task-11-test-code-review-rounds-file-preserved.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-02",
+        "AC-01"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-12",
+      "title": "Captures the current quality-scan and doc-reconcile output shapes as fixtures and creates `tests/test_scan_preset_outputs.py` asserting the ",
+      "file": "task-12-test-scan-preset-output-shapes.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-17"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-13",
+      "title": "Creates `tests/test_spec_review_handoff_asset.py` parsing `fbk-spec-review/SKILL.md`'s test-review handoff block to assert it spawns the uni",
+      "file": "task-13-test-spec-review-council-exclusion-structural.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-14",
+      "title": "Creates `tests/test_verdict_line_discipline.py` asserting that each verdict-bearing artifact carries exactly one line matching `^Verdict: (a",
+      "file": "task-14-test-exactly-one-verdict-line.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-15",
+      "title": "Creates `tests/test_task_review_blocking.py` asserting (a) a `task-review.md` artifact carries exactly one anchored `Verdict: accepted | nee",
+      "file": "task-15-test-task-review-blocking-verdict.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-20"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-16",
+      "title": "Creates `tests/test_gates_coherence.py` exercising the new coherence gate over feature-dir fixtures: it passes when `coherence-review.md` en",
+      "file": "task-16-test-coherence-gate.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-08",
+        "AC-09",
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-17",
+      "title": "Adds a dispatcher test asserting `coherence-gate` is registered in `COMMAND_MAP` and resolves to the importable module `fbk.gates.coherence`",
+      "file": "task-17-test-coherence-gate-registered.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-08"
+      ],
+      "model": "Haiku",
+      "model_rationale": "Bounded single-file task with explicit instructions; no architectural judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-19",
+      "title": "Creates `tests/test_coherence_trivial_accept_asset.py` asserting the coherence preset's lens/skill declares the trivial-accept routing rule ",
+      "file": "task-19-test-coherence-trivial-accept-routing.md",
+      "type": "test",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-29",
+      "title": "Adds the two new generic role agent names \u2014 `review-researcher` and `review-challenger` \u2014 to the persona-to-shape table in `assets/fbk-scrip",
+      "file": "task-29-impl-telemetry-add-new-agents.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-25"
+      ],
+      "covers": [
+        "AC-13"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-30",
+      "title": "Migrates `assets/skills/fbk-code-review/SKILL.md` to route its detection-verification loop through the shared review-loop spine with a new `",
+      "file": "task-30-impl-code-review-preset.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-24",
+        "task-25",
+        "task-26",
+        "task-27"
+      ],
+      "covers": [
+        "AC-01",
+        "AC-02"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-31",
+      "title": "Migrates `assets/skills/fbk-test-review/SKILL.md` to a thin preset that routes through the shared review-loop spine with a new `assets/fbk-d",
+      "file": "task-31-impl-test-review-preset.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-24",
+        "task-25",
+        "task-26",
+        "task-27"
+      ],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-32",
+      "title": "Migrates `assets/skills/fbk-fresh-eyes/SKILL.md` to a degenerate-cardinality preset (1 researcher, 0 challengers, round cap 1) over the shar",
+      "file": "task-32-impl-fresh-eyes-preset.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-24",
+        "task-25",
+        "task-26",
+        "task-27"
+      ],
+      "covers": [
+        "AC-04"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-33",
+      "title": "Migrates `assets/skills/fbk-quality-scan/SKILL.md` to a degenerate scan-only preset (generic researcher, `assets/fbk-docs/fbk-review-lenses/",
+      "file": "task-33-impl-quality-scan-preset.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-24",
+        "task-25",
+        "task-26",
+        "task-27"
+      ],
+      "covers": [
+        "AC-17",
+        "AC-18"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-34",
+      "title": "Migrates `assets/skills/fbk-doc-reconcile/SKILL.md` to a degenerate scan-only preset (generic researcher, `assets/fbk-docs/fbk-review-lenses",
+      "file": "task-34-impl-doc-reconcile-preset.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-24",
+        "task-25",
+        "task-26",
+        "task-27"
+      ],
+      "covers": [
+        "AC-17",
+        "AC-18"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-35",
+      "title": "Re-expresses the \"Independent test-review\" handoff in `assets/skills/fbk-spec-review/SKILL.md` as a unified-shape test-review instance \u2014 rou",
+      "file": "task-35-impl-spec-review-handoff.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-24",
+        "task-25",
+        "task-26",
+        "task-27"
+      ],
+      "covers": [
+        "AC-03"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-36",
+      "title": "Creates the new coherence gate module `assets/fbk-scripts/fbk/gates/coherence.py` and registers it as `\"coherence-gate\": \"fbk.gates.coherenc",
+      "file": "task-36-impl-coherence-gate.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [],
+      "covers": [
+        "AC-08",
+        "AC-09",
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file Python change at an integration point.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-37",
+      "title": "Creates the new coherence-review preset \u2014 `assets/skills/fbk-coherence-review/SKILL.md` (1 researcher / 1 challenger, round cap 5, loads `co",
+      "file": "task-37-impl-coherence-preset.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-24",
+        "task-25",
+        "task-26",
+        "task-27"
+      ],
+      "covers": [
+        "AC-10"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-38",
+      "title": "Creates the new task-review preset \u2014 `assets/skills/fbk-task-review/SKILL.md` (1 researcher / 1 challenger, round cap 5, loads `task-lens.md",
+      "file": "task-38-impl-task-review-preset.md",
+      "type": "implementation",
+      "wave_id": 2,
+      "dependencies": [
+        "task-24",
+        "task-25",
+        "task-26",
+        "task-27"
+      ],
+      "covers": [
+        "AC-20"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-18",
+      "title": "Creates `tests/test_coherence_wiring_asset.py` parsing `fbk-breakdown/SKILL.md` and `fbk-implement/SKILL.md` to assert: the coherence review",
+      "file": "task-18-test-coherence-wiring-structural.md",
+      "type": "test",
+      "wave_id": 3,
+      "dependencies": [],
+      "covers": [
+        "AC-12",
+        "AC-19",
+        "AC-20"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-40",
+      "title": "Wires `assets/skills/fbk-breakdown/SKILL.md` to (a) call the task-review preset where it currently invokes the `test-reviewer` agent directl",
+      "file": "task-40-impl-breakdown-wiring.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-37",
+        "task-38"
+      ],
+      "covers": [
+        "AC-12",
+        "AC-20"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Orchestrator skill wiring \u2014 Sonnet per orchestrator rule.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-41",
+      "title": "Adds the `coherence-gate` check to the implementation prerequisites in `assets/skills/fbk-implement/SKILL.md` \u2014 run alongside the existing `",
+      "file": "task-41-impl-implement-wiring.md",
+      "type": "implementation",
+      "wave_id": 3,
+      "dependencies": [
+        "task-36"
+      ],
+      "covers": [
+        "AC-19"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Orchestrator skill wiring \u2014 Sonnet per orchestrator rule.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-04",
+      "title": "Creates `tests/test_lens_format.py` that enumerates the required sections from `lens-format.md` and asserts each of the seven review lenses ",
+      "file": "task-04-test-lens-format-conformance.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [],
+      "covers": [
+        "AC-15"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-05",
+      "title": "Creates `tests/test_shared_detection.py` asserting the test-integrity audit lives in exactly one place (`shared-detection.md`), no longer ap",
+      "file": "task-05-test-shared-detection-single-source.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [],
+      "covers": [
+        "AC-14"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-07",
+      "title": "Creates `tests/test_removed_agents_zero_callers.py` asserting that, across the active context assets (`assets/skills/**` and `assets/agents/",
+      "file": "task-07-test-zero-caller-grep.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [],
+      "covers": [
+        "AC-13"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-08",
+      "title": "Creates `tests/test_no_break_suite.py` that runs the existing gate and telemetry test modules as a subprocess and asserts they pass with no ",
+      "file": "task-08-test-existing-suites-pass-unchanged.md",
+      "type": "test",
+      "wave_id": 4,
+      "dependencies": [],
+      "covers": [
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    },
+    {
+      "id": "task-42",
+      "title": "Performs the terminal action of the migration: deletes the four superseded domain-specific review agent files and removes their four bare re",
+      "file": "task-42-impl-agent-deletion-terminal.md",
+      "type": "implementation",
+      "wave_id": 4,
+      "dependencies": [
+        "task-29",
+        "task-30",
+        "task-31",
+        "task-32",
+        "task-33",
+        "task-34",
+        "task-35",
+        "task-38",
+        "task-40"
+      ],
+      "covers": [
+        "AC-13",
+        "AC-11"
+      ],
+      "model": "Sonnet",
+      "model_rationale": "Multi-file or integration task requiring cross-file judgment.",
+      "status": "not_started",
+      "summary": null,
+      "note": null
+    }
+  ]
+}

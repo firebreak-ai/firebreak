@@ -12,9 +12,7 @@ For each mutation, shared-state read, or cached value the diff introduces or tou
 
 For each conditional whose predicate, operator, or variable changed in the diff, write out the old decision table and the new decision table, then check whether any input now produces a different outcome than the code author intended.
 
-## Test-integrity audit
-
-For each modified test: (a) does the test name describe what the test actually asserts? (b) do any mocks, monkeypatches, or fixtures invalidate the assertion (e.g., `time.sleep` patched away)? (c) is the assertion strict enough to catch the behavior it claims to check? (d) are shared mutable defaults avoided?
+The test-integrity audit has moved to `fbk-review-lenses/shared-detection.md` and is referenced there, not duplicated here.
 
 ## Cross-function API trace
 

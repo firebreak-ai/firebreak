@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 import argparse
 import pathlib
@@ -26,6 +27,70 @@ DEFAULTS = {
 }
 
 
+class LensVocabulary:
+    """Parsed vocabulary for a review lens: types, severities, matrix, and required fields."""
+
+    def __init__(self, types, severities, matrix, required):
+        self.types = types
+        self.severities = severities
+        self.matrix = matrix
+        self.required = required
+
+
+def load_lens_matrix(lens_path):
+    """Parse the fenced lens-matrix block from a lens file and return a LensVocabulary.
+
+    Raises FileNotFoundError (message contains lens_path) when the file does not exist.
+    Never falls back silently to a default vocabulary.
+    """
+    path = pathlib.Path(lens_path)
+    if not path.exists():
+        raise FileNotFoundError(f"lens not found: {lens_path}")
+
+    content = path.read_text()
+
+    # Extract lines between ```lens-matrix and closing ```
+    match = re.search(r"```lens-matrix\n(.*?)```", content, re.DOTALL)
+    if not match:
+        raise ValueError(f"no lens-matrix block found in: {lens_path}")
+    block = match.group(1)
+
+    def _parse_bracketed_list(line_text):
+        """Parse 'key: [a, b, c]' value portion into a set of stripped strings."""
+        inner = re.search(r"\[([^\]]+)\]", line_text)
+        if not inner:
+            return set()
+        return {item.strip() for item in inner.group(1).split(",")}
+
+    types = set()
+    severities = set()
+    matrix = {}
+    required = set()
+
+    lines = block.splitlines()
+    in_matrix = False
+    for line in lines:
+        if re.match(r"^types:", line):
+            types = _parse_bracketed_list(line)
+            in_matrix = False
+        elif re.match(r"^severities:", line):
+            severities = _parse_bracketed_list(line)
+            in_matrix = False
+        elif re.match(r"^matrix:", line):
+            in_matrix = True
+        elif re.match(r"^required:", line):
+            required = _parse_bracketed_list(line)
+            in_matrix = False
+        elif in_matrix and re.match(r"^\s+\w", line):
+            # Indented matrix entry: "  type_name: [sev1, sev2]"
+            key_match = re.match(r"^\s+(\w[\w-]*):", line)
+            if key_match:
+                type_name = key_match.group(1)
+                matrix[type_name] = _parse_bracketed_list(line)
+
+    return LensVocabulary(types=types, severities=severities, matrix=matrix, required=required)
+
+
 def load_presets():
     preset_path = pathlib.Path(__file__).parent / "data" / "fbk-presets.json"
     with open(preset_path) as f:
@@ -45,9 +110,31 @@ def write_json(data):
     sys.stdout.write('\n')
 
 
-def validate_sighting(s):
+def validate_sighting(finding, vocab=None):
+    """Validate a finding dict against the given vocabulary.
+
+    When vocab is None, falls back to module constants (REQUIRED_FIELDS, VALID_TYPES,
+    VALID_SEVERITIES, VALID_COMBINATIONS) — identical behavior to the previous
+    single-argument form.  When vocab is a LensVocabulary, validates against that
+    lens's types/severities/matrix/required.
+
+    Returns None on success, or an error string describing the first rejection reason.
+    """
+    if vocab is None:
+        required_fields = REQUIRED_FIELDS
+        valid_types = VALID_TYPES
+        valid_severities = VALID_SEVERITIES
+        combinations = VALID_COMBINATIONS
+    else:
+        required_fields = vocab.required
+        valid_types = vocab.types
+        valid_severities = vocab.severities
+        combinations = vocab.matrix
+
+    s = finding
+
     # Check required fields
-    for field in REQUIRED_FIELDS:
+    for field in required_fields:
         if field == "location":
             loc = s.get("location")
             if not isinstance(loc, dict) or not loc.get("file") or "start_line" not in loc:
@@ -57,7 +144,8 @@ def validate_sighting(s):
         if val is None or (isinstance(val, str) and val.strip() == ""):
             return f"missing field '{field}'"
 
-    # Check min lengths
+    # Check min lengths (always against module constants — these are structural quality gates
+    # that do not vary per lens)
     for field, min_len in MIN_LENGTH_FIELDS.items():
         val = s.get(field, "")
         if len(str(val)) < min_len:
@@ -66,16 +154,52 @@ def validate_sighting(s):
     # Check enums
     t = s.get("type")
     sev = s.get("severity")
-    if t not in VALID_TYPES:
+    if t not in valid_types:
         return f"invalid type '{t}'"
-    if sev not in VALID_SEVERITIES:
+    if sev not in valid_severities:
         return f"invalid severity '{sev}'"
 
     # Check type-severity matrix
-    if sev not in VALID_COMBINATIONS.get(t, set()):
+    if sev not in combinations.get(t, set()):
         return f"invalid type-severity combination '{t}+{sev}'"
 
     return None
+
+
+def validate_against_mode(record, vocab, output_mode):
+    """Route record validation based on the lens output mode.
+
+    When output_mode is "scan", returns None (accept; skip finding-validation).
+    When output_mode is "finding", delegates to validate_sighting(record, vocab).
+    """
+    if output_mode == "scan":
+        return None
+    return validate_sighting(record, vocab)
+
+
+def normalize(finding):
+    """Strip researcher framing from a finding and return the six allowlisted handoff fields.
+
+    Folds the structured location object into the evidence string.
+    Returns a dict with exactly the keys: mechanism, consequence, evidence, type,
+    severity, source_of_truth_ref.
+    """
+    loc = finding.get("location", {})
+    base_evidence = finding.get("evidence", "")
+    if isinstance(loc, dict) and loc.get("file") is not None:
+        loc_str = f"{loc.get('file', '')}:{loc.get('start_line', '')}"
+        evidence = f"{base_evidence} ({loc_str})"
+    else:
+        evidence = base_evidence
+
+    return {
+        "mechanism": finding.get("mechanism"),
+        "consequence": finding.get("consequence"),
+        "evidence": evidence,
+        "type": finding.get("type"),
+        "severity": finding.get("severity"),
+        "source_of_truth_ref": finding.get("source_of_truth_ref"),
+    }
 
 
 def cmd_validate(args):
