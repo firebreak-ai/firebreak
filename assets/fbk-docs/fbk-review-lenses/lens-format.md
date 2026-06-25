@@ -11,7 +11,7 @@ This page defines what a lens must contain so the researcher and challenger can 
 All review lens documents live at:
 
 ```
-assets/fbk-docs/fbk-review-lenses/<type>-lens.md
+fbk-docs/fbk-review-lenses/<type>-lens.md
 ```
 
 Where `<type>` is the review type name: `code`, `test`, `test-plan`, `task`, `coherence`.
@@ -19,7 +19,7 @@ Where `<type>` is the review type name: `code`, `test`, `test-plan`, `task`, `co
 The shared detection document lives at:
 
 ```
-assets/fbk-docs/fbk-review-lenses/shared-detection.md
+fbk-docs/fbk-review-lenses/shared-detection.md
 ```
 
 A lens that uses shared detection passes includes this document by reference: "Read `shared-detection.md` for the [named passes] this lens uses." It never copies the content into itself.

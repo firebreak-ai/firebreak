@@ -42,11 +42,14 @@ else
   not_ok "skill file has valid YAML frontmatter with description"
 fi
 
-# --- Test 3: skill references test reviewer agent ---
-if grep -qiE 'test-reviewer|test reviewer' "$SKILL_FILE"; then
-  ok "skill references test reviewer agent"
+# --- Test 3: skill references test review capability ---
+# The old code invoked "test-reviewer" as an agent name. The unified-review-shape
+# consolidation replaced it with "review-researcher" + "review-challenger" loaded
+# with test-lens.md, or a reference to fbk-test-review as a skill invocation.
+if grep -qiE 'test-reviewer|test reviewer|review-researcher.*test|fbk-test-review|test-lens' "$SKILL_FILE"; then
+  ok "skill references test review capability"
 else
-  not_ok "skill references test reviewer agent"
+  not_ok "skill references test review capability"
 fi
 
 # --- Test 4: skill specifies checkpoint 1 context ---
@@ -56,11 +59,14 @@ else
   not_ok "skill specifies checkpoint 1 context (testing strategy evaluation)"
 fi
 
-# --- Test 5: skill specifies Agent Teams invocation ---
-if grep -qiE 'Agent Teams|teammate' "$SKILL_FILE"; then
-  ok "skill specifies Agent Teams invocation for context isolation"
+# --- Test 5: skill specifies isolated agent invocation for context isolation ---
+# The old code used "Agent Teams" as a product name. The unified-review-shape
+# consolidation spawns "cleared agents" directly — same isolation guarantee,
+# different phrasing. Accept either form.
+if grep -qiE 'Agent Teams|teammate|cleared agent|cleared-agent|cleared context' "$SKILL_FILE"; then
+  ok "skill specifies isolated agent invocation for context isolation"
 else
-  not_ok "skill specifies Agent Teams invocation for context isolation"
+  not_ok "skill specifies isolated agent invocation for context isolation"
 fi
 
 # --- Test 6: skill preserves council invocation ---
@@ -78,9 +84,11 @@ else
 fi
 
 # --- Test 8: test strategy review is positioned between council and gate ---
-council_line=$(grep -niE '## council invocation|invoke.*council' "$SKILL_FILE" | head -1 | cut -d: -f1)
-test_review_line=$(grep -niE 'test-reviewer|test strategy review' "$SKILL_FILE" | head -1 | cut -d: -f1)
-gate_line=$(grep -niE 'review-gate|## gate invocation|Gate invocation' "$SKILL_FILE" | head -1 | cut -d: -f1)
+# The old code looked for "test-reviewer|test strategy review"; the new skill uses
+# "test-review" as the skill name and "review-researcher"/"review-challenger" as agents.
+council_line=$(grep -niE '## council invocation|invoke.*council|## Council' "$SKILL_FILE" | head -1 | cut -d: -f1)
+test_review_line=$(grep -niE 'test-reviewer|test strategy review|test-review|fbk-test-review|review-researcher' "$SKILL_FILE" | head -1 | cut -d: -f1)
+gate_line=$(grep -niE 'review-gate|## gate invocation|Gate invocation|## Gate' "$SKILL_FILE" | head -1 | cut -d: -f1)
 if [ -n "$council_line" ] && [ -n "$test_review_line" ] && [ -n "$gate_line" ] && \
    [ "$test_review_line" -gt "$council_line" ] && [ "$test_review_line" -lt "$gate_line" ]; then
   ok "test strategy review positioned between council and gate"

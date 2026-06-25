@@ -44,7 +44,7 @@ Confirm the council has reached a clean state before the independent test-review
 
 ## Independent test-review
 
-With the council clean and all blocking findings resolved, run the test-review as a unified-shape instance: route through `assets/fbk-docs/fbk-review-lenses/review-loop.md` with `test-lens.md` loaded, **spec-checkpoint** mode, cardinality 1 researcher / 1 challenger, round cap 5.
+With the council clean and all blocking findings resolved, run the test-review as a unified-shape instance: route through `fbk-docs/fbk-review-lenses/review-loop.md` with `test-lens.md` loaded, **spec-checkpoint** mode, cardinality 1 researcher / 1 challenger, round cap 5.
 
 Spawn both `review-researcher` and `review-challenger` as cleared agents. The spawn materials for the researcher are the spec file (`<feature-name>-spec.md`), the test lens, and the spec schema — the council's synthesized findings are not included, and the council's output artifact must not be in the spawn set. The researcher reads cold with no council memory: it asks, for each requirement, whether the planned test would actually prove the behavior. The challenger receives only the normalized candidate findings and any cited sources, never the researcher's framing or the council's prior synthesis.
 
