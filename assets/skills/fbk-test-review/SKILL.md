@@ -42,3 +42,63 @@ accepted | needs-revision
 ```
 
 A `needs-revision` verdict at any checkpoint blocks the downstream gate. The verdict is load-bearing — downstream gates read the artifact file, not the agent's conversation output. Both the spec gate and the code-review gate locate the artifact in the feature folder and read its `Verdict:` line, so the verdict must be emitted as a `Verdict:` line for the gate to find it.
+
+## Review loop
+
+This loop follows the shared spine, with `"$HOME"/.claude/fbk-docs/fbk-review-lenses/test-lens.md` as the loaded lens. Because there is no preset entry for test review (see the no-preset rule below), type-filtering is done by the lens's type matrix inside `validate --lens`, not by a domain-filter step.
+
+Executable commands use the full installed lens path. The short label `test-lens.md` appears in prose step introductions as a readable reference only — it is not passed to the pipeline directly.
+
+Severity default: `minor` (no explicit prose default existed in this skill before; `minor` is the conservative floor for test-integrity concerns and is overridable by operator instruction).
+
+1. **Stage 1 — spawn researcher (cold).** Spawn `review-researcher` with the artifact under review, `"$HOME"/.claude/fbk-docs/fbk-review-lenses/test-lens.md`, and the source of truth. Instruct the researcher to output candidate findings as a JSON array. Completion: a cold researcher spawn produces the JSON candidate array.
+
+2. **Stage 2 — validate and filter (composable pipe).** Run `pipeline validate --lens test-lens.md` followed by `pipeline severity-filter --min-severity minor` as a composable pipe:
+
+   ```
+   python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate --lens "$HOME"/.claude/fbk-docs/fbk-review-lenses/test-lens.md | python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline severity-filter --min-severity minor
+   ```
+
+   The lens's type matrix does the type-filtering — a finding whose type is outside the lens's allowed types is rejected and logged as `REJECTED: invalid type …`. There is no separate domain-filter step and no preset entry. Retain the kept, id-bearing list as the orchestrator's record store.
+
+3. **Stage 3 — normalize.** Pipe the kept list through:
+
+   ```
+   python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline normalize
+   ```
+
+   This produces the six neutral fields handed to the challenger.
+
+4. **Stage 4 — collect cited sources.** For each kept finding in the normalized list, collect the documents named in that finding's `source_of_truth_ref` field. Inject those documents into the challenger spawn as additional context, positioned after the normalized findings and before the verification instructions.
+
+5. **Stage 5 — spawn challenger (cold).** Spawn `review-challenger` with inputs in this order: (a) artifact under review, (b) `"$HOME"/.claude/fbk-docs/fbk-review-lenses/test-lens.md`, (c) normalized findings JSON, (d) cited-source documents collected in stage 4, (e) verification instructions. Collect the verdict array as JSON and write it to a temp file.
+
+6. **Stage 6 — validate-verdicts.** Pipe the verdicts temp file through:
+
+   ```
+   python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate-verdicts
+   ```
+
+   This fails the handoff if any verdict has an invalid status or is missing the evidence its status requires. This replaces any prose verdict-field check.
+
+7. **Stage 7 — rejoin by position.** Pipe the retained kept list on stdin through:
+
+   ```
+   python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline rejoin --verdicts <verdicts-file>
+   ```
+
+   This produces the merged records. The count guard fires here — a mismatch between the number of kept findings and the number of verdicts is a hard failure.
+
+8. **Stage 8 — re-validate and author the verdict.** Pipe the merged records through `pipeline validate --lens test-lens.md`:
+
+   ```
+   python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate --lens "$HOME"/.claude/fbk-docs/fbk-review-lenses/test-lens.md
+   ```
+
+   This is a filter-and-renumber, not a pure check: `validate --lens` drops any merged record that fails re-validation (for example a reclassification whose new type or severity is invalid under the lens matrix) and renumbers the survivors' `S-NN` ids. Retain this command's stdout — the re-validated survivor list — as the confirmed finding set.
+
+   Test review writes its verdict from the orchestrator's own reasoning, not from a formatted findings report. The rejoin in stage 7 exists to enforce the count guard and to produce the survivor set that this re-validation confirms. Reason only over the confirmed survivor list when authoring the `Verdict:` artifact line — never over the pre-validation merged set.
+
+## No-preset rule
+
+No entry is added to `fbk-presets.json` for test review. The lens is the single type-filter authority — a preset entry would duplicate the lens's type list and invite drift.

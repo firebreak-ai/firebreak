@@ -391,4 +391,20 @@ See [quality scan technique](#quality-scan-technique).
 
 ---
 
+### composable pipe
+
+**Definition**: The `validate --lens <type>-lens.md | severity-filter --min-severity <threshold>` command shape that the three preset-less review types (test, coherence, task) use for detection, in place of code review's single `run` invocation. The lens-parameterized validator does the type-filtering, so these types need no preset entry and no domain-filter step — the two small pipeline commands chained on the shell pipe do the whole detection-side job. The same two commands recompose elsewhere (the post-challenge re-validation reuses `validate --lens`), which is the point of keeping them separate rather than fusing them into one subcommand.
+
+**LLM priors activated**: "Composable" signals small single-purpose commands joined by a pipe — intended: each command reads stdin and writes stdout so they chain freely, Unix-style. Risk: read as a vague design-pattern buzzword; here it is a concrete two-command shell pipe with a fixed order (validate first, then severity-filter), not an abstract principle.
+
+---
+
+### neutral handoff
+
+**Definition**: The six-field normalized record the challenger receives in place of the researcher's full finding — exactly `mechanism`, `consequence`, `evidence`, `type`, `severity`, and `source_of_truth_ref`, produced by `pipeline normalize`. It strips the researcher's framing (confidence, narration, persuasion) so the challenger rules on the claim and its cited source alone, never on how the researcher pitched it. The handoff is "neutral" because it carries the facts a verdict needs and nothing that would steer the verdict.
+
+**LLM priors activated**: "Neutral" signals deliberately de-framed, value-stripped input — intended: it names the isolation invariant in positive terms (what the challenger does receive) rather than as a prohibition. Risk: read as "unimportant" or "default"; here neutral is an active property the `normalize` step enforces, and it is load-bearing — the adversarial review only stays honest because the framing never crosses the handoff.
+
+---
+
 *(Additional entries accrete as specs and context assets introduce vetted terms.)*

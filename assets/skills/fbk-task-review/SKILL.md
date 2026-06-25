@@ -7,9 +7,11 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
-This preset runs the shared review-loop spine from `assets/fbk-docs/fbk-review-lenses/review-loop.md` with `task-lens.md` as the loaded lens. It spawns one `review-researcher` and one `review-challenger` (1/1 cardinality), with a round cap of 5, and writes a verdict artifact at `ai-docs/<feature>/task-review.md`.
+This skill runs the task-review pipeline with `task-lens.md` as the loaded lens. It spawns one `review-researcher` and one `review-challenger` (cardinality 1/1). Maximum 5 rounds. Write the verdict artifact to `ai-docs/<feature>/task-review.md`.
 
 Invoke as `/fbk-task-review <feature-name>`.
+
+---
 
 ## Argument
 
@@ -21,19 +23,93 @@ The artifact under review is the compiled task set: all task files under `ai-doc
 
 ## Lens
 
-Load `assets/fbk-docs/fbk-review-lenses/task-lens.md` as the active lens for this run. Inject it into every agent spawn. The lens defines finding types (`under-specified`, `coverage-gap`, `sizing-violation`, `spec-conflict`), severities (`critical`, `major`, `minor`), the type-severity validity matrix, and the verdict-contract section for `task-review.md`.
+Load `"$HOME"/.claude/fbk-docs/fbk-review-lenses/task-lens.md` as the active lens for this run. Inject it into every agent spawn. The lens defines finding types (`under-specified`, `coverage-gap`, `sizing-violation`, `spec-conflict`), severities (`critical`, `major`, `minor`), the type-severity validity matrix, and the verdict-contract section for `task-review.md`.
+
+---
 
 ## Review loop
 
-Follow the shared review-loop spine in `review-loop.md` exactly. Configured for this preset:
+The steps below wire the executable pipeline for this skill. This loop follows the shared spine defined in `"$HOME"/.claude/fbk-docs/fbk-review-lenses/review-loop.md`, loaded with `task-lens.md`.
 
-- **Researcher:** `review-researcher` — reads the task files cold with `task-lens.md` and the feature spec as source of truth. Produces candidate findings in the finding schema.
-- **Challenger:** `review-challenger` — reads the task files cold, then receives the normalized candidate findings and `task-lens.md`. Verifies or rejects each candidate.
-- **Cardinality:** 1 researcher, 1 challenger.
-- **Round cap:** 5.
-- **Minimum severity threshold:** `minor` (all three severity levels surface).
+**No preset entry:** task review does not add any entry to `fbk-presets.json`. The task lens (`task-lens.md`) is the single type-filter authority — its type matrix rejects out-of-type findings at the validate step, making a separate domain-filter step and a preset entry unnecessary.
 
-Between rounds, validate candidate findings against the `lens-matrix` block in `task-lens.md` (types, severities, required fields). Reject malformed candidates before passing to the challenger.
+**Severity threshold:** use `minor` as the `--min-severity` value. This matches the skill's prior prose default and surfaces all three severity levels (`critical`, `major`, `minor`).
+
+### Stage 1 — spawn researcher (cold)
+
+Spawn `review-researcher` cold with the full task set, the feature spec as the source of truth, and `"$HOME"/.claude/fbk-docs/fbk-review-lenses/task-lens.md` as the loaded lens. The researcher reads the artifact cold — no prior-round output, no framing beyond the task files, the lens, and the spec. Collect candidate findings as a JSON array.
+
+### Stage 2 — validate and filter (composable pipe)
+
+Run `pipeline validate --lens task-lens.md` followed by `pipeline severity-filter --min-severity minor` as a composable pipe:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate --lens "$HOME"/.claude/fbk-docs/fbk-review-lenses/task-lens.md | python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline severity-filter --min-severity minor
+```
+
+The lens's type matrix does the type-filtering: findings with a type not listed in the task lens matrix are rejected and logged as `REJECTED: invalid type …`. There is no separate domain-filter step and no preset entry. Retain the surviving, id-bearing list as the orchestrator's record store (the kept list).
+
+### Stage 3 — normalize
+
+Pipe the kept list through:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline normalize
+```
+
+This produces exactly the six neutral fields the isolation invariant requires the challenger to receive: mechanism, consequence, evidence location, type, severity, and source-of-truth reference.
+
+### Stage 4 — collect cited sources
+
+Collect the documents named in each kept finding's `source_of_truth_ref` field. Inject these cited-source documents into the challenger spawn after the normalized findings and before the verification instructions.
+
+### Stage 5 — spawn challenger (cold)
+
+Spawn `review-challenger` cold with inputs in this order:
+
+1. The artifact under review (task files)
+2. The loaded lens (`task-lens.md`)
+3. The normalized findings (from stage 3)
+4. The cited-source documents collected from `source_of_truth_ref` (from stage 4)
+5. The verification instructions
+
+Collect the verdict array as JSON and write it to a temp file.
+
+### Stage 6 — validate verdicts
+
+Pipe the verdicts temp file through:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate-verdicts
+```
+
+This enforces the required verdict fields and enum values on the challenger's output.
+
+### Stage 7 — rejoin by position
+
+Pipe the kept list on stdin through:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline rejoin --verdicts <verdicts-file>
+```
+
+The count guard fires here: if the number of verdicts does not match the number of kept findings, the rejoin step raises an error before merging. This step produces the merged record set.
+
+### Stage 8 — re-validate and author the verdict
+
+Pipe the merged records through `pipeline validate --lens task-lens.md`:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate --lens "$HOME"/.claude/fbk-docs/fbk-review-lenses/task-lens.md
+```
+
+This is a filter-and-renumber, not a pure check: `validate --lens` drops any merged record that fails re-validation (for example, a reclassification that is invalid under the task lens matrix) and renumbers the survivors.
+
+Retain this command's stdout — the re-validated survivor list — as the confirmed finding set. Author the `task-review.md` artifact and its `Verdict:` line by reasoning only over the survivor list (per the verdict logic below), never over the pre-validation merged set.
+
+Task review writes its verdict from its own reasoning (no separate findings report). The rejoin exists to enforce the count guard and produce the survivor set that this re-validation confirms.
+
+---
 
 ## Output artifact
 
@@ -71,8 +147,8 @@ Emit `Verdict: accepted` when none of the above conditions are met (zero confirm
 
 A `needs-revision` verdict blocks the breakdown gate. The breakdown gate reads `task-review.md`; the conversation output is not authoritative. Do not proceed to the breakdown gate until `task-review.md` exists and records a verdict.
 
-If the verdict is `needs-revision`: surface the confirmed findings, allow the author to address them in the task files, then re-run this preset. The gate blocks until the artifact records `accepted`.
+If the verdict is `needs-revision`: surface the confirmed findings, allow the author to address them in the task files, then re-run this skill. The gate blocks until the artifact records `accepted`.
 
 ## Isolation
 
-Apply the isolation invariant from `review-loop.md`: every researcher reads the artifact cold (no prior-round output, no framing beyond the task files, the lens, and the spec). Every challenger reads the artifact cold before receiving candidate findings. Candidate findings passed to the challenger contain no researcher framing — only mechanism, consequence, evidence location, type, severity, and source-of-truth reference.
+Apply the isolation invariant: every researcher reads the artifact cold (no prior-round output, no framing beyond the task files, the lens, and the spec). Every challenger reads the artifact cold before receiving candidate findings. Candidate findings passed to the challenger contain no researcher framing — only mechanism, consequence, evidence location, type, severity, and source-of-truth reference. The `normalize` step (stage 3) is what produces this six-field neutral output, enforcing the isolation invariant at the pipeline level.

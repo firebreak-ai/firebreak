@@ -211,8 +211,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Orchestrator-style skill edit with a wiring checklist and invariants that must not change; Sonnet minimum for orchestrator tasks.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "fbk-code-review/SKILL.md repointed: step 3 run gains --lens code-lens.md (required set omits id -> id-less findings accepted); new normalize step before challenger; step 4 challenger input order artifact/lens/normalized/cited-source(source_of_truth_ref collect+inject)/verification; new validate-verdicts (replaces prose verdict-field check); new rejoin --verdicts; step 5 post-challenge validate gains --lens code-lens.md over merged records. Report/to-markdown/round-history schema untouched. 3 gate tests green.",
       "note": null
     },
     {
@@ -237,8 +237,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Net-new executable orchestration introduced into the skill with a wiring checklist; Sonnet minimum for orchestrator tasks.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "fbk-test-review/SKILL.md converted to executable 8-stage flow with test-lens.md (min-severity minor): validate --lens|severity-filter, normalize, cited-source inject, challenger, validate-verdicts, rejoin --verdicts, post-challenge validate --lens (survivor set retained). Per-wave verification caught executable commands using bare test-lens.md (would fail load_lens_matrix at runtime); fixed to full installed path in code blocks with bare token in prose labels (coherence convention). Mode routing, Verdict contract, isolation preserved. No preset entry. 3 gate tests green.",
       "note": null
     },
     {
@@ -262,8 +262,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Net-new executable orchestration introduced into the skill with a wiring checklist; Sonnet minimum for orchestrator tasks.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "fbk-coherence-review/SKILL.md converted to executable 8-stage flow with coherence-lens.md: validate --lens|severity-filter, normalize, cited-source inject, challenger, validate-verdicts, rejoin --verdicts, post-challenge validate --lens (filter-and-renumber, stdout retained as survivor set). Executable blocks use full installed path; prose labels carry bare token for test. Trivial-accept routing, Verdict contract, blocking, isolation preserved. No preset entry. 2 gate tests green.",
       "note": null
     },
     {
@@ -288,8 +288,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Net-new executable orchestration introduced into the skill with a wiring checklist; Sonnet minimum for orchestrator tasks.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "fbk-task-review/SKILL.md converted to executable 8-stage flow with task-lens.md (min-severity minor): validate --lens|severity-filter, normalize, cited-source inject, challenger, validate-verdicts, rejoin --verdicts, post-challenge validate --lens (survivor set retained). Executable blocks use full installed path (lens citation corrected from source path); prose labels bare token. Verdict contract/logic, artifact location, isolation preserved. No preset entry. 3 gate tests green.",
       "note": null
     }
   ]
