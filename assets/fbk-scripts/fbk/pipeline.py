@@ -425,6 +425,111 @@ def cmd_normalize(args):
     write_json([normalize(f) for f in findings])
 
 
+# The six fields that belong to the kept finding and must never be overwritten
+# by a verdict during rejoin, regardless of what the verdict carries.
+_NEUTRAL_FIELDS = frozenset({
+    "mechanism", "consequence", "evidence", "type", "severity", "source_of_truth_ref"
+})
+
+# The four verdict-side fields that rejoin overlays onto the kept finding.
+_VERDICT_OVERLAY_FIELDS = ("status", "verification_evidence", "rejection_reason", "adjacent_observations")
+
+ALLOWED_VERDICT_STATUSES = frozenset({
+    "verified",
+    "verified-pending-execution",
+    "rejected",
+    "rejected-as-nit",
+    "unresolvable",
+})
+
+
+def _merge_finding_with_verdict(kept, verdict):
+    """Return a new dict that overlays verdict fields onto kept by the rejoin rules.
+
+    Start from a copy of kept. Overlay the four permitted verdict fields when present.
+    Apply the reclassification rule: when reclassified_from is a non-empty dict,
+    overlay type/severity from the verdict and carry reclassified_from; otherwise
+    retain kept's type/severity and omit reclassified_from.
+    The six neutral fields are never sourced from the verdict.
+    """
+    merged = dict(kept)
+
+    for field in _VERDICT_OVERLAY_FIELDS:
+        if field in verdict:
+            merged[field] = verdict[field]
+
+    reclassified_from = verdict.get("reclassified_from")
+    if reclassified_from and isinstance(reclassified_from, dict):
+        merged["type"] = verdict["type"]
+        merged["severity"] = verdict["severity"]
+        merged["reclassified_from"] = reclassified_from
+    else:
+        # Retain kept's type/severity; do not carry an empty reclassified_from.
+        merged["type"] = kept["type"]
+        merged["severity"] = kept["severity"]
+        merged.pop("reclassified_from", None)
+
+    return merged
+
+
+def cmd_rejoin(args):
+    kept = read_stdin_json()
+    verdicts = json.loads(pathlib.Path(args.verdicts).read_text())
+
+    if len(verdicts) != len(kept):
+        v_count = len(verdicts)
+        k_count = len(kept)
+        if v_count > k_count:
+            print(
+                f"ERROR: verdict count {v_count} exceeds kept finding count {k_count}",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                f"ERROR: verdict count {v_count} is fewer than kept finding count {k_count}",
+                file=sys.stderr,
+            )
+        sys.exit(1)
+
+    merged = [_merge_finding_with_verdict(kept[i], verdicts[i]) for i in range(len(kept))]
+    write_json(merged)
+
+
+def _check_verdict(verdict, index):
+    """Return an error string if the verdict at the given index violates a rule, else None."""
+    status = verdict.get("status")
+    if status not in ALLOWED_VERDICT_STATUSES:
+        return f"ERROR: verdict at index {index}: invalid status '{status}'"
+
+    if status in ("verified", "verified-pending-execution"):
+        evidence = verdict.get("verification_evidence", "")
+        if len(evidence) < 10:
+            return (
+                f"ERROR: verdict at index {index}: verified status requires "
+                f"verification_evidence of at least 10 characters"
+            )
+
+    if status == "rejected":
+        reason = verdict.get("rejection_reason", "")
+        if len(reason) < 10:
+            return (
+                f"ERROR: verdict at index {index}: rejected status requires "
+                f"rejection_reason of at least 10 characters"
+            )
+
+    return None
+
+
+def cmd_validate_verdicts(args):
+    verdicts = read_stdin_json()
+    for i, verdict in enumerate(verdicts):
+        error = _check_verdict(verdict, i)
+        if error is not None:
+            print(error, file=sys.stderr)
+            sys.exit(1)
+    write_json(verdicts)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Code review sighting pipeline")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -448,6 +553,11 @@ def main():
 
     subparsers.add_parser("normalize")
 
+    p_rejoin = subparsers.add_parser("rejoin")
+    p_rejoin.add_argument("--verdicts", required=True)
+
+    subparsers.add_parser("validate-verdicts")
+
     args = parser.parse_args()
 
     commands = {
@@ -457,6 +567,8 @@ def main():
         "to-markdown": cmd_to_markdown,
         "run": cmd_run,
         "normalize": cmd_normalize,
+        "rejoin": cmd_rejoin,
+        "validate-verdicts": cmd_validate_verdicts,
     }
     commands[args.command](args)
 

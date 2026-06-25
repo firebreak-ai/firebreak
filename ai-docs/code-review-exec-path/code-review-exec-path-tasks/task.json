@@ -187,8 +187,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "New transform logic with the highest-consequence position-overlay and a status-validation contract; serialized after task-09 on the same file.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "pipeline.py +112: _NEUTRAL_FIELDS, _VERDICT_OVERLAY_FIELDS (status/verification_evidence/rejection_reason/adjacent_observations), ALLOWED_VERDICT_STATUSES; _merge_finding_with_verdict (position overlay + reclassification: non-empty reclassified_from overlays type/severity and carries the key, empty/absent retains kept type/severity and drops the key); cmd_rejoin (stdin kept findings, --verdicts file, bidirectional count guard naming both counts, index-to-index map); _check_verdict (enum + >=10-char evidence for verified/verified-pending, >=10-char reason for rejected); cmd_validate_verdicts (first-violation stderr+exit1, clean array passthrough); rejoin/validate-verdicts subparsers registered. Gate 17 passed; full 710 passed/9 red (skill-wiring); 0 regressions.",
       "note": null
     },
     {
