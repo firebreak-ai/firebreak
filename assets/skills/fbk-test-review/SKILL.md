@@ -73,10 +73,10 @@ Severity default: `minor` (no explicit prose default existed in this skill befor
 
 5. **Stage 5 — spawn challenger (cold).** Spawn `review-challenger` with inputs in this order: (a) artifact under review, (b) `"$HOME"/.claude/fbk-docs/fbk-review-lenses/test-lens.md`, (c) normalized findings JSON, (d) cited-source documents collected in stage 4, (e) verification instructions. Collect the verdict array as JSON and write it to a temp file.
 
-6. **Stage 6 — validate-verdicts.** Pipe the verdicts temp file through:
+6. **Stage 6 — validate-verdicts.** Pipe the verdicts temp file on stdin:
 
    ```
-   python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate-verdicts
+   python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate-verdicts < <verdicts-file>
    ```
 
    This fails the handoff if any verdict has an invalid status or is missing the evidence its status requires. This replaces any prose verdict-field check.

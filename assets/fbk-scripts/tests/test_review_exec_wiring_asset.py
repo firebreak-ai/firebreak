@@ -173,6 +173,33 @@ class TestCodeReviewPipelineWiring:
             ],
         )
 
+    def test_validate_verdicts_step_wires_stdin_from_verdicts_file(self):
+        """The validate-verdicts command in fbk-code-review/SKILL.md pipes the verdicts file to stdin.
+
+        ``cmd_validate_verdicts`` reads only from stdin; a bare command with no stdin
+        redirection silently reads nothing.  This test asserts that the ``validate-verdicts``
+        invocation is followed by ``< <verdicts-file>`` within 120 characters, proving
+        the verdicts temp file is piped in.
+
+        This is the gap that let F-05 reach a green test suite: the ordered-step test
+        confirmed the command was present but did not assert stdin wiring.
+        """
+        text = _read(_CODE_REVIEW_SKILL)
+
+        vv_pos = text.find("pipeline validate-verdicts")
+        assert vv_pos != -1, (
+            "fbk-code-review/SKILL.md must contain 'pipeline validate-verdicts' "
+            "to document the verdict-validation step"
+        )
+
+        window = text[vv_pos : vv_pos + 120]
+        assert "< <verdicts-file>" in window, (
+            f"'pipeline validate-verdicts' at offset {vv_pos} must be followed by "
+            f"'< <verdicts-file>' within 120 characters to wire the verdicts temp file "
+            f"to stdin (cmd_validate_verdicts reads stdin only); "
+            f"window: {window!r}"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Converted-skill wiring (AC-08, AC-09, AC-10)
@@ -217,6 +244,26 @@ class TestTestReviewPipelineWiring:
             ],
         )
 
+    def test_validate_verdicts_step_wires_stdin_from_verdicts_file(self):
+        """The validate-verdicts command in fbk-test-review/SKILL.md pipes the verdicts file to stdin.
+
+        ``cmd_validate_verdicts`` reads only from stdin; a bare command silently reads
+        nothing.  This asserts the command is followed by ``< <verdicts-file>`` within
+        120 characters, proving the verdicts temp file is piped in.
+        """
+        text = _read(_TEST_REVIEW_SKILL)
+
+        vv_pos = text.find("pipeline validate-verdicts")
+        assert vv_pos != -1, (
+            "fbk-test-review/SKILL.md must contain 'pipeline validate-verdicts'"
+        )
+
+        window = text[vv_pos : vv_pos + 120]
+        assert "< <verdicts-file>" in window, (
+            f"'pipeline validate-verdicts' at offset {vv_pos} must be followed by "
+            f"'< <verdicts-file>' within 120 characters; window: {window!r}"
+        )
+
 
 class TestCoherenceReviewPipelineWiring:
     """fbk-coherence-review/SKILL.md documents the six executable pipeline steps in order (AC-08, AC-09, AC-10).
@@ -252,6 +299,26 @@ class TestCoherenceReviewPipelineWiring:
             ],
         )
 
+    def test_validate_verdicts_step_wires_stdin_from_verdicts_file(self):
+        """The validate-verdicts command in fbk-coherence-review/SKILL.md pipes the verdicts file to stdin.
+
+        ``cmd_validate_verdicts`` reads only from stdin; a bare command silently reads
+        nothing.  This asserts the command is followed by ``< <verdicts-file>`` within
+        120 characters, proving the verdicts temp file is piped in.
+        """
+        text = _read(_COHERENCE_REVIEW_SKILL)
+
+        vv_pos = text.find("pipeline validate-verdicts")
+        assert vv_pos != -1, (
+            "fbk-coherence-review/SKILL.md must contain 'pipeline validate-verdicts'"
+        )
+
+        window = text[vv_pos : vv_pos + 120]
+        assert "< <verdicts-file>" in window, (
+            f"'pipeline validate-verdicts' at offset {vv_pos} must be followed by "
+            f"'< <verdicts-file>' within 120 characters; window: {window!r}"
+        )
+
 
 class TestTaskReviewPipelineWiring:
     """fbk-task-review/SKILL.md documents the six executable pipeline steps in order (AC-08, AC-09, AC-10).
@@ -285,6 +352,26 @@ class TestTaskReviewPipelineWiring:
                 "pipeline rejoin --verdicts",
                 f"pipeline validate --lens {lens}",
             ],
+        )
+
+    def test_validate_verdicts_step_wires_stdin_from_verdicts_file(self):
+        """The validate-verdicts command in fbk-task-review/SKILL.md pipes the verdicts file to stdin.
+
+        ``cmd_validate_verdicts`` reads only from stdin; a bare command silently reads
+        nothing.  This asserts the command is followed by ``< <verdicts-file>`` within
+        120 characters, proving the verdicts temp file is piped in.
+        """
+        text = _read(_TASK_REVIEW_SKILL)
+
+        vv_pos = text.find("pipeline validate-verdicts")
+        assert vv_pos != -1, (
+            "fbk-task-review/SKILL.md must contain 'pipeline validate-verdicts'"
+        )
+
+        window = text[vv_pos : vv_pos + 120]
+        assert "< <verdicts-file>" in window, (
+            f"'pipeline validate-verdicts' at offset {vv_pos} must be followed by "
+            f"'< <verdicts-file>' within 120 characters; window: {window!r}"
         )
 
 

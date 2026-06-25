@@ -77,10 +77,10 @@ Collect the verdict array as JSON and write it to a temp file.
 
 ### Stage 6 — validate verdicts
 
-Pipe the verdicts temp file through:
+Pipe the verdicts temp file on stdin:
 
 ```
-python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate-verdicts
+python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate-verdicts < <verdicts-file>
 ```
 
 This enforces the required verdict fields and enum values on the challenger's output.

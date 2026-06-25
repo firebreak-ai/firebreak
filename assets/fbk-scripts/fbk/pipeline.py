@@ -335,6 +335,11 @@ def _render_markdown(items):
             lines.append("")
             lines.append(f"**Remediation**: {rem}")
 
+        adj = item.get("adjacent_observations")
+        if adj:
+            lines.append("")
+            lines.append(f"**Adjacent observations**: {adj}")
+
         output.append("\n".join(lines))
 
     sys.stdout.write("\n\n".join(output))
@@ -422,6 +427,13 @@ def cmd_run(args):
 
 def cmd_normalize(args):
     findings = read_stdin_json()
+    for i, item in enumerate(findings):
+        if not isinstance(item, dict):
+            print(
+                f"ERROR: finding at index {i} is not an object (got {type(item).__name__})",
+                file=sys.stderr,
+            )
+            sys.exit(1)
     write_json([normalize(f) for f in findings])
 
 
@@ -443,7 +455,7 @@ ALLOWED_VERDICT_STATUSES = frozenset({
 })
 
 
-def _merge_finding_with_verdict(kept, verdict):
+def _merge_finding_with_verdict(kept, verdict, index):
     """Return a new dict that overlays verdict fields onto kept by the rejoin rules.
 
     Start from a copy of kept. Overlay the four permitted verdict fields when present.
@@ -451,6 +463,9 @@ def _merge_finding_with_verdict(kept, verdict):
     overlay type/severity from the verdict and carry reclassified_from; otherwise
     retain kept's type/severity and omit reclassified_from.
     The six neutral fields are never sourced from the verdict.
+
+    Returns (merged_dict, None) on success or (None, error_string) when the verdict
+    signals reclassification but is missing the required type or severity keys.
     """
     merged = dict(kept)
 
@@ -460,6 +475,16 @@ def _merge_finding_with_verdict(kept, verdict):
 
     reclassified_from = verdict.get("reclassified_from")
     if reclassified_from and isinstance(reclassified_from, dict):
+        if "type" not in verdict:
+            return None, (
+                f"ERROR: verdict at index {index}: reclassified_from is set but "
+                f"'type' is missing from the verdict"
+            )
+        if "severity" not in verdict:
+            return None, (
+                f"ERROR: verdict at index {index}: reclassified_from is set but "
+                f"'severity' is missing from the verdict"
+            )
         merged["type"] = verdict["type"]
         merged["severity"] = verdict["severity"]
         merged["reclassified_from"] = reclassified_from
@@ -469,12 +494,39 @@ def _merge_finding_with_verdict(kept, verdict):
         merged["severity"] = kept["severity"]
         merged.pop("reclassified_from", None)
 
-    return merged
+    return merged, None
 
 
 def cmd_rejoin(args):
     kept = read_stdin_json()
-    verdicts = json.loads(pathlib.Path(args.verdicts).read_text())
+
+    try:
+        verdicts_text = pathlib.Path(args.verdicts).read_text()
+    except (FileNotFoundError, OSError) as e:
+        print(f"ERROR: cannot read verdicts file '{args.verdicts}': {e}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        verdicts = json.loads(verdicts_text)
+    except json.JSONDecodeError as e:
+        print(f"ERROR: malformed JSON in verdicts file '{args.verdicts}': {e}", file=sys.stderr)
+        sys.exit(1)
+
+    for i, item in enumerate(kept):
+        if not isinstance(item, dict):
+            print(
+                f"ERROR: kept finding at index {i} is not an object (got {type(item).__name__})",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+    for i, item in enumerate(verdicts):
+        if not isinstance(item, dict):
+            print(
+                f"ERROR: verdict at index {i} is not an object (got {type(item).__name__})",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
     if len(verdicts) != len(kept):
         v_count = len(verdicts)
@@ -491,7 +543,13 @@ def cmd_rejoin(args):
             )
         sys.exit(1)
 
-    merged = [_merge_finding_with_verdict(kept[i], verdicts[i]) for i in range(len(kept))]
+    merged = []
+    for i in range(len(kept)):
+        result, error = _merge_finding_with_verdict(kept[i], verdicts[i], i)
+        if error is not None:
+            print(error, file=sys.stderr)
+            sys.exit(1)
+        merged.append(result)
     write_json(merged)
 
 
@@ -503,6 +561,11 @@ def _check_verdict(verdict, index):
 
     if status in ("verified", "verified-pending-execution"):
         evidence = verdict.get("verification_evidence", "")
+        if not isinstance(evidence, str):
+            return (
+                f"ERROR: verdict at index {index}: verification_evidence must be a string, "
+                f"got {type(evidence).__name__}"
+            )
         if len(evidence) < 10:
             return (
                 f"ERROR: verdict at index {index}: verified status requires "
@@ -511,6 +574,11 @@ def _check_verdict(verdict, index):
 
     if status == "rejected":
         reason = verdict.get("rejection_reason", "")
+        if not isinstance(reason, str):
+            return (
+                f"ERROR: verdict at index {index}: rejection_reason must be a string, "
+                f"got {type(reason).__name__}"
+            )
         if len(reason) < 10:
             return (
                 f"ERROR: verdict at index {index}: rejected status requires "
@@ -523,6 +591,12 @@ def _check_verdict(verdict, index):
 def cmd_validate_verdicts(args):
     verdicts = read_stdin_json()
     for i, verdict in enumerate(verdicts):
+        if not isinstance(verdict, dict):
+            print(
+                f"ERROR: verdict at index {i} is not an object (got {type(verdict).__name__})",
+                file=sys.stderr,
+            )
+            sys.exit(1)
         error = _check_verdict(verdict, i)
         if error is not None:
             print(error, file=sys.stderr)
