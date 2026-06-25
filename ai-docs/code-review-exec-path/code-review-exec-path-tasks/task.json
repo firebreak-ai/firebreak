@@ -164,8 +164,8 @@
       ],
       "model": "Sonnet",
       "model_rationale": "Multi-site single-file change (two call sites, two subparsers, a new command) with byte-identical-default invariant; architectural care needed.",
-      "status": "not_started",
-      "summary": null,
+      "status": "complete",
+      "summary": "pipeline.py: added --lens (default None) to validate and run subparsers; lens-load block (load_lens_matrix in try/except FileNotFoundError,ValueError -> print str(e) to stderr, sys.exit(1)) at top of cmd_validate and cmd_run BEFORE read_stdin_json (satisfies ordering proof); threaded vocab through both validate_sighting call sites; registered normalize subcommand (cmd_normalize reads stdin, maps normalize() over findings, write_json) in main() + dispatch dict. Gate suite 53 passed; full suite 693 passed/26 red (later-wave); byte-identical default path intact; 0 baseline regressions.",
       "note": null
     },
     {

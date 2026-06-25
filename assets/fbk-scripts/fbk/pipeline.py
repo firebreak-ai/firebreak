@@ -203,13 +203,21 @@ def normalize(finding):
 
 
 def cmd_validate(args):
+    vocab = None
+    if args.lens is not None:
+        try:
+            vocab = load_lens_matrix(args.lens)
+        except (FileNotFoundError, ValueError) as e:
+            print(str(e), file=sys.stderr)
+            sys.exit(1)
+
     sightings = read_stdin_json()
     valid = []
     rejected = 0
     total = len(sightings)
 
     for s in sightings:
-        reason = validate_sighting(s)
+        reason = validate_sighting(s, vocab)
         if reason:
             rejected += 1
             print(f"REJECTED: {reason}: {json.dumps(s, ensure_ascii=False)}", file=sys.stderr)
@@ -340,6 +348,14 @@ def cmd_to_markdown(args):
 
 
 def cmd_run(args):
+    vocab = None
+    if args.lens is not None:
+        try:
+            vocab = load_lens_matrix(args.lens)
+        except (FileNotFoundError, ValueError) as e:
+            print(str(e), file=sys.stderr)
+            sys.exit(1)
+
     # Step 1: Validate
     sightings = read_stdin_json()
     valid = []
@@ -347,7 +363,7 @@ def cmd_run(args):
     total = len(sightings)
 
     for s in sightings:
-        reason = validate_sighting(s)
+        reason = validate_sighting(s, vocab)
         if reason:
             rejected += 1
             print(f"REJECTED: {reason}: {json.dumps(s, ensure_ascii=False)}", file=sys.stderr)
@@ -404,11 +420,17 @@ def cmd_run(args):
         write_json(severity_filtered)
 
 
+def cmd_normalize(args):
+    findings = read_stdin_json()
+    write_json([normalize(f) for f in findings])
+
+
 def main():
     parser = argparse.ArgumentParser(description="Code review sighting pipeline")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    subparsers.add_parser("validate")
+    p_validate = subparsers.add_parser("validate")
+    p_validate.add_argument("--lens", default=None)
 
     p_domain = subparsers.add_parser("domain-filter")
     p_domain.add_argument("--preset", required=True)
@@ -422,6 +444,9 @@ def main():
     p_run.add_argument("--preset", required=True)
     p_run.add_argument("--min-severity", required=True)
     p_run.add_argument("--output-markdown", action="store_true")
+    p_run.add_argument("--lens", default=None)
+
+    subparsers.add_parser("normalize")
 
     args = parser.parse_args()
 
@@ -431,6 +456,7 @@ def main():
         "severity-filter": cmd_severity_filter,
         "to-markdown": cmd_to_markdown,
         "run": cmd_run,
+        "normalize": cmd_normalize,
     }
     commands[args.command](args)
 
