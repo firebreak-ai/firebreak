@@ -17,7 +17,7 @@ Compare the shipped module's code against the project's durable docs and flag ev
 
 2. **Self-scope.** If no durable docs are found, or none reference the shipped module by name, file path, or feature scope, write `no durable docs to reconcile` to `ai-docs/<feature>/doc-reconcile.md` and exit. The skill's flow stays uniform whether or not docs exist.
 
-3. **Spawn the reconciler agent.** Spawn `fbk-code-review-detector` in doc-reconciliation mode. Pass the in-scope `(kind, path)` pairs, the shipped-module file paths, and the per-doc comparison guidance and classification rules from below. Instruct it to return findings as a JSON array with fields `class`, `doc`, `doc_says`, `code_shows`, `rationale`. Do not allow the agent to propose fixes or modify any file.
+3. **Spawn the reconciler agent.** Spawn the generic `review-researcher` agent loaded with `doc-reconcile-lens.md` at degenerate scan-only cardinality (0 challengers, round cap 1) per the shared review-loop spine in `review-loop.md`. Pass the in-scope `(kind, path)` pairs and the shipped-module file paths. The per-doc comparison guidance and classification rules in `doc-reconcile-lens.md` govern what to look for and how to classify each observation. Instruct the agent to return findings as a JSON array with fields `class`, `doc`, `doc_says`, `code_shows`, `rationale`. Do not allow the agent to propose fixes or modify any file.
 
 4. **Write the artifact.** Take the agent's output and write it to `ai-docs/<feature>/doc-reconcile.md`, overwriting any existing file at that path. List drift items first, then notes. If the agent returns no findings, write `no drift found` and exit.
 

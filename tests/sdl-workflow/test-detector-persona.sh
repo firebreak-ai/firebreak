@@ -7,7 +7,11 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
+# Code-review-specific content (finding types, severities, matrix) moved from the old
+# fbk-code-review-detector.md into the per-type lens in the unified-review-shape
+# consolidation. The generic researcher (fbk-review-researcher.md) carries the role;
+# the lens carries the code-review-specific knowledge.
+DETECTOR="$PROJECT_ROOT/assets/fbk-docs/fbk-review-lenses/code-lens.md"
 
 ok() {
   TOTAL=$((TOTAL + 1))
@@ -24,98 +28,81 @@ not_ok() {
 
 echo "TAP version 13"
 
-# Extract body (everything after second --- line)
-body=$(awk '/^---$/{c++; if(c==2){found=1; next}} found' "$DETECTOR")
+# code-lens.md is a plain markdown file (no YAML frontmatter), so read it in full.
+body=$(cat "$DETECTOR")
 
-# --- Test 1: Detector contains validation engineer persona identity ---
-if echo "$body" | grep -qi 'senior software validation engineer'; then
-  ok "Detector contains validation engineer persona identity"
-else
-  not_ok "Detector contains validation engineer persona identity" "expected 'senior software validation engineer' in body"
-fi
+# retired: "senior software validation engineer" was the old code-review-detector persona
+# label. The generic review-researcher uses "senior evaluator". unified-review-shape.
 
-# --- Test 2: Detector output quality bar requires mechanism ---
+# --- Test 1: Lens defines the mechanism field ---
 if echo "$body" | grep -qi 'mechanism'; then
-  ok "Detector output quality bar requires mechanism"
+  ok "Lens defines the mechanism field"
 else
-  not_ok "Detector output quality bar requires mechanism" "expected 'mechanism' in body"
+  not_ok "Lens defines the mechanism field" "expected 'mechanism' in code-lens body"
 fi
 
-# --- Test 4: Detector output quality bar requires caller impact ---
-if echo "$body" | grep -qi 'caller impact'; then
-  ok "Detector output quality bar requires caller impact"
+# retired: "caller impact" was old-specific wording in the detector output quality bar.
+# The generic researcher uses "consequence" for downstream impact. unified-review-shape.
+
+# --- Test 2: Lens defines the behavioral finding type ---
+if echo "$body" | grep -qiE 'behavioral'; then
+  ok "Lens defines the behavioral finding type"
 else
-  not_ok "Detector output quality bar requires caller impact" "expected 'caller impact' in body"
+  not_ok "Lens defines the behavioral finding type" "expected 'behavioral' in code-lens body"
 fi
 
-# --- Test 5: Detector contains behavioral type definition with concrete input language ---
-if echo "$body" | grep -qiP 'behavioral.*(?:concrete|constructible)|(?:concrete|constructible).*behavioral' 2>/dev/null; then
-  ok "Detector contains behavioral type definition with concrete input language"
+# --- Test 3: Lens defines the structural finding type ---
+if echo "$body" | grep -qiE 'structural.*(maintain|wrong|organization)|maintain.*structural'; then
+  ok "Lens defines the structural finding type"
 else
-  has_behavioral=$(echo "$body" | grep -ci 'behavioral' || true)
-  has_constructible=$(echo "$body" | grep -ci 'constructible input' || true)
-  if [ "$has_behavioral" -gt 0 ] && [ "$has_constructible" -gt 0 ]; then
-    ok "Detector contains behavioral type definition with concrete input language"
-  else
-    not_ok "Detector contains behavioral type definition with concrete input language" "behavioral=$has_behavioral constructible_input=$has_constructible"
-  fi
+  not_ok "Lens defines the structural finding type" "expected structural with 'maintain', 'wrong', or 'organization' in body"
 fi
 
-# --- Test 6: Detector contains structural type definition ---
-if echo "$body" | grep -qiE 'structural.*(no wrong output|maintain)|maintain.*structural'; then
-  ok "Detector contains structural type definition"
+# --- Test 4: Lens defines the test-integrity finding type ---
+if echo "$body" | grep -qiE 'test-integrity'; then
+  ok "Lens defines the test-integrity finding type"
 else
-  not_ok "Detector contains structural type definition" "expected structural with 'no wrong output' or 'maintain' in body"
+  not_ok "Lens defines the test-integrity finding type" "expected 'test-integrity' in code-lens body"
 fi
 
-# --- Test 7: Detector contains test-integrity type definition ---
-if echo "$body" | grep -qiE 'test-integrity.*(passes but|does not verify|claims)|(passes but|does not verify|claims).*test-integrity'; then
-  ok "Detector contains test-integrity type definition"
+# --- Test 5: Lens defines critical severity with observability language ---
+if echo "$body" | grep -qiE 'critical.*(observe|actor|user|realistic)|(observe|actor|user|realistic).*critical'; then
+  ok "Lens defines critical severity with observability language"
 else
-  not_ok "Detector contains test-integrity type definition" "expected test-integrity with 'passes but', 'does not verify', or 'claims' in body"
+  not_ok "Lens defines critical severity with observability language" "expected critical with observability language in body"
 fi
 
-# --- Test 9: Detector contains critical severity definition with observability language ---
-if echo "$body" | grep -qiE 'critical.*(next user|primary path)|(next user|primary path).*critical'; then
-  ok "Detector contains critical severity definition with observability language"
+# --- Test 6: Lens defines major severity with reachability language ---
+if echo "$body" | grep -qiE 'major.*(reachable|requires|specific)|(reachable|requires|specific).*major'; then
+  ok "Lens defines major severity with reachability language"
 else
-  not_ok "Detector contains critical severity definition with observability language" "expected critical with 'next user' or 'primary path' in body"
+  not_ok "Lens defines major severity with reachability language" "expected major with reachability language in body"
 fi
 
-# --- Test 10: Detector contains major severity definition with observability language ---
-if echo "$body" | grep -qiE 'major.*(write a test|demonstrates the failure|constructible)|(write a test|demonstrates the failure|constructible).*major'; then
-  ok "Detector contains major severity definition with observability language"
+# --- Test 7: Lens defines minor severity ---
+if echo "$body" | grep -qiE 'minor.*(narrow|transient|impact)|(narrow|transient|impact).*minor'; then
+  ok "Lens defines minor severity with impact language"
 else
-  not_ok "Detector contains major severity definition with observability language" "expected major with 'write a test', 'demonstrates the failure', or 'constructible' in body"
+  not_ok "Lens defines minor severity with impact language" "expected minor with 'narrow', 'transient', or 'impact' in body"
 fi
 
-# --- Test 11: Detector contains minor severity definition with code-reading-only language ---
-if echo "$body" | grep -qiE 'minor.*code reading|code reading.*minor'; then
-  ok "Detector contains minor severity definition with code-reading-only language"
-else
-  not_ok "Detector contains minor severity definition with code-reading-only language" "expected minor with 'code reading' in body"
-fi
-
-# --- Test 12: Detector references type-severity validity matrix ---
+# --- Test 8: Lens contains a type-severity validity matrix ---
 if echo "$body" | grep -qiE 'matrix|type-severity'; then
-  ok "Detector references type-severity validity matrix"
+  ok "Lens contains type-severity validity matrix"
 else
-  not_ok "Detector references type-severity validity matrix" "expected 'matrix' or 'type-severity' in body"
+  not_ok "Lens contains type-severity validity matrix" "expected 'matrix' or 'type-severity' in body"
 fi
 
-# --- Test 13: Detector does not contain separate mechanism-first wording instruction ---
+# --- Test 9: Lens does not contain a separate Mechanism section heading ---
 if echo "$body" | grep -q '^## Mechanism'; then
-  not_ok "Detector does not contain separate mechanism-first wording instruction" "found '## Mechanism' section heading — mechanism-first should be embedded in quality bar"
+  not_ok "Lens does not contain separate Mechanism section heading" "found '## Mechanism' section heading"
 else
-  ok "Detector does not contain separate mechanism-first wording instruction"
+  ok "Lens does not contain separate Mechanism section heading"
 fi
 
-# --- Test 14: Detector contains nit exclusion instruction ---
-if echo "$body" | grep -qiE 'exclude nits'; then
-  ok "Detector contains nit exclusion instruction"
-else
-  not_ok "Detector contains nit exclusion instruction" "expected 'exclude nits' or 'Exclude nits' in body"
-fi
+# retired: "exclude nits" was a researcher-level instruction in the old code-review-detector.
+# Nit filtering moved to the challenger's rejected-as-nit verdict in the unified-review-shape
+# consolidation. Covered by test-challenger-persona.sh.
 
 # --- Summary ---
 echo ""

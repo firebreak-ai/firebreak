@@ -40,6 +40,8 @@ Write each section. Do not skip or combine sections.
 - **Existing tests impacted**: In brownfield, search the test suite for tests that cover the files and functions this feature modifies. When the feature removes or renames a symbol, grep for all call sites of that symbol across test files — not just the definition site — and include every caller in this list. List each test file or test name, the affected code path, and the expected change (update assertions / fixtures / mocks). In greenfield, write: "None — no existing test suite."
 - **Test infrastructure changes**: List new fixtures, mocks, test utilities, or test data needed. In greenfield, include bootstrapping the test framework if no test infrastructure exists.
 - **Mocking justifications**: For each mock listed under "Test infrastructure changes," confirm two things. First, the mocked collaborator is code we do not own — an external service, the operating system, the file system, the clock, random-number generation, or a third-party library with side effects the test must control. Second, name the property of the real collaborator that justifies preferring a stand-in over a real-call integration test — slowness (network I/O, expensive computation), non-determinism (current time, random generation, external service responses), or unavailability (paid third-party service, hardware not present in the test environment). Mocks for code we own are not permitted; refactor for testability, integrate at a higher level, or accept the cost. Example: "Mock for `PaymentGateway` — external service; justified over real-call integration by sandbox credentials and 2-3s latency per test." See `fbk-design-guidelines/test-authoring.md` "Stand-ins only for code we don't own" for the implementation-side counterpart.
+- **Validation ladder, cheapest first**: Order the checks by cost. The cheapest and fastest checks run first; constrained or expensive checks run last. The most expensive tier is validation against the genuine source of truth — a real service, real hardware, a real data sample, a real downstream system — rather than a stand-in. Run that tier where feasible: a stack of cheap checks can all pass and still miss a defect that only the real thing reveals, because every cheap check shares the same assumption about how the real thing behaves. State where each behavior's validation lands on this ladder, and note any tier deferred because the real source is unavailable in the test environment.
+
 - **User verification steps**: "How would a human verify this feature works?" Numbered steps, each following a structured **action → observable outcome** format:
   > UV-1: Press spacebar → projectile fires and moves upward
   > UV-2: Projectile hits invader → invader is destroyed and explosion particles appear
@@ -110,6 +112,21 @@ Do not ask about: naming conventions, internal variable types, or choices that h
 Surface open questions explicitly in section 8 rather than silently assuming an answer.
 
 Refuse to write code. The spec phase produces specification artifacts only. If the user asks for code, explain that implementation begins after review.
+
+---
+
+## Closing Ambiguity by Completion
+
+A generic requirement is fine where the work begins — "the system should be observable," "responses should be fast" — but a finished spec carries it all the way down to concrete definitions. By the time the spec is complete, every field name, data shape, contract, function or class signature, and the specifics of any observable behavior are named exactly. Observable behavior includes logging, but it is only one example: a metric emitted, a record written, an event published, a status reported — each is unresolved until the spec states what it carries and how a test would catch it if it broke.
+
+Concrete definitions come from two sources:
+
+- **Extract when the feature integrates with existing code.** When the feature extends or plugs into something already in the codebase, read that code and lift the real field names, signatures, and conventions from it. The exact definitions already exist — find them rather than restate them loosely.
+- **Decide jointly when the piece is new.** When nothing in the codebase fixes the definition, it is a decision to make with the user.
+
+Resolve the obvious on your own — the routine details that have one sensible answer the user does not need to weigh in on. Surface only the genuinely open decisions that actually need human direction, and surface them by grilling: raise one decision at a time with a recommendation, rather than guessing and drafting around the guess. The spec is not complete while this class of ambiguity is still open.
+
+**Worked example.** A criterion stating that a component logs, emits, or records something stays unresolved until it names *what* is recorded — the specific fields — and *how* a test would catch the behavior breaking. When the behavior is injectable (for example, the component takes a recording collaborator a test can supply and then inspect), "a reviewer can confirm it by reading the code" is not resolution. Name the fields and name the check.
 
 ---
 

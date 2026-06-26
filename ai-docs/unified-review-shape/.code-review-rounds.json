@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "spec": "unified-review-shape",
+  "rounds": [
+    {
+      "round": 1,
+      "raised": 13,
+      "survived": 7,
+      "severity_breakdown": {
+        "critical": 0,
+        "major": 4,
+        "minor": 3,
+        "info": 0
+      }
+    }
+  ]
+}

@@ -74,6 +74,8 @@ Spawn a fresh agent for each task. Do not reuse workers across tasks — context
 
 Breakdown guarantees non-overlapping file scopes within the same wave. Concurrent-edit conflicts cannot occur within a wave.
 
+If you do find two tasks in the same wave whose scopes both name the same file — for example, each removing its own entry from a shared registry — that scope overlap slipped past breakdown, and running them in parallel races the teammates against each other. Do not launch them together. Pull the shared edit out into one prep step you run first (or assign to a single teammate), then let each remaining task touch only its own file. Treat this as a breakdown defect to fix in the task structure, not something to paper over at run time.
+
 ---
 
 ## Per-Task Readiness Check
@@ -193,6 +195,10 @@ Run after the final wave's checkpoint.
 **Semantic** (human review):
 
 - Spec acceptance criteria are satisfied by the aggregate implementation. Confirm the result meets spec intent, not just that tests pass.
+
+**Validation against the real source of truth:**
+
+Before declaring the work complete, run the most expensive tier of the spec's validation ladder — validation against the genuine source of truth, a real service, real hardware, a real data sample, or a real downstream system — wherever it is feasible. The whole test suite can pass against stand-ins and still miss a defect that only the real thing reveals, because every stand-in shares the assumption baked into the code. When this tier is not feasible — the real source is unavailable in this environment, or running it costs more than the situation warrants — record an explicit deferral saying what was not validated and why, so the gap is visible rather than silently skipped.
 
 ---
 

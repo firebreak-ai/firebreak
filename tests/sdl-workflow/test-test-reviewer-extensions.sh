@@ -7,7 +7,9 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-REVIEWER="$PROJECT_ROOT/assets/agents/fbk-test-reviewer.md"
+# fbk-test-reviewer.md was deleted in the unified-review-shape consolidation.
+# Test-review-specific content now lives in test-lens.md.
+LENS="$PROJECT_ROOT/assets/fbk-docs/fbk-review-lenses/test-lens.md"
 
 ok() {
   TOTAL=$((TOTAL + 1))
@@ -24,34 +26,35 @@ not_ok() {
 
 echo "TAP version 13"
 
-# --- Test 1: Test reviewer Tier 1 contains stale failure annotation criterion (AC-49) ---
-tier1=$(sed -n '/### Tier 1/,/### Tier 2/p' "$REVIEWER" | head -n -1)
-has_stale=$(echo "$tier1" | grep -ciE 'stale.*fail|fail.*annotation|expected.to.fail' 2>/dev/null || true)
-if [ "$has_stale" -gt 0 ]; then
-  ok "Test reviewer Tier 1 contains stale failure annotation criterion"
+# retired: "Tier 1" was a structural concept specific to fbk-test-reviewer.md.
+# In the unified-review-shape architecture the tiered structure was replaced by
+# the lens's finding-type taxonomy (weakened-assertion, untested-behavior,
+# trivially-passing, manifest-drift) and the shared-detection.md audit. The three
+# Tier 1 criteria (stale failure annotation, empty gate test, advisory assertion)
+# map conceptually to test-lens types but with different labels — preserving the
+# old pattern-match assertions would produce false failures, not meaningful coverage.
+# unified-review-shape consolidation.
+
+# --- Test 1: Lens defines weakened-assertion with stale/weakened check language ---
+if grep -qiE 'weakened|weakening|narrowed|relaxed' "$LENS"; then
+  ok "Lens defines weakened assertion criterion"
 else
-  not_ok "Test reviewer Tier 1 contains stale failure annotation criterion" "has_stale=$has_stale"
+  not_ok "Lens defines weakened assertion criterion" "file: $LENS"
 fi
 
-# --- Test 2: Test reviewer Tier 1 contains empty gate test criterion (AC-50) ---
-has_empty=$(echo "$tier1" | grep -ciE 'empty.*gate|zero.*assert|no.*assert' 2>/dev/null || true)
-if [ "$has_empty" -gt 0 ]; then
-  ok "Test reviewer Tier 1 contains empty gate test criterion"
+# --- Test 2: Lens defines trivially-passing with vacuous assertion language ---
+if grep -qiE 'vacuous|trivially.passing|error.absence|passes unconditionally' "$LENS"; then
+  ok "Lens defines trivially-passing (vacuous/unconditional) criterion"
 else
-  not_ok "Test reviewer Tier 1 contains empty gate test criterion" "has_empty=$has_empty"
+  not_ok "Lens defines trivially-passing (vacuous/unconditional) criterion" "file: $LENS"
 fi
 
-# --- Test 3: Test reviewer Tier 1 contains advisory assertion criterion (AC-51) ---
-has_advisory=$(echo "$tier1" | grep -ciE 'advisory|non.failing.*output' 2>/dev/null || true)
-if [ "$has_advisory" -gt 0 ]; then
-  ok "Test reviewer Tier 1 contains advisory assertion criterion"
+# --- Test 3: Lens defines untested-behavior type ---
+if grep -qi 'untested-behavior' "$LENS"; then
+  ok "Lens defines untested-behavior finding type"
 else
-  not_ok "Test reviewer Tier 1 contains advisory assertion criterion" "has_advisory=$has_advisory"
+  not_ok "Lens defines untested-behavior finding type" "file: $LENS"
 fi
-
-# Tests 4-6 (CP5 mutation-testing criteria: unconditionally-skipped, phantom assertion,
-# build-tag consistency) retired by the refactored-sdl Wave 1 work — task-20 removed CP5
-# from fbk-test-reviewer.md per the spec, so these sentinels no longer apply.
 
 # --- Summary ---
 echo ""

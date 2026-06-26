@@ -110,10 +110,16 @@ else
   not_ok "fbk-architect agent installed" "file not found"
 fi
 
-if [ -f "$MOCK_HOME/.claude/agents/fbk-fresh-eyes-reviewer.md" ]; then
-  ok "fbk-fresh-eyes-reviewer agent installed"
+if [ -f "$MOCK_HOME/.claude/agents/fbk-review-researcher.md" ]; then
+  ok "fbk-review-researcher agent installed"
 else
-  not_ok "fbk-fresh-eyes-reviewer agent installed" "file not found"
+  not_ok "fbk-review-researcher agent installed" "file not found"
+fi
+
+if [ -f "$MOCK_HOME/.claude/fbk-docs/fbk-review-lenses/fresh-eyes-lens.md" ]; then
+  ok "fbk-review-lenses/fresh-eyes-lens.md installed"
+else
+  not_ok "fbk-review-lenses/fresh-eyes-lens.md installed" "file not found"
 fi
 
 # T12-T14: New routed docs installed

@@ -147,6 +147,9 @@ leaked=0
 while IFS= read -r source_file; do
   # Skip the installer itself
   [[ "$source_file" == *"installer/"* ]] && continue
+  # Skip test fixture files — they legitimately contain example paths (including
+  # paths with the assets/ prefix) as illustrative content, not install-time references.
+  [[ "$source_file" == *"tests/fixtures/"* ]] && continue
   while IFS= read -r matched_line; do
     # Strip leading whitespace for comment detection
     trimmed="${matched_line#"${matched_line%%[![:space:]]*}"}"

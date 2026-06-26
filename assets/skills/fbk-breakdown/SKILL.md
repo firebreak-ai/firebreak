@@ -127,9 +127,17 @@ Set the top-level `spec` field to `"ai-docs/$FEATURE/$FEATURE-spec.md"`.
 
 Run the task reviewer's deterministic layer: `python3 "$HOME"/.claude/fbk-scripts/fbk.py task-reviewer-gate "ai-docs/$FEATURE/$FEATURE-spec.md" "ai-docs/$FEATURE/$FEATURE-tasks"`. If it fails, report each failure. Return to the test task agent step with specific feedback.
 
-Invoke the test reviewer agent (`test-reviewer`) as an Agent Teams teammate with checkpoint 2 context. Pass the spec file and the task files as artifacts. If it fails, add the test reviewer's findings to the feedback. Return to the test task agent step.
+Invoke the `fbk-task-review` preset as an Agent Teams teammate. Pass the spec file (`ai-docs/$FEATURE/$FEATURE-spec.md`) and the task files (`ai-docs/$FEATURE/$FEATURE-tasks/`) as the artifact set. After the preset runs, read `ai-docs/$FEATURE/task-review.md` and check the verdict. If the verdict is `needs-revision`, block and return to the test task agent with the findings from `task-review.md`. If the verdict is `accepted`, proceed.
 
-If both pass, proceed to the existing breakdown gate.
+## Coherence review
+
+Spawn the `fbk-coherence-review` preset as a separate, fresh subagent (a cleared Agent Teams teammate with independent context — the breakdown agent that compiled the tasks must not also run the coherence review). The subagent's model is selected per the preset. After the coherence review writes `ai-docs/$FEATURE/coherence-review.md`, run the coherence gate:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py coherence-gate "ai-docs/$FEATURE"
+```
+
+If the coherence gate does not pass, block and report the findings before proceeding. An accepted coherence verdict lets the breakdown continue to the breakdown gate.
 
 Run the breakdown gate:
 ```

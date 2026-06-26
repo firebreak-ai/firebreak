@@ -23,7 +23,9 @@ Set `FEATURE=$ARGUMENTS`. Paths used throughout:
 
 Read `task.json`. Verify it exists and is valid JSON conforming to the task manifest schema in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`. If missing or malformed, stop and tell the user what is absent.
 
-## Breakdown Gate
+## Prerequisite Gates
+
+### Breakdown Gate
 
 Run:
 
@@ -34,6 +36,16 @@ python3 "$HOME"/.claude/fbk-scripts/fbk.py breakdown-gate \
 ```
 
 If exit code is non-zero, report the failures and offer to run `/fbk-breakdown` to recompile the tasks. Do not proceed.
+
+### Coherence Gate
+
+Run:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py coherence-gate "ai-docs/$FEATURE"
+```
+
+If exit code is non-zero, report the failures and offer to run `/fbk-breakdown` (which produces the coherence artifact). Do not proceed.
 
 ## Team Setup
 

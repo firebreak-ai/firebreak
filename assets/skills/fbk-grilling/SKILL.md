@@ -15,6 +15,8 @@ This skill resolves ambiguity by asking one question at a time. It works in-cere
 
 Identify all open decisions for the given topic or feature. Sort them from most consequential to least.
 
+A primary target is the requirement still stated in general terms that needs human direction to make concrete — a field, data shape, contract, signature, or observable behavior the work cannot pin down on its own. Raise each one as its own decision: name what is still loose, recommend a concrete definition, and let the operator confirm or redirect. Leave the routine details that have one sensible answer out of the queue; grill only what genuinely needs a human to settle.
+
 Ask one question at a time. For each question:
 
 1. State the decision in plain language — describe what is being decided, not a reference number or abbreviation.

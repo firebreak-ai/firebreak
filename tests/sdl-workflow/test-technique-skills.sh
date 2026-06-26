@@ -12,9 +12,9 @@ GRILLING="$PROJECT_ROOT/assets/skills/fbk-grilling/SKILL.md"
 FRESH_EYES="$PROJECT_ROOT/assets/skills/fbk-fresh-eyes/SKILL.md"
 QUALITY_SCAN="$PROJECT_ROOT/assets/skills/fbk-quality-scan/SKILL.md"
 TEST_REVIEW="$PROJECT_ROOT/assets/skills/fbk-test-review/SKILL.md"
-FRESH_EYES_AGENT="$PROJECT_ROOT/assets/agents/fbk-fresh-eyes-reviewer.md"
-DETECTOR_AGENT="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
-TEST_REVIEWER_AGENT="$PROJECT_ROOT/assets/agents/fbk-test-reviewer.md"
+FRESH_EYES_AGENT="$PROJECT_ROOT/assets/agents/fbk-review-researcher.md"
+DETECTOR_AGENT="$PROJECT_ROOT/assets/agents/fbk-review-researcher.md"
+TEST_REVIEWER_AGENT="$PROJECT_ROOT/assets/agents/fbk-review-researcher.md"
 
 ok() {
   TOTAL=$((TOTAL + 1))

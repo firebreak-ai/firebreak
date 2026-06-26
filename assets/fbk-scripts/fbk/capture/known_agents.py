@@ -27,16 +27,14 @@ FALLBACK_AGENTS = frozenset({
     "fbk-product-author",
     "fbk-task-compiler",
     "fbk-improvement-analyst",
-    "fbk-fresh-eyes-reviewer",
     "fbk-council-architect",
     "fbk-council-analyst",
     "fbk-council-builder",
     "fbk-council-guardian",
     "fbk-council-security",
     "fbk-council-advocate",
-    "code-review-challenger",
-    "code-review-detector",
-    "test-reviewer",
+    "review-researcher",
+    "review-challenger",
 })
 
 # Regex to extract the name: value from frontmatter (first occurrence).
