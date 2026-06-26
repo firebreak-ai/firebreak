@@ -22,6 +22,38 @@ except ImportError:
     _PROJECTION_AVAILABLE = False
 
 
+# ---------------------------------------------------------------------------
+# Import existence guard — never skipped
+# ---------------------------------------------------------------------------
+
+
+class TestProjectionImportable:
+    """project_round_entries and ROUND_SEVERITIES must be importable from fbk.gates.code_review.
+
+    This test is NOT decorated with skipif: if the import fails, the test fails
+    (not skips), so a deleted or renamed projection turns the suite red rather than
+    silently green-with-skips.
+    """
+
+    def test_project_round_entries_importable(self):
+        """Importing project_round_entries from fbk.gates.code_review must succeed.
+
+        A skip here means someone deleted or renamed the function without updating
+        the downstream tests — the suite should be red in that case, not green.
+        """
+        from fbk.gates.code_review import project_round_entries as _fn  # noqa: F401
+        assert callable(_fn), (
+            "project_round_entries must be a callable; got {!r}".format(_fn)
+        )
+
+    def test_round_severities_importable(self):
+        """Importing ROUND_SEVERITIES from fbk.gates.code_review must succeed."""
+        from fbk.gates.code_review import ROUND_SEVERITIES as _sev  # noqa: F401
+        assert isinstance(_sev, tuple) and len(_sev) > 0, (
+            "ROUND_SEVERITIES must be a non-empty tuple; got {!r}".format(_sev)
+        )
+
+
 @pytest.mark.skipif(
     not _PROJECTION_AVAILABLE,
     reason="project_round_entries not yet implemented in fbk.gates.code_review",

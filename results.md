@@ -24,7 +24,7 @@ Firebreak has been tested across two languages (Go, TypeScript) and multiple pro
 
 Firebreak has been tested across three scenarios, each building on the lessons of the previous one.
 
-**Greenfield development** (13 features, ~80 tasks, 137 tests) — The first pipeline run passed all tests but didn't work correctly for a real user. The retrospective identified the root cause: every end-to-end test was a smoke test. The pipeline was revised with [user verification steps](assets/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md), a [test reviewer](assets/agents/fbk-test-reviewer.md) that fails on missing behavioral coverage, and human interventions tracked as a first-class metric. This was the pipeline's first self-improvement cycle.
+**Greenfield development** (13 features, ~80 tasks, 137 tests) — The first pipeline run passed all tests but didn't work correctly for a real user. The retrospective identified the root cause: every end-to-end test was a smoke test. The pipeline was revised with [user verification steps](assets/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md), a [test reviewer](assets/skills/fbk-test-review/SKILL.md) that fails on missing behavioral coverage, and human interventions tracked as a first-class metric. This was the pipeline's first self-improvement cycle.
 
 **Brownfield feature addition** (19 tasks, 43 new tests) — The revised pipeline delivered the feature with zero corrective cycles and zero human interventions. The feature worked on first human test. Council review caught 22 findings before code was written. The test reviewer caught 8 defects across 2 checkpoints. [Full greenfield/brownfield comparison](ai-docs/research/harness-patterns-analysis.md).
 

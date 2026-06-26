@@ -99,6 +99,41 @@ class TestGateHelperReadsSingleVerdict:
         result = read_test_review_verdict(tmp_path)
         assert result == "accepted"
 
+    def test_gate_helper_with_two_verdict_lines_does_not_silently_pick_one(self, tmp_path: Path):
+        """Gate helper must not silently return the first verdict when two conflict.
+
+        An artifact containing both 'Verdict: accepted' and 'Verdict: needs-revision'
+        is ambiguous.  The shared strict parser raises on ambiguity rather than
+        silently picking one, and the gate turns that into a blocking failure.
+        """
+        artifact = tmp_path / "test-review-spec.md"
+        artifact.write_text(
+            "## Section A\n\nVerdict: accepted\n\n"
+            "## Section B\n\nVerdict: needs-revision\n",
+            encoding="utf-8",
+        )
+        with pytest.raises(Exception, match=r"verdict"):
+            read_test_review_verdict(tmp_path)
+
+    def test_gate_helper_with_zero_verdict_lines_returns_none(self, tmp_path: Path):
+        """Gate helper returns None when the artifact contains no Verdict: line.
+
+        An artifact with no verdict is treated as absent by the gate — the caller
+        sees None and can report a blocking failure.  Returning None is the correct
+        contract; raising would also be acceptable, but silence (returning a non-None
+        value) would hide the missing verdict.
+        """
+        artifact = tmp_path / "test-review-spec.md"
+        artifact.write_text(
+            "## Test Review\n\nNo verdict line present in this document.\n",
+            encoding="utf-8",
+        )
+        result = read_test_review_verdict(tmp_path)
+        assert result is None, (
+            "read_test_review_verdict must return None when no Verdict: line is found; "
+            f"got {result!r}"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Artifact name enumeration — pins the discipline's scope explicitly

@@ -174,3 +174,42 @@ class TestHandoffSpawnMaterials:
             "the test reviewer must receive only the spec file, the test lens, and the schema. "
             f"Section text:\n{section}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Referenced asset existence checks
+# ---------------------------------------------------------------------------
+
+
+class TestHandoffReferencedAssetsExist:
+    """The assets named by the handoff section — test-lens.md and fbk-review-researcher.md — must exist.
+
+    A test that asserts 'test-lens' or 'review-researcher' appear in the handoff prose
+    says nothing about whether those assets are actually present.  If either file is
+    deleted or renamed, the handoff would reference a ghost.  These tests make the
+    deletion visible immediately rather than at runtime.
+    """
+
+    def test_test_lens_file_exists(self):
+        """assets/fbk-docs/fbk-review-lenses/test-lens.md must exist on disk.
+
+        The handoff routes the test review through this lens.  If the file is absent,
+        the routing instruction in the skill is a dangling reference.
+        """
+        test_lens = _REPO_ROOT / "assets" / "fbk-docs" / "fbk-review-lenses" / "test-lens.md"
+        assert test_lens.exists(), (
+            f"test-lens.md not found at {test_lens}; "
+            "the spec-review handoff references this lens and it must exist on disk"
+        )
+
+    def test_review_researcher_agent_file_exists(self):
+        """assets/agents/fbk-review-researcher.md must exist on disk.
+
+        The handoff routes the test review through the generic review-researcher agent.
+        If this agent file is absent, the handoff references a deleted or renamed agent.
+        """
+        researcher = _REPO_ROOT / "assets" / "agents" / "fbk-review-researcher.md"
+        assert researcher.exists(), (
+            f"fbk-review-researcher.md not found at {researcher}; "
+            "the spec-review handoff references this agent and it must exist on disk"
+        )

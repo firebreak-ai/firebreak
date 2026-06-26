@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from fbk.gates import test_hash
+from fbk.gates.verdict import parse_single_verdict
 
 # Bounds for the round-log file — set comfortably above any realistic run.
 MAX_ROUNDS = 100
@@ -129,19 +130,19 @@ def validate_code_review(feature_dir: str) -> dict:
 
     if test_review_path is not None:
         text = test_review_path.read_text(encoding="utf-8", errors="replace")
-        verdict = None
-        for line in text.splitlines():
-            if line.lower().startswith("verdict:"):
-                verdict = line.split(":", 1)[1].strip()
-                break
-        if verdict is None:
-            findings.append(
-                "test-review verdict not found (non-blocking): see test-review artifact for operator triage"
-            )
-        elif verdict.lower() != "accepted":
-            findings.append(
-                f"test-review verdict {verdict} (non-blocking): see test-review artifact for operator triage"
-            )
+        try:
+            verdict = parse_single_verdict(text)
+        except ValueError as e:
+            failures.append(f"test-review artifact is malformed: {e}")
+        else:
+            if verdict is None:
+                failures.append(
+                    "test-review verdict not found: artifact present but carries no Verdict: line — cannot confirm acceptance"
+                )
+            elif verdict.lower() != "accepted":
+                failures.append(
+                    f"test-review verdict '{verdict}' is not accepted: see test-review artifact for operator triage"
+                )
 
     # Check 3: delegate hash + shadow-test check to test_hash.verify_manifest.
     discrepancies = test_hash.verify_manifest(feature_dir)

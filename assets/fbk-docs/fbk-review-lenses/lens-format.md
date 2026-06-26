@@ -14,7 +14,7 @@ All review lens documents live at:
 fbk-docs/fbk-review-lenses/<type>-lens.md
 ```
 
-Where `<type>` is the review type name: `code`, `test`, `test-plan`, `task`, `coherence`.
+Where `<type>` is the review type name: `code`, `test`, `task`, `coherence`. (`test-plan` is a deferred review type — no `test-plan-lens.md` ships yet.)
 
 The shared detection document lives at:
 
@@ -58,7 +58,7 @@ This section also declares two required fields:
 
 **`output_mode`**: `finding` or `scan`.
 
-- `finding` — candidates are finding-shaped and route through `validate_sighting()` with the lens's machine-readable matrix below. Lenses: code, test, test-plan, task, coherence.
+- `finding` — candidates are finding-shaped and route through `validate_sighting()` with the lens's machine-readable matrix below. Lenses: code, test, task, coherence (and test-plan once it ships — currently deferred).
 - `scan` — a non-finding output schema that bypasses `validate_sighting()` and is checked only against this lens's structural output schema. Lenses: fresh-eyes, quality, doc-reconcile.
 
 **`output_contract`**: the kind of output-contract section this lens carries. Valid values:

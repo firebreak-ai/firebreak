@@ -8,16 +8,19 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from fbk.gates.verdict import parse_single_verdict
+
 
 def read_test_review_verdict(feature_dir: Path) -> Optional[str]:
     """Locate the spec-stage test-review artifact and return its verdict marker.
 
-    Mirrors the verdict-parse pattern in fbk.gates.code_review (its Check 2):
-    prefer the canonical artifact name, fall back to the newest
-    `test-review-*.md`, then scan for the first `verdict:` line.
+    Prefer the canonical artifact name, fall back to the newest
+    `test-review-*.md`, then parse its verdict with the shared strict parser.
 
     Returns the verdict string (e.g. "accepted"), or None when no artifact is
-    present or no verdict line is found.
+    present or no verdict line is found. Raises ValueError when the artifact
+    carries more than one verdict line (an ambiguous artifact must not be
+    resolved by silently picking one); the caller turns that into a gate failure.
 
     Freshness note: this checks presence + verdict only — it does NOT verify the
     spec was unchanged after the verdict was written. Staleness detection is a
@@ -33,10 +36,7 @@ def read_test_review_verdict(feature_dir: Path) -> Optional[str]:
         artifact = Path(fallback_matches[-1])
 
     text = artifact.read_text(encoding="utf-8", errors="replace")
-    for line in text.splitlines():
-        if line.lower().startswith("verdict:"):
-            return line.split(":", 1)[1].strip()
-    return None
+    return parse_single_verdict(text)
 
 
 def section_of(heading_pattern: str, text: str) -> str:
@@ -185,7 +185,11 @@ def main() -> None:
     # Derive the feature directory from the review file's own folder — the
     # spec-stage test-review artifact lives alongside the review document.
     feature_dir = Path(args.review).resolve().parent
-    test_review_verdict = read_test_review_verdict(feature_dir)
+    try:
+        test_review_verdict = read_test_review_verdict(feature_dir)
+    except ValueError as e:
+        print(f"FAIL: spec-stage test-review artifact is malformed: {e}", file=sys.stderr)
+        sys.exit(2)
 
     result, failures = validate_review(
         review_text, perspectives, threat_model_text, test_review_verdict

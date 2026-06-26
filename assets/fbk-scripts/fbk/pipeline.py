@@ -604,6 +604,60 @@ def cmd_validate_verdicts(args):
     write_json(verdicts)
 
 
+_CONFIRMED_STATUSES = frozenset({"verified", "verified-pending-execution"})
+_DROPPED_STATUSES = frozenset({"rejected", "rejected-as-nit"})
+
+
+def cmd_keep_confirmed(args):
+    """Drop challenger-rejected findings from the merged record set.
+
+    Reads a JSON array of merged records (the output of ``pipeline rejoin``).
+    Each record is expected to carry a ``status`` field set by the challenger.
+
+    - Records whose status is ``verified`` or ``verified-pending-execution`` pass
+      through to stdout (the confirmed finding set).
+    - Records whose status is ``rejected`` or ``rejected-as-nit`` are dropped
+      without a stderr notice (the challenger already logged its rationale).
+    - Records whose status is ``unresolvable`` are written to stderr so the
+      operator can see the unadjudicated findings; they do NOT appear on stdout.
+    - Records with any other (unexpected) status are written to stderr as a
+      warning and excluded from the confirmed set.
+    - Non-dict items or malformed JSON input cause an immediate exit(1).
+    """
+    records = read_stdin_json()
+    confirmed = []
+
+    for i, record in enumerate(records):
+        if not isinstance(record, dict):
+            print(
+                f"ERROR: record at index {i} is not an object (got {type(record).__name__})",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        status = record.get("status")
+
+        if status in _CONFIRMED_STATUSES:
+            confirmed.append(record)
+        elif status in _DROPPED_STATUSES:
+            pass  # silently drop; challenger rationale is already in the record
+        elif status == "unresolvable":
+            display_id = record.get("finding_id", record.get("id", f"index {i}"))
+            title = record.get("title", "")
+            print(
+                f"UNRESOLVABLE: id={display_id} title={title}",
+                file=sys.stderr,
+            )
+        else:
+            display_id = record.get("finding_id", record.get("id", f"index {i}"))
+            print(
+                f"WARNING: unexpected status '{status}' for id={display_id} — excluded from confirmed set",
+                file=sys.stderr,
+            )
+
+    write_json(confirmed)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Code review sighting pipeline")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -632,6 +686,8 @@ def main():
 
     subparsers.add_parser("validate-verdicts")
 
+    subparsers.add_parser("keep-confirmed")
+
     args = parser.parse_args()
 
     commands = {
@@ -643,6 +699,7 @@ def main():
         "normalize": cmd_normalize,
         "rejoin": cmd_rejoin,
         "validate-verdicts": cmd_validate_verdicts,
+        "keep-confirmed": cmd_keep_confirmed,
     }
     commands[args.command](args)
 

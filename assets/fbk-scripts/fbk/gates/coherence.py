@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import List
 
+from fbk.gates.verdict import parse_single_verdict
+
 
 def validate_coherence(feature_dir: str) -> dict:
     feature_path = Path(feature_dir)
@@ -19,18 +21,19 @@ def validate_coherence(feature_dir: str) -> dict:
 
     text = review_path.read_text(encoding="utf-8", errors="replace")
 
-    # Scan all lines and keep the last one whose stripped form starts with "verdict:".
-    last_verdict_value = None
-    for line in text.splitlines():
-        if line.lower().startswith("verdict:"):
-            last_verdict_value = line.split(":", 1)[1].strip()
+    # Exactly one anchored Verdict: line is required; ambiguity is a malformed artifact.
+    try:
+        verdict_value = parse_single_verdict(text)
+    except ValueError as e:
+        failures.append(f"coherence-review.md is malformed: {e}")
+        return {"gate": "coherence", "result": "fail", "failures": failures}
 
-    if last_verdict_value is None:
+    if verdict_value is None:
         failures.append("coherence-review.md has no Verdict: line")
         return {"gate": "coherence", "result": "fail", "failures": failures}
 
-    if last_verdict_value.lower() != "accepted":
-        failures.append(f"coherence-review.md final verdict is '{last_verdict_value}', expected 'accepted'")
+    if verdict_value.lower() != "accepted":
+        failures.append(f"coherence-review.md verdict is '{verdict_value}', expected 'accepted'")
 
     return {"gate": "coherence", "result": "pass" if not failures else "fail", "failures": failures}
 

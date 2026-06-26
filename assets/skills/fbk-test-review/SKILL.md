@@ -89,7 +89,15 @@ Severity default: `minor` (no explicit prose default existed in this skill befor
 
    This produces the merged records. The count guard fires here — a mismatch between the number of kept findings and the number of verdicts is a hard failure.
 
-8. **Stage 8 — re-validate and author the verdict.** Pipe the merged records through `pipeline validate --lens test-lens.md`:
+8. **Stage 8 — keep only confirmed findings.** Pipe the merged records through `pipeline keep-confirmed`:
+
+   ```
+   python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline keep-confirmed
+   ```
+
+   This drops every record the challenger marked `rejected` or `rejected-as-nit`, and surfaces any `unresolvable` record to stderr (unadjudicated — the cited source could not be located) so it is not silently lost. Only `verified` and `verified-pending-execution` records pass to stdout. Without this stage a rejected finding that still carries a valid type and severity would survive the next re-validation and wrongly enter the confirmed set.
+
+9. **Stage 9 — re-validate and author the verdict.** Pipe the confirmed records through `pipeline validate --lens test-lens.md`:
 
    ```
    python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate --lens "$HOME"/.claude/fbk-docs/fbk-review-lenses/test-lens.md

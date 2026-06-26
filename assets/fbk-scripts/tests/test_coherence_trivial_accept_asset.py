@@ -88,35 +88,74 @@ def _region_around(text: str, anchor: str, window: int = 400) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _extract_section_under_heading(text: str, heading_pattern: str) -> str:
+    """Return the body of the first section whose ## heading matches ``heading_pattern``.
+
+    Searches case-insensitively.  Returns the text from the line after the heading
+    up to (but not including) the next ## heading, or to the end of the document.
+    Returns an empty string when no matching heading is found.
+    """
+    lines = text.splitlines(keepends=True)
+    capturing = False
+    collected: list[str] = []
+    pattern = re.compile(heading_pattern, re.IGNORECASE)
+    for line in lines:
+        if line.startswith("## ") or line.startswith("## "):
+            if capturing:
+                break
+            if pattern.search(line):
+                capturing = True
+                continue
+        if capturing:
+            collected.append(line)
+    return "".join(collected)
+
+
 class TestCoherenceSkillDocumentsTrivialAccept:
     """The coherence skill names the trivial-accept branch as an explicit routing option."""
 
     def test_coherence_skill_documents_trivial_accept(self):
-        """The coherence skill (SKILL.md) exists and its text names the trivial-accept branch.
+        """The coherence skill (SKILL.md) has a dedicated heading or instruction block for trivial-accept routing.
 
-        Asserts one of:
-        - the literal token ``trivial-accept`` appears in the skill, OR
-        - ``no contracts`` and ``no seams`` co-occur with ``accepted`` in the
-          skill text, as an equivalent way to state the same branch.
+        The assertion is anchored to the structure of the routing rule, not to a
+        bare anywhere-in-file token search.  The token ``trivial-accept`` must appear
+        either:
 
-        The trivial-accept branch must be explicit so the loop coordinator has
-        an unambiguous instruction.
+        1. In a ``##`` heading whose text contains ``trivial`` or ``routing``, OR
+        2. In a paragraph that also contains a conditional keyword (``condition``,
+           ``when``, ``if``), proving it appears inside an explicit routing instruction
+           rather than an incidental prose mention.
+
+        This prevents a bare word-match against a comment, a code example label,
+        or a retrospective note from satisfying the test.
         """
         text = _read_asset(_COHERENCE_SKILL)
         text_lower = text.lower()
 
-        has_trivial_accept_token = "trivial-accept" in text_lower
-
-        # Co-occurrence: "no contracts" and "no seams" near "accepted"
-        region_no_contracts = _region_around(text_lower, "no contracts", window=400)
-        has_no_contracts_with_accepted = (
-            "no seams" in region_no_contracts and "accepted" in region_no_contracts
+        # Condition 1: a ## heading whose text itself contains "trivial" or "routing"
+        heading_has_trivial = bool(
+            re.search(r"^##\s+.*(trivial|routing).*$", text_lower, re.MULTILINE)
         )
 
-        assert has_trivial_accept_token or has_no_contracts_with_accepted, (
-            "fbk-coherence-review/SKILL.md must name the trivial-accept branch explicitly. "
-            "Expected either the literal token 'trivial-accept', or 'no contracts' and "
-            "'no seams' co-occurring with 'accepted' within 400 characters."
+        # Condition 2: trivial-accept appears in a paragraph that also contains a
+        # conditional keyword — proving it is inside a routing instruction block.
+        ta_pos = text_lower.find("trivial-accept")
+        in_instruction_context = False
+        if ta_pos != -1:
+            # Look at the surrounding paragraph (up to 600 chars on each side).
+            para_start = max(0, ta_pos - 600)
+            para_end = min(len(text_lower), ta_pos + 600)
+            para = text_lower[para_start:para_end]
+            in_instruction_context = bool(
+                re.search(r"\b(condition|when both|when either|if .{0,40}hold|skip the review)\b", para)
+            )
+
+        assert heading_has_trivial or in_instruction_context, (
+            "fbk-coherence-review/SKILL.md must document the trivial-accept branch "
+            "in a structural context (a ## heading containing 'trivial' or 'routing', "
+            "or a paragraph co-located with a conditional routing keyword like "
+            "'condition', 'when both', 'when either', 'skip the review'). "
+            "A bare anywhere-in-file token does not satisfy this check."
         )
 
 

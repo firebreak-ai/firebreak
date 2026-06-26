@@ -58,6 +58,45 @@ def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _fenced_commands(text: str) -> list[str]:
+    """Extract all non-empty lines from fenced code blocks in ``text``.
+
+    Collects every line inside a triple-backtick block that starts with a
+    non-whitespace character.  Returns a list of those lines, stripped.
+    This is used to assert that real pipeline commands (with their flags)
+    appear in the skill's documented command blocks — not just as prose tokens.
+    """
+    lines = text.splitlines()
+    in_fence = False
+    collected: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence and stripped:
+            collected.append(stripped)
+    return collected
+
+
+def _inline_commands(text: str) -> list[str]:
+    """Extract all inline-backtick code spans from ``text`` that contain 'pipeline'.
+
+    Inline code (single backticks) is used in skills that document commands
+    inline in prose steps rather than in fenced blocks.  Returns those spans
+    stripped of the surrounding backticks.
+    """
+    return [
+        m.group(1)
+        for m in re.finditer(r"`([^`]*pipeline[^`]*)`", text)
+    ]
+
+
+def _documented_commands(text: str) -> list[str]:
+    """Return all pipeline command strings documented in ``text``, from both fenced blocks and inline spans."""
+    return _fenced_commands(text) + _inline_commands(text)
+
+
 def _ordered(text: str, tokens: list[str]) -> None:
     """Assert that each token in ``tokens`` appears in the text in sequential order.
 
@@ -200,6 +239,51 @@ class TestCodeReviewPipelineWiring:
             f"window: {window!r}"
         )
 
+    def test_documented_commands_include_normalize(self):
+        """The fbk-code-review documented commands contain 'pipeline normalize'.
+
+        Extracts commands from both fenced blocks and inline backtick spans and asserts
+        at least one contains the normalize call.  This is stronger than a bare token
+        search: it proves the command appears in a documented command context (not just
+        in running prose).
+        """
+        text = _read(_CODE_REVIEW_SKILL)
+        cmds = _documented_commands(text)
+        assert any("pipeline normalize" in cmd for cmd in cmds), (
+            "fbk-code-review/SKILL.md must contain 'pipeline normalize' in at least one "
+            "documented command (fenced block or inline backtick); "
+            f"documented commands found: {cmds!r}"
+        )
+
+    def test_documented_commands_include_rejoin_with_verdicts_flag(self):
+        """The fbk-code-review documented commands contain 'pipeline rejoin --verdicts'.
+
+        Asserts the full rejoin command with its ``--verdicts`` flag appears in a
+        fenced block or inline backtick — not just as a bare prose token.
+        """
+        text = _read(_CODE_REVIEW_SKILL)
+        cmds = _documented_commands(text)
+        assert any("pipeline rejoin" in cmd and "--verdicts" in cmd for cmd in cmds), (
+            "fbk-code-review/SKILL.md must contain 'pipeline rejoin --verdicts' in at least one "
+            "documented command; documented commands found: {!r}".format(cmds)
+        )
+
+    def test_documented_commands_include_validate_verdicts_with_stdin(self):
+        """The fbk-code-review documented commands contain 'pipeline validate-verdicts' with stdin redirection.
+
+        Asserts the full validate-verdicts command with ``< <verdicts-file>`` stdin
+        redirection appears in a documented command context.
+        """
+        text = _read(_CODE_REVIEW_SKILL)
+        cmds = _documented_commands(text)
+        assert any(
+            "pipeline validate-verdicts" in cmd and "< <verdicts-file>" in cmd
+            for cmd in cmds
+        ), (
+            "fbk-code-review/SKILL.md must contain 'pipeline validate-verdicts < <verdicts-file>' "
+            "in at least one documented command; documented commands found: {!r}".format(cmds)
+        )
+
 
 # ---------------------------------------------------------------------------
 # Converted-skill wiring (AC-08, AC-09, AC-10)
@@ -264,6 +348,27 @@ class TestTestReviewPipelineWiring:
             f"'< <verdicts-file>' within 120 characters; window: {window!r}"
         )
 
+    def test_fenced_commands_cover_full_pipeline_for_test_review(self):
+        """fbk-test-review/SKILL.md fenced blocks contain the actual pipeline commands with flags.
+
+        Checks four complete command forms — validate with lens flag, normalize, validate-verdicts
+        with stdin, and rejoin with verdicts flag — as documented command-block lines.
+        """
+        text = _read(_TEST_REVIEW_SKILL)
+        cmds = _fenced_commands(text)
+
+        expected = [
+            ("pipeline validate", "--lens", "test-lens.md"),
+            ("pipeline normalize",),
+            ("pipeline validate-verdicts", "< <verdicts-file>"),
+            ("pipeline rejoin", "--verdicts"),
+        ]
+        for pattern_parts in expected:
+            assert any(all(p in cmd for p in pattern_parts) for cmd in cmds), (
+                "fbk-test-review/SKILL.md fenced blocks must contain a command matching all of "
+                "{!r}; fenced commands found: {!r}".format(pattern_parts, cmds)
+            )
+
 
 class TestCoherenceReviewPipelineWiring:
     """fbk-coherence-review/SKILL.md documents the six executable pipeline steps in order (AC-08, AC-09, AC-10).
@@ -319,6 +424,27 @@ class TestCoherenceReviewPipelineWiring:
             f"'< <verdicts-file>' within 120 characters; window: {window!r}"
         )
 
+    def test_fenced_commands_cover_full_pipeline_for_coherence_review(self):
+        """fbk-coherence-review/SKILL.md fenced blocks contain the actual pipeline commands with flags.
+
+        Checks four complete command forms — validate with lens flag, normalize, validate-verdicts
+        with stdin, and rejoin with verdicts flag — as documented command-block lines.
+        """
+        text = _read(_COHERENCE_REVIEW_SKILL)
+        cmds = _fenced_commands(text)
+
+        expected = [
+            ("pipeline validate", "--lens", "coherence-lens.md"),
+            ("pipeline normalize",),
+            ("pipeline validate-verdicts", "< <verdicts-file>"),
+            ("pipeline rejoin", "--verdicts"),
+        ]
+        for pattern_parts in expected:
+            assert any(all(p in cmd for p in pattern_parts) for cmd in cmds), (
+                "fbk-coherence-review/SKILL.md fenced blocks must contain a command matching all of "
+                "{!r}; fenced commands found: {!r}".format(pattern_parts, cmds)
+            )
+
 
 class TestTaskReviewPipelineWiring:
     """fbk-task-review/SKILL.md documents the six executable pipeline steps in order (AC-08, AC-09, AC-10).
@@ -373,6 +499,27 @@ class TestTaskReviewPipelineWiring:
             f"'pipeline validate-verdicts' at offset {vv_pos} must be followed by "
             f"'< <verdicts-file>' within 120 characters; window: {window!r}"
         )
+
+    def test_fenced_commands_cover_full_pipeline_for_task_review(self):
+        """fbk-task-review/SKILL.md fenced blocks contain the actual pipeline commands with flags.
+
+        Checks four complete command forms — validate with lens flag, normalize, validate-verdicts
+        with stdin, and rejoin with verdicts flag — as documented command-block lines.
+        """
+        text = _read(_TASK_REVIEW_SKILL)
+        cmds = _fenced_commands(text)
+
+        expected = [
+            ("pipeline validate", "--lens", "task-lens.md"),
+            ("pipeline normalize",),
+            ("pipeline validate-verdicts", "< <verdicts-file>"),
+            ("pipeline rejoin", "--verdicts"),
+        ]
+        for pattern_parts in expected:
+            assert any(all(p in cmd for p in pattern_parts) for cmd in cmds), (
+                "fbk-task-review/SKILL.md fenced blocks must contain a command matching all of "
+                "{!r}; fenced commands found: {!r}".format(pattern_parts, cmds)
+            )
 
 
 # ---------------------------------------------------------------------------
