@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-INJECT="$PROJECT_ROOT/ai-docs/detection-accuracy/martian-benchmark/inject_results.py"
+INJECT="$PROJECT_ROOT/benchmark/code-review/inject_results.py"
 FIXTURES="$PROJECT_ROOT/tests/fixtures/pipeline"
 
 # Prefer the fbk-scripts venv python (parity with other tests); fall back to
