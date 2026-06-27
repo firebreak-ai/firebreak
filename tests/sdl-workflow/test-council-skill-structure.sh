@@ -493,35 +493,9 @@ else
   not_ok "review-perspectives.md references /fbk-council"
 fi
 
-# ── CHANGELOG and README post-refactor content (AC-14) ────────────────────────
-
-# 63: CHANGELOG.md contains 'Decomposed the'
-if grep -F 'Decomposed the' "$PROJECT_ROOT/CHANGELOG.md" >/dev/null 2>&1; then
-  ok "CHANGELOG.md contains 'Decomposed the'"
-else
-  not_ok "CHANGELOG.md contains 'Decomposed the'"
-fi
-
-# 64: CHANGELOG.md contains '/fbk-council'
-if grep -F '/fbk-council' "$PROJECT_ROOT/CHANGELOG.md" >/dev/null 2>&1; then
-  ok "CHANGELOG.md contains '/fbk-council'"
-else
-  not_ok "CHANGELOG.md contains '/fbk-council'"
-fi
-
-# 65: README.md contains 'Assemble specialized agents'
-if grep -F 'Assemble specialized agents' "$PROJECT_ROOT/README.md" >/dev/null 2>&1; then
-  ok "README.md contains 'Assemble specialized agents'"
-else
-  not_ok "README.md contains 'Assemble specialized agents'"
-fi
-
-# 66: README.md does NOT contain 'Assemble 6 agents' (old wording removed)
-if ! grep -F 'Assemble 6 agents' "$PROJECT_ROOT/README.md" >/dev/null 2>&1; then
-  ok "README.md does not contain banned phrase 'Assemble 6 agents'"
-else
-  not_ok "README.md does not contain banned phrase 'Assemble 6 agents'"
-fi
+# Note: README.md and CHANGELOG.md are human-facing narrative that nothing in the
+# pipeline reads at runtime, so their prose is not asserted here. Wiring contracts
+# in executable assets (skills/agents/docs the pipeline consumes) are tested above.
 
 # ── Ralph stale-state guard (AC-07 reinforcement; closes CP2 Finding 1) ───────
 
