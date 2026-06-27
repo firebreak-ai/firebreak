@@ -1,0 +1,1156 @@
+{
+  "_metadata": {
+    "judge": "consensus (3x claude-sonnet-4-6, majority vote)",
+    "model": "claude-sonnet-4-6",
+    "judges_per_pair": 3,
+    "aggregation": "majority vote",
+    "tool": "firebreak-v0.4.0-20260422_040819",
+    "date": "2026-04-22",
+    "judge_inputs": [
+      "results/judge_run_20260422_040819_1.json",
+      "results/judge_run_20260422_040819_2.json",
+      "results/judge_run_20260422_040819_3.json"
+    ],
+    "notes": "Golden index and candidate index are 1-based. null candidate_index means no match."
+  },
+  "https://github.com/calcom/cal.com/pull/10967": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR10967",
+    "source_repo": "cal_dot_com",
+    "golden_count": 5,
+    "candidate_count": 12,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both identify the null/undefined crash on mainHostDestinationCalendar when destinationCalendar is null or empty."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate discusses the redundant optional chain after an existing ternary guard."
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "Both describe a logic-inversion where a find predicate always fails due to comparing a value against itself or its falsy guard; C1 is the best match for the updateEvent path."
+      },
+      "4": {
+        "match": true,
+        "candidate_index": 9,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "9": 2,
+          "8": 1
+        },
+        "reasoning": "Both describe the IS_TEAM_BILLING_ENABLED boolean inversion in org creation, resulting in incorrect slug/requestedSlug assignment."
+      },
+      "5": {
+        "match": true,
+        "candidate_index": 5,
+        "votes": "2/3",
+        "candidate_index_votes": {
+          "5": 2
+        },
+        "reasoning": "No candidate addresses the Calendar interface contract mismatch where some implementations omit the credentialId parameter."
+      }
+    },
+    "missing_judges": [],
+    "tp": 4,
+    "fp": 9,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 6
+      },
+      {
+        "candidate_index": 7
+      },
+      {
+        "candidate_index": 8
+      },
+      {
+        "candidate_index": 10
+      },
+      {
+        "candidate_index": 11
+      },
+      {
+        "candidate_index": 12
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/22345": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR22345",
+    "source_repo": "cal_dot_com",
+    "golden_count": 2,
+    "candidate_count": 5,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both identify the same unreachable branches in getBaseConditions because the Prisma.Sql object is always truthy."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the org-member exclusion issue when teamsFromOrg is empty."
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 5,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/8330": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR8330",
+    "source_repo": "cal_dot_com",
+    "golden_count": 2,
+    "candidate_count": 6,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "Both identify that slotStartTime is incorrectly used instead of slotEndTime for the end-boundary calculation."
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both describe the same bug: === comparing Dayjs objects by reference instead of using .isSame(), causing the override condition to never trigger."
+      }
+    },
+    "missing_judges": [],
+    "tp": 2,
+    "fp": 5,
+    "fn": 0,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      },
+      {
+        "candidate_index": 6
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/11059": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR11059",
+    "source_repo": "cal_dot_com",
+    "golden_count": 5,
+    "candidate_count": 12,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 4,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "4": 3
+        },
+        "reasoning": "Both identify the same bug where the literal string 'refresh_token' is persisted instead of the actual token value."
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 5,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "5": 3
+        },
+        "reasoning": "Both identify the invalid computed property key in the Zod schema that doesn't work as intended."
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "Both identify that the safeParse wrapper ({success, data, error}) is being stored/used instead of the actual parsed data."
+      },
+      "4": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "Both describe the return shape mismatch where a raw fetch Response is used where callers expect a token object with .data."
+      },
+      "5": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "Same underlying issue as G4: res.data is undefined when the sync endpoint returns a raw Response; C2 identifies this return-shape mismatch."
+      }
+    },
+    "missing_judges": [],
+    "tp": 5,
+    "fp": 8,
+    "fn": 0,
+    "false_positives": [
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 6
+      },
+      {
+        "candidate_index": 7
+      },
+      {
+        "candidate_index": 8
+      },
+      {
+        "candidate_index": 9
+      },
+      {
+        "candidate_index": 10
+      },
+      {
+        "candidate_index": 11
+      },
+      {
+        "candidate_index": 12
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/14943": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR14943",
+    "source_repo": "cal_dot_com",
+    "golden_count": 2,
+    "candidate_count": 6,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both identify the non-atomic read-modify-write on retryCount that loses increments under concurrent access."
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "Both identify that the delete filter's retryCount > 1 condition lacks a WorkflowMethods.SMS scope, causing non-SMS reminders to be deleted."
+      }
+    },
+    "missing_judges": [],
+    "tp": 2,
+    "fp": 5,
+    "fn": 0,
+    "false_positives": [
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      },
+      {
+        "candidate_index": 6
+      }
+    ]
+  },
+  "https://github.com/calcom/cal.com/pull/14740": {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR14740",
+    "source_repo": "cal_dot_com",
+    "golden_count": 5,
+    "candidate_count": 14,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "Both identify the same case-sensitivity bypass where guest emails aren't lowercased before comparison against the lowercased blacklist."
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both identify the && vs || logic error in the admin/owner permission check."
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 3,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "3": 3
+        },
+        "reasoning": "Both identify that the email notification uses the raw/original guest list instead of the filtered uniqueGuests list."
+      },
+      "4": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "Both identify that duplicate emails within the input are not deduplicated, leading to duplicate attendee rows."
+      },
+      "5": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the initial state of [''] (array with empty string) in MultiEmail causing validation issues."
+      }
+    },
+    "missing_judges": [],
+    "tp": 4,
+    "fp": 11,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      },
+      {
+        "candidate_index": 6
+      },
+      {
+        "candidate_index": 7
+      },
+      {
+        "candidate_index": 8
+      },
+      {
+        "candidate_index": 9
+      },
+      {
+        "candidate_index": 10
+      },
+      {
+        "candidate_index": 11
+      },
+      {
+        "candidate_index": 12
+      },
+      {
+        "candidate_index": 13
+      },
+      {
+        "candidate_index": 14
+      }
+    ]
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/3": {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR3",
+    "source_repo": "discourse",
+    "golden_count": 2,
+    "candidate_count": 4,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both identify that should_block? performs stat updates (side effects) during what should be a read operation, creating race conditions."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the regex pattern matching domain suffixes instead of full domains, allowing evil.example.com to match example.com."
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 4,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      }
+    ]
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/4": {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR4",
+    "source_repo": "discourse",
+    "golden_count": 6,
+    "candidate_count": 7,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 5,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "5": 3
+        },
+        "reasoning": "Both identify the SSRF vulnerability from calling open(url) without validating the URL/host."
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "Both identify that indexOf-based origin validation is insufficient as it does substring matching, allowing bypass with a crafted domain."
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "Both identify that postMessage uses the full referer URL as targetOrigin instead of just the origin, causing messages to be dropped."
+      },
+      "4": {
+        "match": true,
+        "candidate_index": 3,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "3": 3
+        },
+        "reasoning": "Both identify that ALLOWALL is non-standard and disables clickjacking protection; C3 also notes the referer-based bypass."
+      },
+      "5": {
+        "match": true,
+        "candidate_index": 4,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "4": 3
+        },
+        "reasoning": "Both identify XSS from unescaped URL interpolation in generated HTML; C4 matches the XSS part of G5."
+      },
+      "6": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both identify the same invalid 'end if' syntax in the ERB template causing a Ruby SyntaxError."
+      }
+    },
+    "missing_judges": [],
+    "tp": 6,
+    "fp": 2,
+    "fn": 0,
+    "false_positives": [
+      {
+        "candidate_index": 6
+      },
+      {
+        "candidate_index": 7
+      }
+    ]
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/8": {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR8",
+    "source_repo": "discourse",
+    "golden_count": 3,
+    "candidate_count": 3,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the async/unhandled findMembers() call creating a race condition for member data availability."
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both identify an off-by-one issue in pagination where the offset/page calculation produces an empty last page."
+      },
+      "3": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the HTTP method mismatch (PUT vs DELETE) in the remove_member test."
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 3,
+    "fn": 2,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      }
+    ]
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/9": {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR9",
+    "source_repo": "discourse",
+    "golden_count": 2,
+    "candidate_count": 2,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both identify the thread-safety race condition on @loaded_locales due to reading outside the mutex."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses normalizing the locale input (String vs Symbol) to prevent double-loading."
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 2,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      }
+    ]
+  },
+  "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/10": {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR10",
+    "source_repo": "discourse",
+    "golden_count": 4,
+    "candidate_count": 8,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 5,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "5": 3
+        },
+        "reasoning": "Both identify that before_validation raises NoMethodError when host is nil (self.host.sub crashes)."
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 3,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "3": 3
+        },
+        "reasoning": "C3 and C4 both address the nil dereference when record not found; C3 (destroy path) best matches the core concern in G2 about nil method calls."
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 6,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "6": 3
+        },
+        "reasoning": "Both identify that record_for_host does lower(host) on the DB column but doesn't normalize the incoming URL host, causing case-sensitive mismatches."
+      },
+      "4": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the migration inserting raw SQL without model normalization, causing future host lookups to fail for migrated data with http:// prefixes."
+      }
+    },
+    "missing_judges": [],
+    "tp": 3,
+    "fp": 5,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 7
+      },
+      {
+        "candidate_index": 8
+      }
+    ]
+  },
+  "https://github.com/grafana/grafana/pull/79265": {
+    "instance_id": "grafana__grafana__grafana__PR79265",
+    "source_repo": "grafana",
+    "golden_count": 5,
+    "candidate_count": 3,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "Both identify the check-then-insert race condition where concurrent requests can exceed the device limit."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses that TagDevice returning ErrDeviceLimitReached now blocks anonymous authentication entirely, a behavioral regression from the async approach."
+      },
+      "3": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the compilation error in dbSession.Exec(args...) where the query string is passed as interface{} instead of string."
+      },
+      "4": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "Both identify that ErrDeviceLimitReached is misleadingly returned when zero rows are updated, even if the device doesn't exist."
+      },
+      "5": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "1/3",
+        "reasoning": "No candidate addresses the inconsistency between using device.UpdatedAt and time.Now().UTC() in the time window calculation."
+      }
+    },
+    "missing_judges": [],
+    "tp": 2,
+    "fp": 1,
+    "fn": 3,
+    "false_positives": [
+      {
+        "candidate_index": 3
+      }
+    ]
+  },
+  "https://github.com/grafana/grafana/pull/90939": {
+    "instance_id": "grafana__grafana__grafana__PR90939",
+    "source_repo": "grafana",
+    "golden_count": 2,
+    "candidate_count": 2,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both identify the missing inner check after acquiring the write lock in the double-checked locking pattern."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "1/3",
+        "reasoning": "No candidate addresses the unconditional assignment of the fetch result to cache even when the fetch fails, caching nil/empty results."
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 2,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      }
+    ]
+  },
+  "https://github.com/keycloak/keycloak/pull/36882": {
+    "instance_id": "keycloak__keycloak__keycloak__PR36882",
+    "source_repo": "keycloak",
+    "golden_count": 1,
+    "candidate_count": 6,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the implementation issue of picocli.exit() calling System.exit() directly; candidates focus on missing test assertions for exit codes."
+      }
+    },
+    "missing_judges": [],
+    "tp": 0,
+    "fp": 6,
+    "fn": 1,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      },
+      {
+        "candidate_index": 6
+      }
+    ]
+  },
+  "https://github.com/keycloak/keycloak/pull/36880": {
+    "instance_id": "keycloak__keycloak__keycloak__PR36880",
+    "source_repo": "keycloak",
+    "golden_count": 3,
+    "candidate_count": 0,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidates produced for this PR."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidates produced for this PR."
+      },
+      "3": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidates produced for this PR."
+      }
+    },
+    "missing_judges": [],
+    "tp": 0,
+    "fp": 0,
+    "fn": 3,
+    "false_positives": []
+  },
+  "https://github.com/keycloak/keycloak/pull/40940": {
+    "instance_id": "keycloak__keycloak__keycloak__PR40940",
+    "source_repo": "keycloak",
+    "golden_count": 2,
+    "candidate_count": 4,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "Both identify that getSubGroupsCount() returns null in violation of the GroupModel contract, risking NPEs in callers."
+      },
+      "2": {
+        "match": true,
+        "candidate_index": 2,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "2": 3
+        },
+        "reasoning": "Both identify that the reader thread is not joined before the assertion, creating a race condition in the test."
+      }
+    },
+    "missing_judges": [],
+    "tp": 2,
+    "fp": 2,
+    "fn": 0,
+    "false_positives": [
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      }
+    ]
+  },
+  "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/3": {
+    "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR3",
+    "source_repo": "sentry",
+    "golden_count": 3,
+    "candidate_count": 5,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the issue that sample_rate = 0.0 is falsy and would be skipped in a truthy check."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the non-deterministic hash() used for cache keys across processes due to hash randomization."
+      },
+      "3": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the upsampling eligibility check using the outer dataset instead of the scoped dataset."
+      }
+    },
+    "missing_judges": [],
+    "tp": 0,
+    "fp": 5,
+    "fn": 3,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      }
+    ]
+  },
+  "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/5": {
+    "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR5",
+    "source_repo": "sentry",
+    "golden_count": 3,
+    "candidate_count": 7,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate specifically addresses breaking changes in the error response format."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the detector validator using the wrong key when updating type."
+      },
+      "3": {
+        "match": true,
+        "candidate_index": 1,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "1": 3
+        },
+        "reasoning": "Both identify that zip(error_ids, events.values()) misaligns data because dict value order isn't guaranteed to match error_ids."
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 6,
+    "fn": 2,
+    "false_positives": [
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      },
+      {
+        "candidate_index": 5
+      },
+      {
+        "candidate_index": 6
+      },
+      {
+        "candidate_index": 7
+      }
+    ]
+  },
+  "https://github.com/getsentry/sentry/pull/93824": {
+    "instance_id": "sentry__getsentry__sentry__PR93824",
+    "source_repo": "sentry",
+    "golden_count": 5,
+    "candidate_count": 1,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "The only candidate addresses a different issue (per-process cap); no candidate covers the inconsistent 'shard'/'shards' metric tagging."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the fixed sleep in tests causing flakiness."
+      },
+      "3": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the isinstance check always being false for spawn-context processes."
+      },
+      "4": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the monkeypatched time.sleep making the test sleep ineffective."
+      },
+      "5": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the loop break skipping termination of remaining flusher processes."
+      }
+    },
+    "missing_judges": [],
+    "tp": 0,
+    "fp": 1,
+    "fn": 5,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      }
+    ]
+  },
+  "https://github.com/getsentry/sentry/pull/77754": {
+    "instance_id": "sentry__getsentry__sentry__PR77754",
+    "source_repo": "sentry",
+    "golden_count": 4,
+    "candidate_count": 4,
+    "judgments": {
+      "1": {
+        "match": true,
+        "candidate_index": 0,
+        "votes": "3/3",
+        "candidate_index_votes": {
+          "0": 3
+        },
+        "reasoning": "Both identify the shared mutable default issue where timezone.now() is evaluated at class definition time rather than per-instance."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the method name typo (inalid vs invalid)."
+      },
+      "3": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the method name mismatch ('empty_array' testing an empty dict)."
+      },
+      "4": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses that to_dict() returning a datetime object may cause JSON serialization failures when passed as task kwargs."
+      }
+    },
+    "missing_judges": [],
+    "tp": 1,
+    "fp": 4,
+    "fn": 3,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      },
+      {
+        "candidate_index": 3
+      },
+      {
+        "candidate_index": 4
+      }
+    ]
+  },
+  "https://github.com/getsentry/sentry/pull/95633": {
+    "instance_id": "sentry__getsentry__sentry__PR95633",
+    "source_repo": "sentry",
+    "golden_count": 3,
+    "candidate_count": 2,
+    "judgments": {
+      "1": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the potential AttributeError from queue.shutdown(immediate=False) not existing in the standard Python queue module."
+      },
+      "2": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the repeated magic number 50 for max_wait needing extraction as a named constant."
+      },
+      "3": {
+        "match": false,
+        "candidate_index": null,
+        "votes": "0/3",
+        "reasoning": "No candidate addresses the docstring mismatch in test_thread_queue_parallel_error_handling."
+      }
+    },
+    "missing_judges": [],
+    "tp": 0,
+    "fp": 2,
+    "fn": 3,
+    "false_positives": [
+      {
+        "candidate_index": 1
+      },
+      {
+        "candidate_index": 2
+      }
+    ]
+  },
+  "_summary": {
+    "evaluated_prs": 21,
+    "tp": 37,
+    "fp": 88,
+    "fn": 32,
+    "precision": 0.296,
+    "recall": 0.5362,
+    "f1": 0.3814,
+    "avg_findings_per_pr": 5.38
+  },
+  "_per_repo": {
+    "cal_dot_com": {
+      "tp": 18,
+      "fp": 43,
+      "fn": 3,
+      "prs": 6,
+      "precision": 0.2951,
+      "recall": 0.8571,
+      "f1": 0.439
+    },
+    "discourse": {
+      "tp": 12,
+      "fp": 16,
+      "fn": 5,
+      "prs": 5,
+      "precision": 0.4286,
+      "recall": 0.7059,
+      "f1": 0.5333
+    },
+    "grafana": {
+      "tp": 3,
+      "fp": 3,
+      "fn": 4,
+      "prs": 2,
+      "precision": 0.5,
+      "recall": 0.4286,
+      "f1": 0.4615
+    },
+    "keycloak": {
+      "tp": 2,
+      "fp": 8,
+      "fn": 4,
+      "prs": 3,
+      "precision": 0.2,
+      "recall": 0.3333,
+      "f1": 0.25
+    },
+    "sentry": {
+      "tp": 2,
+      "fp": 18,
+      "fn": 16,
+      "prs": 5,
+      "precision": 0.1,
+      "recall": 0.1111,
+      "f1": 0.1053
+    }
+  }
+}

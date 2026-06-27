@@ -1,0 +1,452 @@
+[
+  {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR8087",
+    "pr_url": "https://github.com/calcom/cal.com/pull/8087",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses adding try-catch around a dynamic import to handle import failures; the candidates focus on forEach-async and missing-await issues, not import error handling."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 explicitly identifies the forEach(async) fire-and-forget pattern in vital/reschedule.ts, explaining how discarded Promises escape the try/catch, matching the golden's core concern."
+      }
+    ]
+  },
+  {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR10600",
+    "pr_url": "https://github.com/calcom/cal.com/pull/10600",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the naming inconsistency between the exported function TwoFactor and its location in BackupCode.tsx."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the error message wording problem (mentions 'backup code login' but the endpoint is a disable endpoint)."
+      },
+      {
+        "golden_index": 3,
+        "matched_candidate_index": 3,
+        "match": true,
+        "reasoning": "Candidate 3 explicitly identifies that backup code comparison is case-sensitive because indexOf is used without toLowerCase(), matching the golden exactly."
+      },
+      {
+        "golden_index": 4,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies the TOCTOU race where two concurrent requests can both pass the indexOf check before either write completes, exactly matching the golden's concern."
+      }
+    ]
+  },
+  {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR10967",
+    "pr_url": "https://github.com/calcom/cal.com/pull/10967",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies that mainHostDestinationCalendar is undefined when evt.destinationCalendar is null or empty, causing a TypeError on .integration access, matching the golden exactly."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate specifically identifies the optional chaining on mainHostDestinationCalendar?.integration as redundant given the prior ternary check; candidate 1 covers the crash but not the redundancy observation."
+      },
+      {
+        "golden_index": 3,
+        "matched_candidate_index": 2,
+        "match": true,
+        "reasoning": "Candidate 2 identifies that in the updateEvent fallback the find predicate uses externalCalendarId which is always falsy in that branch, making the search always fail, matching the golden's logic-error observation."
+      },
+      {
+        "golden_index": 4,
+        "matched_candidate_index": 4,
+        "match": true,
+        "reasoning": "Candidate 4 identifies that the slug gating predicate was inverted (IS_TEAM_BILLING_ENABLED instead of !IS_TEAM_BILLING_ENABLED), matching the golden's logic-inversion finding exactly."
+      },
+      {
+        "golden_index": 5,
+        "matched_candidate_index": 7,
+        "match": true,
+        "reasoning": "Candidate 7 identifies that Lark/Office365 implementations don't consume the credentialId parameter added to the Calendar interface's createEvent, matching the golden's interface-contract concern."
+      }
+    ]
+  },
+  {
+    "instance_id": "cal_dot_com__calcom__cal.com__PR22345",
+    "pr_url": "https://github.com/calcom/cal.com/pull/22345",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": 2,
+        "match": true,
+        "reasoning": "Candidate 2 identifies that getBaseConditions has two unreachable else-branches because getAuthorizationConditions always returns a truthy Prisma.Sql object, matching the golden exactly."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate specifically addresses the logic of fetching userIdsFromOrg only when teamsFromOrg.length > 0 potentially excluding org-level members; candidate 1 is about a different SQL guard issue."
+      }
+    ]
+  },
+  {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR1",
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/1",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": 2,
+        "match": true,
+        "reasoning": "Candidate 2 identifies that a second def self.downsize definition silently replaces the first in Ruby, making the 4-arg version unreachable, matching the golden exactly."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": 3,
+        "match": true,
+        "reasoning": "Candidate 3 identifies that maxSizeKB is hardcoded to 10*1024 in validateUploadedFile, replacing the dynamic Discourse.SiteSettings lookup, matching the golden's concern about ignoring per-type site settings."
+      },
+      {
+        "golden_index": 3,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the failure mode of passing 80% dimensions to gifsicle for animated GIFs, which expects WxH geometry not a percentage."
+      }
+    ]
+  },
+  {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR2",
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/2",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies that TopicUser.find_by returns nil when no row exists and the subsequent nil.notification_level call raises NoMethodError, matching the golden exactly."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the typo 'stopNotificiationsText' vs 'stopNotificationsText'."
+      }
+    ]
+  },
+  {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR3",
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/3",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": 2,
+        "match": true,
+        "reasoning": "Candidate 2 identifies that should_block? mixes query with mutation, updating statistics on every call and causing double-counting, matching the golden's side-effect-during-read observation."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the regex pattern @(#{domains}) matching domain suffixes rather than full domains, allowing evil.example.com to bypass the whitelist check for example.com."
+      }
+    ]
+  },
+  {
+    "instance_id": "discourse__ai-code-review-evaluation__discourse-graphite__PR4",
+    "pr_url": "https://github.com/ai-code-review-evaluation/discourse-graphite/pull/4",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses SSRF via open(url) without URL validation."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies that the embed.js origin check uses indexOf (substring match) which can be bypassed by an origin that appears anywhere in discourseUrl, matching the golden exactly."
+      },
+      {
+        "golden_index": 3,
+        "matched_candidate_index": 2,
+        "match": true,
+        "reasoning": "Candidate 2 identifies that the postMessage targetOrigin is set to the full referer URL including path rather than just the origin, causing browsers to drop the message, matching the golden exactly."
+      },
+      {
+        "golden_index": 4,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses X-Frame-Options: ALLOWALL disabling clickjacking protection."
+      },
+      {
+        "golden_index": 5,
+        "matched_candidate_index": 3,
+        "match": true,
+        "reasoning": "Candidate 3 identifies that PollFeed calls .scrub on a possibly-nil i.content, raising NoMethodError, which matches the golden's nil/NoMethodError concern (the XSS aspect is not covered but the primary crash mechanism is)."
+      },
+      {
+        "golden_index": 6,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the ERB block closing with 'end if' (invalid Ruby/ERB syntax)."
+      }
+    ]
+  },
+  {
+    "instance_id": "grafana__grafana__grafana__PR79265",
+    "pr_url": "https://github.com/grafana/grafana/pull/79265",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies the TOCTOU race where multiple concurrent requests pass the CountDevices check before either insert completes, matching the golden exactly."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the behavior change that anonymous authentication now fails entirely when ErrDeviceLimitReached is returned."
+      },
+      {
+        "golden_index": 3,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the compile error from dbSession.Exec(args...) receiving a []interface{} instead of a string first argument."
+      },
+      {
+        "golden_index": 4,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the misleading ErrDeviceLimitReached return when no rows were updated (device might not exist)."
+      },
+      {
+        "golden_index": 5,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the time window calculation inconsistency using device.UpdatedAt instead of time.Now().UTC()."
+      }
+    ]
+  },
+  {
+    "instance_id": "grafana__grafana__grafana__PR103633",
+    "pr_url": "https://github.com/grafana/grafana/pull/103633",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "Candidate 1 identifies a metric labeling error but not the security asymmetry where stale cached grants provide access to revoked resources while cached denials are ignored; these are distinct issues."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the test comment incorrectly saying cached permissions allow access when the map stores false for the relevant scope."
+      }
+    ]
+  },
+  {
+    "instance_id": "grafana__grafana__grafana__PR76186",
+    "pr_url": "https://github.com/grafana/grafana/pull/76186",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses a nil request panic in ContextualLoggerMiddleware methods."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies that the traceID extraction was removed from the logger and the new ContextualLoggerMiddleware does not add it, matching the golden exactly."
+      }
+    ]
+  },
+  {
+    "instance_id": "grafana__grafana__grafana__PR107534",
+    "pr_url": "https://github.com/grafana/grafana/pull/107534",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "Candidate 1 addresses in-place query mutation in the mock but not the golden's concern that applyTemplateVariables is called with request.filters as the third parameter which the test does not set up."
+      }
+    ]
+  },
+  {
+    "instance_id": "keycloak__ai-code-review-evaluation__keycloak-greptile__PR1",
+    "pr_url": "https://github.com/ai-code-review-evaluation/keycloak-greptile/pull/1",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies that isConditionalPasskeysEnabled() is called with zero arguments while only a one-arg overload exists in the diff, matching the golden exactly."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": 2,
+        "match": true,
+        "reasoning": "Candidate 2 identifies that the guard condition was flipped from user==null to user!=null, meaning fillContextForm is not called on the initial login page where no user is selected, matching the golden's concern."
+      }
+    ]
+  },
+  {
+    "instance_id": "keycloak__keycloak__keycloak__PR32918",
+    "pr_url": "https://github.com/keycloak/keycloak/pull/32918",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses a recursive caching call using session instead of delegate; the candidates cover cache bypass (unconditional delegate call) and test cleanup issues, which are different problems."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": 3,
+        "match": true,
+        "reasoning": "Candidate 3 identifies that the cleanup registers literal 'alias' instead of 'idp-alias-' + i, matching the golden exactly."
+      }
+    ]
+  },
+  {
+    "instance_id": "keycloak__keycloak__keycloak__PR33832",
+    "pr_url": "https://github.com/keycloak/keycloak/pull/33832",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": 2,
+        "match": true,
+        "reasoning": "Candidate 2 identifies that getBouncyCastleProvider returns the default-keystore JCA provider (SUN/SunJSSE) instead of a Bouncy Castle provider, matching the golden exactly."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies that two ASN1Encoder instances are created and written to but their results are immediately discarded, with the actual encoding done by fresh instances in the return statement, matching the golden exactly."
+      }
+    ]
+  },
+  {
+    "instance_id": "keycloak__keycloak__keycloak__PR36882",
+    "pr_url": "https://github.com/keycloak/keycloak/pull/36882",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the problem of picocli.exit() calling System.exit() directly; the candidates discuss exit code renumbering, hardcoded string literals, and code duplication."
+      }
+    ]
+  },
+  {
+    "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR1",
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/1",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies that Django QuerySet does not support negative slicing and the negative-offset branch passes a negative start index, matching the golden exactly."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": 4,
+        "match": true,
+        "reasoning": "Candidate 4 explicitly identifies that organization_context.member may be None causing AttributeError on has_global_access access, matching the golden's crash concern."
+      },
+      {
+        "golden_index": 3,
+        "matched_candidate_index": 3,
+        "match": true,
+        "reasoning": "Candidate 3 identifies that get_item_key calls math.floor/ceil on a datetime value when order_by='-datetime', raising TypeError, matching the golden exactly."
+      }
+    ]
+  },
+  {
+    "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR2",
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/2",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies that OptimizedCursorPaginator sets start_offset to a negative cursor.offset and slices the Django QuerySet with it, raising AssertionError, matching the golden exactly."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate in this PR specifically identifies the BasePaginator negative-offset branch slicing the QuerySet with a negative start index; the candidates focus on OptimizedCursorPaginator and unrelated Redis/Lua issues."
+      },
+      {
+        "golden_index": 3,
+        "matched_candidate_index": 3,
+        "match": true,
+        "reasoning": "Candidate 3 identifies that get_item_key calls math.floor/ceil on a datetime object when the audit log endpoint uses order_by='-datetime', raising TypeError, matching the golden exactly."
+      }
+    ]
+  },
+  {
+    "instance_id": "sentry__ai-code-review-evaluation__sentry-greptile__PR3",
+    "pr_url": "https://github.com/ai-code-review-evaluation/sentry-greptile/pull/3",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidates were generated for this PR."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidates were generated for this PR."
+      },
+      {
+        "golden_index": 3,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidates were generated for this PR."
+      }
+    ]
+  },
+  {
+    "instance_id": "sentry__getsentry__sentry__PR67876",
+    "pr_url": "https://github.com/getsentry/sentry/pull/67876",
+    "judgments": [
+      {
+        "golden_index": 1,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the null reference when github_authenticated_user state is missing from the pipeline."
+      },
+      {
+        "golden_index": 2,
+        "matched_candidate_index": null,
+        "match": false,
+        "reasoning": "No candidate addresses the OAuth state using pipeline.signature (static) instead of a per-request random value."
+      },
+      {
+        "golden_index": 3,
+        "matched_candidate_index": 1,
+        "match": true,
+        "reasoning": "Candidate 1 identifies that integration.metadata['sender']['login'] is accessed with direct subscript without checking if 'sender' exists, causing KeyError, matching the golden exactly."
+      }
+    ]
+  }
+]
