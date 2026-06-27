@@ -63,7 +63,7 @@ Other standalone helpers include context-asset authoring (ask Claude to write or
 - Local run records under `.fbk-capture/` (timings, gate outcomes, token usage) stay on your machine; the default `standard` level redacts free text, and you can set `capture_level=off` in `.fbk-capture/capture.cfg`.
 - Gates parse markdown and JSON — they don't execute it — and the intent, design, and spec gates screen for prompt-injection patterns. After each task, a hook runs your project's test suite and linter when it recognizes the toolchain (npm, cargo, go, pytest, and the like).
 - The pipeline edits your source and tests when you ask it to implement — review its changes like any contributor's.
-- **Known limit:** Claude Code's permissions control which *tools* an agent has, not its *intent*. Firebreak restricts analysis agents to read-only tools to limit the blast radius, but the gap is real. [Details →](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md)
+- **Known limit:** Claude Code's permissions control which *tools* an agent has, not its *intent*. Firebreak restricts analysis agents to read-only tools to limit the blast radius, but the gap is real. [Details →](docs/evidence/brownfield-validation/analysis.md)
 
 ## Docs
 
