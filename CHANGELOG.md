@@ -166,8 +166,8 @@
 - **Challenger extensions.** Adjacent observation channel (informational items appended to retrospective). Caller tracing requirement for behavioral-type sightings. `verified-pending-execution` status for test-integrity sightings requiring execution.
 - **Test reviewer expansion.** 3 new Tier 1 criteria: stale failure annotations, empty gate tests, advisory assertions. 3 new checkpoint checks: unconditionally skipped tests, phantom assertion strings, build-tag consistency.
 - **Implementation pipeline rules.** Hook-rejection retry cap (3 retries). Foreground execution for all verification and hook commands. E2E harness task exception (combined test+impl). Per-site completion conditions for multi-mutation tasks.
-- **Quality quantification framework** (`ai-docs/research/quality-quantification.md`): measurement framework for tracking code quality across remediation phases, with per-phase linter data, post-remediation review analysis, and industry comparison.
-- Benchmark research document (`ai-docs/research/benchmark-research.md`).
+- **Quality quantification framework** (`docs/evidence/research/quality-quantification.md`): measurement framework for tracking code quality across remediation phases, with per-phase linter data, post-remediation review analysis, and industry comparison.
+- Benchmark research document (`docs/evidence/research/benchmark-research.md`).
 - 8 new structural test scripts covering all 0.3.3 acceptance criteria (194 total test assertions).
 
 ### Fixed
