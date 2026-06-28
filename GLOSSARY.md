@@ -407,4 +407,12 @@ See [quality scan technique](#quality-scan-technique).
 
 ---
 
+### cross-model review
+
+**Definition**: A second-opinion review run against a different external model (e.g. Codex / GPT-5.5) that produces candidate findings, not verified findings. Candidate findings feed into the adversarial review loop as researcher output and are subject to the same challenger-verification step as any other finding. Opt-in only — enabling it sends the reviewed content to the external third-party model. Configured via the `cross_model_review` block in `.claude/automation/config.yml`.
+
+**LLM priors activated**: "Cross-model" signals multi-model comparison, which is the intended reading. Risk: read as implying the external model's findings are lower-quality or should be down-weighted — they are treated as ordinary candidate findings, subject to the same verification bar. "Review" activates general review-process priors; the "candidate findings" qualification is load-bearing and distinguishes this from a verified quality verdict.
+
+---
+
 *(Additional entries accrete as specs and context assets introduce vetted terms.)*
