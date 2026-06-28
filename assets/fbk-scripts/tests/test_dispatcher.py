@@ -22,8 +22,8 @@ class TestDispatcherCommandMap:
         except ImportError:
             pytest.skip("fbk module not yet implemented")
 
-    def test_command_map_contains_all_21_commands(self):
-        """COMMAND_MAP contains exactly all 21 commands from spec (coherence-gate added)."""
+    def test_command_map_contains_all_22_commands(self):
+        """COMMAND_MAP contains exactly all 22 commands from spec (cross-review added)."""
         try:
             import fbk
         except ImportError:
@@ -51,6 +51,7 @@ class TestDispatcherCommandMap:
             "report",
             "run-retro",
             "coherence-gate",
+            "cross-review",
         }
 
         actual_commands = set(fbk.COMMAND_MAP.keys())
@@ -60,6 +61,7 @@ class TestDispatcherCommandMap:
         )
         assert fbk.COMMAND_MAP["report"] == "fbk.report"
         assert fbk.COMMAND_MAP["run-retro"] == "fbk.run_retro"
+        assert fbk.COMMAND_MAP["cross-review"] == "fbk.cross_review"
 
     def test_intent_gate_maps_to_exact_module(self):
         """COMMAND_MAP["intent-gate"] == "fbk.gates.intent"."""

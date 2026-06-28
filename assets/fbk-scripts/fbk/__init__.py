@@ -22,4 +22,5 @@ COMMAND_MAP = {
     "ralph": "fbk.council.ralph",
     "report": "fbk.report",
     "run-retro": "fbk.run_retro",
+    "cross-review": "fbk.cross_review",
 }
