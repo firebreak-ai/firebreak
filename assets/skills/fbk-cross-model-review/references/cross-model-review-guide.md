@@ -119,7 +119,7 @@ Before composing the prompt or invoking the runner, check whether the project ha
 opted in:
 
 ```
-fbk.py cross-review --check-opt-in --project-root <root>
+python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --check-opt-in --project-root <root>
 ```
 
 - **`status: skipped`** (block absent or `enabled` not true): skip the cross-model review
@@ -133,7 +133,7 @@ fbk.py cross-review --check-opt-in --project-root <root>
 Once the target is gathered and the prompt written, invoke the runner:
 
 ```
-fbk.py cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --project-root <root> --target-label <text>
+python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --project-root <root> --target-label <text>
 ```
 
 `<slug>` is `fresh-eyes` for a document review or `code-review` for a code change. Branch on

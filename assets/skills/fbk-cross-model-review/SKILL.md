@@ -14,7 +14,7 @@ A cross-model review gets an outside opinion from a different AI model on a docu
 Before doing anything else, run:
 
 ```
-fbk.py cross-review --check-opt-in --project-root <root>
+python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --check-opt-in --project-root <root>
 ```
 
 If the returned JSON has `"status": "skipped"`, this project has not opted in to cross-model review. Stop here and tell the user the project has not enabled cross-model review. Present no findings.
@@ -54,7 +54,7 @@ See `assets/skills/fbk-cross-model-review/references/cross-model-review-guide.md
 With the prompt file written, invoke the runner:
 
 ```
-fbk.py cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --project-root <root> --target-label <text>
+python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --project-root <root> --target-label <text>
 ```
 
 - `<p>` — path to the prompt file from step 4.

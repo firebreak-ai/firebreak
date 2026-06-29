@@ -302,6 +302,9 @@ class TestSubprocessOutcomes:
         assert result["status"] == "failed"
         assert result.get("report_path") is None
         assert exit_code is None
+        # No report and no temp file may be left on disk (report-dir defaults to project root).
+        assert not list(tmp_path.glob("fbk-cross-review-*.md"))
+        assert not list(tmp_path.glob("*.tmp"))
 
     def test_empty_output_file_yields_failed_no_report(self, tmp_path):
         """Codex exits 0 but output file is whitespace-only → status failed, no report."""
@@ -317,6 +320,8 @@ class TestSubprocessOutcomes:
         assert result["status"] == "failed"
         assert result.get("report_path") is None
         assert exit_code is None
+        assert not list(tmp_path.glob("fbk-cross-review-*.md"))
+        assert not list(tmp_path.glob("*.tmp"))
 
     def test_timeout_expired_yields_failed(self, tmp_path):
         """subprocess.TimeoutExpired → status failed; cause names the timeout."""
@@ -335,6 +340,8 @@ class TestSubprocessOutcomes:
             f"cause should mention timeout; got: {cause!r}"
         )
         assert result.get("report_path") is None
+        assert not list(tmp_path.glob("fbk-cross-review-*.md"))
+        assert not list(tmp_path.glob("*.tmp"))
         assert exit_code is None
 
 
@@ -646,12 +653,18 @@ class TestSubprocessConstruction:
             "subprocess.run must not be called with shell=True"
         )
 
-        cmd_str = " ".join(str(a) for a in cmd)
-        assert "gpt-5.5" in cmd_str, (
-            f"model 'gpt-5.5' must appear as a discrete arg; cmd: {cmd}"
+        # Prove DISCRETE argv elements — a one-element list holding a composed
+        # command string would satisfy a substring check but break the contract.
+        assert len(cmd) > 5, f"argv must be discrete elements, not a composed string; got: {cmd}"
+        assert cmd[0] == "codex" and cmd[1] == "exec", (
+            f"argv must start with discrete ['codex', 'exec', ...]; got: {cmd}"
         )
-        assert "high" in cmd_str, (
-            f"effort 'high' must appear as a discrete arg; cmd: {cmd}"
+        assert cmd[cmd.index("-m") + 1] == "gpt-5.5", (
+            f"model must be the discrete element after -m; got: {cmd}"
+        )
+        # effort is the value of the -c element, exactly model_reasoning_effort="high"
+        assert cmd[cmd.index("-c") + 1] == 'model_reasoning_effort="high"', (
+            f"effort must be a single discrete -c element; got: {cmd}"
         )
 
 

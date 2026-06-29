@@ -13,6 +13,12 @@ Place `config.yml` at `.claude/automation/config.yml` in the project root.
   - `model`: string. The external model identifier, e.g. `gpt-5.5`.
   - `effort`: string. The effort level passed to the harness, e.g. `high`.
 
+  Note: the `cross_model_review` block is read directly from the project's
+  `.claude/automation/config.yml` by the `cross-review` runner; unlike the
+  pipeline fields below, it is **not** subject to the spec-frontmatter layer.
+  The opt-in is a project-level consent boundary for third-party egress, so it
+  cannot be turned on (or off) by a per-run spec frontmatter override.
+
 ## Layering order
 
 Configuration merges three layers with more-specific-wins precedence:
