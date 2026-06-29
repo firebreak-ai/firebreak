@@ -244,13 +244,19 @@ def _run_cross_review(
             timeout=600,
             shell=False,
         )
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as exc:
         # Clean up the empty temp file before returning
         try:
             os.remove(temp_out)
         except OSError:
             pass
-        return _failed("codex invocation timeout: exceeded 600 seconds")
+        cause = "codex invocation timeout: exceeded 600 seconds"
+        # A timeout is a failed run; honor the auth-marker enrichment contract on
+        # whatever Codex emitted before it hung.
+        captured = f"{exc.stdout or ''}{exc.stderr or ''}"
+        if _has_auth_marker(captured):
+            cause += ". Run `codex login` to re-authenticate the Codex CLI, then retry."
+        return _failed(cause)
     except OSError as exc:
         try:
             os.remove(temp_out)

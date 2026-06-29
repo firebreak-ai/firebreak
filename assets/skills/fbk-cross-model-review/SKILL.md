@@ -29,6 +29,8 @@ If the returned JSON has `"status": "success"`, the project is opted in — cont
 
 **Code-change review** — if `$ARGUMENTS` is empty or refers to a code change, produce a unified diff of the staged or committed change and save it to a temp file. That file path is the target.
 
+Before going any further, confirm the target file exists and is readable. If it does not, name exactly what could not be found and stop — do not compose a prompt or call the runner. A missing target must fail deterministically here, not become a vague answer from the external model.
+
 ## 3. Read the matching lens for criteria
 
 Choose the lens that matches the target type. Both are criteria references — read them for the severity words and what to look for, not as instructions for Codex to follow.
