@@ -15,8 +15,8 @@ review types are in scope for v1:
 
 | Target kind | Lens file | Report slug |
 |---|---|---|
-| Written artifact (PRD, spec, design, or breakdown) | `assets/fbk-docs/fbk-review-lenses/fresh-eyes-lens.md` | `fresh-eyes` |
-| Code change (diff or implementation) | `assets/fbk-docs/fbk-review-lenses/code-lens.md` | `code-review` |
+| Written artifact (PRD, spec, design, or breakdown) | `fbk-docs/fbk-review-lenses/fresh-eyes-lens.md` | `fresh-eyes` |
+| Code change (diff or implementation) | `fbk-docs/fbk-review-lenses/code-lens.md` | `code-review` |
 
 The lens is a **criteria reference**, not a script for Codex to follow. The agent
 reads the lens to extract the detection targets and severity vocabulary, then writes
@@ -184,3 +184,15 @@ result.
 Output from a cross-model review is always **candidate findings**. Candidates become
 part of the evidence record only after the agent has read them and decided which, if
 any, are worth carrying into the verified findings.
+
+---
+
+## 6. Handle the result
+
+Branch on the runner's JSON `status` (this mirrors the skill's terminal step):
+
+- **`success`** — read the report, confirm it is a real review and not a refusal (retry once with a clearer technical framing if it refused), triage the candidate findings, and present them labelled as a different model's opinion. Never present them as verified — the user decides which to act on.
+- **`skipped`** — the project has not opted in; tell the user and present nothing.
+- **`failed`** — relay the runner's `cause` field verbatim (with the `codex login` guidance when the cause mentions it); present nothing.
+
+The per-outcome wording is in section (e) above.

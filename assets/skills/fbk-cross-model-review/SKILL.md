@@ -35,8 +35,8 @@ Before going any further, confirm the target file exists and is readable. If it 
 
 Choose the lens that matches the target type. Both are criteria references — read them for the severity words and what to look for, not as instructions for Codex to follow.
 
-- **Document** (PRD, spec, design, breakdown): read `assets/fbk-docs/fbk-review-lenses/fresh-eyes-lens.md`. This is the `fresh-eyes-lens` criteria set.
-- **Code change** (diff): read `assets/fbk-docs/fbk-review-lenses/code-lens.md`. This is the `code-lens` criteria set.
+- **Document** (PRD, spec, design, breakdown): read `fbk-docs/fbk-review-lenses/fresh-eyes-lens.md`. This is the `fresh-eyes-lens` criteria set.
+- **Code change** (diff): read `fbk-docs/fbk-review-lenses/code-lens.md`. This is the `code-lens` criteria set.
 
 Extract the severity labels the lens uses (typically Critical, Substantive, Minor) and the things it says to look for. State these in plain language — you will embed them in the reviewer prompt.
 
@@ -50,7 +50,7 @@ Write a short prompt to a temp file. The prompt must:
 - Ask for concise candidate findings only — no suggested fixes, no praise, no acknowledgment of context that was not in the material.
 - Specify the output format: findings grouped under the lens's severity headings.
 
-See `assets/skills/fbk-cross-model-review/references/cross-model-review-guide.md` for the full prompt template and outcome wording.
+See `references/cross-model-review-guide.md` for the full prompt template and outcome wording.
 
 ## 5. Call the runner
 
