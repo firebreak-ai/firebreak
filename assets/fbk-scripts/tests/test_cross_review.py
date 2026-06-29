@@ -811,6 +811,26 @@ class TestRegressions:
         )
         assert exit_code is None
 
+    def test_subprocess_decode_error_leaves_no_temp_file(self, tmp_path):
+        """A non-OSError exception from subprocess.run (e.g. UnicodeDecodeError on decode)
+        → status failed, exit 0, and no leftover .tmp file in the report dir."""
+        _write_config(tmp_path, _MINIMAL_CONFIG)
+        prompt_path = _write_prompt(tmp_path)
+        report_dir = tmp_path / "reports"
+
+        boom = UnicodeDecodeError("utf-8", b"\xff", 0, 1, "bad byte")
+        with mock.patch("shutil.which", return_value="/usr/bin/codex"):
+            with mock.patch("subprocess.run", side_effect=boom):
+                exit_code, result = _run_main(
+                    tmp_path,
+                    extra_argv=["--prompt-file", str(prompt_path), "--report-dir", str(report_dir)],
+                )
+
+        assert result["status"] == "failed"
+        assert exit_code is None
+        leftover = list(report_dir.glob("*.tmp")) if report_dir.exists() else []
+        assert not leftover, f"a failed subprocess decode must leave no temp file; found {leftover}"
+
     def test_effort_with_injection_chars_yields_failed(self, tmp_path):
         """An effort value containing quotes/newlines (Codex -c injection) → failed, Codex not invoked."""
         bad = dict(_MINIMAL_CONFIG)

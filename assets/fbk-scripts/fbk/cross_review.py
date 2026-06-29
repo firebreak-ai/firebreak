@@ -240,6 +240,7 @@ def _run_cross_review(
             input=prompt_text,
             capture_output=True,
             text=True,
+            errors="replace",  # non-UTF-8 stdout/stderr must not raise during decode
             timeout=600,
             shell=False,
         )
@@ -256,6 +257,12 @@ def _run_cross_review(
         except OSError:
             pass
         return _failed(f"failed to launch codex: {exc}")
+    except Exception as exc:  # noqa: BLE001 — backstop: must not leave temp_out behind
+        try:
+            os.remove(temp_out)
+        except OSError:
+            pass
+        return _failed(f"codex invocation error: {exc}")
 
     # --- 6. Adjudicate outcome ---
     out_content = ""

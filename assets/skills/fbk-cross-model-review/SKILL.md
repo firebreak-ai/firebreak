@@ -25,7 +25,7 @@ If the returned JSON has `"status": "success"`, the project is opted in — cont
 
 ## 2. Gather the target
 
-**Document review** — if `$ARGUMENTS` names a document (a PRD, spec, design, or breakdown), that file path is the target. If `$ARGUMENTS` is a feature name without an extension, resolve it to `ai-docs/<feature>/<feature>-spec.md` unless the user says otherwise.
+**Document review** — if `$ARGUMENTS` names a document (a PRD, spec, design, or breakdown), that file path is the target. If `$ARGUMENTS` is a feature name without an extension, pick the artifact the user means under `ai-docs/<feature>/` rather than assuming one phase: a PRD/intent review targets `<feature>-prd.md`, a spec review `<feature>-spec.md`, a design review the `design/` pages, a breakdown review the task files. When it is ambiguous, choose the latest artifact that exists (the most recent phase reached), or ask. Do not default to the spec file — the headline use case is a PRD review before any spec exists.
 
 **Code-change review** — if `$ARGUMENTS` is empty or refers to a code change, produce a unified diff of the staged or committed change and save it to a temp file. That file path is the target.
 
