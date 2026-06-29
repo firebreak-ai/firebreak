@@ -824,6 +824,51 @@ class TestRegressions:
         )
         assert exit_code is None
 
+    def test_target_label_newline_does_not_inject_into_report_header(self, tmp_path):
+        """A --target-label containing a newline / markdown must not break out of the
+        single-line header or inject a standalone heading into the report body."""
+        _write_config(tmp_path, _MINIMAL_CONFIG)
+        prompt_path = _write_prompt(tmp_path)
+        report_dir = tmp_path / "reports"
+
+        def _fake_run(cmd, **kwargs):
+            out_path = None
+            for i, arg in enumerate(cmd):
+                if arg == "-o" and i + 1 < len(cmd):
+                    out_path = Path(cmd[i + 1])
+                    break
+            if out_path is not None:
+                out_path.parent.mkdir(parents=True, exist_ok=True)
+                out_path.write_text("# Review\n\nfindings: none\n")
+            result = mock.MagicMock()
+            result.returncode = 0
+            result.stdout = "# Review\n"
+            result.stderr = ""
+            return result
+
+        with mock.patch("shutil.which", return_value="/usr/bin/codex"):
+            with mock.patch("subprocess.run", side_effect=_fake_run):
+                with mock.patch("os.replace", side_effect=lambda src, dst: Path(src).rename(dst)):
+                    with mock.patch("fbk.cross_review._timestamp", return_value="2026-01-01-120009", create=True):
+                        _, result = _run_main(
+                            tmp_path,
+                            extra_argv=[
+                                "--prompt-file", str(prompt_path),
+                                "--report-dir", str(report_dir),
+                                "--target-label", "ok\n## INJECTED HEADING",
+                            ],
+                        )
+
+        assert result["status"] == "success"
+        report_text = Path(result["report_path"]).read_text()
+        lines = report_text.splitlines()
+        assert lines[0].startswith("# ") and "INJECTED" in lines[0], (
+            "the label (including its collapsed injection attempt) must stay on the single header line"
+        )
+        assert "## INJECTED HEADING" not in lines, (
+            "a newline in --target-label must not produce a standalone injected heading"
+        )
+
     def test_subprocess_decode_error_leaves_no_temp_file(self, tmp_path):
         """A non-OSError exception from subprocess.run (e.g. UnicodeDecodeError on decode)
         → status failed, exit 0, and no leftover .tmp file in the report dir."""

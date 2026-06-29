@@ -34,23 +34,30 @@ Other review types are out of v1 scope.
 
 ## (b) Gathering the target
 
-**Written artifacts**: pass the document path directly. Include any source-of-truth
-context files the lens calls for (shared interface definitions, convention documents)
-as supplemental reading — label them as comparison anchors, not authoring notes.
+**How the target reaches the model.** The runner passes only the prompt to the
+external model, and the model runs sandboxed **read-only under the project root**.
+So it can read a file referenced by a path *inside the project root*, but it cannot
+read anything outside it (a `/tmp` path is invisible to it). The reliable rule: put
+the target's **content inline in the prompt**. Referencing a project-root path also
+works for a document, but inlining always works and avoids the sandbox trap.
 
-**Code changes**: the agent produces a diff and saves it before invoking the runner.
+**Written artifacts**: inline the document text into the prompt (or, if the file is
+under the project root, reference its path). Include any source-of-truth context
+files the lens calls for (shared interface definitions, convention documents) as
+supplemental reading — label them as comparison anchors, not authoring notes.
+
+**Code changes**: produce the diff and **inline the diff text into the prompt** —
+do not write it to `/tmp` and pass a path, because the model's sandbox cannot read
+`/tmp`. A diff lives outside the repo, so inlining is the only option:
 
 ```
-git diff <base>..<head> > /tmp/review-target.diff
+git diff <base>..<head>
 ```
 
-Save the diff to a stable path the runner can reference. Passing the diff as a
-file rather than inline text keeps the prompt size predictable and avoids shell
-escaping issues.
-
-Including source-of-truth context (the active spec's acceptance criteria, the
-relevant design section) alongside the diff is a judgment call — include it when
-the diff's intent is not self-evident from the code alone.
+Embed the output under a clear "diff" heading in the prompt. Including source-of-truth
+context (the active spec's acceptance criteria, the relevant design section) alongside
+the diff is a judgment call — include it when the diff's intent is not self-evident
+from the code alone.
 
 ---
 
@@ -101,8 +108,9 @@ For a **code review**:
 
 **3. Target and any context**
 
-Provide the document text, diff, or file path to read, followed by any supplemental
-context files labeled as reference material.
+Provide the target **content inline** — the document text or the diff — followed by
+any supplemental context labeled as reference material. Do not rely on a `/tmp` path:
+the model can only read files under the project root, so a path outside it is invisible.
 
 **4. Request for candidate findings**
 

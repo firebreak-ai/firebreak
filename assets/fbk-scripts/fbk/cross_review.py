@@ -54,6 +54,12 @@ def _safe_segment(value: str) -> str:
     return sanitized if sanitized else "x"
 
 
+def _safe_header(value: str) -> str:
+    """Collapse newlines/control characters to spaces so a value cannot break out
+    of the single-line report header or inject markdown into the report body."""
+    return re.sub(r"[\x00-\x1f\x7f]+", " ", str(value)).strip()
+
+
 def _load_config(project_root: str) -> tuple[dict | None, str | None]:
     """Load and parse .claude/automation/config.yml from project_root.
 
@@ -298,8 +304,10 @@ def _run_cross_review(
     safe_model = _safe_segment(model)
     stem = f"fbk-cross-review-{safe_review_type}-{safe_model}-{ts}"
 
-    label_line = target_label or "cross-model review"
-    header = f"# {label_line} | model: {model} | date: {ts}\n\n"
+    # Collapse newlines/control characters so a CLI/config value cannot break
+    # out of the single-line header or inject markdown into the report body.
+    label_line = _safe_header(target_label or "cross-model review")
+    header = f"# {label_line} | model: {_safe_header(model)} | date: {ts}\n\n"
     report_content = header + out_content
 
     # Write to a second temp file, then atomic-rename into final path

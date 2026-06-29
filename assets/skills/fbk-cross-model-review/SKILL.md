@@ -27,7 +27,7 @@ If the returned JSON has `"status": "success"`, the project is opted in — cont
 
 **Document review** — if `$ARGUMENTS` names a document (a PRD, spec, design, or breakdown), that file path is the target. If `$ARGUMENTS` is a feature name without an extension, pick the artifact the user means under `ai-docs/<feature>/` rather than assuming one phase: a PRD/intent review targets `<feature>-prd.md`, a spec review `<feature>-spec.md`, a design review the `design/` pages, a breakdown review the task files. When it is ambiguous, choose the latest artifact that exists (the most recent phase reached), or ask. Do not default to the spec file — the headline use case is a PRD review before any spec exists.
 
-**Code-change review** — if `$ARGUMENTS` is empty or refers to a code change, produce a unified diff of the staged or committed change and save it to a temp file. That file path is the target.
+**Code-change review** — if `$ARGUMENTS` is empty or refers to a code change, produce a unified diff of the staged or committed change. The diff *content* is the target — you will inline it into the prompt in step 4, because the runner sends only the prompt to the external model and the model's read-only sandbox (rooted at the project) cannot read a scratch path like `/tmp`.
 
 Before going any further, confirm the target file exists and is readable. If it does not, name exactly what could not be found and stop — do not compose a prompt or call the runner. A missing target must fail deterministically here, not become a vague answer from the external model.
 
@@ -46,6 +46,7 @@ Write a short prompt to a temp file. The prompt must:
 
 - Tell the reviewer to read cold and treat the author as unreliable.
 - State the criteria in plain language using the lens's own severity words.
+- **Include the target's content inline** — the document text or the diff — because the runner sends only this prompt to the external model and the model cannot read a scratch path. (A path under the project root is also readable by the model; a `/tmp` path is not.)
 - Ask for concise candidate findings only — no suggested fixes, no praise, no acknowledgment of context that was not in the material.
 - Specify the output format: findings grouped under the lens's severity headings.
 
