@@ -132,8 +132,15 @@ def _run_cross_review(
         return _failed(parse_error or "config parse error")
 
     raw_cr = config_data.get("cross_model_review")
-    # A non-dict value (e.g. `cross_model_review: true`) is treated as not opted in.
-    cr_cfg = raw_cr if isinstance(raw_cr, dict) else {}
+    # An absent block (None) means "not opted in" → skip below. A present but
+    # structurally invalid block (e.g. `cross_model_review: true`) is malformed
+    # config and must fail visibly, not be silently treated as not opted in.
+    if raw_cr is not None and not isinstance(raw_cr, dict):
+        return _failed(
+            "cross_model_review block is malformed: expected a mapping of "
+            "enabled/harness/model/effort"
+        )
+    cr_cfg = raw_cr or {}
 
     # --- 2. Opt-in check (always first) ---
     enabled = cr_cfg.get("enabled")
@@ -242,7 +249,9 @@ def _run_cross_review(
     out_content = ""
     if os.path.exists(temp_out):
         try:
-            out_content = Path(temp_out).read_text(encoding="utf-8")
+            # errors="replace" so non-UTF-8 Codex output never raises and never
+            # escapes leaving the temp file behind (no-partial-on-failure invariant).
+            out_content = Path(temp_out).read_text(encoding="utf-8", errors="replace")
         except OSError:
             pass
 
@@ -351,7 +360,16 @@ def main() -> int:
         help="Return only the opt-in decision; do not run Codex",
     )
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except SystemExit as exc:
+        # argparse raises SystemExit(2) on an unknown/invalid flag. Honor the
+        # always-return-JSON / exit-0 contract instead of leaking that exit.
+        # A 0/None code (e.g. --help) keeps its normal behavior.
+        if exc.code not in (0, None):
+            print(json.dumps(_failed("invalid command-line arguments")))
+            return 0
+        raise
 
     try:
         result = _run_cross_review(

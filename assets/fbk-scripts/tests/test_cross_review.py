@@ -415,7 +415,7 @@ class TestAuthMarkerScan:
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", side_effect=_fake_run):
-                with mock.patch("os.replace"):
+                with mock.patch("os.replace", side_effect=lambda src, dst: Path(src).rename(dst)):
                     with mock.patch.object(
                         _cross_review_mod, "_timestamp", fake_ts
                     ) if hasattr(_cross_review_mod, "_timestamp") else mock.patch(
@@ -433,6 +433,9 @@ class TestAuthMarkerScan:
         assert result["status"] == "success", (
             "A successful run containing 'login' in its output must still be status success; "
             "auth-marker scan must only run on failure path"
+        )
+        assert result["report_path"] is not None and Path(result["report_path"]).exists(), (
+            "the success contract must still write a report for this adversarial case"
         )
 
 
@@ -762,16 +765,38 @@ class TestCheckOptInMode:
 
 class TestRegressions:
 
-    def test_non_dict_config_block_yields_skipped_not_crash(self, tmp_path):
-        """cross_model_review: true (non-dict) must produce skipped, not AttributeError."""
+    def test_non_dict_config_block_yields_failed_not_crash(self, tmp_path):
+        """cross_model_review: true (non-dict) is malformed config → failed, not a crash or a silent skip."""
         _write_config(tmp_path, "cross_model_review: true\n")
 
-        # Must not raise; must return valid JSON with status skipped
+        # Must not raise; a present-but-malformed block must fail visibly, not skip.
         exit_code, result = _run_main(tmp_path)
 
-        assert result["status"] == "skipped", (
-            f"A non-dict cross_model_review block must be treated as not opted in; "
-            f"got status: {result['status']!r}"
+        assert result["status"] == "failed", (
+            f"A present-but-malformed cross_model_review block must fail visibly "
+            f"(not silently skip); got status: {result['status']!r}"
+        )
+        assert result["cause"] and "malformed" in result["cause"].lower()
+        assert exit_code is None
+
+    def test_check_opt_in_malformed_block_yields_failed(self, tmp_path):
+        """--check-opt-in over a malformed block → failed (the opt-in check surfaces config errors)."""
+        _write_config(tmp_path, "cross_model_review: true\n")
+
+        exit_code, result = _run_main(tmp_path, extra_argv=["--check-opt-in"])
+
+        assert result["status"] == "failed", (
+            f"--check-opt-in must report a malformed config block as failed; "
+            f"got: {result['status']!r}"
+        )
+        assert exit_code is None
+
+    def test_unknown_flag_yields_failed_json_exit_0(self, tmp_path):
+        """An unknown CLI flag must produce failed JSON and exit 0, not SystemExit(2)."""
+        exit_code, result = _run_main(tmp_path, extra_argv=["--bogus-flag"])
+
+        assert result["status"] == "failed", (
+            f"an unknown flag must yield failed JSON, not a usage SystemExit; got: {result!r}"
         )
         assert exit_code is None
 

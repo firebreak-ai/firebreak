@@ -19,6 +19,8 @@ fbk.py cross-review --check-opt-in --project-root <root>
 
 If the returned JSON has `"status": "skipped"`, this project has not opted in to cross-model review. Stop here and tell the user the project has not enabled cross-model review. Present no findings.
 
+If the returned JSON has `"status": "failed"`, the opt-in check itself failed — for example the config file is malformed. Relay the `cause` field verbatim and stop. Present no findings.
+
 If the returned JSON has `"status": "success"`, the project is opted in — continue to step 2.
 
 ## 2. Gather the target

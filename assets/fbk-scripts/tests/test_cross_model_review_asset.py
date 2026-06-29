@@ -249,3 +249,40 @@ class TestSkillRunnerStatusContract:
             "fbk-cross-model-review/SKILL.md must relay the 'cause' field — the "
             "runner never emits a 'reason' or 'error' field"
         )
+
+
+class TestReferenceGuideStatusContract:
+    """The reference guide must agree with the runner contract too (AC-10, B-007, IF-D-02).
+
+    The skill-level contract test alone let a guide-level seam omission ship: the
+    guide documented only the opt-in command and a generic ``<error message>``
+    rather than the real runner invocation and the ``cause`` field. These tests
+    pin the guide to the same contract so the two prose assets cannot diverge.
+    """
+
+    def test_guide_documents_main_runner_invocation(self):
+        """The guide shows the full runner command, not just --check-opt-in."""
+        text = _read(_REFERENCE_DOC)
+        assert "cross-review --prompt-file" in text, (
+            "cross-model-review-guide.md must document the main runner invocation "
+            "'cross-review --prompt-file ...', not only the opt-in command"
+        )
+
+    def test_guide_relays_cause_field(self):
+        """The guide's failure wording names the 'cause' field, not 'reason'/'error'."""
+        text = _read(_REFERENCE_DOC)
+        assert "cause" in text, (
+            "cross-model-review-guide.md must relay the runner's 'cause' field on failure"
+        )
+        assert "`reason`" not in text and "`error`" not in text, (
+            "cross-model-review-guide.md must use the 'cause' field — the runner "
+            "never emits 'reason'/'error'"
+        )
+
+    def test_guide_documents_real_status_values(self):
+        """The guide branches on success, skipped, and failed."""
+        text = _read(_REFERENCE_DOC)
+        for status in ("success", "skipped", "failed"):
+            assert status in text, (
+                f"cross-model-review-guide.md must document the runner's '{status}' status"
+            )

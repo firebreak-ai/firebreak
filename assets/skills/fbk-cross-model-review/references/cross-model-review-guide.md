@@ -124,9 +124,21 @@ fbk.py cross-review --check-opt-in --project-root <root>
 
 - **`status: skipped`** (block absent or `enabled` not true): skip the cross-model review
   entirely. Emit the skipped outcome (see section e) and stop. Do not invoke the runner.
+- **`status: failed`** (e.g. a malformed config block): the opt-in check itself failed.
+  Relay the `cause` field (see section e) and stop. Do not invoke the runner.
 - **`status: success`** (opted in): the runner reads the model and effort settings from
   config and uses them when calling the external model — do not hard-code a model name in
   the prompt. Proceed to gather the target.
+
+Once the target is gathered and the prompt written, invoke the runner:
+
+```
+fbk.py cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --project-root <root> --target-label <text>
+```
+
+`<slug>` is `fresh-eyes` for a document review or `code-review` for a code change. Branch on
+the returned JSON `status` (`success` / `skipped` / `failed`) exactly as in section (e); the
+failure message is always carried in the `cause` field.
 
 ---
 
@@ -146,10 +158,10 @@ fbk.py cross-review --check-opt-in --project-root <root>
 
 **Failed**
 
-> Cross-model review failed: `<error message>`. The runner reported a mechanical
-> failure — no output was produced.
+> Cross-model review failed: relay the runner's `cause` field verbatim. The runner
+> reported a mechanical failure — no output was produced.
 >
-> If the error is an authentication failure, run `codex login` to refresh credentials,
+> If the `cause` mentions `codex login`, run `codex login` to refresh credentials,
 > then retry.
 
 **No-false-clean rule**
