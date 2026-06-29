@@ -203,3 +203,49 @@ class TestReferenceDocExists:
             f"Reference doc at {_REFERENCE_DOC} is empty; "
             "task-06 must populate it with the cross-model-review guide"
         )
+
+
+# ---------------------------------------------------------------------------
+# Skill ↔ runner status contract
+# ---------------------------------------------------------------------------
+
+
+class TestSkillRunnerStatusContract:
+    """SKILL.md must branch on the runner's ACTUAL JSON contract (AC-10, IF-D-02).
+
+    The runner returns ``status`` of ``success`` / ``skipped`` / ``failed`` and
+    carries the failure message in the ``cause`` field. A token-presence check
+    alone does not catch a skill that branches on an invented status value
+    (``ready``) or relays a field the runner never emits (``reason`` / ``error``)
+    — that exact seam shipped and was caught only by a cross-model review.
+    These tests pin the contract so the seam cannot regress.
+    """
+
+    def test_documents_real_status_values(self):
+        """SKILL.md branches on success, skipped, and failed."""
+        text = _read(_SKILL)
+        for status in ("success", "skipped", "failed"):
+            assert status in text, (
+                f"fbk-cross-model-review/SKILL.md must branch on the runner's "
+                f"'{status}' status value"
+            )
+
+    def test_no_invented_status_value(self):
+        """SKILL.md does not branch on a 'ready' status the runner never returns."""
+        text = _read(_SKILL)
+        assert '"status": "ready"' not in text and "status: ready" not in text, (
+            "fbk-cross-model-review/SKILL.md must not branch on a 'ready' status — "
+            "the runner returns 'success' for an opted-in --check-opt-in result"
+        )
+
+    def test_failure_relays_cause_field(self):
+        """SKILL.md's failed branch relays the 'cause' field, not 'reason'/'error'."""
+        text = _read(_SKILL)
+        assert "cause" in text, (
+            "fbk-cross-model-review/SKILL.md's failed branch must relay the "
+            "runner's 'cause' field"
+        )
+        assert "`reason`" not in text and "`error`" not in text, (
+            "fbk-cross-model-review/SKILL.md must relay the 'cause' field — the "
+            "runner never emits a 'reason' or 'error' field"
+        )

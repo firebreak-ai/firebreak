@@ -36,7 +36,7 @@ def _timestamp() -> str:
     Exposed as a module-level function so tests can patch it to control
     filenames deterministically.
     """
-    return datetime.now().strftime("%Y%m%d-%H%M%S")
+    return datetime.now().strftime("%Y-%m-%d-%H%M%S")
 
 
 # ---------------------------------------------------------------------------
@@ -72,7 +72,7 @@ def _load_config(project_root: str) -> tuple[dict | None, str | None]:
     try:
         with open(config_path, encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
-    except yaml.YAMLError as exc:
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
         return None, f"config parse error: {exc}"
 
     return data if isinstance(data, dict) else {}, None
@@ -131,13 +131,16 @@ def _run_cross_review(
     if config_data is None:
         return _failed(parse_error or "config parse error")
 
-    cr_cfg = config_data.get("cross_model_review") or {}
+    raw_cr = config_data.get("cross_model_review")
+    # A non-dict value (e.g. `cross_model_review: true`) is treated as not opted in.
+    cr_cfg = raw_cr if isinstance(raw_cr, dict) else {}
 
     # --- 2. Opt-in check (always first) ---
     enabled = cr_cfg.get("enabled")
     if enabled is not True:
         if check_opt_in:
-            return _skipped(cause="cross_model_review.enabled is not true")
+            # Spec: --check-opt-in not-opted-in → skipped, cause null
+            return _skipped(cause=None)
         return _skipped(cause="cross_model_review.enabled is not true")
 
     if check_opt_in:
@@ -157,25 +160,30 @@ def _run_cross_review(
     if not effort:
         return _failed("missing field: effort is required")
 
-    # Resolve prompt file: CLI arg overrides config
-    resolved_prompt_file = prompt_file or cr_cfg.get("prompt_file") or ""
+    # Resolve prompt file: CLI arg only (config does not supply this per IF-D-01)
+    if not prompt_file:
+        return _failed("missing required argument: --prompt-file")
+    resolved_prompt_file = prompt_file
     if not os.path.isabs(resolved_prompt_file):
         resolved_prompt_file = os.path.join(project_root, resolved_prompt_file)
 
     prompt_path = Path(resolved_prompt_file)
     if not prompt_path.exists():
         return _failed(f"prompt file not found: {resolved_prompt_file}")
-    prompt_text = prompt_path.read_text(encoding="utf-8")
+    try:
+        prompt_text = prompt_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return _failed(f"failed to read prompt file: {exc}")
     if not prompt_text.strip():
         return _failed(f"prompt file is empty: {resolved_prompt_file}")
 
-    # Resolve report dir: CLI arg overrides config
-    resolved_report_dir = report_dir or cr_cfg.get("report_dir") or "."
+    # Resolve report dir: CLI arg, defaulting to project root
+    resolved_report_dir = report_dir or project_root
     if not os.path.isabs(resolved_report_dir):
         resolved_report_dir = os.path.join(project_root, resolved_report_dir)
 
-    # Resolve review type: CLI arg overrides config
-    resolved_review_type = review_type or cr_cfg.get("review_type") or "review"
+    # Resolve review type: CLI arg, defaulting to "review"
+    resolved_review_type = review_type or "review"
 
     # --- 4. Precondition: codex binary ---
     if shutil.which("codex") is None:
@@ -183,11 +191,17 @@ def _run_cross_review(
 
     # --- 5. Build argv and run ---
     report_dir_path = Path(resolved_report_dir)
-    report_dir_path.mkdir(parents=True, exist_ok=True)
+    try:
+        report_dir_path.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        return _failed(f"failed to create report directory: {exc}")
 
     # Temp file for codex output (in report dir so os.replace is same-filesystem)
-    fd, temp_out = tempfile.mkstemp(suffix=".tmp", dir=str(report_dir_path))
-    os.close(fd)
+    try:
+        fd, temp_out = tempfile.mkstemp(suffix=".tmp", dir=str(report_dir_path))
+        os.close(fd)
+    except OSError as exc:
+        return _failed(f"failed to create temp file: {exc}")
 
     argv = [
         "codex", "exec",
@@ -217,6 +231,12 @@ def _run_cross_review(
         except OSError:
             pass
         return _failed("codex invocation timeout: exceeded 600 seconds")
+    except OSError as exc:
+        try:
+            os.remove(temp_out)
+        except OSError:
+            pass
+        return _failed(f"failed to launch codex: {exc}")
 
     # --- 6. Adjudicate outcome ---
     out_content = ""
@@ -249,7 +269,14 @@ def _run_cross_review(
     report_content = header + out_content
 
     # Write to a second temp file, then atomic-rename into final path
-    report_fd, report_temp = tempfile.mkstemp(suffix=".tmp", dir=str(report_dir_path))
+    try:
+        report_fd, report_temp = tempfile.mkstemp(suffix=".tmp", dir=str(report_dir_path))
+    except OSError as exc:
+        try:
+            os.remove(temp_out)
+        except OSError:
+            pass
+        return _failed(f"failed to create report temp file: {exc}")
     try:
         with os.fdopen(report_fd, "w", encoding="utf-8") as fh:
             fh.write(report_content)
@@ -326,14 +353,17 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    result = _run_cross_review(
-        project_root=args.project_root,
-        prompt_file=args.prompt_file,
-        review_type=args.review_type,
-        report_dir=args.report_dir,
-        target_label=args.target_label,
-        check_opt_in=args.check_opt_in,
-    )
+    try:
+        result = _run_cross_review(
+            project_root=args.project_root,
+            prompt_file=args.prompt_file,
+            review_type=args.review_type,
+            report_dir=args.report_dir,
+            target_label=args.target_label,
+            check_opt_in=args.check_opt_in,
+        )
+    except Exception as exc:  # noqa: BLE001 — backstop: always-return-JSON contract
+        result = _failed(f"unexpected error: {exc}")
 
     print(json.dumps(result))
     return 0

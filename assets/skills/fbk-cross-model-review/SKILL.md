@@ -19,7 +19,7 @@ fbk.py cross-review --check-opt-in --project-root <root>
 
 If the returned JSON has `"status": "skipped"`, this project has not opted in to cross-model review. Stop here and tell the user the project has not enabled cross-model review. Present no findings.
 
-If the returned JSON has `"status": "ready"`, continue to step 2.
+If the returned JSON has `"status": "success"`, the project is opted in — continue to step 2.
 
 ## 2. Gather the target
 
@@ -56,7 +56,7 @@ fbk.py cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --
 ```
 
 - `<p>` — path to the prompt file from step 4.
-- `<slug>` — `fresh-eyes` for a document review, `code` for a code-change review.
+- `<slug>` — `fresh-eyes` for a document review, `code-review` for a code-change review.
 - `<dir>` — directory where the report should land (typically `ai-docs/<feature>/` or the project's review output folder).
 - `<root>` — project root (same value passed to `--check-opt-in`).
 - `<text>` — a short human-readable label for the thing being reviewed (filename, feature name, or "diff of <branch>").
@@ -73,4 +73,4 @@ Branch on the `status` field in the runner's returned JSON.
 
 **`status: skipped`** — The opt-in check (step 1) should have caught this earlier, but if it surfaces here, tell the user the project has not enabled cross-model review and present nothing.
 
-**`status: failed`** — Relay the cause from the JSON `reason` or `error` field verbatim. If the message mentions `codex login`, tell the user they need to run `codex login` in the sandbox before cross-model review can proceed. Present no findings.
+**`status: failed`** — Relay the cause from the JSON `cause` field verbatim. If the message mentions `codex login`, tell the user they need to run `codex login` in the sandbox before cross-model review can proceed. Present no findings.

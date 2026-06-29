@@ -39,15 +39,14 @@ _FBK_PY = Path(__file__).parent.parent / "fbk.py"
 # Helpers
 # ---------------------------------------------------------------------------
 
+# IF-D-01 defines exactly four fields: enabled, harness, model, effort.
+# prompt_file, report_dir, review_type are NOT config fields — they come from CLI.
 _MINIMAL_CONFIG = {
     "cross_model_review": {
         "enabled": True,
         "harness": "codex",
         "model": "gpt-5.5",
         "effort": "high",
-        "review_type": "spec",
-        "prompt_file": ".claude/automation/cross-review-prompt.md",
-        "report_dir": "ai-docs/cross-model-review/reports",
     }
 }
 
@@ -72,7 +71,7 @@ def _write_config(tmp_path: Path, block: dict | str) -> Path:
 
 
 def _write_prompt(tmp_path: Path, content: str = "Review this code.\n") -> Path:
-    """Write a non-empty prompt file at the path expected by the minimal config."""
+    """Write a non-empty prompt file and return its path."""
     prompt_file = tmp_path / ".claude" / "automation" / "cross-review-prompt.md"
     prompt_file.parent.mkdir(parents=True, exist_ok=True)
     prompt_file.write_text(content)
@@ -83,8 +82,9 @@ def _run_main(tmp_path: Path, extra_argv: list[str] | None = None) -> tuple[int 
     """Invoke fbk.cross_review.main() with sys.argv pointing at tmp_path project root.
 
     Returns (exit_code_or_None, parsed_json_output).
-    exit_code_or_None is None when main() returns normally (correct), or the
-    SystemExit code when a non-zero SystemExit escapes (incorrect per spec).
+    exit_code_or_None is None when main() returns 0 (correct), the SystemExit
+    code when a non-zero SystemExit escapes (incorrect per spec), or the integer
+    return value when main() returns something other than 0 (also incorrect).
 
     Raises AssertionError when stdout is not parseable JSON — callers that
     expect valid JSON can rely on this.
@@ -102,7 +102,10 @@ def _run_main(tmp_path: Path, extra_argv: list[str] | None = None) -> tuple[int 
     with mock.patch.object(sys, "argv", argv):
         with redirect_stdout(captured):
             try:
-                _cross_review_mod.main()
+                return_value = _cross_review_mod.main()
+                # A non-zero return is also a failure of the always-exit-0 contract.
+                if return_value != 0:
+                    exit_code = return_value
             except SystemExit as exc:
                 exit_code = exc.code
 
@@ -213,10 +216,12 @@ class TestPreconditions:
     def test_codex_not_found_yields_failed(self, tmp_path):
         """shutil.which returning None → status failed, no report written."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
 
         with mock.patch("shutil.which", return_value=None):
-            exit_code, result = _run_main(tmp_path)
+            exit_code, result = _run_main(
+                tmp_path, extra_argv=["--prompt-file", str(prompt_path)]
+            )
 
         assert result["status"] == "failed"
         assert result.get("report_path") is None
@@ -225,10 +230,13 @@ class TestPreconditions:
     def test_missing_prompt_file_yields_failed(self, tmp_path):
         """Prompt file does not exist → status failed."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        # deliberately do not write a prompt file
+        # Point at a path that does not exist
+        nonexistent = str(tmp_path / "does-not-exist.md")
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
-            exit_code, result = _run_main(tmp_path)
+            exit_code, result = _run_main(
+                tmp_path, extra_argv=["--prompt-file", nonexistent]
+            )
 
         assert result["status"] == "failed"
         assert exit_code is None
@@ -236,10 +244,12 @@ class TestPreconditions:
     def test_empty_prompt_file_yields_failed(self, tmp_path):
         """Prompt file exists but is empty/whitespace → status failed."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path, content="   \n  ")
+        prompt_path = _write_prompt(tmp_path, content="   \n  ")
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
-            exit_code, result = _run_main(tmp_path)
+            exit_code, result = _run_main(
+                tmp_path, extra_argv=["--prompt-file", str(prompt_path)]
+            )
 
         assert result["status"] == "failed"
         assert exit_code is None
@@ -276,7 +286,7 @@ class TestSubprocessOutcomes:
     def test_nonzero_returncode_yields_failed_no_report(self, tmp_path):
         """Codex exits non-zero → status failed, no report file."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
 
         failed_proc = mock.MagicMock()
         failed_proc.returncode = 1
@@ -285,7 +295,9 @@ class TestSubprocessOutcomes:
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", return_value=failed_proc):
-                exit_code, result = _run_main(tmp_path)
+                exit_code, result = _run_main(
+                    tmp_path, extra_argv=["--prompt-file", str(prompt_path)]
+                )
 
         assert result["status"] == "failed"
         assert result.get("report_path") is None
@@ -294,11 +306,13 @@ class TestSubprocessOutcomes:
     def test_empty_output_file_yields_failed_no_report(self, tmp_path):
         """Codex exits 0 but output file is whitespace-only → status failed, no report."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", side_effect=self._successful_run_mock(output_content="   \n")):
-                exit_code, result = _run_main(tmp_path)
+                exit_code, result = _run_main(
+                    tmp_path, extra_argv=["--prompt-file", str(prompt_path)]
+                )
 
         assert result["status"] == "failed"
         assert result.get("report_path") is None
@@ -307,11 +321,13 @@ class TestSubprocessOutcomes:
     def test_timeout_expired_yields_failed(self, tmp_path):
         """subprocess.TimeoutExpired → status failed; cause names the timeout."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", side_effect=subprocess.TimeoutExpired("codex", 300)):
-                exit_code, result = _run_main(tmp_path)
+                exit_code, result = _run_main(
+                    tmp_path, extra_argv=["--prompt-file", str(prompt_path)]
+                )
 
         assert result["status"] == "failed"
         cause = result.get("cause") or ""
@@ -332,7 +348,7 @@ class TestAuthMarkerScan:
     def test_auth_marker_in_stdout_yields_failed_with_login_hint(self, tmp_path, marker):
         """Auth marker in failed run's stdout → status failed; cause mentions codex login."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
 
         failed_proc = mock.MagicMock()
         failed_proc.returncode = 1
@@ -341,7 +357,9 @@ class TestAuthMarkerScan:
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", return_value=failed_proc):
-                exit_code, result = _run_main(tmp_path)
+                exit_code, result = _run_main(
+                    tmp_path, extra_argv=["--prompt-file", str(prompt_path)]
+                )
 
         assert result["status"] == "failed"
         cause = result.get("cause") or ""
@@ -353,7 +371,7 @@ class TestAuthMarkerScan:
     def test_auth_marker_in_stderr_yields_failed_with_login_hint(self, tmp_path, marker):
         """Auth marker in failed run's stderr → status failed; cause mentions codex login."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
 
         failed_proc = mock.MagicMock()
         failed_proc.returncode = 1
@@ -362,7 +380,9 @@ class TestAuthMarkerScan:
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", return_value=failed_proc):
-                exit_code, result = _run_main(tmp_path)
+                exit_code, result = _run_main(
+                    tmp_path, extra_argv=["--prompt-file", str(prompt_path)]
+                )
 
         assert result["status"] == "failed"
         cause = result.get("cause") or ""
@@ -373,7 +393,8 @@ class TestAuthMarkerScan:
     def test_auth_marker_in_successful_run_is_ignored(self, tmp_path):
         """Auth marker in successful run's output → status success (scan is failure-path-only)."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
+        report_dir = tmp_path / "reports"
 
         def _fake_run(cmd, **kwargs):
             out_path = None
@@ -400,7 +421,14 @@ class TestAuthMarkerScan:
                     ) if hasattr(_cross_review_mod, "_timestamp") else mock.patch(
                         "fbk.cross_review._timestamp", fake_ts, create=True
                     ):
-                        exit_code, result = _run_main(tmp_path)
+                        exit_code, result = _run_main(
+                            tmp_path,
+                            extra_argv=[
+                                "--prompt-file", str(prompt_path),
+                                "--report-dir", str(report_dir),
+                                "--review-type", "spec",
+                            ],
+                        )
 
         assert result["status"] == "success", (
             "A successful run containing 'login' in its output must still be status success; "
@@ -437,10 +465,11 @@ class TestSuccessPath:
     def test_success_uses_cross_review_model_not_default(self, tmp_path):
         """Distinctive cross_model_review.model (gpt-5.5) appears in filename and header; body = Codex output."""
         _write_config(tmp_path, _MINIMAL_CONFIG)  # model is gpt-5.5
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
+        report_dir = tmp_path / "reports"
 
         codex_body = "# Cross-Model Review\n\nAll good.\n"
-        fake_ts = "20260101-120000"
+        fake_ts = "2026-01-01-120000"
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", side_effect=self._fake_run_writing(codex_body)):
@@ -448,7 +477,14 @@ class TestSuccessPath:
                     with mock.patch(
                         "fbk.cross_review._timestamp", return_value=fake_ts, create=True
                     ):
-                        exit_code, result = _run_main(tmp_path)
+                        exit_code, result = _run_main(
+                            tmp_path,
+                            extra_argv=[
+                                "--prompt-file", str(prompt_path),
+                                "--report-dir", str(report_dir),
+                                "--review-type", "spec",
+                            ],
+                        )
 
         assert result["status"] == "success"
         report_path = result.get("report_path")
@@ -470,22 +506,22 @@ class TestSuccessPath:
 
     def test_report_dir_absent_is_created(self, tmp_path):
         """Runner creates the report dir if it does not exist → status success."""
-        cfg = {**_MINIMAL_CONFIG}
-        cfg["cross_model_review"] = {
-            **cfg["cross_model_review"],
-            "report_dir": "ai-docs/cross-model-review/reports/new-subdir",
-        }
-        _write_config(tmp_path, cfg)
-        _write_prompt(tmp_path)
-
+        _write_config(tmp_path, _MINIMAL_CONFIG)
+        prompt_path = _write_prompt(tmp_path)
         report_dir = tmp_path / "ai-docs" / "cross-model-review" / "reports" / "new-subdir"
         assert not report_dir.exists(), "precondition: dir must not exist"
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", side_effect=self._fake_run_writing("# Review\n\nOK\n")):
                 with mock.patch("os.replace", side_effect=lambda src, dst: Path(src).rename(dst)):
-                    with mock.patch("fbk.cross_review._timestamp", return_value="20260101-120000", create=True):
-                        exit_code, result = _run_main(tmp_path)
+                    with mock.patch("fbk.cross_review._timestamp", return_value="2026-01-01-120000", create=True):
+                        exit_code, result = _run_main(
+                            tmp_path,
+                            extra_argv=[
+                                "--prompt-file", str(prompt_path),
+                                "--report-dir", str(report_dir),
+                            ],
+                        )
 
         assert result["status"] == "success"
         assert report_dir.exists(), "Runner must create the report dir"
@@ -496,16 +532,23 @@ class TestSuccessPath:
         cfg["cross_model_review"] = {
             **cfg["cross_model_review"],
             "model": "gpt/5.5 turbo",
-            "review_type": "cross review",
         }
         _write_config(tmp_path, cfg)
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
+        report_dir = tmp_path / "reports"
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", side_effect=self._fake_run_writing("# Review\n\nOK\n")):
                 with mock.patch("os.replace", side_effect=lambda src, dst: Path(src).rename(dst)):
-                    with mock.patch("fbk.cross_review._timestamp", return_value="20260101-120001", create=True):
-                        exit_code, result = _run_main(tmp_path)
+                    with mock.patch("fbk.cross_review._timestamp", return_value="2026-01-01-120001", create=True):
+                        exit_code, result = _run_main(
+                            tmp_path,
+                            extra_argv=[
+                                "--prompt-file", str(prompt_path),
+                                "--report-dir", str(report_dir),
+                                "--review-type", "cross review",
+                            ],
+                        )
 
         assert result["status"] == "success"
         report_path = result.get("report_path")
@@ -517,15 +560,20 @@ class TestSuccessPath:
     def test_write_failure_yields_failed_no_leftover_files(self, tmp_path):
         """os.replace raising → status failed, returns 0, no report file and no temp file left behind."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path)
-
-        report_dir = tmp_path / "ai-docs" / "cross-model-review" / "reports"
+        prompt_path = _write_prompt(tmp_path)
+        report_dir = tmp_path / "reports"
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", side_effect=self._fake_run_writing("# Review\n\nOK\n")):
                 with mock.patch("os.replace", side_effect=OSError("disk full")):
-                    with mock.patch("fbk.cross_review._timestamp", return_value="20260101-120002", create=True):
-                        exit_code, result = _run_main(tmp_path)
+                    with mock.patch("fbk.cross_review._timestamp", return_value="2026-01-01-120002", create=True):
+                        exit_code, result = _run_main(
+                            tmp_path,
+                            extra_argv=[
+                                "--prompt-file", str(prompt_path),
+                                "--report-dir", str(report_dir),
+                            ],
+                        )
 
         assert result["status"] == "failed"
         assert exit_code is None, "main() must return 0 even on write failure"
@@ -550,7 +598,8 @@ class TestSubprocessConstruction:
     def test_subprocess_called_as_list_no_shell(self, tmp_path):
         """Codex is invoked as a list (not a string), without shell=True, with model and effort as discrete args."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
+        report_dir = tmp_path / "reports"
 
         call_record: list = []
 
@@ -574,8 +623,14 @@ class TestSubprocessConstruction:
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", side_effect=_capturing_run):
                 with mock.patch("os.replace", side_effect=lambda src, dst: Path(src).rename(dst)):
-                    with mock.patch("fbk.cross_review._timestamp", return_value="20260101-120003", create=True):
-                        _run_main(tmp_path)
+                    with mock.patch("fbk.cross_review._timestamp", return_value="2026-01-01-120003", create=True):
+                        _run_main(
+                            tmp_path,
+                            extra_argv=[
+                                "--prompt-file", str(prompt_path),
+                                "--report-dir", str(report_dir),
+                            ],
+                        )
 
         assert call_record, "subprocess.run must have been called"
         call = call_record[0]
@@ -606,7 +661,8 @@ class TestFilenameCollision:
     def test_collision_appends_suffix(self, tmp_path):
         """Two successful reviews with same timestamp → both files exist; second has -2 suffix."""
         _write_config(tmp_path, _MINIMAL_CONFIG)
-        _write_prompt(tmp_path)
+        prompt_path = _write_prompt(tmp_path)
+        report_dir = tmp_path / "reports"
 
         call_count = [0]
 
@@ -626,16 +682,20 @@ class TestFilenameCollision:
             result.stderr = ""
             return result
 
-        fixed_ts = "20260101-120004"
+        fixed_ts = "2026-01-01-120004"
+        extra = [
+            "--prompt-file", str(prompt_path),
+            "--report-dir", str(report_dir),
+        ]
 
         with mock.patch("shutil.which", return_value="/usr/bin/codex"):
             with mock.patch("subprocess.run", side_effect=_fake_run):
                 with mock.patch("os.replace", side_effect=lambda src, dst: Path(src).rename(dst)):
                     with mock.patch("fbk.cross_review._timestamp", return_value=fixed_ts, create=True):
-                        exit_code1, result1 = _run_main(tmp_path)
+                        exit_code1, result1 = _run_main(tmp_path, extra_argv=extra)
 
                     with mock.patch("fbk.cross_review._timestamp", return_value=fixed_ts, create=True):
-                        exit_code2, result2 = _run_main(tmp_path)
+                        exit_code2, result2 = _run_main(tmp_path, extra_argv=extra)
 
         assert result1["status"] == "success"
         assert result2["status"] == "success"
@@ -681,6 +741,50 @@ class TestCheckOptInMode:
 
         assert result["status"] == "skipped"
         mock_run.assert_not_called()
+        assert exit_code is None
+
+    def test_check_opt_in_opted_out_cause_is_null(self, tmp_path):
+        """--check-opt-in not-opted-in → cause must be null per spec."""
+        _write_config(tmp_path, {})  # no cross_model_review block
+
+        exit_code, result = _run_main(tmp_path, extra_argv=["--check-opt-in"])
+
+        assert result["status"] == "skipped"
+        assert result.get("cause") is None, (
+            f"--check-opt-in not-opted-in must return cause=null; got: {result.get('cause')!r}"
+        )
+        assert exit_code is None
+
+
+# ---------------------------------------------------------------------------
+# Regression tests
+# ---------------------------------------------------------------------------
+
+class TestRegressions:
+
+    def test_non_dict_config_block_yields_skipped_not_crash(self, tmp_path):
+        """cross_model_review: true (non-dict) must produce skipped, not AttributeError."""
+        _write_config(tmp_path, "cross_model_review: true\n")
+
+        # Must not raise; must return valid JSON with status skipped
+        exit_code, result = _run_main(tmp_path)
+
+        assert result["status"] == "skipped", (
+            f"A non-dict cross_model_review block must be treated as not opted in; "
+            f"got status: {result['status']!r}"
+        )
+        assert exit_code is None
+
+    def test_no_prompt_file_arg_yields_failed_not_crash(self, tmp_path):
+        """Opted-in run with no --prompt-file → status failed, exit 0, no crash."""
+        _write_config(tmp_path, _MINIMAL_CONFIG)
+        # Do NOT pass --prompt-file at all
+
+        exit_code, result = _run_main(tmp_path)
+
+        assert result["status"] == "failed", (
+            f"Missing --prompt-file must yield failed; got: {result['status']!r}"
+        )
         assert exit_code is None
 
 

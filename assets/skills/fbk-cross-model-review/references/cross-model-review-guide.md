@@ -119,13 +119,14 @@ Before composing the prompt or invoking the runner, check whether the project ha
 opted in:
 
 ```
-fbk.py cross-review --check-opt-in
+fbk.py cross-review --check-opt-in --project-root <root>
 ```
 
-- **Absent or false**: skip the cross-model review entirely. Emit the skipped outcome
-  (see section e) and stop. Do not invoke the runner.
-- **Opted in**: read the model and effort settings from config. The runner uses these
-  when calling the external model — do not hard-code a model name in the prompt.
+- **`status: skipped`** (block absent or `enabled` not true): skip the cross-model review
+  entirely. Emit the skipped outcome (see section e) and stop. Do not invoke the runner.
+- **`status: success`** (opted in): the runner reads the model and effort settings from
+  config and uses them when calling the external model — do not hard-code a model name in
+  the prompt. Proceed to gather the target.
 
 ---
 
