@@ -800,6 +800,37 @@ class TestRegressions:
         )
         assert exit_code is None
 
+    def test_non_mapping_config_root_yields_failed(self, tmp_path):
+        """A config file whose root is not a mapping (e.g. bare `true`) → failed, not skip."""
+        _write_config(tmp_path, "true\n")
+
+        exit_code, result = _run_main(tmp_path)
+
+        assert result["status"] == "failed", (
+            f"a non-mapping config root is malformed and must fail visibly; got: {result['status']!r}"
+        )
+        assert exit_code is None
+
+    def test_effort_with_injection_chars_yields_failed(self, tmp_path):
+        """An effort value containing quotes/newlines (Codex -c injection) → failed, Codex not invoked."""
+        bad = dict(_MINIMAL_CONFIG)
+        bad["cross_model_review"] = dict(_MINIMAL_CONFIG["cross_model_review"])
+        bad["cross_model_review"]["effort"] = 'high" foo="bar'
+        _write_config(tmp_path, bad)
+        prompt_path = _write_prompt(tmp_path)
+
+        with mock.patch("subprocess.run") as run_mock:
+            exit_code, result = _run_main(
+                tmp_path,
+                extra_argv=["--prompt-file", str(prompt_path), "--report-dir", str(tmp_path / "r")],
+            )
+
+        assert result["status"] == "failed", (
+            f"an effort value with injection characters must be rejected; got: {result!r}"
+        )
+        run_mock.assert_not_called()
+        assert exit_code is None
+
     def test_no_prompt_file_arg_yields_failed_not_crash(self, tmp_path):
         """Opted-in run with no --prompt-file → status failed, exit 0, no crash."""
         _write_config(tmp_path, _MINIMAL_CONFIG)

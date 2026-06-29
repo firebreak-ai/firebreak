@@ -75,7 +75,13 @@ def _load_config(project_root: str) -> tuple[dict | None, str | None]:
     except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
         return None, f"config parse error: {exc}"
 
-    return data if isinstance(data, dict) else {}, None
+    if data is None:
+        # Empty file → treated as absent config (skip downstream).
+        return {}, None
+    if not isinstance(data, dict):
+        # A non-mapping root (e.g. a bare `true` or a list) is malformed config.
+        return None, "config root is malformed: expected a mapping"
+    return data, None
 
 
 def _has_auth_marker(text: str) -> bool:
@@ -166,6 +172,12 @@ def _run_cross_review(
     effort = cr_cfg.get("effort") or ""
     if not effort:
         return _failed("missing field: effort is required")
+    # effort is interpolated into Codex's `-c model_reasoning_effort="..."` config
+    # value. Reject characters that could break out of that config mini-language
+    # (quotes, whitespace, control chars); a conservative safe-char set keeps the
+    # value space open (low/medium/high/xhigh all pass) while closing injection.
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", str(effort)):
+        return _failed("invalid effort value: only letters, digits, '.', '_', '-' are allowed")
 
     # Resolve prompt file: CLI arg only (config does not supply this per IF-D-01)
     if not prompt_file:
