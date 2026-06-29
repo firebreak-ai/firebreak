@@ -93,7 +93,7 @@ def test_updated_telemetry_and_dispatcher_suites_pass():
     """Suites with sanctioned assertion changes (new agent names, coherence-gate count) are green.
 
     Covers the telemetry half of AC-11: test_shapes.py (new agent names),
-    test_dispatcher.py (coherence-gate command entry set to 21), and
+    test_dispatcher.py (coherence-gate command entry set to 22), and
     test_capture_known_agents.py (new agent names).
     """
     returncode, output = _run_pytest(CHANGED_MODULES)
