@@ -162,7 +162,7 @@ For lenses whose output is a findings report plus a supporting artifact (no `Ver
 
 **Conditional — include only when the lens declares `output_contract: observation-format`.**
 
-For lenses loaded by read-only presets that do not produce a verdict (fresh-eyes is the only current example):
+For lenses loaded by read-only presets that do not produce a verdict (fresh-eyes, quality scan, and doc reconcile are the current examples):
 
 - The observation categories (Critical, Substantive, Minor for fresh-eyes).
 - The format: each observation is a bullet-list item (`- ` prefix) within its category section.

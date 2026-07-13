@@ -75,7 +75,7 @@ The default round cap is 5. The fresh-eyes preset overrides this to 1 (a single 
 Each preset declares a researcher count and a challenger count.
 
 - Researcher count is always at least 1.
-- Challenger count may be 0 for named degenerate presets (fresh-eyes is the only currently defined degenerate preset). Zero challengers is a legitimate configuration, not an error. A preset with zero challengers runs a single-round find-only pass.
+- Challenger count may be 0 for named degenerate presets (fresh-eyes plus the scan-only quality-scan and doc-reconcile presets — see "Degenerate cardinality" below). Zero challengers is a legitimate configuration, not an error. A preset with zero challengers runs a single-round find-only pass.
 - For all other presets, challenger count is 1.
 
 Future presets may declare higher counts for parallel researcher or challenger configurations. Raising cardinality never reduces isolation: each researcher still reads cold, each challenger still receives only normalized claims and cited sources, no researcher sees another researcher's output during its own pass, no challenger inherits framing from any researcher.
@@ -118,7 +118,7 @@ When a candidate finding identifies material that appears unused — unreachable
 
 These rules apply to every role the loop runs — researcher, challenger, coordinator — and to the caller consuming the loop's output.
 
-**A claim about the artifact comes from reading the artifact.** At any role, a statement about what the artifact, a cited source, or a neighboring file contains — including a claim that a file, path, or reference is missing — is grounded in text actually opened and read during this run, not memory, plausibility, or one file's account of another file's content. A researcher reports a path as absent only after opening it and confirming nothing is there.
+**A claim about the artifact comes from reading the artifact.** At any role, a statement about what the artifact, a cited source, or a neighboring file contains — including a claim that a file, path, or reference is missing — is grounded in text actually opened and read during this run, not memory, plausibility, or one file's account of another file's content. A researcher reports a path as absent only after attempting to read it — or searching for it — and confirming nothing is there.
 
 **Historical narration is not a live claim.** Text describing a past or superseded state — a remediation note, a dated correction, a comment explaining what an earlier defect was — is historical context. Before reporting or ruling on a problem such text describes, confirm the problem is still present in the artifact's current content.
 

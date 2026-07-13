@@ -6,7 +6,7 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
-This skill is phase six of the six-phase refactored SDL (intent → design → spec → breakdown → code-review → implement).
+This skill is the implementation phase of the SDL (intent → design → spec → spec review → breakdown → implement → code review).
 
 Read `.claude/fbk-docs/fbk-sdl-workflow/implementation-guide.md` for the complete wave execution protocol, verification rules, escalation protocol, checkpoint format, and retrospective structure. Follow that doc at every step below.
 
