@@ -68,6 +68,8 @@ Read `shared-detection.md` for the test-integrity audit used by this lens.
 
 The test-integrity audit in `shared-detection.md` is the primary detection pass for this lens. Run it on every test in scope before running the mode-specific passes below.
 
+The spec, test tasks, or contract pages under review may describe planned tests or planned contract amendments that do not yet exist in the shipped codebase — that is the artifact's subject matter at the spec and pre-lock checkpoints, not evidence of a defect. Before flagging a gap, confirm whether the missing element is planned-but-not-yet-built (not a finding at these checkpoints) versus genuinely absent from both the artifact's own plan and any implementation it claims to already cover (a finding).
+
 ### Spec checkpoint pass
 
 Walk each requirement and acceptance criterion in the spec. For each one, ask:
@@ -76,6 +78,8 @@ Walk each requirement and acceptance criterion in the spec. For each one, ask:
 - Does the planned test name describe the behavior it asserts, not just the component it touches?
 - Is each declared integration seam covered by at least one end-to-end test or a documented justification for why a seam test is deferred?
 - If the spec lists test-fixture or test-data requirements, are those requirements surfaced in the test plan?
+
+- Does the acceptance criterion quantify over an idealized or infinite domain (for example, "for all finite elapsed values," "for all reals") that the implementation's numeric representation cannot literally satisfy? A planned test that only checks a tolerance-bounded approximation of such a claim does not prove the AC as worded — flag as `untested-behavior`.
 
 Flag as `untested-behavior` (severity: `major` or `critical` based on the requirement's role in the feature contract) any requirement or seam with no planned test.
 
@@ -87,12 +91,14 @@ Walk each test task and its corresponding test implementation. For each pair:
 - **AC trace:** can each test be traced to at least one acceptance criterion? Flag an untraced test as `untested-behavior` (minor).
 - **Red before implementation:** is the test structured so it would fail before the implementation under test exists? Flag a test that cannot fail as `trivially-passing` (critical or major depending on the assertion's centrality).
 - **Assertion strength:** does the assertion check the actual behavior, or does it only check that no exception was raised or that a return value is truthy? Flag an error-absence-only assertion as `weakened-assertion` (major).
+- **Observation-channel reach:** does the assertion target a channel (an event-log field, a mock call record, a fake client attribute) that the declared test double is structurally capable of carrying? An assertion on a field, argument, or side effect the fixture never populates cannot detect a regression in the behavior it claims to check, regardless of how strict the assertion looks. Flag as `trivially-passing` (major).
 
 ### Final pass
 
 Review the full test set covering the changed module, including pre-existing locked tests.
 
 - **Weakened assertions:** compare each test's assertion against the locked version. A narrowed comparison, a removed check, or a tolerance increase is `weakened-assertion` (severity: critical if the narrowing would let a broken implementation pass; major otherwise).
+- **State versus log:** when a behavior writes durable state (a database row, a stored field) and also emits a transient signal (a log line, an event), a test that only asserts the transient signal is not equivalent coverage. Flag a test that asserts only the emitted event for a behavior with a persisted counterpart as `weakened-assertion` (major) — the event can fire correctly while the persisted write silently fails or diverges.
 - **Trivially-passing tests:** flag any test whose sole assertion is error-absence with no positive behavioral assertion as `trivially-passing` (critical or major). Flag any test where the mock setup invalidates the thing being asserted as `trivially-passing` (critical).
 - **Unauthorized modification:** flag any locked test that differs from the hash-locked version (content, name, or location) as `manifest-drift` (major), unless the contract-evolving retirement list explicitly justifies the change.
 - **Manifest drift:** compare the actual test files against the locked manifest. A test file present on disk but absent from the manifest is `manifest-drift` (minor). A manifest entry that references a file not on disk is `manifest-drift` (major).
@@ -102,7 +108,7 @@ Review the full test set covering the changed module, including pre-existing loc
 
 ## 6. Source-of-truth handling
 
-**When a spec is available:** compare planned tests against the spec's requirements, acceptance criteria, and integration-seam declarations. The researcher opens the spec and reads each requirement section before assessing coverage. The spec's acceptance criteria are the canonical list; the test plan or implementation must cover each one.
+**When a spec is available:** compare planned tests against the spec's requirements, acceptance criteria, and integration-seam declarations. The researcher opens the spec and reads each requirement section before assessing coverage. The spec's acceptance criteria are the canonical list; the test plan or implementation must cover each one. A requirement is under-covered only when no section of the spec — including sibling ACs, the testing strategy, or a fixture contract — already pins the missing detail. Do not flag `untested-behavior` merely because an AC's own text does not restate information pinned elsewhere in the spec.
 
 **When a locked manifest is available:** compare the actual test files against the manifest. The manifest is the source of truth for which tests exist and what their locked state is. The researcher must not accept the test file's own assertions about what it covers without comparing against the manifest.
 

@@ -62,7 +62,7 @@ Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral
 
 Run these passes in order. Tag each sighting with its detection source: `spec-ac`, `checklist`, `structural-target`, `audit-pass`, `intent`, or `linter`.
 
-**Behavioral comparison pass** (`detection_source: spec-ac` or `intent`): Compare each module's actual behavior against the acceptance criteria and UV steps from the active spec, or against the intent register when no spec is available. Emit a sighting for every divergence — including missing behavior, excess behavior, and behavior that matches the letter but not the evident intent.
+**Behavioral comparison pass** (`detection_source: spec-ac` or `intent`): Compare each module's actual behavior against the acceptance criteria and UV steps from the active spec, or against the intent register when no spec is available. Emit a sighting for every divergence — including missing behavior, excess behavior, and behavior that matches the letter but not the evident intent — except where the spec itself documents a tolerance, calibration range, or accepted degraded state that covers the observed behavior; treat that documented allowance as satisfied, not a divergence.
 
 **AI failure mode checklist** (`detection_source: checklist`): Apply every item in `ai-failure-modes.md` to the reviewed code. When a checklist item matches a mechanism already sighted under behavioral comparison, emit one sighting and cite both sources.
 

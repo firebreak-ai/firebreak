@@ -31,21 +31,6 @@ Five kinds, in this order:
 4. **Changelog** — user-facing change history. Common location: `CHANGELOG.md` at the project root.
 5. **Spec** — feature spec with acceptance criteria, user value statements, and behavioral claims. Common location: `ai-docs/<feature>/spec.md`.
 
-## Per-doc comparison guidance
-
-- **Decisions ledger** — code that contradicts a recorded decision is drift; a decision whose mechanism the code has refactored but still honors is a note.
-- **Contracts file** — signature or shape mismatch is drift; renamed-but-equivalent surfaces are a note.
-- **Package layout** — files in a package the layout doesn't describe, or imports against the layout's stated direction, are drift.
-- **Changelog** — unrecorded user-facing changes are drift; recorded entries whose described change doesn't match the diff are also drift.
-- **Spec** — unmet claims the spec implies are now true are drift; claims whose phrasing has gone stale but whose intent is met are notes.
-
-When a doc carries a claim whose shape doesn't fit its doc kind (e.g., a spec containing a contracts-shaped claim about a function signature), apply the per-doc guidance that most closely matches the claim's shape rather than the guidance keyed to the doc kind.
-
-## Classification rules
-
-- **drift** — concrete divergence. The doc names something (a function, a file, a contract field, a stated decision) the code doesn't contain or contradicts. Clear mismatch.
-- **note** — ambiguous signal. The doc references something at a name the code might still implement under a different name, or describes a behavior that's been refactored such that direct comparison is hard. Worth a look but might be benign.
-
 ## Output format
 
 Each finding written to `ai-docs/<feature>/doc-reconcile.md` includes:

@@ -145,6 +145,7 @@ If this lens is loaded by a preset that produces a verdict artifact, describe:
 - The verdict line format (must be exactly `Verdict: accepted` or `Verdict: needs-revision`).
 - The passing condition in plain language: what the artifact must contain for the verdict to be accepted.
 - The failing condition: what specific defects trigger a needs-revision verdict.
+- The role that writes the `Verdict:` line — always the challenger (or a coordinator step that runs after the challenger rules), never the researcher. State this explicitly in the lens's challenger-instructions section when the artifact's structure could otherwise read as researcher-authored.
 
 ### 9. Findings artifact (`output_contract: findings-artifact`)
 

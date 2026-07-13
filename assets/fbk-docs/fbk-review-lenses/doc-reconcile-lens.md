@@ -39,7 +39,7 @@ Apply the per-doc comparison guidance for each doc kind:
 
 - **Decisions ledger** — code that contradicts a recorded decision is drift; a decision whose mechanism the code has refactored but still honors is a note.
 - **Contracts file** — signature or shape mismatch is drift; renamed-but-equivalent surfaces are a note.
-- **Package layout** — files in a package the layout doesn't describe, or imports against the layout's stated direction, are drift.
+- **Package layout** — files in a package the layout doesn't describe, imports against the layout's stated direction, or an architecture diagram whose depicted components or connections no longer match the shipped code, are drift.
 - **Changelog** — unrecorded user-facing changes are drift; recorded entries whose described change doesn't match the diff are also drift.
 - **Spec** — unmet claims the spec implies are now true are drift; claims whose phrasing has gone stale but whose intent is met are notes.
 

@@ -49,7 +49,7 @@ A finding is confirmed when the challenger returned verified or verified-pending
 
 4. The loop coordinator spawns the challenger as a cleared agent, injecting in this order: the artifact under review (the challenger reads this cold, before anything else); the review lens for the active preset; the normalized candidate findings; the content of any cited source documents collected in step 3. The challenger produces a verdict for each candidate.
 
-5. The loop coordinator validates challenger output (required fields, verdict values, reclassification matrix if the lens defines one). It filters to verified and verified-pending-execution, assigns sequential finding identifiers, and converts to the human-facing format for the review report.
+5. The loop coordinator validates challenger output (required fields, verdict values, reclassification matrix if the lens defines one). It filters to verified and verified-pending-execution, assigns sequential finding identifiers, and converts to the human-facing format for the review report. The coordinator computes any verdict-count summary itself from the validated per-candidate verdicts; a summary count the challenger writes is not carried forward as authoritative.
 
 6. The loop coordinator appends confirmed findings to the review report and records the round in the round history.
 
@@ -118,11 +118,13 @@ When a candidate finding identifies material that appears unused — unreachable
 
 These rules apply to every role the loop runs — researcher, challenger, coordinator — and to the caller consuming the loop's output.
 
-**A claim about the artifact comes from reading the artifact.** At any role, a statement about what the artifact, a cited source, or a neighboring file contains is grounded in text actually opened and read during this run — not memory, plausibility, or one file's account of another file's content.
+**A claim about the artifact comes from reading the artifact.** At any role, a statement about what the artifact, a cited source, or a neighboring file contains — including a claim that a file, path, or reference is missing — is grounded in text actually opened and read during this run, not memory, plausibility, or one file's account of another file's content. A researcher reports a path as absent only after opening it and confirming nothing is there.
 
 **Historical narration is not a live claim.** Text describing a past or superseded state — a remediation note, a dated correction, a comment explaining what an earlier defect was — is historical context. Before reporting or ruling on a problem such text describes, confirm the problem is still present in the artifact's current content.
 
 **A clean result without a challenge stage is an unverified read.** A zero-challenger preset's clean result ("no drift," "no findings") is one agent's unchallenged reading, structurally weaker than a clean round that survived a challenger. Before treating it as final, the caller spot-checks the claim against the artifact directly.
+
+**An empty candidate list is not automatically a clean round.** A researcher that stops responding before finishing its pass can return an empty list that looks identical to a genuine clean read. Before the coordinator records a zero-candidate round as clean, it checks that the researcher's run actually completed — for example, by confirming a completion signal or reading the run's transcript — rather than accepting an empty list at face value.
 
 **Disagreement between instruments is resolved by the artifact.** When two instruments disagree about the same claim — a challenger's rejection against another reviewer's verification, an adjudicator's ruling against a direct reading, a scan observation against a finding verdict — the caller resolves it by reading the artifact itself before accepting either side. Neither verdict outranks the other by default; the artifact does.
 
@@ -133,6 +135,8 @@ These rules apply to every role the loop runs — researcher, challenger, coordi
 The loop reviews what it is given. It never applies fixes. Remediation is entirely the caller's responsibility.
 
 When the caller applies fixes after a loop run, the post-fix artifact is new material. It must go through a fresh loop invocation — with a new round count, a new round cap, and no memory of the prior run's candidates. The prior run's confirmed findings are not automatically closed.
+
+The fresh invocation may scope the artifact it injects to the fix set applied since the prior round instead of the full artifact. A scoped reentry costs a fraction of a full reentry and has caught the same class of fix-introduced residue; scope the reentry to the fix set by default, and fall back to a full-artifact reentry only when the fix touched enough of the artifact that drift outside the fix set is a realistic concern.
 
 The code review preset documents the fix-then-re-invoke step explicitly. All other presets are read-only: they do not modify the artifact under review, and re-invocation after external changes is the caller's decision, not the loop's.
 

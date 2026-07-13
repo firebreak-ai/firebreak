@@ -16,7 +16,7 @@ The test-integrity audit has moved to `fbk-review-lenses/shared-detection.md` an
 
 ## Cross-function API trace
 
-For every exported or public symbol the diff modifies — removes, renames, changes signature, changes return shape — enumerate callers and verify shape compatibility. Use Grep and Read beyond the reviewed file to locate callers.
+For every exported or public symbol the diff modifies — removes, renames, changes signature, changes return shape — enumerate callers and verify shape compatibility. When the modified symbol is an interface, enumerate every type that implements it — including test doubles and fakes — and verify each still satisfies the interface. Use Grep and Read beyond the reviewed file to locate callers and implementers.
 
 ## Consistency audit
 

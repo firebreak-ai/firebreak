@@ -57,6 +57,10 @@ The researcher has no prior authoring context. The artifact itself is the primar
 
 When the invoker provides cross-cutting convention files alongside the artifact (a shared interface definition, a naming registry, a conventions document), the researcher compares the artifact against those documents as reference material. Convention files are comparison anchors, not a record of the author's reasoning.
 
+When the artifact's subject is a proposed change to existing code or an existing document — a design amendment, a seam amendment, a new or revised contract — treat the artifact as specifying a future state, and compare it against itself for consistency. A convention file showing the pre-change state is the artifact's starting point; surface a finding only when the artifact's own sections disagree with each other about the proposed change, not when the artifact's proposal differs from the code or document it is changing.
+
+When the artifact or a referenced document states that a topic — a design decision, a configuration value, a schema detail — is deferred to a later phase, treat that note as a scoping decision the author already made. Surface a deferral as a finding only when the artifact treats the same topic as already decided elsewhere in a way that contradicts the deferral; a bare deferral note is not itself a missing constraint or open question.
+
 When no cross-cutting files are provided, the researcher works from the artifact alone.
 
 ---

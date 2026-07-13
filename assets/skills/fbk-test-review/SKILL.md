@@ -43,6 +43,8 @@ accepted | needs-revision
 
 A `needs-revision` verdict at any checkpoint blocks the downstream gate. The verdict is load-bearing — downstream gates read the artifact file, not the agent's conversation output. Both the spec gate and the code-review gate locate the artifact in the feature folder and read its `Verdict:` line, so the verdict must be emitted as a `Verdict:` line for the gate to find it.
 
+A confirmed finding's `remediation` field is an advisory fix direction, not a verified patch. Before applying a suggested fix, re-derive it against the artifact and cited source directly — a plausible-sounding remediation can itself be wrong, and applying one unverified can break a correct implementation.
+
 ## Review loop
 
 This loop follows the shared spine, with `"$HOME"/.claude/fbk-docs/fbk-review-lenses/test-lens.md` as the loaded lens. Because there is no preset entry for test review (see the no-preset rule below), type-filtering is done by the lens's type matrix inside `validate --lens`, not by a domain-filter step.
