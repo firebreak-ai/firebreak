@@ -315,7 +315,7 @@ def check_design_anchor(spec_text: str, feature_dir: str) -> List[str]:
 
     # A contract-shaped heading with a non-IF-D prefix (e.g. IF-A-01) is a scheme
     # the carry check cannot verify — fail loudly instead of silently skipping.
-    nonstandard_re = re.compile(r"^## (IF-(?!D-)[A-Z]{1,4}-[0-9]{2,})", re.MULTILINE)
+    nonstandard_re = re.compile(r"^## (IF-(?!D-)[A-Z0-9]+-[0-9]{2,})", re.MULTILINE)
     for m in nonstandard_re.finditer(design_text):
         failures.append(MSG_NONSTANDARD_SCHEME.format(id=m.group(1)))
 

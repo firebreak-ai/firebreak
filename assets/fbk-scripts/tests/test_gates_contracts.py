@@ -679,6 +679,17 @@ class TestDesignAnchorNonstandardScheme:
         assert result, "non-IF-D scheme must not pass silently"
         assert any("IF-A-01" in f and "IF-D" in f for f in result)
 
+    def test_long_prefix_returns_loud_failure(self, tmp_path):
+        """A multi-letter capability prefix (IF-AFFECT-01) must also fail loudly."""
+        design_dir = tmp_path / "design"
+        design_dir.mkdir()
+        (design_dir / "contracts.md").write_text(
+            "# Contracts\n\n## IF-AFFECT-01 — Affect.Assign\nSome description.\n"
+        )
+        spec = "## Interface contracts\n" + NO_CONTRACTS_SENTENCE + "\n"
+        result = check_design_anchor(spec, str(tmp_path))
+        assert any("IF-AFFECT-01" in f for f in result)
+
     def test_mixed_scheme_flags_nonstandard_ids(self, tmp_path):
         design_dir = tmp_path / "design"
         design_dir.mkdir()

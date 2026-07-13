@@ -38,7 +38,8 @@ Every mode writes an artifact to `ai-docs/<feature>/test-review-<checkpoint>.md`
 The artifact carries a verdict line, exactly one of:
 
 ```
-accepted | needs-revision
+Verdict: accepted
+Verdict: needs-revision
 ```
 
 A `needs-revision` verdict at any checkpoint blocks the downstream gate. The verdict is load-bearing — downstream gates read the artifact file, not the agent's conversation output. Both the spec gate and the code-review gate locate the artifact in the feature folder and read its `Verdict:` line, so the verdict must be emitted as a `Verdict:` line for the gate to find it.

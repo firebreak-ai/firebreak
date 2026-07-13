@@ -71,13 +71,13 @@ The breakdown gate fails on any unresolved `BOUNCE-BACK:` marker (see task-30). 
 
 ## Test task agent
 
-Invoke an Agent Teams teammate with independent context. The teammate receives only the spec file (`ai-docs/$FEATURE/$FEATURE-spec.md`). It does NOT receive the review document, threat model, or any other artifacts.
+Invoke an Agent Teams teammate with independent context, using the `fbk-task-compiler` agent definition (`.claude/agents/fbk-task-compiler.md`) so the compiling teammate carries the tech-lead persona and its quality bars. The teammate receives only the spec file (`ai-docs/$FEATURE/$FEATURE-spec.md`). It does NOT receive the review document, threat model, or any other artifacts.
 
 Load brownfield instructions from `.claude/fbk-docs/fbk-brownfield-breakdown.md` and include them in the teammate's prompt.
 
 Load the test-authoring rules from `.claude/fbk-docs/fbk-design-guidelines/test-authoring.md` and include them in the teammate's prompt. Test tasks must conform to those rules — including the mocks rule (stand-ins only for code we don't own).
 
-The teammate produces test tasks from the spec's testing strategy and acceptance criteria. One task per AC or logical test group. Each test task specifies: files to create, test framework conventions to follow, AC identifiers covered, and a completion gate (tests compile and fail before implementation).
+The teammate produces test tasks from the spec's testing strategy and acceptance criteria. One task per AC or logical test group. Each test task specifies: files to create, test framework conventions to follow, AC identifiers covered, and a completion gate (tests are red — failing, or compile-red on not-yet-declared symbols per the slice shape — before implementation).
 
 Where an assertion depends on a configurable numeric value, the test tasks must include at least one non-default-config case with a hand-derived expected value — a test that only exercises template defaults cannot tell an implementation that reads the config apart from one that silently hardcodes the defaults.
 
@@ -85,7 +85,7 @@ Output: the teammate writes each task file directly to disk at `ai-docs/$FEATURE
 
 ## Implementation task agent
 
-Invoke a second Agent Teams teammate with independent context, after the test task agent completes. The teammate receives the spec file AND the test task files produced by the test task agent. It receives the test task files as artifacts — not the test task agent's reasoning or conversation.
+Invoke a second Agent Teams teammate with independent context, also using the `fbk-task-compiler` agent definition, after the test task agent completes. The teammate receives the spec file AND the test task files produced by the test task agent. It receives the test task files as artifacts — not the test task agent's reasoning or conversation.
 
 Load brownfield instructions from `.claude/fbk-docs/fbk-brownfield-breakdown.md` and include them in the teammate's prompt.
 

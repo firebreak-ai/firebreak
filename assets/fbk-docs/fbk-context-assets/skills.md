@@ -51,7 +51,7 @@ Keep `SKILL.md` under 500 lines. Move detailed reference material to supporting 
 
 Use `!`command`` syntax for dynamic context injection — shell commands run before the skill content reaches Claude, and their output replaces the placeholder.
 
-Verify any CLI command or script a skill instructs the agent to run (e.g., a named `fbk.py` subcommand) actually exists in the installed tool before publishing the skill. A referenced-but-unimplemented command fails silently — the agent falls back to manual work with no error signal, and the gap can persist across multiple skills unnoticed.
+Verify any CLI command or script a skill instructs the agent to run (e.g., a named `fbk.py` subcommand) actually exists in the installed tool before publishing the skill. A referenced-but-unimplemented command fails only at invocation time — the agent falls back to manual work, and because nothing at authoring time catches the dead reference, the gap can persist across multiple skills unnoticed.
 
 ## Scope
 
