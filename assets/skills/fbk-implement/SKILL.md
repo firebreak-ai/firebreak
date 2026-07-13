@@ -65,6 +65,8 @@ Read that task file and execute it. Treat the task file as your work specificati
 
 When the task involves authoring tests, also read `.claude/fbk-docs/fbk-design-guidelines/test-authoring.md` for the test-authoring rules — including the mocks rule (stand-ins only for code we don't own).
 
+If you need an isolated copy of the repo to verify something without touching the shared working tree, create a git worktree (`git worktree add <path> <ref>`) rather than a manual `cp`/`cd` scratch copy — a scratch copy whose `cd` silently fails runs your next command against the real repository, not the copy.
+
 Before your turn ends, send a work summary message to the team lead describing what you created, what verification you ran, and any caveats. A turn ending without this message is incomplete work.
 ```
 

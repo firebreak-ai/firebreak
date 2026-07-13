@@ -6,7 +6,7 @@ If any tasks have `status` other than `not_started`, a prior session was interru
 
 Create an agent team. You (main thread) are the team lead — you coordinate and do not execute tasks. Teammates execute tasks.
 
-Spawn teammates equal to the maximum wave width across all waves. Teammates persist across waves — after completing a wave's tasks, they claim the next wave's tasks when you unblock them.
+Spawn teammates equal to the maximum wave width across all waves, using the `fbk-implementer` agent definition (`.claude/agents/fbk-implementer.md`) so every task-executing teammate carries the senior-engineer persona and its quality bars. Teammates persist across waves — after completing a wave's tasks, they claim the next wave's tasks when you unblock them.
 
 ---
 
@@ -21,6 +21,8 @@ For each wave:
 **Step 2 — Test red-state check**: When all test tasks complete, verify the new tests exist and are red — failing or held pending — rather than already passing. Red tests prove they run and catch the absence of the behavior.
 
 In a compiled or strongly-typed language, a brand-new module's tests cannot compile until the types and signatures they reference are declared. Because a test task touches only test files, those declarations arrive with the paired implementation task, so the new tests stay red — failing or skipped/pending — until implementation begins. Expect the new tests at this checkpoint to be present and red, not necessarily compiling.
+
+A missing-symbol compile error can hide other defects in the same file: in a language like Go, an unused import or unused local variable is reported only after missing-symbol errors clear, so a test file can carry a real hygiene defect through this checkpoint undetected — surfacing only later, when an unrelated task happens to compile the same package. Before advancing past this checkpoint, declare a scratch stub for each symbol the new tests reference that the paired implementation hasn't written yet (empty functions/types matching the task's own declared signatures, in an isolated git worktree so the stub never touches the real working tree) and compile against it. Any compile error that survives the stub is a real defect in the test file, not an artifact of the missing implementation — fix it before advancing.
 
 If the new tests pass before any implementation exists, treat as a task failure and invoke the escalation protocol.
 

@@ -69,3 +69,7 @@ Flag test assertions that match on string values absent from the production code
 ## Dead code after field or function removal
 
 Flag guards, conditionals, and logging branches that reference values from a removed field or changed function signature. Detect this when a field removal or parameter change leaves downstream checks on the removed value — the check is reachable code that can never evaluate to true.
+
+## Parallel sentinel definitions
+
+Flag a newly introduced named error, status constant, or sentinel value that duplicates the meaning of an existing sentinel defined in a different module or package. Detect this when a boundary function (an error translator, a status mapper) already branches on the existing sentinel by identity or type, and the new sentinel is not wired into that same boundary.

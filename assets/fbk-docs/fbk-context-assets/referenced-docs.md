@@ -52,3 +52,5 @@ Use section headers (`##`) when a document exceeds roughly 20 lines. Flat lists 
 Place critical constraints at the document top — first 3 lines get the highest recall.
 
 Keep each doc to one concern. If a document covers two unrelated topics, split it into two files.
+
+When one fact appears in more than one form within a document — a prose rule and its schema or struct illustration, a stated count and its enumerated list, a rule statement and a dated amendment note — edit every representation in the same pass. A partial update, where one representation is amended and a sibling is not, leaves the document self-contradictory and is a common defect source caught only by adversarial review.

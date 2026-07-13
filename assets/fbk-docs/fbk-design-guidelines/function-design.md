@@ -33,3 +33,5 @@ When reading or modifying existing code, identify functions that handle multiple
 When removing a parameter, struct field, or condition, grep for guards and branches that test the removed value. Remove guards that are now unreachable rather than leaving dead conditional code in place.
 
 After extracting shared logic into a function, verify every caller uses the extracted function. Remove duplicate constructions of that logic from all call sites.
+
+When extraction removes a symbol's last remaining use from a file, check that file's import list for entries the removed usage was the sole reason to import, and remove them in the same change. A stale import compiles clean in most languages until the file is otherwise touched, then surfaces as an unrelated-looking build failure.

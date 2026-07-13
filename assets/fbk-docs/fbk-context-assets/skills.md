@@ -51,6 +51,8 @@ Keep `SKILL.md` under 500 lines. Move detailed reference material to supporting 
 
 Use `!`command`` syntax for dynamic context injection — shell commands run before the skill content reaches Claude, and their output replaces the placeholder.
 
+Verify any CLI command or script a skill instructs the agent to run (e.g., a named `fbk.py` subcommand) actually exists in the installed tool before publishing the skill. A referenced-but-unimplemented command fails silently — the agent falls back to manual work with no error signal, and the gap can persist across multiple skills unnoticed.
+
 ## Scope
 
 Global skills (`~/.claude/skills/`) are available in all projects for that user. A skill that is only relevant to one project belongs at project level (`.claude/skills/`). Apply the Necessity Test more strictly at global scope.
