@@ -27,6 +27,8 @@ If the returned JSON has `"status": "success"`, the project is opted in — cont
 
 **Document review** — if `$ARGUMENTS` names a document (a PRD, spec, design, or breakdown), that file path is the target. If `$ARGUMENTS` is a feature name without an extension, pick the artifact the user means under `ai-docs/<feature>/` rather than assuming one phase: a PRD/intent review targets `<feature>-prd.md`, a spec review `<feature>-spec.md`, a design review the `design/` pages, a breakdown review the task files. When it is ambiguous, choose the latest artifact that exists (the most recent phase reached), or ask. Do not default to the spec file — the headline use case is a PRD review before any spec exists.
 
+**Scoped follow-up review** — if the operator's request is a follow-up check on a specific fix set or amended section rather than a first review of the artifact, scope the target to that fix set or those sections instead of the whole document. A scoped prompt costs a fraction of a full-document prompt and is the standard way to verify a fix pass.
+
 **Code-change review** — if `$ARGUMENTS` is empty or refers to a code change, produce a unified diff of the staged or committed change. The diff *content* is the target — you will inline it into the prompt in step 4, because the runner sends only the prompt to the external model and the model's read-only sandbox (rooted at the project) cannot read a scratch path like `/tmp`.
 
 Before going any further, confirm the target file exists and is readable. If it does not, name exactly what could not be found and stop — do not compose a prompt or call the runner. A missing target must fail deterministically here, not become a vague answer from the external model.

@@ -11,7 +11,7 @@ Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral
 
 ## Mid-Pipeline Entry: Prerequisite Check
 
-Read `.claude/fbk-docs/fbk-sdl-workflow/capability-entry.md` for the prerequisite-probe contract this section implements. When invoked directly (not as part of the post-implementation pipeline), call `fbk.precheck.check_prerequisites("code-review", <feature_dir>)` before running. If the implementation artifact is missing (no `implementation/` directory under the feature dir), name what is missing and offer to run the upstream phase (implement) first — non-blocking, never a hard block. Proceed if the user confirms or if the artifact is present.
+Read `.claude/fbk-docs/fbk-sdl-workflow/capability-entry.md` for the prerequisite-probe contract this section implements. When invoked directly (not as part of the post-implementation pipeline), run the capability-entry prerequisite probe before proceeding: `python3 "$HOME"/.claude/fbk-scripts/fbk.py precheck code-review <feature_dir>` (the phase argument is the literal lowercase string `code-review`). If the command is unavailable in the installed CLI, check manually for the implementation artifact. If the implementation artifact is missing (no `implementation/` directory under the feature dir), name what is missing and offer to run the upstream phase (implement) first — non-blocking, never a hard block. Proceed if the user confirms or if the artifact is present.
 
 ## Entry and Path Routing
 
@@ -97,7 +97,7 @@ Run the iterative detection and verification loop:
 7a. After each verification round, append verified findings to the review report file.
 8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern and apply the fix to every instance. The Consistency audit normally surfaces siblings as separate sightings during detection; this fix-time sweep remains as a safety net for sites the audit missed.
 9. Run additional rounds for weakened but unrejected sightings.
-10. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds.
+10. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds. Before accepting a zero-sighting round as the termination trigger, check the Detector's transcript for evidence it ran the detection passes (audit passes, checklist, security patterns) rather than returning early; relaunch the round if the transcript shows no such evidence.
 11. After the loop terminates, write `.code-review-rounds.json` in the feature directory recording the full detection-round history. The file must include `schema_version` (value `"1.0"`), `spec` (the feature name), and `rounds` — an array with one entry per round, each carrying `round` (1-based integer), `raised` (sighting count before Challenger filtering), `survived` (verified count after filtering), and an optional `severity` scalar — the single highest severity among that round's confirmed findings (`critical`, `major`, `minor`, or `info`). Omit `severity` when the round produced no confirmed findings. The human-facing per-severity breakdown lives only in the review report, never in this file. The code-review gate reads this file at check time to emit the detection-round metrics event.
 
 Only verified findings surface to the user. Rejected sightings are excluded. JSON is the working format throughout the pipeline. Markdown conversion happens once for the human-facing review report.
@@ -116,9 +116,11 @@ After the detection-verification loop terminates and all fixes are applied, run 
 
 3. **Doc reconcile**: Invoke `fbk-doc-reconcile` on the shipped module. It compares the project's durable docs (decisions ledger, contracts, package layout, changelog, spec) against the actual code and writes advisory drift findings to `ai-docs/<feature>/doc-reconcile.md`. Output is advisory only — it does not gate.
 
-4. **Gate**: Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>` to evaluate whether the review meets the threshold for promotion. The gate receives the feature directory path and writes a pass/fail verdict.
+4. **Cross-model review**: Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --check-opt-in --project-root <root>`. When the result is `status: success`, invoke `/fbk-cross-model-review` with `review-type: code-review` against the change set and triage the returned candidates by direct code read before adding any to the review report — a candidate the read confirms becomes a finding; nothing is presented as verified from the cross-model pass alone. Skip this step when the check returns `status: skipped`.
 
-Do not run the gate until fbk-quality-scan, fbk-test-review, and fbk-doc-reconcile have all completed.
+5. **Gate**: Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>` to evaluate whether the review meets the threshold for promotion. The gate receives the feature directory path and writes a pass/fail verdict.
+
+Do not run the gate until fbk-quality-scan, fbk-test-review, fbk-doc-reconcile, and (when the opt-in check succeeds) cross-model review have all completed.
 
 ## Broad-Scope Reviews
 

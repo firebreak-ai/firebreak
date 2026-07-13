@@ -46,6 +46,13 @@ under the project root, reference its path). Include any source-of-truth context
 files the lens calls for (shared interface definitions, convention documents) as
 supplemental reading — label them as comparison anchors, not authoring notes.
 
+**Scoped (post-fix) written-artifact reviews**: when the request is a follow-up
+verification of a specific fix set rather than a first pass on the whole artifact,
+inline only the amended sections or the fix set — plus enough surrounding context
+for the model to judge them — instead of the full document. This keeps the prompt
+cost proportional to what changed and is the standard verification step after a
+fix round.
+
 **Code changes**: produce the diff and **inline the diff text into the prompt** —
 do not write it to `/tmp` and pass a path, because the model's sandbox cannot read
 `/tmp`. A diff lives outside the repo, so inlining is the only option:
