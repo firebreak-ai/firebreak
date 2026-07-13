@@ -22,8 +22,8 @@ class TestDispatcherCommandMap:
         except ImportError:
             pytest.skip("fbk module not yet implemented")
 
-    def test_command_map_contains_all_22_commands(self):
-        """COMMAND_MAP contains exactly all 22 commands from spec (cross-review added)."""
+    def test_command_map_contains_all_23_commands(self):
+        """COMMAND_MAP contains exactly all 23 commands from spec (cross-review, precheck added)."""
         try:
             import fbk
         except ImportError:
@@ -52,6 +52,7 @@ class TestDispatcherCommandMap:
             "run-retro",
             "coherence-gate",
             "cross-review",
+            "precheck",
         }
 
         actual_commands = set(fbk.COMMAND_MAP.keys())

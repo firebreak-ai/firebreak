@@ -97,3 +97,17 @@ class TestReturnStructure:
         # 'phase' presence and value are the unique contract assertions here;
         # per-item shape is exercised by the behavioral fail/pass tests.
         assert result["phase"] == "design"
+
+
+class TestUnknownPhase:
+    """An unrecognized phase is a wiring bug and must fail loudly, not fall
+    through to ready=True (realmind2 harvest: 'Code Review' silently passed)."""
+
+    def test_unknown_phase_raises(self, feature_dir):
+        with pytest.raises(ValueError) as exc:
+            check_prerequisites("Code Review", str(feature_dir[0]))
+        assert "code-review" in str(exc.value)
+
+    def test_registered_in_dispatcher(self):
+        from fbk import COMMAND_MAP
+        assert COMMAND_MAP.get("precheck") == "fbk.precheck"

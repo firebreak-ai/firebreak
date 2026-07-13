@@ -23,4 +23,5 @@ COMMAND_MAP = {
     "report": "fbk.report",
     "run-retro": "fbk.run_retro",
     "cross-review": "fbk.cross_review",
+    "precheck": "fbk.precheck",
 }
