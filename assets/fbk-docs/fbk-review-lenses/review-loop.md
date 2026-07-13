@@ -114,6 +114,20 @@ When a candidate finding identifies material that appears unused — unreachable
 
 ---
 
+## Evidence discipline (all roles)
+
+These rules apply to every role the loop runs — researcher, challenger, coordinator — and to the caller consuming the loop's output.
+
+**A claim about the artifact comes from reading the artifact.** At any role, a statement about what the artifact, a cited source, or a neighboring file contains is grounded in text actually opened and read during this run — not memory, plausibility, or one file's account of another file's content.
+
+**Historical narration is not a live claim.** Text describing a past or superseded state — a remediation note, a dated correction, a comment explaining what an earlier defect was — is historical context. Before reporting or ruling on a problem such text describes, confirm the problem is still present in the artifact's current content.
+
+**A clean result without a challenge stage is an unverified read.** A zero-challenger preset's clean result ("no drift," "no findings") is one agent's unchallenged reading, structurally weaker than a clean round that survived a challenger. Before treating it as final, the caller spot-checks the claim against the artifact directly.
+
+**Disagreement between instruments is resolved by the artifact.** When two instruments disagree about the same claim — a challenger's rejection against another reviewer's verification, an adjudicator's ruling against a direct reading, a scan observation against a finding verdict — the caller resolves it by reading the artifact itself before accepting either side. Neither verdict outranks the other by default; the artifact does.
+
+---
+
 ## Post-fix reentry rule
 
 The loop reviews what it is given. It never applies fixes. Remediation is entirely the caller's responsibility.

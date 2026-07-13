@@ -173,6 +173,7 @@ Project-level:
 
 **Semantic criteria** (present these to the user for assessment after structural pass):
 - AC phrasing: each AC is independently verifiable, not a vague quality.
+- AC self-consistency: no acceptance criterion requires behavior that contradicts another acceptance criterion or a stated design invariant for the same operation.
 - Testing strategy: identifies specific behavioral coverage with AC traceability; no generic phrases.
 - Technical approach: specific enough for a reviewer and task compiler to work from without additional questions.
 - Feature boundaries (project-level): cohesive capabilities, not arbitrary splits.

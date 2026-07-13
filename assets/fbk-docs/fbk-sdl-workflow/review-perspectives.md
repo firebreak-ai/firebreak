@@ -46,6 +46,8 @@ A complete spec has driven every requirement down to concrete definitions: every
 
 The reviewing perspectives actively hunt for the opposite: any name, shape, contract, signature, or observable behavior that is still vague, hand-waved, or parked "to be decided later" while the spec claims to be done. The architecture perspective owns the structural side — undefined contracts, signatures, field names, and data shapes. The quality perspective owns the behavioral side — an asserted behavior (a component logs, emits, records, retries, validates) that never says what is recorded or how a test would catch it breaking.
 
+Also hunt for the reverse failure: two acceptance criteria, or an acceptance criterion and a stated design invariant, that are each concrete on their own but assert mutually exclusive behavior for the same operation. A spec can fail this way while every individual item looks fully specified — the gap is between two definitions, not inside either one.
+
 Treat each such gap as a blocking finding, not a nitpick. Name the specific undefined item and what concrete definition would resolve it. A spec carrying this kind of open vagueness has not passed — this is the floor the reviewers carry, and there is no automated check behind it.
 
 ## Independent test-review

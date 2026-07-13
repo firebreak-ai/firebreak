@@ -38,7 +38,7 @@ An absent `design/contracts.md` routes to trivial-accept (assuming no seams are 
 
 ## What the agents review
 
-The `review-researcher` reads the full task set, the design contracts document, and the spec's integration seams section to inventory producer declarations and consumer expectations. It runs the four detection passes defined in `coherence-lens.md` (contract inventory, seam matching, design contracts alignment, spec seam cross-check) and emits candidate findings with detection source tags.
+The `review-researcher` reads the full task set, the design contracts document, and the spec's integration seams section to inventory producer declarations and consumer expectations. It runs the detection passes defined in `coherence-lens.md` and emits candidate findings with detection source tags.
 
 The `review-challenger` verifies each candidate finding against the coherence lens's reclassification guidance: traces provenance for orphan-declaration candidates, checks whether gaps are in explicitly declared seams, and confirms that contract-ambiguity findings are not reclassified to critical. The challenger applies the lens's type-severity validity matrix and rejects findings that fall outside valid combinations.
 

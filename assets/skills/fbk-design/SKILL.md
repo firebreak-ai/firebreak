@@ -43,6 +43,8 @@ Append enduring decisions (status-bearing entries) to `docs/decisions-log.md` �
 
 When the operator signals design is complete, invoke `fbk-fresh-eyes` on the design pages and manifest before running the gate.
 
+For a foundational module — one most other capabilities will import — also run a cross-model second-opinion review (`/fbk-cross-model-review`) of the design pages in parallel with fresh-eyes, before running the gate. The skill no-ops for projects that have not opted in. Adjudicate every candidate finding against the design and shipped code before applying it.
+
 Then run:
 
 ```

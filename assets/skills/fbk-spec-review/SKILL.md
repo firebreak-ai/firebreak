@@ -34,13 +34,19 @@ Classify which agents to invoke and in which mode per `review-perspectives.md` �
 
 When the spec states it carries a contract inherited from a broader project scope verbatim, instruct the Architect agent to locate that original contract and diff the spec's entry against it field by field — signature, every invariant, and every constant. A review anchored only to the spec's own copy cannot catch a transcription divergence: a dropped field, a renamed field, a widened type, or a changed constant.
 
+## Cross-model review
+
+Invoke `/fbk-cross-model-review <feature-name>` targeting the spec, in parallel with the council. If the project has not opted in, the skill no-ops — proceed with the council's findings alone. If candidate findings return, triage them the same way as the council's and fold the confirmed ones into the review document under the SDL concern they map to, noting the cross-model origin.
+
 ## Finding synthesis
 
 Write `ai-docs/<feature-name>/<feature-name>-review.md` per `review-perspectives.md` §"Review document structure". The required testing strategy coverage entries are enumerated in §"Verification gate" of the same guide.
 
 ## Council-clean confirmation
 
-Confirm the council has reached a clean state before the independent test-review runs: every blocking finding is resolved in the spec or accepted with documented rationale and risk owner, and the review document is stabilized — no further synthesis edits pending. The test-review reads the stabilized spec, so it must not run while findings are still in motion.
+Confirm the council and any cross-model review have reached a clean state before the independent test-review runs: every blocking finding from either is resolved in the spec or accepted with documented rationale and risk owner, and the review document is stabilized — no further synthesis edits pending. The test-review reads the stabilized spec, so it must not run while findings are still in motion.
+
+When a spec revision addresses a blocking or important finding, run one additional fresh review pass against the revised sections before treating the review as stabilized — the pass that authored the fix is not the one that verifies it. Stop once a pass returns nothing above informational; a pass that still finds real defects earns another round.
 
 ## Independent test-review
 

@@ -73,7 +73,7 @@ Branch on the `status` field in the runner's returned JSON.
 **`status: success`** — Read the report the runner wrote. Before presenting anything:
 
 1. Check that the report contains actual review content, not a refusal (phrases like "I cannot review", "as an AI I should not", or a blank findings section). If it looks like a refusal, rewrite the prompt with a clearly technical framing (not a command to do something harmful — just remove any phrasing the model may have misread) and re-run the runner once.
-2. Triage the candidate findings: set aside any finding that is factually incorrect given what you know about the target. Keep the rest.
+2. Triage the candidate findings: before setting any finding aside, read the target's authoritative source (the spec, design, or locked contract) directly — not from memory or assumption. Set aside only a finding the direct read confirms is wrong. Keep everything else, including a finding that contradicts another review pass's conclusion, until a direct read resolves the contradiction.
 3. Present a summary to the user labelled explicitly as "candidate findings from a different model's review." Use the lens's severity headings. Do not present these as verified — the user decides which to act on.
 
 **`status: skipped`** — The opt-in check (step 1) should have caught this earlier, but if it surfaces here, tell the user the project has not enabled cross-model review and present nothing.

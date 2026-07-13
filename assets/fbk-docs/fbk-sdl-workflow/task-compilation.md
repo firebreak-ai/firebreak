@@ -57,6 +57,18 @@ When a task references files created or modified by other tasks, the task instru
 
 **Orchestrator tasks**: When a task modifies the orchestrator file (the file that wires all modules together), it is higher-risk and requires additional specification: an explicit wiring checklist stating what must be imported, what must be initialized, what must be updated per frame/tick, and what must be cleaned up. Orchestrator tasks are routed to Sonnet minimum (regardless of other sizing heuristics) and include the wiring checklist as a dedicated section in the task file.
 
+## Cross-Task Contracts and Conventions
+
+Anything shared across tasks — a package-wide rule, an invented interface, a shared symbol, a test double, an execution-order constraint — is pinned once at full precision and must reach every task it touches. A shared thing stated in only one task file is invisible to every other task's agent.
+
+- **Package-wide rules reach every subject task.** When a rule applies to every task implementing a shared concern (every method logs unexpected errors, every row iteration checks the iteration's error signal), either centralize it behind a shared helper each consuming task is instructed to call, or restate it verbatim in the Instructions section of every task it applies to. A rule visible in only one of several sibling task files is a rule the other siblings will not follow.
+- **Sibling consistency.** After drafting tasks — or steps within one task — that apply the same pattern at multiple sites, read the set side by side and confirm the prescribed error-wrapping, logging, and return-value handling match at every occurrence. When one site specifies a step (wrapping a sentinel, checking an error) that another omits, add the missing step or state the reason for the difference.
+- **Exclusion lists derived from the complete outcome set.** When a task defines which outcomes are "expected" versus "unexpected" (for example, which errors are not logged at Error level), derive the list from the full enumeration of the operation's outcomes — every declared sentinel plus standard cross-cutting conditions such as cancellation and deadline expiry — not from the cases the spec's prose happens to mention.
+- **Invented seams carry a signal inventory.** When an interface's shape is invented during compilation rather than dictated by the spec (an internal helper, a shared return type), first enumerate every task that will consume it and what data each needs from it. The pinned signature carries the union of those needs before either task file is written — an under-powered seam forces every consumer to work around a missing signal.
+- **Shared invented symbols are defined once.** When two or more tasks construct or reference the same struct, type, or constant the spec does not define, pin its exact name and full shape once and copy it verbatim into every referencing task. Independent authors given only the concept invent incompatible shapes.
+- **Test doubles pin behavior, not just signatures.** When a shared helper is a double standing in for a collaborator, state its observable behavior — return values per input, error and panic conditions, field casing, and whether it actually intercepts the method it exists to guard. A double that only matches the signature can satisfy the compiler while the test it supports passes vacuously.
+- **Dependencies beyond file overlap.** Declared dependencies include every real ordering constraint: tasks sharing a compilation unit that will not build until all of them land, and orderings a project convention requires (one canonical implementation landing before its adopters), not only tasks touching the same file. Never rely on wave-number proximity to guarantee an order.
+
 ## Sizing Constraints
 
 File count is the sharpest predictor of agent success. Target these constraints for each task:
@@ -298,7 +310,7 @@ The gate script validates these properties from task.json:
 
 ## Ambiguity Handling
 
-When you encounter a spec section that could be interpreted multiple ways, or a task where the instructions would require the implementation agent to make a design choice, stop.
+When you encounter a spec section that could be interpreted multiple ways, two acceptance criteria (or an acceptance criterion and a stated design invariant) that prescribe mutually exclusive behavior for the same operation, or a task where the instructions would require the implementation agent to make a design choice, stop.
 
 Report the specific ambiguity: quote the ambiguous spec text, describe the two or more valid interpretations, and state the information needed to resolve it. Include which AC is affected. Do not choose an interpretation and continue. Compilation resumes only after the ambiguity is resolved in the spec or design phase.
 

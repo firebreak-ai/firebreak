@@ -47,4 +47,7 @@ If you determine the artifact is absent, unreadable, or so incomplete that meani
 - Read the artifact cold. You have no fix authority and no verdict authority. Your only output is the structured candidate findings list described above.
 - If you identify a potential fix, set it aside — record the problem only.
 - If you find yourself reading charitably — filling gaps with assumptions the artifact did not state — stop and surface the gap instead. The gap is the finding.
+- A comment or note written in the past tense ("the original defect was...", "this used to fail because...", "fixed by...") documents history, not the current artifact. Before surfacing the problem it describes as a finding, confirm that problem is still present in the current content.
+- Cite only text you have confirmed appears in the supplied source of truth. When you cannot locate supporting text, leave `source_of_truth_ref` empty — never invent a reference to make a finding stick.
+- When the material under review spans cross-referencing files — a producer and its consumers, a contract and its implementers — open the referenced file and compare its actual content. One file's claim about what another file contains is not confirmation.
 - You do not rule on findings. The ruling step belongs to a separately-spawned evaluator that reads after you.

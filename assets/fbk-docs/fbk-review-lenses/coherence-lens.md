@@ -24,6 +24,7 @@ The categories:
 - **Named data shapes with required fields**: any data structure documented as having specific required fields, in the design contracts page or in a spec section that pins field names and types.
 - **Documented handoff seams**: any cross-module or cross-task interaction declared as an integration seam in the spec, including what one side sends and what the other side expects to receive.
 - **Locked type contracts**: any contract from `design/contracts.md` that was carried into the spec's interface-contracts section. Design-originated contracts use the design-origin identifier; spec-originated contracts (minted during spec authoring for blast-radius discoveries) use the spec-origin identifier. When a design contract is carried into the spec, its design-origin identifier is preserved verbatim — the identifier does not change namespace. The coherence researcher checks both the design contracts page and the spec's interface-contracts section as sources of truth; when they conflict on a contract's fields, the spec's version governs (it is downstream, and the carry rule requires it to be consistent).
+- **Package-wide obligations**: a behavioral rule stated once in the design's cross-cutting page or a breakdown conventions artifact (when one exists), applying to every task whose scope matches a stated condition — for example, "every method that touches the database logs unexpected errors."
 
 Consumer sets may be many-to-one: one producer may have multiple consumers, and the coherence review checks each consumer's declared expectation against the single producer's declaration.
 
@@ -132,12 +133,22 @@ Read `design/contracts.md`. For each contract listed there, check whether the ta
 
 Read the spec's integration seams section. Every declared seam in the spec should have at least one task that covers the producer side and at least one that covers the consumer side. A declared seam with no corresponding task coverage is a `contract-gap`.
 
+### Pass 5 — Prescribed-code parity for declared values
+
+For any value, field, or behavior that the spec, `design/contracts.md`, or a declared seam pins (a specific literal, a validity rule, a required transformation), locate every task whose prescribed code references that same value and compare the code itself — not just each task's prose description of it. A `contract-mismatch` exists when one task's code accepts, produces, or transforms the value in a way another task's code does not expect, even when neither task's prose states the divergence.
+
+### Pass 6 — Package-wide obligation coverage
+
+For every package-wide obligation stated in the design's cross-cutting page or a breakdown conventions artifact (when one exists), identify which task discharges it — either by implementing it directly or by calling a shared helper task that implements it — for every task whose scope matches the stated condition. An obligation with no discharging task is `critical`; an obligation discharged in only some of the matching tasks is `major`. Both are `contract-gap` findings.
+
 ### Detection source tags
 
 Tag each finding with its detection source:
 - `contract-inventory`: finding from pass 1 or 2, comparing task declarations to each other.
 - `design-contracts-alignment`: finding from pass 3, comparing a task to the design contracts document.
 - `spec-seam-crosscheck`: finding from pass 4, comparing task coverage to declared seams.
+- `prescribed-code-diff`: finding from pass 5, comparing actual prescribed code across tasks that reference the same declared value.
+- `obligation-coverage`: finding from pass 6, tracing a stated package-wide obligation to its discharging tasks.
 
 ---
 
@@ -148,6 +159,7 @@ The source of truth for this review, in priority order:
 1. `design/contracts.md` — the locked and declared contracts. When a task description conflicts with this document, the document wins; the task is wrong.
 2. The spec's integration seams section — the declared seam set. When a task claims a seam that the spec does not declare, that is a new seam that was not reviewed during spec review.
 3. The task files themselves — for consumer-vs-producer comparisons where neither the contracts document nor the spec specifies the exact shape.
+4. The design's cross-cutting page and a breakdown conventions artifact (when one exists) — the sources for package-wide obligations checked by pass 6.
 
 When the spec states a contract is inherited from a broader project scope verbatim, the researcher must locate the original contract document and compare the task's description against it field by field, not against the spec's copy.
 
@@ -207,7 +219,7 @@ A new gate step must be added to the breakdown-to-implementation transition to c
 The contract universe defined here (explicit declared contracts only) is the first iteration. A future iteration may extend the coherence review to cover:
 
 - Informal caller assumptions documented as code comments rather than design artifacts.
-- Runtime behavioral contracts (retry behavior, timeout handling) not currently captured in `design/contracts.md`.
+- Runtime behavioral contracts (retry behavior, timeout handling) that are not stated as a package-wide obligation anywhere — pass 6 covers obligations stated in the design's cross-cutting page or a conventions artifact, but not undocumented runtime behavior.
 - Cross-feature contract dependencies when a feature reuses a contract from an adjacent feature.
 
 Each of these extensions adds a new detection pass to this lens without changing the loop.
