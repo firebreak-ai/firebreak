@@ -14,7 +14,7 @@ If `$ARGUMENTS` is set, use it as the feature name and derive `<feature-dir>` as
 
 ## Prerequisite probe (mid-pipeline entry)
 
-Before any design authoring, call `fbk.precheck.check_prerequisites("design", <feature_dir>)`.
+Before any design authoring, run the capability-entry prerequisite probe: `python3 "$HOME"/.claude/fbk-scripts/fbk.py precheck design <feature_dir>` (the phase argument is the literal lowercase string `design`). If the command is unavailable in the installed CLI, verify manually that `prd.md` exists in the feature directory and treat a missing file the same as a probe-reported miss.
 
 If `prd.md` is missing the probe returns it as the missing artifact with `intent` as the upstream phase. In that case:
 

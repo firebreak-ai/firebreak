@@ -8,6 +8,8 @@ The slice describes behavior that spans multiple existing modules or seams. The 
 
 **Test placement**: tests live at the seams — integration tests, contract tests between modules, or end-to-end tests for the flow. They do not live inside any single module.
 
+**Fixture self-containment**: a seam test's fixtures (for example, a config file) are defined in full within the task that uses them, not assembled by cross-referencing another task's fixture — a cross-reference can silently omit a section the referencing test needs, caught only by re-checking the fixture field-by-field against the real schema.
+
 **No impl task**: the implementation is distributed across the other slices. The cross-cutting slice does not produce a paired implementation task. The breakdown gate enforces this invariant.
 
 **Hash-locking applies to**: the seam tests produced here, once they pass review.

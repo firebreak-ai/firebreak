@@ -141,6 +141,10 @@ For any value, field, or behavior that the spec, `design/contracts.md`, or a dec
 
 For every package-wide obligation stated in the design's cross-cutting page or a breakdown conventions artifact (when one exists), identify which task discharges it — either by implementing it directly or by calling a shared helper task that implements it — for every task whose scope matches the stated condition. An obligation with no discharging task is `critical`; an obligation discharged in only some of the matching tasks is `major`. Both are `contract-gap` findings.
 
+### Pass 7 — Compilation-unit coherence
+
+For every task whose prescribed code declares a top-level identifier (a function, type, constant, or variable) in a shared package, list every other task that prescribes code in the same package. When two or more tasks declare the same identifier at the same scope, the tasks — implemented exactly as written — collide and the package fails to compile; record this as a `contract-mismatch` at `critical` severity. Verify the collision against the tasks' own prescribed code even when a task states the duplication is intentional; treat the stated rationale as a claim to confirm, not a reason to skip the check.
+
 ### Detection source tags
 
 Tag each finding with its detection source:
@@ -149,6 +153,7 @@ Tag each finding with its detection source:
 - `spec-seam-crosscheck`: finding from pass 4, comparing task coverage to declared seams.
 - `prescribed-code-diff`: finding from pass 5, comparing actual prescribed code across tasks that reference the same declared value.
 - `obligation-coverage`: finding from pass 6, tracing a stated package-wide obligation to its discharging tasks.
+- `compilation-unit-coherence`: finding from pass 7, comparing prescribed top-level declarations across tasks that share a package.
 
 ---
 
@@ -178,6 +183,7 @@ For any finding tagged `orphan-declaration`, the challenger traces whether the d
 - A mismatch that only affects an optional field is major, not critical, unless the consumer treats that field as required.
 - A gap in an explicitly declared seam is critical. The coherence review does not surface gaps in informally implied interfaces — those are outside scope (only explicitly declared contracts are reviewed). If the researcher surfaces a candidate based on an informal assumption rather than a declared contract, the challenger rejects it on scope grounds: "this dependency is not declared in any design artifact or spec section and is therefore out of scope for this review."
 - `contract-ambiguity` is always major or minor; it cannot be critical because an ambiguous contract might resolve correctly.
+- Treat a `prescribed-code-diff` finding where two tasks compute the same pinned value through different function calls or algorithms as a live finding until you confirm the two implementations produce identical results across the value's full input domain, including edge cases. A difference that reads as stylistic is not grounds to reject or downgrade to a nit on sight.
 
 ---
 
