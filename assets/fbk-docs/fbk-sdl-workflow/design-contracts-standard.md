@@ -26,7 +26,7 @@ Entries appear in identifier order.
 
 Two namespaces apply:
 
-- `IF-D-NN` — design-originated contracts. Minted at design time and live in `design/contracts.md`. `NN` is zero-padded, minimum two digits (for example, `IF-D-01`, `IF-D-12`). Use exactly the literal prefix `IF-D` — never substitute a capability- or feature-specific prefix (for example `IF-A` for an "affect" capability). The design-anchor check matches only the `IF-D` pattern and silently skips verification on any other scheme, so a substituted prefix produces contract entries the review tooling never checks.
+- `IF-D-NN` — design-originated contracts. Minted at design time and live in `design/contracts.md`. `NN` is zero-padded, minimum two digits (for example, `IF-D-01`, `IF-D-12`). Use exactly the literal prefix `IF-D` — never substitute a capability- or feature-specific prefix (for example `IF-A` for an "affect" capability). The design-anchor check verifies only `IF-D` ids: a non-IF-D contract heading on the design page fails the gate loudly, and a non-IF-D id anywhere else (a spec's carried-contract entry) is invisible to carry verification — either way, only the literal `IF-D` scheme gets verified.
 - `IF-S-NN` — spec-originated contracts. Minted at spec time for blast-radius discoveries and spec-phase additions. Same zero-padding rule.
 
 **Carry rule.** When the spec carries a design contract forward into `spec/contracts.md`, it copies the `IF-D-NN` identifier verbatim — the identifier does not change namespace when it crosses phase boundaries.
