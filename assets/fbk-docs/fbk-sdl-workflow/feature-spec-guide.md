@@ -34,6 +34,8 @@ Write each section. Do not skip or combine sections.
   > - [ ] WeaponSystem: refactor-then-extend (extract projectile lifecycle into separate module before adding multi-projectile support)
   > - [ ] InvaderGrid: leave alone
 
+- **Validation boundary check** (required when the technical approach defines a numeric configuration value with a validation rule): For each rule, name what happens at its boundary values — zero, one, and the type's non-finite values (NaN, ±Inf) — as applicable to the rule's domain. A rule that structurally rejects malformed input but still permits a value that silently disables or breaks the ratified behavior is incomplete; tighten the bound instead.
+
 **5. Testing strategy** — Three required subsections. Generic phrases like "add unit tests" are not acceptable; fail any draft that contains them.
 
 - **New tests needed**: For each test, state what behavior it validates, at what level (unit / integration / e2e), and which AC it covers. Before listing a test, verify the code path produces a testable return value or observable state change — code paths that only write to a logger require test infrastructure changes or an AC revision. Example: "Unit test: `parseToken()` returns null for expired JWTs — covers AC-03."
@@ -55,7 +57,7 @@ Write each section. Do not skip or combine sections.
 - **Project documents to update**: Name each document and state the specific change. Write "Add `POST /token` endpoint to API reference" — not "update docs." Write "None — no project documents affected" when nothing requires updating.
 - **New documentation to create**: List any new doc artifacts the feature requires (e.g., runbook, ADR, user guide section).
 
-**7. Acceptance criteria** — List independently verifiable conditions for "done." Use short identifiers: AC-01, AC-02, ... Each AC must be testable by a single automated check or a reproducible manual step. Avoid vague qualities ("fast," "easy to use").
+**7. Acceptance criteria** — List independently verifiable conditions for "done." Use short identifiers: AC-01, AC-02, ... Each AC must be testable by a single automated check or a reproducible manual step. Avoid vague qualities ("fast," "easy to use"). When an AC quantifies over a continuous or unbounded domain ("for all elapsed time," "strictly greater than for every input"), verify the claim holds under the concrete numeric representation the implementation will use — float64 arithmetic can underflow to exact equality at extreme magnitudes — and state a magnitude-bounded or tolerance claim instead of an idealized absolute one.
 
 ## Interface contracts
 
@@ -173,7 +175,7 @@ Project-level:
 
 **Semantic criteria** (present these to the user for assessment after structural pass):
 - AC phrasing: each AC is independently verifiable, not a vague quality.
-- AC self-consistency: no acceptance criterion requires behavior that contradicts another acceptance criterion or a stated design invariant for the same operation.
+- AC and contract self-consistency: no acceptance criterion requires behavior that contradicts another acceptance criterion or a stated design invariant for the same operation; no interface contract's own clauses contradict each other under a partial-failure or edge case — read each contract's clauses together against the failure paths it applies to, not each clause in isolation.
 - Testing strategy: identifies specific behavioral coverage with AC traceability; no generic phrases.
 - Technical approach: specific enough for a reviewer and task compiler to work from without additional questions.
 - Feature boundaries (project-level): cohesive capabilities, not arbitrary splits.
@@ -202,6 +204,8 @@ The four `test-discipline` values describe the *shape* of the slice — what kin
 | `cross-cutting` | The slice validates behavior that spans multiple modules or seams. Produces seam tests only — no paired impl task. Also the home for pure coverage-backfill against existing untouched code. |
 
 `covers:` is a list of behavior IDs from the feature's `behavior-inventory.yaml`. The spec gate verifies that every behavior in the inventory is covered by at least one slice.
+
+Before finalizing the slice list, check whether two slices touch the same file's shared state — a package-level `init()`, a registration list, or a merge/aggregation function. Two slices editing the same shared block independently will conflict when the breakdown agent compiles them into separate tasks; combine them into one slice or note the ordering dependency in both entries.
 
 When `test-discipline` is `contract-evolving`, add a `retired-tests:` field listing the existing tests this slice retires (one entry per test, with a one-line rationale). The breakdown agent and test reviewer both consume this list. Example:
 

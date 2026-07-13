@@ -26,7 +26,7 @@ Entries appear in identifier order.
 
 Two namespaces apply:
 
-- `IF-D-NN` — design-originated contracts. Minted at design time and live in `design/contracts.md`. `NN` is zero-padded, minimum two digits (for example, `IF-D-01`, `IF-D-12`).
+- `IF-D-NN` — design-originated contracts. Minted at design time and live in `design/contracts.md`. `NN` is zero-padded, minimum two digits (for example, `IF-D-01`, `IF-D-12`). Use exactly the literal prefix `IF-D` — never substitute a capability- or feature-specific prefix (for example `IF-A` for an "affect" capability). The design-anchor check matches only the `IF-D` pattern and silently skips verification on any other scheme, so a substituted prefix produces contract entries the review tooling never checks.
 - `IF-S-NN` — spec-originated contracts. Minted at spec time for blast-radius discoveries and spec-phase additions. Same zero-padding rule.
 
 **Carry rule.** When the spec carries a design contract forward into `spec/contracts.md`, it copies the `IF-D-NN` identifier verbatim — the identifier does not change namespace when it crosses phase boundaries.
@@ -50,7 +50,7 @@ produced-by: <exactly one producer>
 
 **signature** — Write a signature that two independent implementers could use without coordinating. It must be precise enough that both would produce compatible implementations.
 
-**invariants** — Name at least one pre-condition or post-condition and at least one error condition. "None" is not a valid value — if you have nothing to write, the entry does not belong in the schema.
+**invariants** — Name at least one pre-condition or post-condition and at least one error condition. "None" is not a valid value — if you have nothing to write, the entry does not belong in the schema. When an entry carries more than one invariant clause, check them against a partial-failure or edge case together — two clauses that each read correctly alone can still contradict each other in a case neither one names explicitly; state the edge-case resolution as its own clause when they would otherwise conflict.
 
 **consumed-by** — Name at least one consumer. Include the candidates that the spec gate's seam heuristic will match; omitting known consumers causes the gate to flag a seam violation.
 

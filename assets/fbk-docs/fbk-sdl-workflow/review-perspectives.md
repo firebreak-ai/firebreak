@@ -32,7 +32,7 @@ Present the classification with rationale and proceed. The user can intervene to
 
 ## Architecture Reviewer Brief — Contract Drift
 
-When the feature has a `design/contracts.md`, the architect additionally checks for contract drift between the design and the spec. Report each of the following as an `informational` finding — the reviewer surfaces; the operator decides:
+When the feature has a `design/contracts.md`, the architect additionally checks for contract drift between the design and the spec. Identify the design page's actual contract-numbering scheme first — designs sometimes number contracts with a different prefix than `IF-D-NN` (for example `IF-A-NN` at the design phase); if the design page does not use `IF-D-NN`, apply the same three checks below against its actual scheme instead of skipping them, and report the non-standard scheme itself as an `informational` finding. Report each of the following as an `informational` finding — the reviewer surfaces; the operator decides:
 
 - A spec-added `IF-S-NN` contract that is absent from design (the spec minted an interface the design never enumerated). Report the specific `IF-S-` identifier and note that design has no corresponding entry.
 - An `IF-D-NN` entry whose identifier is preserved in the spec but whose name or signature has materially changed from the design's original. Report the `IF-D-` identifier, the design value, and the spec value so the operator can confirm the change is intentional.
@@ -47,6 +47,8 @@ A complete spec has driven every requirement down to concrete definitions: every
 The reviewing perspectives actively hunt for the opposite: any name, shape, contract, signature, or observable behavior that is still vague, hand-waved, or parked "to be decided later" while the spec claims to be done. The architecture perspective owns the structural side — undefined contracts, signatures, field names, and data shapes. The quality perspective owns the behavioral side — an asserted behavior (a component logs, emits, records, retries, validates) that never says what is recorded or how a test would catch it breaking.
 
 Also hunt for the reverse failure: two acceptance criteria, or an acceptance criterion and a stated design invariant, that are each concrete on their own but assert mutually exclusive behavior for the same operation. A spec can fail this way while every individual item looks fully specified — the gap is between two definitions, not inside either one.
+
+Also hunt for an acceptance criterion that quantifies over an idealized mathematical domain — "for all real values," "strictly greater than for all finite inputs" — that floating-point arithmetic cannot actually satisfy. A spec can pin the formula precisely and still assert a guarantee no floating-point implementation of that formula can meet. Name the specific AC and quantifier, and the tolerance-based restatement that would resolve it.
 
 Treat each such gap as a blocking finding, not a nitpick. Name the specific undefined item and what concrete definition would resolve it. A spec carrying this kind of open vagueness has not passed — this is the floor the reviewers carry, and there is no automated check behind it.
 
