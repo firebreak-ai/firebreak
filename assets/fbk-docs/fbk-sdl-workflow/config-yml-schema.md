@@ -10,7 +10,7 @@ Place `config.yml` at `.claude/automation/config.yml` in the project root.
 - `cross_model_review`: object. Configuration for cross-model review — a second-opinion review run against a different external model. Sending content to a third-party model requires operator opt-in. Fields:
   - `enabled`: boolean. Whether cross-model review runs. Default: false. Set to true to opt in; enabling sends the reviewed content (the document or diff and any loaded context) to the external third-party model.
   - `harness`: string. The external review harness to invoke. v1 supports only `codex`.
-  - `model`: string. The external model identifier, e.g. `gpt-5.5`.
+  - `model`: string. The external model identifier, e.g. `gpt-5.6-sol`.
   - `effort`: string. The effort level passed to the harness, e.g. `high`.
 
   Note: the `cross_model_review` block is read directly from the project's
@@ -42,6 +42,6 @@ model:
 cross_model_review:
   enabled: true
   harness: codex
-  model: gpt-5.5
+  model: gpt-5.6-sol
   effort: high
 ```
