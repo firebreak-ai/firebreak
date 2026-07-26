@@ -14,6 +14,8 @@ INSTALL_MODE=global
 SRC_FILES=()
 DST_FILES=()
 MANIFEST_FILES=()
+PREV_FILES=()
+PRUNED_COUNT=0
 BACKUP_FILE=""
 
 # Download state
@@ -312,6 +314,119 @@ install_files() {
       exit 1
     fi
   done
+}
+
+# --- Orphan pruning (upgrade only) ---
+# The manifest is the single record of what the installer owns, so an upgrade can
+# tell which files the previous version installed that the current one no longer
+# ships. Without this, a dropped asset lingers in the target forever: write_manifest
+# replaces the old file list before install_files runs, so the only evidence that
+# the file was ever ours is erased in the same run that orphans it. Pruning reuses
+# the manifest rather than inventing a second rule for what belongs to Firebreak
+# (e.g. "anything named fbk-*"), which would disagree with the manifest eventually.
+
+# Read the previous install's file list. Must run before write_manifest overwrites it.
+collect_previous_files() {
+  local manifest_path="$TARGET_DIR/.firebreak-manifest.json"
+  PREV_FILES=()
+
+  [ -f "$manifest_path" ] || return 0
+
+  local listing
+  if ! listing="$(python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+for f in d.get('files', []):
+    if isinstance(f, str) and f:
+        print(f)
+" "$manifest_path" 2>/dev/null)"; then
+    # A damaged manifest must not fail the upgrade — installing the current files
+    # is the essential job. Say so loudly rather than leaving stale files silently.
+    echo "Warning: could not read the previous file list from $manifest_path." >&2
+    echo "  Files dropped in this version were left in place. Run --uninstall and reinstall to clear them." >&2
+    return 0
+  fi
+
+  while IFS= read -r rel_path; do
+    [ -n "$rel_path" ] && PREV_FILES+=("$rel_path")
+  done <<< "$listing"
+}
+
+# Remove files the previous install owned that the current one no longer ships,
+# then drop any directory left empty. Runs after install_files so nothing old is
+# removed until the new files are in place.
+prune_orphans() {
+  PRUNED_COUNT=0
+
+  [ "${#PREV_FILES[@]}" -eq 0 ] && return 0
+
+  # Python decides which paths are orphans and rejects any that escape the target;
+  # bash does the deleting.
+  local orphans
+  if ! orphans="$(python3 -c "
+import os, sys
+
+target = os.path.realpath(sys.argv[1])
+sep = sys.argv.index('--', 2)
+previous = sys.argv[2:sep]
+current = set(sys.argv[sep + 1:])
+
+for rel in previous:
+    if rel in current:
+        continue
+    full = os.path.realpath(os.path.join(target, rel))
+    if full != target and not full.startswith(target + os.sep):
+        sys.stderr.write('Warning: manifest entry resolves outside the install target, skipping: ' + rel + '\n')
+        continue
+    print(rel)
+" "$TARGET_DIR" ${PREV_FILES[@]+"${PREV_FILES[@]}"} -- ${MANIFEST_FILES[@]+"${MANIFEST_FILES[@]}"})"; then
+    echo "Warning: could not compare the previous file list against this install." >&2
+    echo "  Files dropped in this version were left in place. Run --uninstall and reinstall to clear them." >&2
+    return 0
+  fi
+
+  local removed_dirs
+  removed_dirs=()
+  while IFS= read -r rel_path; do
+    [ -n "$rel_path" ] || continue
+    local full="$TARGET_DIR/$rel_path"
+    # Only regular files are ever deleted; directories go through rmdir below.
+    [ -f "$full" ] || continue
+
+    if [ "$DRY_RUN" = "1" ]; then
+      echo "Would remove (no longer shipped): $full"
+      PRUNED_COUNT=$((PRUNED_COUNT + 1))
+      continue
+    fi
+
+    if rm -f "$full"; then
+      echo "Removed (no longer shipped): $full" >&2
+      PRUNED_COUNT=$((PRUNED_COUNT + 1))
+      removed_dirs+=("$(dirname "$rel_path")")
+    else
+      echo "Warning: failed to remove $full." >&2
+    fi
+  done <<< "$orphans"
+
+  [ "$DRY_RUN" = "1" ] && return 0
+  [ "${#removed_dirs[@]}" -eq 0 ] && return 0
+
+  # rmdir refuses non-empty directories, so a directory still holding user files
+  # (or files the current version ships) survives untouched.
+  while IFS= read -r empty_dir; do
+    rmdir "$empty_dir" 2>/dev/null || true
+  done < <(python3 -c "
+import os, sys
+target = sys.argv[1]
+dirs = set()
+for d in sys.argv[2:]:
+    p = d
+    while p and p != '.':
+        dirs.add(os.path.join(target, p))
+        p = os.path.dirname(p)
+for d in sorted(dirs, key=lambda x: x.count(os.sep), reverse=True):
+    print(d)
+" "$TARGET_DIR" ${removed_dirs[@]+"${removed_dirs[@]}"})
 }
 
 # --- Settings merging ---
@@ -712,6 +827,8 @@ IS_UPGRADE=0
 if [ -f "$TARGET_DIR/.firebreak-manifest.json" ]; then
   IS_UPGRADE=1
   echo "Existing installation detected — upgrading" >&2
+  # Capture the outgoing file list before write_manifest replaces it.
+  collect_previous_files
 fi
 
 enumerate_assets
@@ -730,6 +847,7 @@ done
 
 write_manifest
 install_files
+prune_orphans
 setup_python_venv
 
 # Build summary counts
@@ -755,10 +873,12 @@ backup_display="${BACKUP_FILE:-none}"
 if [ "$DRY_RUN" = "1" ]; then
   printf '[DRY RUN] Firebreak would be installed to %s/\n' "$TARGET_DIR" >&2
   printf '  Files to install: %d\n' "$files_count" >&2
+  printf '  Files to remove: %d\n' "$PRUNED_COUNT" >&2
   printf '  No changes made.\n' >&2
 else
   printf 'Firebreak installed to %s/\n' "$TARGET_DIR" >&2
   printf '  Files installed: %d\n' "$files_count" >&2
+  printf '  Files removed: %d\n' "$PRUNED_COUNT" >&2
   printf '  Hooks added: %d\n' "$hooks_added_count" >&2
   printf '  Backups: %s\n' "$backup_display" >&2
 fi
