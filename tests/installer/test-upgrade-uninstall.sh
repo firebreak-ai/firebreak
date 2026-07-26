@@ -42,6 +42,19 @@ setup_mock_source() {
   echo "$src/assets"
 }
 
+# Build a second source tree from an existing one with one asset removed,
+# modelling a release that drops a file it used to ship.
+setup_shrunk_source() {
+  local base="$1"
+  local removed_rel="$2"
+  local src
+  src=$(mktemp -d)
+  TMPDIRS+=("$src")
+  cp -R "$base/." "$src/"
+  rm -f "$src/$removed_rel"
+  echo "$src"
+}
+
 setup_target() {
   local tgt
   tgt=$(mktemp -d)
@@ -229,6 +242,112 @@ if [ $RC -ne 0 ] && echo "$STDERR_OUT" | grep -qiE "malformed|invalid|json|parse
   ok "malformed settings.json on install exits with error and makes no changes"
 else
   not_ok "malformed settings.json on install exits with error and makes no changes" "rc=$RC fbk_files=$FBK_FILES settings_unchanged=$([ "$SETTINGS_CONTENT" = '{this is not valid json' ] && echo yes || echo no) backup=$BACKUP_EXISTS"
+fi
+
+# --- Test 14: upgrade removes an asset the new version no longer ships ---
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>/dev/null
+SHRUNK_SOURCE=$(setup_shrunk_source "$MOCK_SOURCE" "agents/fbk-code-review-detector.md")
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$SHRUNK_SOURCE" 2>/dev/null
+RC=$?
+if [ $RC -eq 0 ] \
+  && [ ! -f "$TARGET/agents/fbk-code-review-detector.md" ] \
+  && [ -f "$TARGET/skills/fbk-spec/prompt.md" ] \
+  && [ -f "$TARGET/fbk-scripts/fbk.py" ]; then
+  ok "upgrade removes a file the new version no longer ships"
+else
+  not_ok "upgrade removes a file the new version no longer ships" "rc=$RC dropped=$([ -f "$TARGET/agents/fbk-code-review-detector.md" ] && echo exists || echo gone) kept=$([ -f "$TARGET/skills/fbk-spec/prompt.md" ] && echo exists || echo gone)"
+fi
+
+# --- Test 15: pruning leaves user files created after the first install ---
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>/dev/null
+echo "written after install" > "$TARGET/agents/my-later-agent.md"
+SHRUNK_SOURCE=$(setup_shrunk_source "$MOCK_SOURCE" "agents/fbk-code-review-detector.md")
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$SHRUNK_SOURCE" 2>/dev/null
+CONTENT=$(cat "$TARGET/agents/my-later-agent.md" 2>/dev/null || true)
+if [ "$CONTENT" = "written after install" ]; then
+  ok "pruning leaves user files created after the first install"
+else
+  not_ok "pruning leaves user files created after the first install" "content=$CONTENT"
+fi
+
+# --- Test 16: pruning removes a directory left empty ---
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>/dev/null
+SHRUNK_SOURCE=$(setup_shrunk_source "$MOCK_SOURCE" "skills/fbk-spec/prompt.md")
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$SHRUNK_SOURCE" 2>/dev/null
+if [ ! -d "$TARGET/skills/fbk-spec" ] && [ -d "$TARGET/agents" ]; then
+  ok "pruning removes a directory left empty and keeps populated ones"
+else
+  not_ok "pruning removes a directory left empty and keeps populated ones" "emptied=$([ -d "$TARGET/skills/fbk-spec" ] && echo exists || echo gone) populated=$([ -d "$TARGET/agents" ] && echo exists || echo gone)"
+fi
+
+# --- Test 17: dry-run reports the removal and deletes nothing ---
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>/dev/null
+SHRUNK_SOURCE=$(setup_shrunk_source "$MOCK_SOURCE" "agents/fbk-code-review-detector.md")
+STDOUT_OUT=$(bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$SHRUNK_SOURCE" --dry-run 2>/dev/null)
+if echo "$STDOUT_OUT" | grep -q "Would remove (no longer shipped).*fbk-code-review-detector.md" \
+  && [ -f "$TARGET/agents/fbk-code-review-detector.md" ]; then
+  ok "dry-run reports the removal and deletes nothing"
+else
+  not_ok "dry-run reports the removal and deletes nothing" "reported=$(echo "$STDOUT_OUT" | grep -c 'Would remove') file=$([ -f "$TARGET/agents/fbk-code-review-detector.md" ] && echo exists || echo gone)"
+fi
+
+# --- Test 18: fresh install prunes nothing ---
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+STDERR_OUT=$(bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>&1 >/dev/null)
+RC=$?
+if [ $RC -eq 0 ] && echo "$STDERR_OUT" | grep -q "Files removed: 0" \
+  && [ -f "$TARGET/skills/fbk-spec/prompt.md" ]; then
+  ok "fresh install prunes nothing"
+else
+  not_ok "fresh install prunes nothing" "rc=$RC stderr=$STDERR_OUT"
+fi
+
+# --- Test 19: damaged previous manifest warns but still upgrades ---
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>/dev/null
+echo '{not valid json at all' > "$TARGET/.firebreak-manifest.json"
+SHRUNK_SOURCE=$(setup_shrunk_source "$MOCK_SOURCE" "agents/fbk-code-review-detector.md")
+STDERR_OUT=$(bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$SHRUNK_SOURCE" 2>&1 >/dev/null)
+RC=$?
+if [ $RC -eq 0 ] \
+  && echo "$STDERR_OUT" | grep -qi "previous file list" \
+  && [ -f "$TARGET/skills/fbk-spec/prompt.md" ]; then
+  ok "damaged previous manifest warns but still upgrades"
+else
+  not_ok "damaged previous manifest warns but still upgrades" "rc=$RC stderr=$STDERR_OUT"
+fi
+
+# --- Test 20: manifest entry pointing outside the target is refused ---
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>/dev/null
+VICTIM="$(dirname "$TARGET")/prune-escape-victim.txt"
+echo "outside the install target" > "$VICTIM"
+python3 -c "
+import json, sys
+path = '$TARGET/.firebreak-manifest.json'
+d = json.load(open(path))
+d['files'].append('../prune-escape-victim.txt')
+json.dump(d, open(path, 'w'), indent=2)
+" 2>/dev/null
+STDERR_OUT=$(bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>&1 >/dev/null)
+VICTIM_CONTENT=$(cat "$VICTIM" 2>/dev/null || true)
+rm -f "$VICTIM"
+if [ "$VICTIM_CONTENT" = "outside the install target" ] \
+  && echo "$STDERR_OUT" | grep -qi "outside the install target"; then
+  ok "manifest entry pointing outside the target is refused"
+else
+  not_ok "manifest entry pointing outside the target is refused" "victim=$VICTIM_CONTENT stderr=$STDERR_OUT"
 fi
 
 # --- Summary ---
