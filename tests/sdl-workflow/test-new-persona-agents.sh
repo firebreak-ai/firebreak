@@ -154,7 +154,9 @@ else
   not_ok "fbk-task-compiler.md frontmatter has non-empty name and description" "has_name=$has_name has_desc=$has_desc"
 fi
 
-# Test 13F: fbk-task-compiler.md tools field matches spec allowlist (Read, Grep, Glob; no Edit, Write, Bash)
+# Test 13F: fbk-task-compiler.md tools field matches spec allowlist (Read, Grep, Glob, Write; no Edit, Bash)
+# Write granted so the compiler persists its own task files — orchestrator transcription
+# of returned task content was a proven drift source (store retrospective).
 tools_line=$(echo "$fm" | grep '^tools:')
 has_read=$(echo "$tools_line" | grep -q 'Read' && echo 1 || echo 0)
 has_grep=$(echo "$tools_line" | grep -q 'Grep' && echo 1 || echo 0)
@@ -162,10 +164,10 @@ has_glob=$(echo "$tools_line" | grep -q 'Glob' && echo 1 || echo 0)
 has_edit=$(echo "$tools_line" | grep -q 'Edit' && echo 1 || echo 0)
 has_write=$(echo "$tools_line" | grep -q 'Write' && echo 1 || echo 0)
 has_bash=$(echo "$tools_line" | grep -q 'Bash' && echo 1 || echo 0)
-if [ "$has_read" -eq 1 ] && [ "$has_grep" -eq 1 ] && [ "$has_glob" -eq 1 ] && [ "$has_edit" -eq 0 ] && [ "$has_write" -eq 0 ] && [ "$has_bash" -eq 0 ]; then
-  ok "fbk-task-compiler.md tools field matches allowlist (Read, Grep, Glob; no Edit, Write, Bash)"
+if [ "$has_read" -eq 1 ] && [ "$has_grep" -eq 1 ] && [ "$has_glob" -eq 1 ] && [ "$has_edit" -eq 0 ] && [ "$has_write" -eq 1 ] && [ "$has_bash" -eq 0 ]; then
+  ok "fbk-task-compiler.md tools field matches allowlist (Read, Grep, Glob, Write; no Edit, Bash)"
 else
-  not_ok "fbk-task-compiler.md tools field matches allowlist (Read, Grep, Glob; no Edit, Write, Bash)" "read=$has_read grep=$has_grep glob=$has_glob edit=$has_edit write=$has_write bash=$has_bash"
+  not_ok "fbk-task-compiler.md tools field matches allowlist (Read, Grep, Glob, Write; no Edit, Bash)" "read=$has_read grep=$has_grep glob=$has_glob edit=$has_edit write=$has_write bash=$has_bash"
 fi
 
 # Test 14: fbk-task-compiler.md body contains 'tech lead' (role activation)

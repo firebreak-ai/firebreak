@@ -118,11 +118,13 @@ else
   not_ok "skill references task reviewer"
 fi
 
-# --- Test 13: skill references test reviewer checkpoint 2 ---
-if grep -qiE 'checkpoint 2|test reviewer' "$SKILL_FILE" && grep -qiE 'test reviewer|test-reviewer' "$SKILL_FILE"; then
-  ok "skill references test reviewer checkpoint 2"
+# --- Test 13: skill references pre-lock test review ---
+# The old code used "test reviewer" as the agent name; the unified-review-shape
+# consolidation replaced it with the fbk-test-review skill invocation. Accept either form.
+if grep -qiE 'test reviewer|test-reviewer|fbk-test-review|pre-lock.*test|test.*pre-lock' "$SKILL_FILE"; then
+  ok "skill references pre-lock test review"
 else
-  not_ok "skill references test reviewer checkpoint 2"
+  not_ok "skill references pre-lock test review"
 fi
 
 # --- Test 14: brownfield doc exists ---

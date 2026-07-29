@@ -2,10 +2,19 @@
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 
+VALID_PHASES = ("design", "spec", "breakdown", "code-review")
+
+
 def check_prerequisites(phase: str, feature_dir: str) -> dict:
+    if phase not in VALID_PHASES:
+        raise ValueError(
+            f"unknown phase '{phase}'; valid phases are: {', '.join(VALID_PHASES)} "
+            "(literal lowercase strings)"
+        )
     feature_path = Path(feature_dir)
     feature_name = feature_path.name
     missing = []
@@ -31,7 +40,11 @@ def main() -> None:
     parser.add_argument("phase", help="SDL phase name (e.g. design, spec, breakdown, code-review).")
     parser.add_argument("feature_dir", help="Path to the feature directory.")
     args = parser.parse_args()
-    print(json.dumps(check_prerequisites(args.phase, args.feature_dir)))
+    try:
+        print(json.dumps(check_prerequisites(args.phase, args.feature_dir)))
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

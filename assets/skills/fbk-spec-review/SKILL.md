@@ -6,7 +6,7 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
-This skill is phase three of the six-phase SDL; its review artifact serves as the semantic anchor that the spec gate reads to determine whether the spec is ready to advance.
+This skill is the spec-review phase of the SDL (intent → design → spec → spec review → breakdown → implement → code review); its review artifact serves as the semantic anchor that the spec gate reads to determine whether the spec is ready to advance.
 
 Read `.claude/fbk-docs/fbk-sdl-workflow/review-perspectives.md` before proceeding — it defines classification signals, SDL concerns, invocation modes, threat-model determination, review document structure, and the verification gate.
 
@@ -30,19 +30,33 @@ If `ai-docs/<feature-name>/<feature-name>-review.md` already exists, warn the us
 
 ## Council invocation
 
-Classify which agents to invoke and in which mode per `review-perspectives.md` §"Classification process"; present the classification rationale before proceeding. Invoke `/fbk-council` with the classified agents per §"Invoking the council". For any spec that removes, renames, or changes a symbol's signature, additionally instruct the Architect agent to grep for all callers of the changed symbol and flag any the spec does not enumerate.
+Classify which agents to invoke and in which mode per `review-perspectives.md` §"Classification process"; present the classification rationale before proceeding. Invoke `/fbk-council` with the classified agents per §"Invoking the council". For any spec that removes, renames, or changes a symbol's signature, additionally instruct the Architect agent to grep for all callers of the changed symbol and flag any the spec does not enumerate. For any spec that adds a method to an existing interface, additionally instruct the Architect agent to grep for all types that implement that interface — including test fakes and mocks — and flag any that would no longer satisfy it.
+
+When the spec states it carries a contract inherited from a broader project scope verbatim, instruct the Architect agent to locate that original contract and diff the spec's entry against it field by field — signature, every invariant, and every constant. A review anchored only to the spec's own copy cannot catch a transcription divergence: a dropped field, a renamed field, a widened type, or a changed constant.
+
+## Cross-model review
+
+Invoke `/fbk-cross-model-review <feature-name>` targeting the spec, in parallel with the council. If the project has not opted in, the skill no-ops — proceed with the council's findings alone. If candidate findings return, triage them the same way as the council's and fold the confirmed ones into the review document under the SDL concern they map to, noting the cross-model origin.
 
 ## Finding synthesis
 
-Write `ai-docs/<feature-name>/<feature-name>-review.md` per `review-perspectives.md` §"Review document structure" before invoking the test-reviewer. The required testing strategy coverage entries are enumerated in §"Verification gate" of the same guide.
+Write `ai-docs/<feature-name>/<feature-name>-review.md` per `review-perspectives.md` §"Review document structure". The required testing strategy coverage entries are enumerated in §"Verification gate" of the same guide.
 
-## Test strategy review
+## Council-clean confirmation
 
-Invoke the test reviewer agent (`test-reviewer`) as an Agent Teams teammate with checkpoint 1 context. Pass the spec file and the spec schema as the artifact set. The test reviewer evaluates independently — it has no memory of the council review discussion and no access to council findings.
+Confirm the council and any cross-model review have reached a clean state before the independent test-review runs: every blocking finding from either is resolved in the spec or accepted with documented rationale and risk owner, and the review document is stabilized — no further synthesis edits pending. The test-review reads the stabilized spec, so it must not run while findings are still in motion.
 
-If the test reviewer returns FAIL: add its findings to the review document under a "Test Strategy Review" heading within the findings. Set the overall review result to fail. Include each defect the test reviewer identified, tagged with the AC it affects.
+When a spec revision addresses a blocking or important finding, run one additional fresh review pass against the revised sections before treating the review as stabilized — the pass that authored the fix is not the one that verifies it. Stop once a pass returns nothing above informational; a pass that still finds real defects earns another round.
 
-If the test reviewer returns PASS: add "Test strategy review: pass" to the review document as an informational note.
+## Independent test-review
+
+With the council clean and all blocking findings resolved, run the test-review as a unified-shape instance: route through `fbk-docs/fbk-review-lenses/review-loop.md` with `test-lens.md` loaded, **spec-checkpoint** mode, cardinality 1 researcher / 1 challenger, round cap 5.
+
+Spawn both `review-researcher` and `review-challenger` as cleared agents. The spawn materials for the researcher are the spec file (`<feature-name>-spec.md`), the test lens, and the spec schema — the council's synthesized findings are not included, and the council's output artifact must not be in the spawn set. The researcher reads cold with no council memory: it asks, for each requirement, whether the planned test would actually prove the behavior. The challenger receives only the normalized candidate findings and any cited sources, never the researcher's framing or the council's prior synthesis.
+
+The load-bearing output is the artifact: the loop coordinator writes `ai-docs/<feature-name>/test-review-spec.md` with a `Verdict:` line of `accepted` or `needs-revision`. The gate reads that file, not the conversation. A short human-readable summary may be folded into the stage artifact, but the `test-review-spec.md` file is authoritative.
+
+If the verdict is `needs-revision`: surface the confirmed defects, address them in the spec, then re-run the test-review pass until the artifact records `accepted`. The gate blocks until the verdict is `accepted`.
 
 ## Threat model determination
 
@@ -61,9 +75,11 @@ python3 "$HOME"/.claude/fbk-scripts/fbk.py review-gate \
 
 Omit the third argument if no threat model was created. Report any failures from stderr.
 
+The gate also verifies the independent test-review verdict. It finds `test-review-spec.md` in the review file's own folder — no extra argument is needed. A missing artifact or a verdict other than `accepted` is a blocking gate failure.
+
 ## Retrospective
 
-After the review completes, write the Stage 2 section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+After the review completes, write the Spec Review section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
 ## Transition
 

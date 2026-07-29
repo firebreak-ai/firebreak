@@ -24,11 +24,11 @@ Firebreak has been tested across two languages (Go, TypeScript) and multiple pro
 
 Firebreak has been tested across three scenarios, each building on the lessons of the previous one.
 
-**Greenfield development** (13 features, ~80 tasks, 137 tests) — The first pipeline run passed all tests but didn't work correctly for a real user. The retrospective identified the root cause: every end-to-end test was a smoke test. The pipeline was revised with [user verification steps](assets/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md), a [test reviewer](assets/agents/fbk-test-reviewer.md) that fails on missing behavioral coverage, and human interventions tracked as a first-class metric. This was the pipeline's first self-improvement cycle.
+**Greenfield development** (13 features, ~80 tasks, 137 tests) — The first pipeline run passed all tests but didn't work correctly for a real user. The retrospective identified the root cause: every end-to-end test was a smoke test. The pipeline was revised with [user verification steps](assets/fbk-docs/fbk-sdl-workflow/feature-spec-guide.md), a [test reviewer](assets/skills/fbk-test-review/SKILL.md) that fails on missing behavioral coverage, and human interventions tracked as a first-class metric. This was the pipeline's first self-improvement cycle.
 
-**Brownfield feature addition** (19 tasks, 43 new tests) — The revised pipeline delivered the feature with zero corrective cycles and zero human interventions. The feature worked on first human test. Council review caught 22 findings before code was written. The test reviewer caught 8 defects across 2 checkpoints. [Full greenfield/brownfield comparison](ai-docs/research/harness-patterns-analysis.md).
+**Brownfield feature addition** (19 tasks, 43 new tests) — The revised pipeline delivered the feature with zero corrective cycles and zero human interventions. The feature worked on first human test. Council review caught 22 findings before code was written. The test reviewer caught 8 defects across 2 checkpoints. [Full greenfield/brownfield comparison](docs/evidence/research/harness-patterns-analysis.md).
 
-**Brownfield remediation** (12 phases, ~290 tasks across 2 rounds) — The primary validation test. A private Go project chosen for its high density of AI code failure modes: security vulnerabilities, concurrency crashes, disconnected interfaces, and core systems that were not wired in. The project was effectively non-functional before remediation despite passing CI. Round 1 (7 phases, ~170 tasks) used Firebreak v0.3.0–v0.3.2. Round 2 (5 phases, 120 tasks; still in progress) uses v0.3.3–v0.3.4, incorporating [43 self-improvement proposals](ai-docs/research/quality-quantification.md) from Round 1's retrospectives and [26 additional proposals](ai-docs/self-improvement/v0.3.4/0.3.4-self-improvement-report.md) from Round 2's cross-phase retrospectives. The remediation data makes up the bulk of this document.
+**Brownfield remediation** (12 phases, ~290 tasks across 2 rounds) — The primary validation test. A private Go project chosen for its high density of AI code failure modes: security vulnerabilities, concurrency crashes, disconnected interfaces, and core systems that were not wired in. The project was effectively non-functional before remediation despite passing CI. Round 1 (7 phases, ~170 tasks) used Firebreak v0.3.0–v0.3.2. Round 2 (5 phases, 120 tasks; still in progress) uses v0.3.3–v0.3.4, incorporating [43 self-improvement proposals](docs/evidence/research/quality-quantification.md) from Round 1's retrospectives and [26 additional proposals](docs/evidence/self-improvement/v0.3.4/0.3.4-self-improvement-report.md) from Round 2's cross-phase retrospectives. The remediation data makes up the bulk of this document.
 
 ## What the code review catches
 
@@ -36,16 +36,16 @@ The adversarial code review catches issues that require reasoning across call gr
 
 Examples from the brownfield remediation:
 
-- **False-passing tests through mock wiring.** [7 tests](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/phase-1-test-infrastructure-retrospective.md) were exercising mock responses instead of actual behavior. A deprecated mock function was wired but never called by production code. CI reported green. The tests provided zero regression protection.
+- **False-passing tests through mock wiring.** [7 tests](docs/evidence/brownfield-validation/phase-1-test-infrastructure-retrospective.md) were exercising mock responses instead of actual behavior. A deprecated mock function was wired but never called by production code. CI reported green. The tests provided zero regression protection.
 - **Permanently inert features.** A nil parameter was passed to the scoring function, making entity-proximity boost silently non-functional. This survived one full remediation round and was caught by the code review during Round 2 — each phase makes remaining issues more visible.
-- **Thread-safety in name only.** A config wrapper [returned collections by reference without deep-copying](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/phase-0-security-retrospective.md). The wrapper compiled, the tests passed, the race condition was invisible without call-graph reasoning.
+- **Thread-safety in name only.** A config wrapper [returned collections by reference without deep-copying](docs/evidence/brownfield-validation/phase-0-security-retrospective.md). The wrapper compiled, the tests passed, the race condition was invisible without call-graph reasoning.
 - **Tests proving nothing.** Scoring test fixtures had store nodes set to one kind while candidates used another. The mock didn't validate, so the tests passed with internally contradictory scenarios. Separately, an entity score preservation test used zero-value node kind — passing by accident, not by design.
 - **Disconnected lifecycle plumbing.** A task implemented `context.Background()` as a placeholder where the spec said "pass graceful shutdown context." The structural plumbing was present but disconnected from the app lifecycle.
 - **Dead infrastructure.** Worker pools constructed, initialized, and configured but never used. Interfaces defined but never implemented. Config fields declared but ignored by the code that should read them.
 
 ### Linters and code review find entirely different things
 
-Across all measured phases in both rounds, linter findings and code review findings have [zero overlap](ai-docs/research/quality-quantification.md) (measured at two phase boundaries — a small sample, but consistent). The tools operate in different layers:
+Across all measured phases in both rounds, linter findings and code review findings have [zero overlap](docs/evidence/research/quality-quantification.md) (measured at two phase boundaries — a small sample, but consistent). The tools operate in different layers:
 
 | Concern | Linters | Adversarial code review |
 |---------|---------|------------------------|
@@ -60,7 +60,7 @@ Across all measured phases in both rounds, linter findings and code review findi
 
 During the post-remediation full-codebase review, detector agents got stuck on 4 of 8 review units due to an invisible permission prompt. The supervisor agent performed its own independent scan and reported those units clean (0 findings). When relaunched with proper Detector/Challenger coverage, those same units produced **32 additional findings** — including a behavioral bug that made the project's core feature silently non-functional for incremental operations.
 
-The single-pass scan missed 53% of all findings (32 of 60), including all behavioral bugs. This comparison is between adversarial review working as intended and a single-pass fallback performed under degraded conditions — evidence that adversarial review outperforms a hasty workaround, which is a [weaker statement](ai-docs/research/quality-quantification.md) than "adversarial review catches 53% more than any single-pass review." A deliberately designed single-pass comparison would be needed to make the stronger claim.
+The single-pass scan missed 53% of all findings (32 of 60), including all behavioral bugs. This comparison is between adversarial review working as intended and a single-pass fallback performed under degraded conditions — evidence that adversarial review outperforms a hasty workaround, which is a [weaker statement](docs/evidence/research/quality-quantification.md) than "adversarial review catches 53% more than any single-pass review." A deliberately designed single-pass comparison would be needed to make the stronger claim.
 
 ## What remediation fixes
 
@@ -86,7 +86,7 @@ Round 2 targets the remaining 60 findings — the "needs cleanup" tier. Five pha
 
 ## What the pipeline introduces
 
-Of the 60 findings in the post-Round-1 review, [6 were caused by the remediation itself](ai-docs/research/quality-quantification.md) (10% introduction rate). 4 of those 6 were test-integrity issues (stale comments on now-fixed bugs, empty gate tests, placeholder tests never filled in) — not production behavioral bugs. Production lint: 1 issue introduced across ~50K lines of changes.
+Of the 60 findings in the post-Round-1 review, [6 were caused by the remediation itself](docs/evidence/research/quality-quantification.md) (10% introduction rate). 4 of those 6 were test-integrity issues (stale comments on now-fixed bugs, empty gate tests, placeholder tests never filled in) — not production behavioral bugs. Production lint: 1 issue introduced across ~50K lines of changes.
 
 The pipeline has a specific blind spot: agents fix production code and leave test metadata stale. This pattern is consistent across phases. Stale "currently fails" comments on now-passing tests, empty gate tests with zero assertions, and unconditionally skipped tests with behavioral names all survived multiple review cycles.
 
@@ -132,7 +132,7 @@ Gates caught issues before they became implementation failures:
 
 **Wave over-segmentation.** Phase 0's 7-wave plan had 3 waves emptied by Sonnet agents fixing all downstream compile errors. Phase 3's 6-wave plan could logically have been 3. The strict wave-dependency gate rule produces correct results but adds overhead that could be reduced by recognizing struct field changes as atomic units. **Addressed in v0.3.4**: task compilation now includes struct field removal supersession guidance — combine callers into one task or mark downstream tasks as expected-superseded.
 
-**Compilation gaps are the dominant failure mode.** Every phase had at least one instance where the task breakdown didn't grep broadly enough for all references to a changed symbol — second-order effects that require reasoning about what the codebase will do *after* the change. This is the [most recurring pattern](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md) across both rounds. **Addressed in v0.3.4**: call-site grep requirements added at 5 pipeline stages — spec authoring, spec gate, spec review council, task compilation, and task breakdown.
+**Compilation gaps are the dominant failure mode.** Every phase had at least one instance where the task breakdown didn't grep broadly enough for all references to a changed symbol — second-order effects that require reasoning about what the codebase will do *after* the change. This is the [most recurring pattern](docs/evidence/brownfield-validation/analysis.md) across both rounds. **Addressed in v0.3.4**: call-site grep requirements added at 5 pipeline stages — spec authoring, spec gate, spec review council, task compilation, and task breakdown.
 
 ## How the pipeline improves
 
@@ -154,7 +154,7 @@ The adversarial code review was evaluated against a public TypeScript AI agent p
 | Rounds to converge | 4 | 4 | 5 |
 | Partial overlap with filed issues | 4/28 (14.3%) | 11/28 (39.3%) | Pending |
 
-The filed issues are an independent baseline for calibrating detection accuracy, not ground truth — the issue-filing agent has its own detection strengths and blind spots. Both pipelines found issues the other missed entirely. [Full three-way comparison with per-issue analysis](ai-docs/detection-accuracy/three-way-comparison.md).
+The filed issues are an independent baseline for calibrating detection accuracy, not ground truth — the issue-filing agent has its own detection strengths and blind spots. Both pipelines found issues the other missed entirely. [Full three-way comparison with per-issue analysis](docs/evidence/detection-accuracy/three-way-comparison.md).
 
 ### Key observations
 
@@ -162,7 +162,7 @@ The filed issues are an independent baseline for calibrating detection accuracy,
 
 **Intent extraction introduced a new finding type: tests protecting bugs.** Tests that assert the broken behavior is correct — passing by validating the bug, not the intent. This detection class requires both the code (test passes) and the intent (documentation says the opposite) to identify. No checklist item can catch it.
 
-**The instruction budget is zero-sum.** Adding ~25 intent claims to a Detector already at 3x the reliable instruction threshold (~62 instructions) caused structural finding volume to drop (77 minor → 20 minor) while behavioral and test-integrity findings increased. The total count dropped from 119 to 42, but the major+ ratio doubled (29% → 52%). This trade-off confirms the architectural case for [detector decomposition](ai-docs/detection-accuracy/detection-accuracy-overview.md) — dedicated narrow-mandate agents would eliminate the either/or between intent coverage and structural coverage.
+**The instruction budget is zero-sum.** Adding ~25 intent claims to a Detector already at 3x the reliable instruction threshold (~62 instructions) caused structural finding volume to drop (77 minor → 20 minor) while behavioral and test-integrity findings increased. The total count dropped from 119 to 42, but the major+ ratio doubled (29% → 52%). This trade-off confirms the architectural case for [detector decomposition](docs/evidence/detection-accuracy/detection-accuracy-overview.md) — dedicated narrow-mandate agents would eliminate the either/or between intent coverage and structural coverage.
 
 **The Challenger layer caught a false negative across reviews.** A config read-modify-write race condition was rejected twice in the post-hygiene review ("single-threaded JS means no interleaving"). The post-intent-fix review's Challenger verified it by tracing the async boundary between concurrent Telegram commands. The intent register may have contributed — it established concurrent config mutations as an expected usage pattern, making the Challenger more skeptical of the single-thread argument.
 
@@ -189,7 +189,7 @@ The filed issues are an independent baseline for calibrating detection accuracy,
 
 **Comparison with [Go standalone code review](#measured-data-standalone-code-review):** The TS review is cheaper (~$62 vs ~$69) despite running 5 rounds. The primary driver is codebase size — the TS project is ~6K lines across 35 source files, smaller than the Go project. Every Detector spawn includes target code in its prompt, so smaller codebase = smaller cache writes per agent. Multi-round iteration also benefits from cache reuse — later rounds read from cache established by earlier rounds. On a Max plan, both reviews are included in flat-rate billing.
 
-[Full evaluation methodology, per-round data, and analysis →](ai-docs/detection-accuracy/project-b-review-post-hygiene.md)
+[Full evaluation methodology, per-round data, and analysis →](docs/evidence/detection-accuracy/project-b-review-post-hygiene.md)
 
 ## Token usage and cost
 
@@ -328,7 +328,7 @@ For current API rates, see [Anthropic's pricing page](https://www.anthropic.com/
 
 **Limited false negative measurement.** For the Go project, there is no ground truth for "all issues that exist" — how many issues remain undiscovered is unknown. The TypeScript evaluation provides a partial signal: 28 independently filed issues allow measuring what the pipeline misses against an independent reviewer. Current best: 39.3% partial overlap (v0.3.5), meaning 61% of independently identified issues were not matched. The unmatched issues cluster in areas the pipeline doesn't target: performance/scalability, input validation, and specific single-function path-tracing bugs.
 
-**No industry benchmark comparison.** The closest public benchmark ([Martian Code Review Bench](ai-docs/research/benchmark-research.md)) measures PR-scoped review — a fundamentally different task from full-codebase review against a failure mode taxonomy. Direct comparison is not currently possible.
+**No industry benchmark comparison.** The closest public benchmark ([Martian Code Review Bench](docs/evidence/research/benchmark-research.md)) measures PR-scoped review — a fundamentally different task from full-codebase review against a failure mode taxonomy. Direct comparison is not currently possible.
 
 **Pre-existing test failures create noise.** The brownfield project had 19 pre-existing test failures that complicate every verification step. Snapshot-based regression detection can't distinguish "newly broken" from "flaky and unlucky." The remediation reduced this count by ~4 incidentally but didn't target it as a primary objective.
 
@@ -340,19 +340,19 @@ All retrospectives, quality measurements, and analysis are published.
 
 | Document | What it covers |
 |----------|---------------|
-| [Harness patterns analysis](ai-docs/research/harness-patterns-analysis.md) | Greenfield and brownfield feature addition: pipeline design validation, comparison with Anthropic's agent harness patterns |
-| [Quality quantification](ai-docs/research/quality-quantification.md) | Measurement methodology, per-phase lint data, cognitive complexity, linter vs. code review overlap, post-remediation full-codebase review with finding classification |
-| [Brownfield validation (Round 1)](ai-docs/dispatch/phase-1.6-code-review-remediation/brownfield-validation/analysis.md) | Round 1 aggregate data across 4 measured phases, compilation gap patterns, agent scope enforcement incident |
-| [AI failure taxonomy](ai-docs/research/failure-modes.md) | 39 catalogued failure modes from 25+ empirical sources (ICSE, OWASP, Microsoft AI Red Team, arXiv), mapped to pipeline mitigations |
+| [Harness patterns analysis](docs/evidence/research/harness-patterns-analysis.md) | Greenfield and brownfield feature addition: pipeline design validation, comparison with Anthropic's agent harness patterns |
+| [Quality quantification](docs/evidence/research/quality-quantification.md) | Measurement methodology, per-phase lint data, cognitive complexity, linter vs. code review overlap, post-remediation full-codebase review with finding classification |
+| [Brownfield validation (Round 1)](docs/evidence/brownfield-validation/analysis.md) | Round 1 aggregate data across 4 measured phases, compilation gap patterns, agent scope enforcement incident |
+| [AI failure taxonomy](docs/evidence/research/failure-modes.md) | 39 catalogued failure modes from 25+ empirical sources (ICSE, OWASP, Microsoft AI Red Team, arXiv), mapped to pipeline mitigations |
 
 ### Per-phase retrospectives (Round 2)
 
 | Document | What it covers |
 |----------|---------------|
-| [Phase 0: Behavioral bugs](ai-docs/self-improvement/v0.3.4/phase-0-behavioral-bugs-retrospective.md) | 12 behavioral fixes; superseded task analysis showing Sonnet agents fix downstream compile errors |
-| [Phase 1: Dead infrastructure](ai-docs/self-improvement/v0.3.4/remediation-2-phase-1-dead-infrastructure-retrospective.md) | 2,906 lines deleted; critical finding of wiring test outside task file scope |
-| [Phase 2: Error handling](ai-docs/self-improvement/v0.3.4/remediation-2-phase-2-error-handling-retrospective.md) | Context propagation across module boundaries; disconnected shutdown context finding |
-| [Phase 3: Deduplication](ai-docs/self-improvement/v0.3.4/remediation-2-phase-3-deduplication-retrospective.md) | Shared extraction; prior-phase miss discovery (nil parameter making feature inert) |
-| [Phase 4: Bare literals](ai-docs/self-improvement/v0.3.5/remediation-2-phase-4-bare-literals-retrospective.md) | Constant extraction across 26 files; token usage measurement; e2e test gap discovery (PF-01); first phase run under v0.3.4 improvements |
-| [Intermediate retrospective](ai-docs/self-improvement/v0.3.4/remediation-2-intermediate-retrospective.md) | Cross-phase synthesis: compilation gaps as dominant failure mode, test-integrity patterns, model routing observations |
-| [v0.3.4 self-improvement report](ai-docs/self-improvement/v0.3.4/0.3.4-self-improvement-report.md) | 97 proposals from 34 parallel analysts; 26 applied, 4 invalidated; verification gates, call-site completeness, rolling retrospectives |
+| [Phase 0: Behavioral bugs](docs/evidence/self-improvement/v0.3.4/phase-0-behavioral-bugs-retrospective.md) | 12 behavioral fixes; superseded task analysis showing Sonnet agents fix downstream compile errors |
+| [Phase 1: Dead infrastructure](docs/evidence/self-improvement/v0.3.4/remediation-2-phase-1-dead-infrastructure-retrospective.md) | 2,906 lines deleted; critical finding of wiring test outside task file scope |
+| [Phase 2: Error handling](docs/evidence/self-improvement/v0.3.4/remediation-2-phase-2-error-handling-retrospective.md) | Context propagation across module boundaries; disconnected shutdown context finding |
+| [Phase 3: Deduplication](docs/evidence/self-improvement/v0.3.4/remediation-2-phase-3-deduplication-retrospective.md) | Shared extraction; prior-phase miss discovery (nil parameter making feature inert) |
+| [Phase 4: Bare literals](docs/evidence/self-improvement/v0.3.5/remediation-2-phase-4-bare-literals-retrospective.md) | Constant extraction across 26 files; token usage measurement; e2e test gap discovery (PF-01); first phase run under v0.3.4 improvements |
+| [Intermediate retrospective](docs/evidence/self-improvement/v0.3.4/remediation-2-intermediate-retrospective.md) | Cross-phase synthesis: compilation gaps as dominant failure mode, test-integrity patterns, model routing observations |
+| [v0.3.4 self-improvement report](docs/evidence/self-improvement/v0.3.4/0.3.4-self-improvement-report.md) | 97 proposals from 34 parallel analysts; 26 applied, 4 invalidated; verification gates, call-site completeness, rolling retrospectives |

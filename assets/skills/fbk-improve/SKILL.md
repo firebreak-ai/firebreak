@@ -35,6 +35,7 @@ Create an agent team. For each asset path in the discovered list, spawn an `fbk-
 - Path to the authoring rules index (resolve `fbk-context-assets.md` relative to the installation root's `fbk-docs/` directory)
 - The single asset path assigned to this teammate
 - The proposal output format contract: each proposal must include target (asset file and instruction), change type (add/edit/remove with diff), observation (the retrospective observation that motivates the proposal), and necessity (why removing this instruction increases the probability of an agent mistake)
+- An explicit instruction to send the proposal list via SendMessage before going idle
 
 Pass paths only. Do not inject file contents into spawn prompts.
 

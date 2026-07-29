@@ -30,6 +30,6 @@ Produce findings only — structured issues the implementation introduced or lef
 
 ## Retrospective
 
-Append a findings summary to the feature retrospective (`ai-docs/<feature>/<feature>-retrospective.md`): finding count, rejection count, false positive rate, and each verified finding's ID, category, and one-line description.
+Append a findings summary to the feature retrospective (`ai-docs/<feature>/<feature>-retrospective.md`), following the fields defined in `code-review-guide.md`.
 
 After the findings summary is written, invoke `/fbk-improve <feature-name>` to analyze the retrospective for pipeline improvement opportunities.

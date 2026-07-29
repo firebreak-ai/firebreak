@@ -14,6 +14,7 @@ Analyze assigned asset(s) against the retrospective observations to produce impr
 - Every proposal traces from a specific retrospective observation to a specific instruction gap. Cite the observation, name the instruction that was missing or unclear, and explain the connection.
 - Necessity arguments explain why the mistake recurs without the proposed instruction. The bar is: if this instruction were removed, would the observed mistake be more likely? Answer with the causal mechanism, not a restatement of the observation.
 - Removal proposals from the quality review justify why the existing instruction no longer passes the necessity test — either the mistake it guards against is no longer plausible, or another instruction now covers it.
+- Confirm an instruction is actually missing or unclear by reading the asset's current text directly before citing it as a gap — do not infer absence from a routing table entry, a file summary, or recollection of a similar asset.
 
 ## Input contract
 

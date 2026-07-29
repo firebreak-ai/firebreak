@@ -1,0 +1,23 @@
+[
+  {
+    "class": "drift",
+    "doc": "ai-docs/example-feature/design/contracts.md — public interface section",
+    "doc_says": "The `run_pipeline()` function accepts a `lens_path` positional argument as its second parameter.",
+    "code_shows": "`run_pipeline()` accepts `lens_path` as a keyword-only argument (after `*`); callers passing it positionally raise `TypeError`.",
+    "rationale": "The function signature diverges from the stated contract: the doc describes positional placement, the code enforces keyword-only placement."
+  },
+  {
+    "class": "drift",
+    "doc": "docs/decisions-log.md — 2026-05-10 entry on validation flow",
+    "doc_says": "All gate results are written to the capture store by the gate itself before returning.",
+    "code_shows": "Gate functions return the result dict without writing it; the chokepoint recorder writes it after the gate call returns.",
+    "rationale": "The decision records the gate as the writer; the shipped code centralises writing in the chokepoint, which contradicts the recorded decision."
+  },
+  {
+    "class": "note",
+    "doc": "CHANGELOG.md — no entry for the pipeline refactor",
+    "doc_says": "No changelog entry records the pipeline refactor shipped in this diff.",
+    "code_shows": "Non-trivial user-facing change to `pipeline.py` normalisation logic present in the diff.",
+    "rationale": "The project convention updates the changelog at tagged-release time, not per-branch; the branch is untagged, so the omission matches convention — flagged so release-prep does not miss it."
+  }
+]

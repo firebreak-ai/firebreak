@@ -25,7 +25,10 @@ not_ok() {
 echo "TAP version 13"
 
 # --- Test 1: valid review with all perspectives passes ---
-REVIEW_FIXTURE=$(mktemp /tmp/review-valid-XXXX.md)
+# The review gate now requires a test-review-spec.md artifact in the same directory
+# as the review file (added in unified-review-shape). Use a temp dir to hold both.
+REVIEW_TMPDIR=$(mktemp -d /tmp/review-valid-XXXX)
+REVIEW_FIXTURE="$REVIEW_TMPDIR/review.md"
 cat > "$REVIEW_FIXTURE" << 'EOF'
 # Security Review
 
@@ -54,6 +57,13 @@ Existing tests impacted by changes.
 Test infrastructure changes to support the new validation.
 EOF
 
+# Provide the required independent test-review artifact alongside the review file.
+cat > "$REVIEW_TMPDIR/test-review-spec.md" << 'EOF'
+# Test Review: spec checkpoint
+
+Verdict: accepted
+EOF
+
 STDOUT=$(python3 "$DISPATCHER" review-gate "$REVIEW_FIXTURE" "Security,Architecture" 2>/tmp/review-gate-stderr)
 RC=$?
 STDERR=$(cat /tmp/review-gate-stderr)
@@ -62,7 +72,7 @@ if [ $RC -eq 0 ] && echo "$STDOUT" | grep -q '"result": "pass"'; then
 else
   not_ok "valid review with all perspectives passes exit 0" "rc=$RC stdout=$STDOUT stderr=$STDERR"
 fi
-rm -f "$REVIEW_FIXTURE"
+rm -rf "$REVIEW_TMPDIR"
 
 # --- Test 2: review missing perspective fails ---
 REVIEW_FIXTURE=$(mktemp /tmp/review-missing-perspective-XXXX.md)

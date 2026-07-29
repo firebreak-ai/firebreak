@@ -1,6 +1,6 @@
 ## Compilation Principle
 
-Tasks are compiled executable specifications, not summaries. Every instruction must be explicit enough that the implementation agent makes no design decisions. Ambiguity in a task is a compilation error — if you cannot write clear instructions for a task, the spec is underspecified. Stop and report the ambiguity; do not guess. Resolution requires returning to Stage 1 or Stage 2 before compilation continues.
+Tasks are compiled executable specifications, not summaries. Every instruction must be explicit enough that the implementation agent makes no design decisions. Ambiguity in a task is a compilation error — if you cannot write clear instructions for a task, the spec is underspecified. Stop and report the ambiguity; do not guess. Resolution requires returning to the spec or design phase before compilation continues.
 
 Choose one implementation approach during compilation. If multiple valid approaches exist, select the one most consistent with the existing codebase and spec intent. Document the choice in the task's Context section.
 
@@ -14,7 +14,9 @@ When compiling interface contracts for existing files:
 - **For brownfield work**, read existing test files to learn testing conventions, existing modules for import/export patterns, and existing configuration for environment requirements.
 - **Compile every spec-identified impact into an explicit task.** When the spec's testing strategy, impact analysis, or dependency sections identify existing files that will be affected by the changes (tests requiring mock migration, assertions needing updates, callers requiring signature changes), create a task for each. Spec impact entries are mandatory work items, not informational context — if the spec says a file is affected, the breakdown must include a task that addresses it.
 - **When a task removes, renames, or changes the signature of any symbol** (struct field, function, type), grep the codebase for all call sites of that symbol. Do not rely solely on the spec's impact analysis. Create a task for each call site not already covered. Spec impact sections are a starting point, not a complete enumeration.
-- **When a task instruction requires passing or using a specific value** (a context object, a reference, a constructed instance), verify that value is reachable in the target file at compilation time. If the value does not yet exist — because it must be threaded through constructors or other files not yet modified — create a prerequisite task that establishes it and add it as a dependency. State the intended final value in the task instruction, even when a prerequisite must deliver it first.
+- **When a task instruction requires passing or using a specific value** (a context object, a reference, a constructed instance), verify that value is reachable in the target file at compilation time. If the value does not yet exist — because it must be threaded through constructors or other files not yet modified — create a prerequisite task that establishes it and add it as a dependency. State the intended final value in the task instruction, even when a prerequisite must deliver it first. Never resolve a missing value by instructing the task to edit or coordinate changes into another task's declared file scope — that is a file-scope violation even when phrased as guidance rather than a direct edit; the only valid fix is a prerequisite task in an earlier wave.
+- **Derive equivalence assertions from execution, not simulation.** When a test asserts equivalence with existing shipped behavior (a regex, a formula, a normalization function), derive the expected value by running the shipped code or by citing its existing test vectors — never by hand-simulating the logic in the task's Context or Test requirements section. A hand-simulated expectation can mis-model the shipped behavior, and the test then fails correct code.
+- **When a task names an agent persona or a built-in workflow, copy the real identifier exactly.** A task that tells an agent to spawn a persona must use that installed agent's `name:` field verbatim; a task that builds a workflow defined in code must use the harness's actual workflow vocabulary. Read the installed agent file or the harness reference to confirm the spelling — a near-miss name or an invented workflow term produces an artifact that looks right and silently fails to run.
 
 ## Preparatory Refactor Compilation
 
@@ -50,7 +52,24 @@ When a task references files created or modified by other tasks, the task instru
 
 **New interfaces**: When a test task and implementation task share a function or interface that does not yet exist in the codebase at compilation time, state the exact signature in both task files. The test task declares the signature; the implementation task copies it verbatim. Do not leave the signature for either agent to infer from the spec — agents compiling independently from the same spec text will produce incompatible signatures.
 
+**Nested field paths**: When a task reads or writes a field inside a structured record, quote the full path to that field — `bundle.persona`, not "the persona field." An agent given the short name guesses the nesting, and the one place a task leaves the path implicit is the place a test drifts from the schema. Restate the nesting in every task that touches the field.
+
+**Shared test helpers**: When several test tasks call the same shared helper, pin the helper's exact signature in each of those task files. Independent test authors who are left to infer a helper's shape invent slightly different versions, and the drift only surfaces when their tasks link against each other. Stating the signature in full at every call site keeps the parallel authors aligned.
+
 **Orchestrator tasks**: When a task modifies the orchestrator file (the file that wires all modules together), it is higher-risk and requires additional specification: an explicit wiring checklist stating what must be imported, what must be initialized, what must be updated per frame/tick, and what must be cleaned up. Orchestrator tasks are routed to Sonnet minimum (regardless of other sizing heuristics) and include the wiring checklist as a dedicated section in the task file.
+
+## Cross-Task Contracts and Conventions
+
+Anything shared across tasks — a package-wide rule, an invented interface, a shared symbol, a test double, an execution-order constraint — is pinned once at full precision and must reach every task it touches. A shared thing stated in only one task file is invisible to every other task's agent.
+
+- **Package-wide rules reach every subject task.** When a rule applies to every task implementing a shared concern (every method logs unexpected errors, every row iteration checks the iteration's error signal), either centralize it behind a shared helper each consuming task is instructed to call, or restate it verbatim in the Instructions section of every task it applies to. A rule visible in only one of several sibling task files is a rule the other siblings will not follow.
+- **Sibling consistency.** After drafting tasks — or steps within one task — that apply the same pattern at multiple sites, read the set side by side and confirm the prescribed error-wrapping, logging, and return-value handling match at every occurrence. When one site specifies a step (wrapping a sentinel, checking an error) that another omits, add the missing step or state the reason for the difference.
+- **Exclusion lists derived from the complete outcome set.** When a task defines which outcomes are "expected" versus "unexpected" (for example, which errors are not logged at Error level), derive the list from the full enumeration of the operation's outcomes — every declared sentinel plus standard cross-cutting conditions such as cancellation and deadline expiry — not from the cases the spec's prose happens to mention.
+- **Invented seams carry a signal inventory.** When an interface's shape is invented during compilation rather than dictated by the spec (an internal helper, a shared return type), first enumerate every task that will consume it and what data each needs from it. The pinned signature carries the union of those needs before either task file is written — an under-powered seam forces every consumer to work around a missing signal.
+- **Shared invented symbols are defined once.** When two or more tasks construct or reference the same struct, type, or constant the spec does not define, pin its exact name and full shape once and copy it verbatim into every referencing task. Independent authors given only the concept invent incompatible shapes. When the shared symbol is a function or other executable declaration, exactly one task (the earliest-wave or shared-infrastructure task) creates it; every other task that uses it is instructed to call it, not to declare its own copy — restating a function's own definition in more than one task file in the same compilation unit produces a redeclaration error.
+- **Fix-propagation sweep.** When a fix or revision moves, renames, or removes a pinned cross-task symbol (a shared helper's location, an import it was the sole user of, a struct field other tasks reference), sweep every consumer task's file for the matching edit in the same batch — import lists, helper references, and any restated copy of the changed symbol. A fix applied only to the symbol's own task silently breaks every sibling task pinned against the old shape.
+- **Test doubles pin behavior, not just signatures.** When a shared helper is a double standing in for a collaborator, state its observable behavior — return values per input, error and panic conditions, field casing, and whether it actually intercepts the method it exists to guard. A double that only matches the signature can satisfy the compiler while the test it supports passes vacuously. When a test needs the double's response to echo a value the double cannot know until request time (a generated ID, a computed count), a fixed canned response cannot support the assertion — pin a request-computed response step in the double's shape instead of a static script, and name which field(s) it must echo.
+- **Dependencies beyond file overlap.** Declared dependencies include every real ordering constraint — orderings a project convention requires (one canonical implementation landing before its adopters), not only tasks touching the same file. Tasks sharing a compilation unit that will not build until all of them land are co-scheduled in the same wave (see Wave-End Compile Closure) rather than expressed as dependency edges — a dependency edge requires a strictly earlier wave, and mutual compile-coupling has no valid edge direction. Never rely on wave-number proximity to guarantee an order.
 
 ## Sizing Constraints
 
@@ -72,6 +91,16 @@ When a task changes an interface (function signature, constructor, API contract)
 Migration batches that modify the same file must be assigned to sequential waves. Each migration test task verifies only that its batch's callers use the new interface — do not assert absence of the old interface until the final verification gate.
 
 When a task removes a struct field or makes a field unexported, the implementing agent will fix all downstream compile errors in the same pass rather than leaving the build broken — downstream caller-migration tasks will be superseded. Either combine the field removal and all caller migrations into one task (document the file-scope justification), or mark each downstream caller task as `expected-superseded` in the task.json `note` field.
+
+### Same-Wave Same-File Writes
+
+When two or more tasks in the same wave would each edit the same file — for example, each task removing its own stub from a shared registry — they race against each other, and the parallel teammates have no way to coordinate. Detect this during compilation by checking whether any file appears in more than one task's scope within a wave.
+
+When you find it, restructure so the shared edit happens once. Move the common change into a single prep task in an earlier wave (it does the whole shared edit), then leave each remaining task to create only its own file. This keeps every wave's file scopes disjoint, which is what lets the per-wave file-scope check stay meaningful.
+
+### Wave-End Compile Closure
+
+For each wave, verify that every symbol referenced by the test files that exist at the end of that wave is implemented within that same wave or an earlier one. A test file that calls a helper or type another task defines in a later wave leaves the whole package compile-red until that later wave lands, even when each task's own file-scope and dependency declarations look correct individually. Check this per compilation unit (package/module), not per task.
 
 ## Task File Structure
 
@@ -102,7 +131,7 @@ Unacceptable step: "Add a token validation function with appropriate error handl
 Explicit scope boundary. List each file with its path relative to the project root. The agent must not touch files outside this list.
 
 **5. Test requirements**
-For test tasks: list the new tests to write, specifying level (unit/integration/e2e), the behavior under test, and the expected assertion.
+For test tasks: list the new tests to write, specifying level (unit/integration/e2e), the behavior under test, and the expected assertion. When an assertion targets a boundary or extreme parameter value (a floor, a ceiling, a value where floating-point behavior saturates), show the derivation — the arithmetic that produces the expected value — in the task body rather than asserting a qualitative inequality (`!=`, strict `>`). A qualitative assertion at an extreme can pass against both correct and incorrect implementations; a shown, hand-derived expected value cannot.
 For implementation tasks: list existing tests to update (specify file, what changes, why). Reference the corresponding test task's test requirements.
 
 **6. Acceptance criteria**
@@ -182,6 +211,12 @@ When the behavior is embedded inside a non-importable function (module-level sid
 
 Do not create a test task that requires simulating a side effect from another module. If the test cannot call the production function that produces the behavior, the test task is not ready.
 
+## Manual Operator-Verification Gate
+
+Some behavior only runs end to end when the real wiring and real fixtures are in play — the glue between live components that no isolated test reaches. When automated tests can cover everything else and only this final glue needs a live run, a written manual procedure the operator follows is a legitimate completion gate. State it as concrete steps with an observable expected result.
+
+Reach for this only when the genuine glue is what's under test. Do not write a test that mocks the very wiring it claims to verify — a test that stands in a fake for the connection it exists to check passes whether or not the real connection works, which is worse than an honest manual step.
+
 ## Quantifier ACs
 
 When an AC uses "all," "every," or plural nouns (e.g., "E2E tests use deterministic sync"), enumerate the specific instances in the codebase that match. Create a task for each instance, or explicitly document which instances are out of scope with justification in the task file.
@@ -249,7 +284,9 @@ Name paired tasks consistently: `task-NN-test-<behavior>.md` and `task-MM-impl-<
 | `model_rationale` | yes | Brief rationale for the model choice |
 | `status` | yes | Current task status. `/breakdown` sets all to `not_started` |
 | `summary` | no | Free-text implementation summary written by the executing agent. `null` until task completes |
-| `note` | no | Annotation for `parked` or `superseded` tasks explaining the reason |
+| `note` | no | Annotation for `parked`/`superseded` tasks, or for a `covers` entry that reflects enablement rather than direct verification (see below) |
+
+**`covers` for infrastructure tasks.** A task's `covers` list can include an AC it does not itself verify — for example, a shared-infrastructure task with no assertion for that AC, which other tasks depend on to verify it. When this applies, add a `note` entry naming the tasks that perform the actual verification, e.g. `"enables AC-17..AC-28 verification by task-12, task-13; asserts none directly"`. Do not leave the distinction implicit — the no-task-unlinked-from-AC invariant otherwise forces a `covers` entry that reads as a false claim of verification.
 
 ### Status values
 
@@ -281,9 +318,9 @@ The gate script validates these properties from task.json:
 
 ## Ambiguity Handling
 
-When you encounter a spec section that could be interpreted multiple ways, or a task where the instructions would require the implementation agent to make a design choice, stop.
+When you encounter a spec section that could be interpreted multiple ways, two acceptance criteria (or an acceptance criterion and a stated design invariant) that prescribe mutually exclusive behavior for the same operation, or a task where the instructions would require the implementation agent to make a design choice, stop.
 
-Report the specific ambiguity: quote the ambiguous spec text, describe the two or more valid interpretations, and state the information needed to resolve it. Include which AC is affected. Do not choose an interpretation and continue. Compilation resumes only after the ambiguity is resolved in Stage 1 or Stage 2.
+Report the specific ambiguity: quote the ambiguous spec text, describe the two or more valid interpretations, and state the information needed to resolve it. Include which AC is affected. Do not choose an interpretation and continue. Compilation resumes only after the ambiguity is resolved in the spec or design phase.
 
 ## Verification Gate
 
@@ -306,6 +343,13 @@ Report the specific ambiguity: quote the ambiguous spec text, describe the two o
 - Task boundaries are natural — splits don't create artificial seams
 - Impacted existing tests from the spec's testing strategy are assigned to test tasks
 - Test tasks cover behavioral intent of referenced ACs, not just surface assertions
+
+### Known Gate-Tooling Limitations
+
+Two gaps in the current gate tooling are worth routing around until the tooling itself is repaired. These are stopgap notes, not the permanent answer — the real fix is to harden the gate.
+
+- **The files-to-modify existence check can't tell a typo from a not-yet-created file.** The check confirms each listed file exists, but a file an earlier task is meant to create does not exist yet at check time, and that looks identical to a misspelled path. Double-check by hand that every `files_to_modify` path is either present now or genuinely produced by a declared earlier task.
+- **The per-task reviewer gate lacks the cross-cutting exemption the breakdown gate has.** The breakdown gate knows a cross-cutting slice has a test task with no paired implementation task; the task reviewer does not, and may flag the missing pair as an error. Expect that false flag on cross-cutting work and confirm the pairing is intentional rather than reshaping the task to satisfy the reviewer.
 
 ## Transition
 

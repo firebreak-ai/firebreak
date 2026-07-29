@@ -17,7 +17,7 @@ This is a security review. It has severity tags.
 - **severity**: blocking
 - Details here.
 """
-        result, failures = validate_review(review, ["Security", "Performance"])
+        result, failures = validate_review(review, ["Security", "Performance"], test_review_verdict="accepted")
         assert result == "fail"
         assert any("Missing perspective" in f for f in failures), f"Expected 'Missing perspective' in {failures}"
 
@@ -30,7 +30,7 @@ This is a review without any severity tags mentioned anywhere.
 ### Finding
 Details here.
 """
-        result, failures = validate_review(review, ["Security"])
+        result, failures = validate_review(review, ["Security"], test_review_verdict="accepted")
         assert result == "fail"
         assert any("severity" in f.lower() for f in failures), f"Expected 'severity' in {failures}"
 
@@ -46,7 +46,7 @@ New tests needed: yes
 Existing tests impacted: yes
 Test infrastructure changes: yes
 """
-        result, failures = validate_review(review, ["Security"])
+        result, failures = validate_review(review, ["Security"], test_review_verdict="accepted")
         assert result == "fail"
         assert any("Threat Model" in f for f in failures), f"Expected 'Threat Model' in {failures}"
 
@@ -66,7 +66,7 @@ New tests needed: yes
 Existing tests impacted: yes
 Test infrastructure changes: yes
 """
-        result, failures = validate_review(review, ["Security"])
+        result, failures = validate_review(review, ["Security"], test_review_verdict="accepted")
         assert result == "fail"
         assert any("rationale" in f.lower() for f in failures), f"Expected 'rationale' in {failures}"
 
@@ -98,7 +98,7 @@ New tests needed: comprehensive authentication tests and integration tests
 Existing tests impacted: yes, existing auth tests need updates
 Test infrastructure changes: yes, added new test fixtures for mocking authentication providers
 """
-        result, failures = validate_review(review, ["Security", "Performance"])
+        result, failures = validate_review(review, ["Security", "Performance"], test_review_verdict="accepted")
         assert result == "pass"
         assert failures == [], f"Expected no failures but got: {failures}"
 
@@ -122,7 +122,7 @@ New tests needed: yes
 Existing tests impacted: yes
 Test infrastructure changes: yes
 """
-        result, failures = validate_review(review, ["Security", "Performance"])
+        result, failures = validate_review(review, ["Security", "Performance"], test_review_verdict="accepted")
         assert result == "fail"
         assert any("No severity tag under perspective section" in f for f in failures), f"Expected severity tag error in {failures}"
 
@@ -142,7 +142,7 @@ New tests needed: yes
 Existing tests impacted: yes
 Test infrastructure changes: yes
 """
-        result, failures = validate_review(review, ["Security"])
+        result, failures = validate_review(review, ["Security"], test_review_verdict="accepted")
         assert result == "pass", f"Expected pass but got failures: {failures}"
 
     def test_missing_testing_strategy_new_tests(self):
@@ -160,7 +160,7 @@ yes with a valid rationale that is longer than ten words to meet requirements.
 Existing tests impacted: yes
 Test infrastructure changes: yes
 """
-        result, failures = validate_review(review, ["Security"])
+        result, failures = validate_review(review, ["Security"], test_review_verdict="accepted")
         assert result == "fail"
         assert any("new tests" in f.lower() for f in failures), f"Expected 'new tests' error in {failures}"
 
@@ -179,7 +179,7 @@ yes with valid long enough rationale for the threat model determination here.
 New tests needed: yes
 Test infrastructure changes: yes
 """
-        result, failures = validate_review(review, ["Security"])
+        result, failures = validate_review(review, ["Security"], test_review_verdict="accepted")
         assert result == "fail"
         assert any("existing tests" in f.lower() for f in failures), f"Expected 'existing tests' error in {failures}"
 
@@ -198,6 +198,56 @@ yes with appropriate rationale explaining threat model decisions and implication
 New tests needed: yes
 Existing tests impacted: yes
 """
-        result, failures = validate_review(review, ["Security"])
+        result, failures = validate_review(review, ["Security"], test_review_verdict="accepted")
         assert result == "fail"
         assert any("infrastructure" in f.lower() for f in failures), f"Expected 'infrastructure' error in {failures}"
+
+
+# A structurally complete review body — every check other than the test-review
+# verdict passes, so these cases isolate the verdict behavior.
+COMPLETE_REVIEW = """## Security Perspective
+
+This covers the security aspects of the change.
+
+- **severity**: blocking
+
+## Threat Model
+
+yes, the threat model has been updated to reflect the new mechanism which strengthens our posture significantly.
+
+## Testing
+
+New tests needed: comprehensive tests
+Existing tests impacted: yes, existing tests need updates
+Test infrastructure changes: yes, added new fixtures
+"""
+
+
+class TestTestReviewVerdictGate:
+    """Tests for the independent test-review verdict requirement at the spec gate."""
+
+    def test_test_review_artifact_missing_fails(self):
+        """A missing test-review verdict (None) is a blocking failure."""
+        result, failures = validate_review(
+            COMPLETE_REVIEW, ["Security"], test_review_verdict=None
+        )
+        assert result == "fail"
+        assert any("test-review" in f.lower() and "missing" in f.lower() for f in failures), \
+            f"Expected missing-artifact failure in {failures}"
+
+    def test_test_review_needs_revision_fails(self):
+        """A 'needs-revision' verdict is a blocking failure."""
+        result, failures = validate_review(
+            COMPLETE_REVIEW, ["Security"], test_review_verdict="needs-revision"
+        )
+        assert result == "fail"
+        assert any("needs-revision" in f.lower() for f in failures), \
+            f"Expected needs-revision failure in {failures}"
+
+    def test_test_review_accepted_passes(self):
+        """An 'accepted' verdict satisfies the test-review requirement."""
+        result, failures = validate_review(
+            COMPLETE_REVIEW, ["Security"], test_review_verdict="accepted"
+        )
+        assert result == "pass", f"Expected pass but got failures: {failures}"
+        assert failures == []

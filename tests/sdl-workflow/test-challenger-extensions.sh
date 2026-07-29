@@ -7,7 +7,8 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
+CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-review-challenger.md"
+CODE_LENS="$PROJECT_ROOT/assets/fbk-docs/fbk-review-lenses/code-lens.md"
 SKILL_FILE="$PROJECT_ROOT/assets/skills/fbk-code-review/SKILL.md"
 GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
 
@@ -40,18 +41,21 @@ else
   not_ok "Adjacent observations documented as informational" "file: $CHALLENGER"
 fi
 
-# --- Test 3: Challenger contains caller tracing requirement (AC-14) ---
-if grep -qiE 'caller.trac|trace.*caller|cross.reference.*caller' "$CHALLENGER"; then
+# --- Test 3: Caller tracing requirement present in challenger or code lens (AC-14) ---
+# generic challenger has "trace at least one call path"; code-lens carries "Cross-function API trace…enumerate callers"
+if grep -qiE 'caller.trac|trace.*caller|cross.reference.*caller' "$CHALLENGER" || \
+   grep -qiE 'caller.trac|trace.*caller|cross.reference.*caller' "$CODE_LENS"; then
   ok "Challenger includes caller tracing requirement"
 else
-  not_ok "Challenger includes caller tracing requirement" "file: $CHALLENGER"
+  not_ok "Challenger includes caller tracing requirement" "file: $CHALLENGER or $CODE_LENS"
 fi
 
 # --- Test 4: Caller tracing applies to behavioral type (AC-14) ---
-if grep -qiE 'behavioral.*caller|behavioral.*trac|caller.*behavioral' "$CHALLENGER"; then
+if grep -qiE 'behavioral.*caller|behavioral.*trac|caller.*behavioral' "$CHALLENGER" || \
+   grep -qiE 'behavioral.*caller|behavioral.*trac|caller.*behavioral' "$CODE_LENS"; then
   ok "Caller tracing scoped to behavioral type"
 else
-  not_ok "Caller tracing scoped to behavioral type" "file: $CHALLENGER"
+  not_ok "Caller tracing scoped to behavioral type" "file: $CHALLENGER or $CODE_LENS"
 fi
 
 # --- Test 5: Verified-pending-execution status present in pipeline (AC-15) ---

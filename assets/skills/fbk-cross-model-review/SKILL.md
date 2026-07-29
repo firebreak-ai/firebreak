@@ -1,0 +1,83 @@
+---
+description: >-
+  Second-opinion review of a document or code change by a different model.
+  Produces candidate findings — observations from a cold, skeptical reviewer
+  that treats the author as unreliable — triaged by severity. Results are
+  candidate findings, never verified findings.
+argument-hint: "[document-path or feature-name for a doc review; omit for a code-diff review]"
+---
+
+A cross-model review gets an outside opinion from a different AI model on a document or a code change. The other model reads cold — no authoring history, no prior discussion — and surfaces what it thinks the author missed. Results come back as candidate findings. You decide what to act on.
+
+## 1. Check the opt-in first
+
+Before doing anything else, run:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --check-opt-in --project-root <root>
+```
+
+If the returned JSON has `"status": "skipped"`, this project has not opted in to cross-model review. Stop here and tell the user the project has not enabled cross-model review. Present no findings.
+
+If the returned JSON has `"status": "failed"`, the opt-in check itself failed — for example the config file is malformed. Relay the `cause` field verbatim and stop. Present no findings.
+
+If the returned JSON has `"status": "success"`, the project is opted in — continue to step 2.
+
+## 2. Gather the target
+
+**Document review** — if `$ARGUMENTS` names a document (a PRD, spec, design, or breakdown), that file path is the target. If `$ARGUMENTS` is a feature name without an extension, pick the artifact the user means under `ai-docs/<feature>/` rather than assuming one phase: a PRD/intent review targets `prd.md`, a spec review `<feature>-spec.md`, a design review the `design/` pages, a breakdown review the task files. When it is ambiguous, choose the latest artifact that exists (the most recent phase reached), or ask. Do not default to the spec file — the headline use case is a PRD review before any spec exists.
+
+**Scoped follow-up review** — if the operator's request is a follow-up check on a specific fix set or amended section rather than a first review of the artifact, scope the target to that fix set or those sections instead of the whole document. A scoped prompt costs a fraction of a full-document prompt and is the standard way to verify a fix pass.
+
+**Code-change review** — if `$ARGUMENTS` is empty or refers to a code change, produce a unified diff of the staged or committed change. The diff *content* is the target — you will inline it into the prompt in step 4, because the runner sends only the prompt to the external model and the model's read-only sandbox (rooted at the project) cannot read a scratch path like `/tmp`.
+
+Before going any further, confirm the target file exists and is readable. If it does not, name exactly what could not be found and stop — do not compose a prompt or call the runner. A missing target must fail deterministically here, not become a vague answer from the external model.
+
+## 3. Read the matching lens for criteria
+
+Choose the lens that matches the target type. Both are criteria references — read them for the severity words and what to look for, not as instructions for Codex to follow.
+
+- **Document** (PRD, spec, design, breakdown): read `fbk-docs/fbk-review-lenses/fresh-eyes-lens.md`. This is the `fresh-eyes-lens` criteria set.
+- **Code change** (diff): read `fbk-docs/fbk-review-lenses/code-lens.md`. This is the `code-lens` criteria set.
+
+Extract the severity labels the lens uses (typically Critical, Substantive, Minor) and the things it says to look for. State these in plain language — you will embed them in the reviewer prompt.
+
+## 4. Compose the reviewer prompt
+
+Write a short prompt to a temp file. The prompt must:
+
+- Tell the reviewer to read cold and treat the author as unreliable.
+- State the criteria in plain language using the lens's own severity words.
+- **Include the target's content inline** — the document text or the diff — because the runner sends only this prompt to the external model and the model cannot read a scratch path. (A path under the project root is also readable by the model; a `/tmp` path is not.)
+- Ask for concise candidate findings only — no suggested fixes, no praise, no acknowledgment of context that was not in the material.
+- Specify the output format: findings grouped under the lens's severity headings.
+
+See `references/cross-model-review-guide.md` for the full prompt template and outcome wording.
+
+## 5. Call the runner
+
+With the prompt file written, invoke the runner:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --project-root <root> --target-label <text>
+```
+
+- `<p>` — path to the prompt file from step 4.
+- `<slug>` — `fresh-eyes` for a document review, `code-review` for a code-change review.
+- `<dir>` — directory where the report should land (typically `ai-docs/<feature>/` or the project's review output folder).
+- `<root>` — project root (same value passed to `--check-opt-in`).
+- `<text>` — a short human-readable label for the thing being reviewed (filename, feature name, or "diff of <branch>").
+
+## 6. Handle the result
+
+Branch on the `status` field in the runner's returned JSON.
+
+**`status: success`** — Read the report the runner wrote. Before presenting anything:
+
+1. Check that the report contains actual review content, not a refusal (phrases like "I cannot review", "as an AI I should not", or a blank findings section). If it looks like a refusal, rewrite the prompt with a clearly technical framing (not a command to do something harmful — just remove any phrasing the model may have misread) and re-run the runner once.
+2. Triage the candidate findings: before setting any finding aside, read the target's authoritative source (the spec, design, or locked contract) directly — not from memory or assumption. Set aside only a finding the direct read confirms is wrong. Keep everything else, including a finding that contradicts another review pass's conclusion, until a direct read resolves the contradiction.
+3. Present a summary to the user labelled explicitly as "candidate findings from a different model's review." Use the lens's severity headings. Do not present these as verified — the user decides which to act on.
+
+**`status: skipped`** — The opt-in check (step 1) should have caught this earlier, but if it surfaces here, tell the user the project has not enabled cross-model review and present nothing.
+
+**`status: failed`** — Relay the cause from the JSON `cause` field verbatim. If the message mentions `codex login`, tell the user they need to run `codex login` in the sandbox before cross-model review can proceed. Present no findings.

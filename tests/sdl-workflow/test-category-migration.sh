@@ -8,8 +8,8 @@ TOTAL=0
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
-DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
-CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
+DETECTOR="$PROJECT_ROOT/assets/agents/fbk-review-researcher.md"
+CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-review-challenger.md"
 
 ok() {
   TOTAL=$((TOTAL + 1))

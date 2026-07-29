@@ -9,6 +9,7 @@ COMMAND_MAP = {
     "intent-gate": "fbk.gates.intent",
     "design-gate": "fbk.gates.design",
     "code-review-gate": "fbk.gates.code_review",
+    "coherence-gate": "fbk.gates.coherence",
     "task-completed": "fbk.hooks.task_completed",
     "dispatch-status": "fbk.hooks.dispatch_status",
     "pipeline": "fbk.pipeline",
@@ -20,4 +21,7 @@ COMMAND_MAP = {
     "session-state": "fbk.council.session_state",
     "ralph": "fbk.council.ralph",
     "report": "fbk.report",
+    "run-retro": "fbk.run_retro",
+    "cross-review": "fbk.cross_review",
+    "precheck": "fbk.precheck",
 }

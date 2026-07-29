@@ -84,6 +84,12 @@ MSG_DESIGN_PAGE_NOT_FOUND = (
     "run /fbk-design <feature-name> to produce it before running the spec gate."
 )
 
+MSG_NONSTANDARD_SCHEME = (
+    "design/contracts.md numbers contract {id} with a non-standard prefix. "
+    "The design-anchor check verifies only IF-D-NN entries and cannot verify this scheme; "
+    "rename the design page's contract ids to the literal IF-D prefix "
+    "(see design-contracts-standard.md) so carry verification can run."
+)
 MSG_CONTRACT_NOT_CARRIED = (
     "Contract {id} ({name}) is listed in design/contracts.md but is not carried "
     "into ## Interface contracts and has no entry in ## Excluded contracts. "
@@ -118,7 +124,7 @@ _VALID_ID_RE = re.compile(r"^IF-[DS]-[0-9]{2,}$")
 #   - id: IF-D-01        (YAML list item form)
 #     id: IF-D-01        (plain indented form, used by some test fixtures)
 _ANY_ENTRY_START_RE = re.compile(r"^\s*(?:-\s+)?id:\s+(\S+)", re.MULTILINE)
-_FIELD_RE = re.compile(r"^\s+(\S[^:]*?):\s*(.*)", re.MULTILINE)
+_FIELD_RE = re.compile(r"^\s+(\S[^:\n]*?):\s*(.*)", re.MULTILINE)
 _COVERS_LIST_RE = re.compile(r"\[([^\]]*)\]")
 
 
@@ -307,8 +313,14 @@ def check_design_anchor(spec_text: str, feature_dir: str) -> List[str]:
             name = stripped if stripped else "unnamed"
         design_names[did] = name if name else "unnamed"
 
+    # A contract-shaped heading with a non-IF-D prefix (e.g. IF-A-01) is a scheme
+    # the carry check cannot verify — fail loudly instead of silently skipping.
+    nonstandard_re = re.compile(r"^## (IF-(?!D-)[A-Z0-9]+-[0-9]{2,})", re.MULTILINE)
+    for m in nonstandard_re.finditer(design_text):
+        failures.append(MSG_NONSTANDARD_SCHEME.format(id=m.group(1)))
+
     if not design_ids:
-        return []
+        return failures
 
     # Extract carried IF-D ids from ## Interface contracts.
     contracts_ln = heading_line(spec_text, "## Interface contracts")

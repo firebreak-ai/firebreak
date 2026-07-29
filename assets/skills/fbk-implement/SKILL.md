@@ -6,7 +6,7 @@ description: >-
 argument-hint: "[feature-name]"
 ---
 
-This skill is phase six of the six-phase refactored SDL (intent → design → spec → breakdown → code-review → implement).
+This skill is the implementation phase of the SDL (intent → design → spec → spec review → breakdown → implement → code review).
 
 Read `.claude/fbk-docs/fbk-sdl-workflow/implementation-guide.md` for the complete wave execution protocol, verification rules, escalation protocol, checkpoint format, and retrospective structure. Follow that doc at every step below.
 
@@ -23,7 +23,9 @@ Set `FEATURE=$ARGUMENTS`. Paths used throughout:
 
 Read `task.json`. Verify it exists and is valid JSON conforming to the task manifest schema in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`. If missing or malformed, stop and tell the user what is absent.
 
-## Stage 3 Gate
+## Prerequisite Gates
+
+### Breakdown Gate
 
 Run:
 
@@ -34,6 +36,16 @@ python3 "$HOME"/.claude/fbk-scripts/fbk.py breakdown-gate \
 ```
 
 If exit code is non-zero, report the failures and offer to run `/fbk-breakdown` to recompile the tasks. Do not proceed.
+
+### Coherence Gate
+
+Run:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py coherence-gate "ai-docs/$FEATURE"
+```
+
+If exit code is non-zero, report the failures and offer to run `/fbk-breakdown` (which produces the coherence artifact). Do not proceed.
 
 ## Team Setup
 
@@ -53,6 +65,8 @@ Read that task file and execute it. Treat the task file as your work specificati
 
 When the task involves authoring tests, also read `.claude/fbk-docs/fbk-design-guidelines/test-authoring.md` for the test-authoring rules — including the mocks rule (stand-ins only for code we don't own).
 
+If you need an isolated copy of the repo to verify something without touching the shared working tree, create a git worktree (`git worktree add <path> <ref>`) rather than a manual `cp`/`cd` scratch copy — a scratch copy whose `cd` silently fails runs your next command against the real repository, not the copy.
+
 Before your turn ends, send a work summary message to the team lead describing what you created, what verification you ran, and any caveats. A turn ending without this message is incomplete work.
 ```
 
@@ -66,7 +80,7 @@ After the final wave checkpoint, run the structural and semantic checks per the 
 
 ## Retrospective
 
-Write the Stage 4 section per the implementation guide.
+Write the Implementation section per the implementation guide.
 
 ## Team Shutdown
 

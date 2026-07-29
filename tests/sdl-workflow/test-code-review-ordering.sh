@@ -72,10 +72,10 @@ else
 fi
 
 # --- Test 6: check_prerequisites referenced in skill body ---
-if grep -q 'check_prerequisites' "$CODE_REVIEW_SKILL"; then
-  ok "fbk-code-review/SKILL.md references check_prerequisites (capability-entry probe wired by task-24)"
+if grep -q 'fbk.py precheck code-review' "$CODE_REVIEW_SKILL"; then
+  ok "fbk-code-review/SKILL.md references the precheck probe (capability-entry probe wired by task-24)"
 else
-  not_ok "fbk-code-review/SKILL.md references check_prerequisites (capability-entry probe wired by task-24)"
+  not_ok "fbk-code-review/SKILL.md references the precheck probe (capability-entry probe wired by task-24)"
 fi
 
 # --- Summary ---

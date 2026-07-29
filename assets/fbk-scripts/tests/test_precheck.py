@@ -97,3 +97,45 @@ class TestReturnStructure:
         # 'phase' presence and value are the unique contract assertions here;
         # per-item shape is exercised by the behavioral fail/pass tests.
         assert result["phase"] == "design"
+
+
+class TestUnknownPhase:
+    """An unrecognized phase is a wiring bug and must fail loudly, not fall
+    through to ready=True (realmind2 harvest: 'Code Review' silently passed)."""
+
+    def test_unknown_phase_raises(self, feature_dir):
+        with pytest.raises(ValueError) as exc:
+            check_prerequisites("Code Review", str(feature_dir[0]))
+        assert "code-review" in str(exc.value)
+
+    def test_registered_in_dispatcher(self):
+        from fbk import COMMAND_MAP
+        assert COMMAND_MAP.get("precheck") == "fbk.precheck"
+
+
+class TestDispatchEndToEnd:
+    """Pin the actual fbk.py dispatch path, not just the map entry and the
+    Python function (gpt-5.6-sol review: the two prior tests never execute
+    the CLI, so argv forwarding / stderr / exit status were unpinned)."""
+
+    def _fbk(self, *args):
+        import subprocess, sys
+        from pathlib import Path
+        script = Path(__file__).resolve().parents[1] / "fbk.py"
+        return subprocess.run(
+            [sys.executable, str(script), *args],
+            capture_output=True, text=True,
+        )
+
+    def test_cli_reports_missing_artifact(self, feature_dir):
+        import json
+        result = self._fbk("precheck", "design", str(feature_dir[0]))
+        assert result.returncode == 0
+        payload = json.loads(result.stdout.strip().splitlines()[-1])
+        assert payload["ready"] is False
+        assert payload["missing"][0]["artifact"] == "prd.md"
+
+    def test_cli_rejects_unknown_phase_with_exit_2(self, feature_dir):
+        result = self._fbk("precheck", "Code Review", str(feature_dir[0]))
+        assert result.returncode == 2
+        assert "code-review" in result.stderr

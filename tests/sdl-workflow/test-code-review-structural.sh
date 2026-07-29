@@ -7,8 +7,8 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
-CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
+DETECTOR="$PROJECT_ROOT/assets/agents/fbk-review-researcher.md"
+CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-review-challenger.md"
 GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
 CHECKLIST="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md"
 
@@ -48,13 +48,15 @@ else
   not_ok "Detector has YAML frontmatter" "first_line='$first_line' closing_count=$closing_count"
 fi
 
-# --- Test 3: Detector name field contains "detector" ---
+# --- Test 3: Detector name field contains "researcher" or "detector" ---
+# The old code-review-detector had name "code-review-detector"; the unified generic agent
+# is "review-researcher". Either token confirms the detection role is present.
 fm=$(frontmatter "$DETECTOR" 2>/dev/null || true)
 name_val=$(echo "$fm" | grep '^name:' | sed 's/^name:[[:space:]]*//;s/[[:space:]]*$//')
-if echo "$name_val" | grep -qi 'detector'; then
-  ok "Detector name field contains 'detector'"
+if echo "$name_val" | grep -qiE 'researcher|detector'; then
+  ok "Detector name field identifies the detection role"
 else
-  not_ok "Detector name field contains 'detector'" "name_val='$name_val'"
+  not_ok "Detector name field identifies the detection role" "name_val='$name_val'"
 fi
 
 # --- Test 4: Detector description field is non-empty ---
@@ -86,11 +88,13 @@ else
   not_ok "Detector tools field excludes Write and Edit" "has_write=$has_write has_edit=$has_edit"
 fi
 
-# --- Test 7: Detector description contains code review language ---
-if echo "$desc_val" | grep -qiE 'reviewing code|bug|sighting|JSON'; then
-  ok "Detector description contains code review language"
+# --- Test 7: Detector description contains evaluator/finding language ---
+# The generic review-researcher describes a "senior evaluator" who "surfaces structured
+# candidate findings". The old code-review-detector used "code review" specific phrasing.
+if echo "$desc_val" | grep -qiE 'evaluator|finding|sighting|surfaces|candidate'; then
+  ok "Detector description contains evaluator/finding language"
 else
-  not_ok "Detector description contains code review language" "desc_val='$desc_val'"
+  not_ok "Detector description contains evaluator/finding language" "desc_val='$desc_val'"
 fi
 
 # --- Test 8: Challenger agent file exists and is non-empty ---
@@ -152,7 +156,7 @@ fi
 
 # --- Test 14: Challenger description contains adversarial verification language ---
 desc_val=$(echo "$fm" | grep '^description:' | sed 's/^description:[[:space:]]*//;s/[[:space:]]*$//')
-if echo "$desc_val" | grep -qiE 'adversarial|verif|challenger|skeptic|evidence'; then
+if echo "$desc_val" | grep -qiE 'adversarial|verif|challenger|skeptic|evidence|demands|proof'; then
   ok "Challenger description contains adversarial verification language"
 else
   not_ok "Challenger description contains adversarial verification language" "desc_val='$desc_val'"
@@ -174,11 +178,11 @@ d_consequence=$(grep -ci 'consequence' "$DETECTOR" 2>/dev/null || true)
 mechanism=$(( g_mechanism + d_mechanism ))
 consequence=$(( g_consequence + d_consequence ))
 finding_id=$(grep -ci 'finding id' "$GUIDE" 2>/dev/null || true)
-sighting=$(($(grep -ci 'sighting' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'sighting' "$DETECTOR" 2>/dev/null || true)))
-location=$(($(grep -ci 'location' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'location' "$DETECTOR" 2>/dev/null || true)))
-type_field=$(($(grep -ci 'Type:' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'type' "$DETECTOR" 2>/dev/null || true)))
-source=$(($(grep -ci 'source of truth' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'source' "$DETECTOR" 2>/dev/null || true)))
-evidence=$(($(grep -ci 'evidence' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'evidence' "$DETECTOR" 2>/dev/null || true)))
+sighting=$(( $(grep -ci 'sighting' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'sighting' "$DETECTOR" 2>/dev/null || true) ))
+location=$(( $(grep -ci 'location' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'location' "$DETECTOR" 2>/dev/null || true) ))
+type_field=$(( $(grep -ci 'Type:' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'type' "$DETECTOR" 2>/dev/null || true) ))
+source=$(( $(grep -ci 'source of truth' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'source' "$DETECTOR" 2>/dev/null || true) ))
+evidence=$(( $(grep -ci 'evidence' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'evidence' "$DETECTOR" 2>/dev/null || true) ))
 if [ "$sighting" -gt 0 ] && [ "$location" -gt 0 ] && [ "$type_field" -gt 0 ] && [ "$mechanism" -gt 0 ] && [ "$consequence" -gt 0 ] && [ "$evidence" -gt 0 ]; then
   ok "Guide documents finding format with all 8 required fields"
 else
@@ -197,12 +201,12 @@ else
 fi
 
 # --- Test 18: Sighting format fields documented across pipeline (guide or Detector) ---
-sighting_id=$(($(grep -ci 'sighting id' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'sighting' "$DETECTOR" 2>/dev/null || true)))
-sighting_location=$(($(grep -ci 'location' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'location' "$DETECTOR" 2>/dev/null || true)))
-sighting_type=$(($(grep -ci 'Type:' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'type' "$DETECTOR" 2>/dev/null || true)))
-mechanism_s=$(($(grep -ci 'mechanism' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'mechanism' "$DETECTOR" 2>/dev/null || true)))
-consequence_s=$(($(grep -ci 'consequence' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'consequence' "$DETECTOR" 2>/dev/null || true)))
-sighting_source=$(($(grep -ci 'source of truth' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'source' "$DETECTOR" 2>/dev/null || true)))
+sighting_id=$(( $(grep -ci 'sighting id' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'sighting' "$DETECTOR" 2>/dev/null || true) ))
+sighting_location=$(( $(grep -ci 'location' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'location' "$DETECTOR" 2>/dev/null || true) ))
+sighting_type=$(( $(grep -ci 'Type:' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'type' "$DETECTOR" 2>/dev/null || true) ))
+mechanism_s=$(( $(grep -ci 'mechanism' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'mechanism' "$DETECTOR" 2>/dev/null || true) ))
+consequence_s=$(( $(grep -ci 'consequence' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'consequence' "$DETECTOR" 2>/dev/null || true) ))
+sighting_source=$(( $(grep -ci 'source of truth' "$GUIDE" 2>/dev/null || true) + $(grep -ci 'source' "$DETECTOR" 2>/dev/null || true) ))
 if [ "$sighting_id" -gt 0 ] && [ "$sighting_location" -gt 0 ] && [ "$sighting_type" -gt 0 ] && [ "$mechanism_s" -gt 0 ] && [ "$consequence_s" -gt 0 ] && [ "$sighting_source" -gt 0 ]; then
   ok "Guide documents sighting format with required fields"
 else

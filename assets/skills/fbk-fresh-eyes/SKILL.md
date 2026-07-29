@@ -15,7 +15,7 @@ If `$ARGUMENTS` is empty, ask: "Which artifact or feature would you like a fresh
 
 ## Spawn the reviewer
 
-Invoke the `fbk-fresh-eyes-reviewer` agent in an isolated context. Pass it only the artifact under review — no other files, no authoring history, no prior conversation context. The reviewer reads cold.
+Spawn the generic `review-researcher` agent as a cleared agent, loaded with `fresh-eyes-lens.md`, at degenerate cardinality (0 challengers, round cap 1) per the shared review-loop spine's degenerate-cardinality rule. Pass it the artifact under review, plus any cross-cutting convention files the artifact consumes — an authoritative conventions document, a shared config or interface definition, a naming or event registry the artifact builds on — so the researcher can check the artifact against the convention it should follow rather than re-deriving it. Pass nothing else: no authoring history, no prior conversation context, no review of how the artifact came to be. The researcher reads cold, and the convention files are reference material to compare against, not a record of the author's reasoning.
 
 ## Collect observations
 

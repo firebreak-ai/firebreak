@@ -108,10 +108,14 @@ else
 fi
 
 # --- T9 (AC-04) — fbk-spec-review/SKILL.md contains three operational sentinels ---
-if grep -qF '/fbk-council' "$REVIEW_SKILL" && grep -qF 'test-reviewer' "$REVIEW_SKILL" && grep -qF 'testing strategy' "$REVIEW_SKILL"; then
-  ok "T9 (AC-04) — fbk-spec-review/SKILL.md contains '/fbk-council', 'test-reviewer', and 'testing strategy'"
+# The old sentinel "test-reviewer" was replaced by "review-researcher" in the
+# unified-review-shape consolidation; accept either form.
+if grep -qF '/fbk-council' "$REVIEW_SKILL" && \
+   (grep -qF 'test-reviewer' "$REVIEW_SKILL" || grep -qF 'review-researcher' "$REVIEW_SKILL") && \
+   grep -qi 'testing strategy' "$REVIEW_SKILL"; then
+  ok "T9 (AC-04) — fbk-spec-review/SKILL.md contains '/fbk-council', test-review capability, and 'testing strategy'"
 else
-  not_ok "T9 (AC-04) — fbk-spec-review/SKILL.md contains '/fbk-council', 'test-reviewer', and 'testing strategy'" "file: $REVIEW_SKILL"
+  not_ok "T9 (AC-04) — fbk-spec-review/SKILL.md contains '/fbk-council', test-review capability, and 'testing strategy'" "file: $REVIEW_SKILL"
 fi
 
 # --- T9b (AC-04) — fbk-implement/SKILL.md contains operational exit-prompt sentinel ---

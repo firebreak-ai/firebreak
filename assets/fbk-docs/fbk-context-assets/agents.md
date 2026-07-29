@@ -103,7 +103,7 @@ The persona defines what quality the output demonstrates. The spawn prompt defin
 
 ### Reference implementations
 
-The Detector (`.claude/agents/fbk-code-review-detector.md`) and Challenger (`.claude/agents/fbk-code-review-challenger.md`) are the canonical examples of the activation-focused pattern. The Challenger is especially concise — role activation line, two quality outcomes, no section headings — demonstrating the minimal effective persona.
+The Researcher (`.claude/agents/fbk-review-researcher.md`) and Challenger (`.claude/agents/fbk-review-challenger.md`) are the canonical examples of the activation-focused pattern. The Challenger is especially concise — role activation line, two quality outcomes, no section headings — demonstrating the minimal effective persona.
 
 ### What not to include
 

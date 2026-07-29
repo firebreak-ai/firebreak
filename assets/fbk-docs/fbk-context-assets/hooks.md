@@ -74,6 +74,10 @@ Keep hook commands fast — they execute synchronously and block the agent until
 
 Use deterministic checks (linters, validators, format checkers, file-existence tests) instead of instructional enforcement. A `PostToolUse` hook running `eslint` on edited files enforces style more reliably than a rule saying "always lint after editing."
 
+Use a blocking `TeammateIdle` hook instead of a spawn-prompt instruction alone to require a teammate to report before going idle — retrospectives show the spawn-prompt-only instruction ("send via SendMessage before idle") is not reliably followed even when present.
+
+When a command hook enforces a full-suite or aggregate check (e.g., a completion gate running the whole test suite), account for task-declared phase state before blocking — a check that cannot distinguish an intentionally incomplete phase (e.g., a red-state test-first task) from a broken one produces false rejections and burns agent turns re-explaining the state.
+
 Extract logic to a script file when it exceeds a single clear command. Store hook scripts in `.claude/hooks/` and reference them with `"$CLAUDE_PROJECT_DIR"/.claude/hooks/<script>`.
 
 Read JSON input from stdin using `jq` or equivalent. The input includes `tool_name`, `tool_input`, `session_id`, `cwd`, and other context fields specific to the event.

@@ -20,7 +20,7 @@ Open an interview to draw out what the work is and why. Probe for: the user prob
 
 When product-level ambiguity surfaces that cannot be closed by inference — behavior-inventory completeness, user-flow edge cases, acceptance-criteria boundaries — invoke `fbk-grilling` to run structured grilling questions. Record each decision in `grilling-log-intent.md` with a `Confirmed:` reflect-back line per decision.
 
-At gate closure, invoke `fbk-fresh-eyes` on the PRD and behavior inventory. Before passing the report to the gate, compare the fresh-eyes raw report against the grilling log and remove observations that map to already-resolved grilling-log decisions. Pass only the reduced report to the gate.
+At gate closure, invoke `fbk-fresh-eyes` on the PRD and behavior inventory. Frame the spawn so the reviewer treats items already pinned elsewhere (seam-doc deferrals, pre-staged design-phase work) as scoping decisions for a later phase, not open intent questions. Before passing the report to the gate, compare the fresh-eyes raw report against the grilling log and remove observations that map to already-resolved grilling-log decisions. Pass only the reduced report to the gate.
 
 ## PRD drafting
 

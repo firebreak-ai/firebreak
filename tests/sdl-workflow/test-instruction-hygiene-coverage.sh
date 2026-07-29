@@ -29,8 +29,8 @@ not_ok() {
 CHECKLIST="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md"
 QUALITY="$PROJECT_ROOT/assets/fbk-docs/fbk-design-guidelines/quality-detection.md"
 GUIDE="$PROJECT_ROOT/assets/fbk-docs/fbk-sdl-workflow/code-review-guide.md"
-DETECTOR="$PROJECT_ROOT/assets/agents/fbk-code-review-detector.md"
-CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-code-review-challenger.md"
+DETECTOR="$PROJECT_ROOT/assets/agents/fbk-review-researcher.md"
+CHALLENGER="$PROJECT_ROOT/assets/agents/fbk-review-challenger.md"
 
 # Combine all docs for grep -l queries
 ALL_DOCS="$CHECKLIST $QUALITY $GUIDE $DETECTOR $CHALLENGER"

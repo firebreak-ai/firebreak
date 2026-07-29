@@ -1,0 +1,1 @@
+- The module declares a no-silent-failure invariant in Overview but the Error Handling section marks transient errors as `swallow_on_transient` and continues without surfacing them to the caller, directly contradicting that invariant and silently corrupting the retry guarantee stated in the Retry Logic section.

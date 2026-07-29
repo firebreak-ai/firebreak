@@ -49,6 +49,10 @@ Each test asserts on one behavior.
 
 Receive test dependencies as setup, not as ambient state. Use beforeEach/setUp to create fresh state for each test.
 
+## Shared test infrastructure
+
+When multiple test files in the same package, module, or suite need the same helper function, fixture builder, script fragment, or field accessor, declare it once in a shared location and have every file reference it. Do not repeat the declaration in more than one file — a symbol declared identically in two files sharing a compilation scope is a redeclaration error, and duplicated inline logic (an ad hoc field accessor rewritten per file) drifts as the underlying data shape changes.
+
 ## Stand-ins only for code we don't own
 
 Run the actual production code in every test. The purpose of testing is to verify the code we own; a stand-in that replaces code we own does not test that code.
@@ -71,6 +75,20 @@ Weak assertion: `assert result is not None`
 Specific assertion: `assert result.status_code == 200 and result.body["user_id"] == expected_id`
 
 Pair every upper-bound or ceiling assertion with a corresponding presence or lower-bound assertion. A ceiling check (`length ≤ 40`) passes trivially when the target content is absent; a presence check (`length ≥ 5` or required-marker grep) fails when content is absent. Both together give regression protection in both directions.
+
+When asserting behavior at a boundary or extreme input value, hand-derive the expected numeric result with shown arithmetic and assert equality to that derived value — do not substitute a qualitative comparison (`!=`, a strict inequality, "stays above/below"). Floating-point behavior at extremes (underflow, saturation to a floor or ceiling) can satisfy a qualitative check while the actual numeric path is wrong.
+
+## Deriving expected values for existing behavior
+
+When a test pins an expected value for equivalence with existing, already-shipped production code (a regex, a parser, a formatting function), derive that value by executing the shipped code or by quoting one of its existing test vectors — do not hand-simulate what the shipped code would produce. A hand-simulated expectation can silently diverge from the real implementation, and the test will assert the wrong value with full confidence.
+
+## Assert the contract, not the incidental implementation
+
+Before asserting on an implementation detail (an internal state value, a specific call sequence, a resource's exact final state), check whether the behavioral contract actually requires that detail, or whether a weaker assertion would still prove the contract. An assertion stricter than the contract forces the implementation to satisfy the stricter version, which can push it toward a worse implementation choice (withholding a cleanup call, over-fitting to a coincidental value) purely to make the test pass.
+
+## Distinguish value-equivalence from code-path-equivalence
+
+When two input scenarios are expected to produce the same output through different code paths, do not assume a test on one scenario "subsumes" the other. Write a distinct test for each code path — one whose fixture actually exercises that path — and confirm each test would fail if that specific path were deleted or altered.
 
 ## Structural assertions on text artifacts
 

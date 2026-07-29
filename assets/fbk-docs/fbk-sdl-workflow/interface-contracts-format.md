@@ -61,9 +61,23 @@ Every contract entry carries a `design-ref` that records where the contract orig
 
 1. **Path/anchor into the design contracts page** — used for `IF-D-NN` entries carried from the design phase. The value is a relative path and anchor, for example `design/contracts.md#if-d-03`. The spec reviewer uses this to verify the spec entry matches the design entry (the design-anchor check).
 
+   When the entry claims to carry a contract inherited from a broader project scope verbatim, the reviewer locates that original contract at the referenced path and compares the spec entry against it field by field — signature, every invariant, every constant. A review that reads only this spec entry cannot catch a transcription divergence: a dropped field, a renamed field, a widened type, or a changed constant value all look correct when the spec's copy is the only thing being read.
+
 2. **`pre-existing`** — used for `IF-S-NN` entries that represent pre-existing contracts on modules the feature touches (blast-radius entries). The value is the literal string `pre-existing`. Always paired with an `IF-S-NN` id.
 
 3. **`none`** — used for `IF-S-NN` entries discovered during spec work that have no design reference. The value is the literal string `none`. Always paired with an `IF-S-NN` id.
+
+---
+
+## Spec-gate parser quirks
+
+The spec gate parses these sections with simple text matching, so a few formatting choices that look correct to a reader still fail the gate. Each item below is a brittle-parser artifact — the durable fix is to harden the parser so authors need not remember these. Until then, following them avoids repeated spec-gate round-trips. (The no-sub-heading-per-entry rule noted above in the contract-entry form is one of these same quirks.)
+
+- **Keep the section headers unnumbered.** The gate finds each section by an exact opening match on the heading text (for example `## Interface contracts`). A numbered heading such as `## 2. Interface contracts` does not match, so the gate reports the section as missing.
+
+- **Write the `covers` value as a bracketed inline list.** The gate reads the covered acceptance criteria only from inside square brackets, for example `covers: [AC-03, AC-07]`. A `covers` field written as an indented multi-line list reads as empty and fails the empty-covers check.
+
+- **List each acceptance criterion in `covers` individually.** The gate splits the bracketed list on commas and matches each item against the exact `AC-NN` form. A shorthand range (for example `[AC-03–AC-05]`) is read as one unrecognized item, so spell out every criterion: `[AC-03, AC-04, AC-05]`.
 
 ---
 
