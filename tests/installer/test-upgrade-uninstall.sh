@@ -350,6 +350,40 @@ else
   not_ok "manifest entry pointing outside the target is refused" "victim=$VICTIM_CONTENT stderr=$STDERR_OUT"
 fi
 
+# --- Test 21: upgrade refreshes the recorded version but keeps the install date ---
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>/dev/null
+python3 -c "
+import json
+path = '$TARGET/.firebreak-manifest.json'
+d = json.load(open(path))
+d['firebreak_version'] = '0.0.1'
+d['installer_version'] = '0.0.1'
+d['installed_at'] = '2020-01-01T00:00:00Z'
+json.dump(d, open(path, 'w'), indent=2)
+" 2>/dev/null
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>/dev/null
+NEW_VERSION=$(python3 -c "import json; print(json.load(open('$TARGET/.firebreak-manifest.json')).get('firebreak_version',''))" 2>/dev/null || true)
+KEPT_DATE=$(python3 -c "import json; print(json.load(open('$TARGET/.firebreak-manifest.json')).get('installed_at',''))" 2>/dev/null || true)
+# Expected value computed from the repo's own CHANGELOG, independently of the installer
+EXPECTED_VERSION=$(python3 - "$PROJECT_ROOT/CHANGELOG.md" <<'PYEOF' 2>/dev/null || true
+import re, sys
+heading = re.compile(r'^##\s*\[(\d+\.\d+\.\d+[^\]]*)\]')
+for line in open(sys.argv[1], encoding='utf-8'):
+    match = heading.match(line)
+    if match:
+        print(match.group(1))
+        break
+PYEOF
+)
+if [ -n "$EXPECTED_VERSION" ] && [ "$NEW_VERSION" = "$EXPECTED_VERSION" ] \
+  && [ "$KEPT_DATE" = "2020-01-01T00:00:00Z" ]; then
+  ok "upgrade refreshes the recorded version and preserves the original install date"
+else
+  not_ok "upgrade refreshes the recorded version and preserves the original install date" "expected=$EXPECTED_VERSION version=$NEW_VERSION installed_at=$KEPT_DATE"
+fi
+
 # --- Summary ---
 echo ""
 echo "# $PASS/$TOTAL tests passed"
