@@ -11,7 +11,7 @@ Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral
 
 ## Mid-Pipeline Entry: Prerequisite Check
 
-Read `.claude/fbk-docs/fbk-sdl-workflow/capability-entry.md` for the prerequisite-probe contract this section implements. When invoked directly (not as part of the post-implementation pipeline), call `fbk.precheck.check_prerequisites("code-review", <feature_dir>)` before running. If the implementation artifact is missing (no `implementation/` directory under the feature dir), name what is missing and offer to run the upstream phase (implement) first — non-blocking, never a hard block. Proceed if the user confirms or if the artifact is present.
+Read `.claude/fbk-docs/fbk-sdl-workflow/capability-entry.md` for the prerequisite-probe contract this section implements. When invoked directly (not as part of the post-implementation pipeline), run the capability-entry prerequisite probe before proceeding: `python3 "$HOME"/.claude/fbk-scripts/fbk.py precheck code-review <feature_dir>` (the phase argument is the literal lowercase string `code-review`). If the command is unavailable in the installed CLI, check manually for the implementation artifact. If the implementation artifact is missing (no `implementation/` directory under the feature dir), name what is missing and offer to run the upstream phase (implement) first — non-blocking, never a hard block. Proceed if the user confirms or if the artifact is present.
 
 ## Entry and Path Routing
 
@@ -28,8 +28,8 @@ Check for existing specs — provided by the user or discovered in `ai-docs/`. I
 
 Spawn agents as a team with fresh context per invocation. Use two agents:
 
-- **Detector** (`code-review-detector`): Reads code, produces sightings with type and severity classification. Tools: Read, Grep, Glob.
-- **Challenger** (`code-review-challenger`): Verifies or rejects sightings using JSON verdict format. Tools: Read, Grep, Glob.
+- **Detector** (`review-researcher` loaded with `fbk-docs/fbk-review-lenses/code-lens.md`): Reads code, produces sightings with type and severity classification. Tools: Read, Grep, Glob.
+- **Challenger** (`review-challenger` loaded with `fbk-docs/fbk-review-lenses/code-lens.md`): Verifies or rejects sightings using JSON verdict format. Tools: Read, Grep, Glob.
 
 Inject the behavioral comparison methodology from `code-review-guide.md` and the relevant source of truth into each agent's spawn prompt. Agents do not inherit skills.
 
@@ -80,20 +80,25 @@ Where the intent register has gaps (modules with no documentation coverage), der
 
 Resolve the active preset and severity threshold at the start of the review. Defaults: preset=`behavioral-only`, severity=`minor`. Both are overridable by user instruction.
 
+This loop follows the shared spine defined in `fbk-docs/fbk-review-lenses/review-loop.md`, with `fbk-docs/fbk-review-lenses/code-lens.md` as the loaded lens. The numbered steps below are the code-review preset's concrete wiring for that spine.
+
 Run the iterative detection and verification loop:
 
 1. Spawn Detector with: target code file contents first, then tool output (if available), then intent register (from Intent Extraction), then source of truth + behavioral comparison instructions from `code-review-guide.md` + AI failure mode checklist from `ai-failure-modes.md` + security detection targets from `security-patterns.md` + procedural audit passes from `detection-audits.md` + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` + the JSON sighting schema and type/severity definitions last. Instruct the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, `audit-pass`, `intent`, or `linter`) and to output sightings as a JSON array.
 2. Collect sightings as JSON.
-3. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline run --preset <preset> --min-severity <threshold>` to validate, domain-filter, and severity-filter the sightings in a single invocation. If >30% of sightings are rejected during validation, log a warning about prompt compliance.
-4. Spawn Challenger with: target code file contents first, then the filtered JSON sightings to verify, then verification instructions + type/severity definitions + the type-severity validity matrix last. The Challenger receives and produces JSON — no format translation between agents.
-5. Validate Challenger output by piping the JSON through `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate` — this enforces required fields, enum values, and the type-severity matrix on any reclassified combinations. Also verify status and evidence fields are present (status is `verified`, `verified-pending-execution`, `rejected`, or `rejected-as-nit`; evidence required for verified statuses).
+3. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline run --preset <preset> --min-severity <threshold> --lens "$HOME"/.claude/fbk-docs/fbk-review-lenses/code-lens.md` to validate, domain-filter, and severity-filter the sightings in a single invocation. The lens's required set omits `id`, so the detection round accepts the researcher's id-less findings. If >30% of sightings are rejected during validation, log a warning about prompt compliance.
+3a. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline normalize` on the kept findings to produce the six neutral fields handed to the challenger. Retain the full kept findings as the orchestrator's record store for the later re-join.
+4. Spawn Challenger with: target code file contents first, then the code lens (`"$HOME"/.claude/fbk-docs/fbk-review-lenses/code-lens.md`), then the normalized findings. Collect the documents named in each kept finding's `source_of_truth_ref` field and inject those documents into the challenger spawn after the normalized findings. Then provide verification instructions + type/severity definitions + the type-severity validity matrix last. The Challenger receives and produces JSON — no format translation between agents. The Challenger writes its verdict array to a temp file.
+4a. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate-verdicts < <verdicts-file>` piping the verdicts temp file on stdin to confirm each verdict carries a valid status and the evidence its status requires. Findings with status `unresolvable` — where the Challenger could not locate the cited source and therefore could not rule — are not filtered in as verified and are not dropped. Surface them in the review report as unadjudicated findings, noting that the cited source could not be located, so the finding remains open.
+4b. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline rejoin --verdicts <verdicts-file>` piping the retained kept findings on stdin to merge the Challenger's verdicts onto the kept findings, producing the merged records.
+5. Re-validate the merged records by piping them through `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate --lens "$HOME"/.claude/fbk-docs/fbk-review-lenses/code-lens.md` — this enforces required finding fields, enum values, and the type-severity matrix on any reclassified combinations. The verdict-field check is carried by the separate `validate-verdicts` step above.
 6. Filter to `status: verified` or `verified-pending-execution`. Assign sequential finding IDs (F-01, F-02...).
 7. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline to-markdown` to convert verified findings to markdown once for the review report. Adjacent observations from the Challenger are rendered at the end of each finding and accumulated into the retrospective.
 7a. After each verification round, append verified findings to the review report file.
 8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern and apply the fix to every instance. The Consistency audit normally surfaces siblings as separate sightings during detection; this fix-time sweep remains as a safety net for sites the audit missed.
 9. Run additional rounds for weakened but unrejected sightings.
-10. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds.
-11. After the loop terminates, write `.code-review-rounds.json` in the feature directory recording the full detection-round history. The file must include `schema_version` (value `"1.0"`), `spec` (the feature name), and `rounds` — an array with one entry per round, each carrying `round` (1-based integer), `raised` (sighting count before Challenger filtering), `survived` (verified count after filtering), and `severity_breakdown` (an object mapping severity labels to counts for that round). The code-review gate reads this file at check time to emit the detection-round metrics event.
+10. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds. Before accepting a zero-sighting round as the termination trigger, check the Detector's transcript for evidence it ran the detection passes (audit passes, checklist, security patterns) rather than returning early; relaunch the round if the transcript shows no such evidence.
+11. After the loop terminates, write `.code-review-rounds.json` in the feature directory recording the full detection-round history. The file must include `schema_version` (value `"1.0"`), `spec` (the feature name), and `rounds` — an array with one entry per round, each carrying `round` (1-based integer), `raised` (sighting count before Challenger filtering), `survived` (verified count after filtering), and an optional `severity` scalar — the single highest severity among that round's confirmed findings (`critical`, `major`, `minor`, or `info`). Omit `severity` when the round produced no confirmed findings. The human-facing per-severity breakdown lives only in the review report, never in this file. The code-review gate reads this file at check time to emit the detection-round metrics event.
 
 Only verified findings surface to the user. Rejected sightings are excluded. JSON is the working format throughout the pipeline. Markdown conversion happens once for the human-facing review report.
 
@@ -111,9 +116,11 @@ After the detection-verification loop terminates and all fixes are applied, run 
 
 3. **Doc reconcile**: Invoke `fbk-doc-reconcile` on the shipped module. It compares the project's durable docs (decisions ledger, contracts, package layout, changelog, spec) against the actual code and writes advisory drift findings to `ai-docs/<feature>/doc-reconcile.md`. Output is advisory only — it does not gate.
 
-4. **Gate**: Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>` to evaluate whether the review meets the threshold for promotion. The gate receives the feature directory path and writes a pass/fail verdict.
+4. **Cross-model review**: Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --check-opt-in --project-root <root>`. When the result is `status: success`, invoke `/fbk-cross-model-review` with `review-type: code-review` against the change set and triage the returned candidates by direct code read before adding any to the review report — a candidate the read confirms becomes a finding; nothing is presented as verified from the cross-model pass alone. Skip this step when the check returns `status: skipped`.
 
-Do not run the gate until fbk-quality-scan, fbk-test-review, and fbk-doc-reconcile have all completed.
+5. **Gate**: Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>` to evaluate whether the review meets the threshold for promotion. The gate receives the feature directory path and writes a pass/fail verdict.
+
+Do not run the gate until fbk-quality-scan, fbk-test-review, fbk-doc-reconcile, and (when the opt-in check succeeds) cross-model review have all completed.
 
 ## Broad-Scope Reviews
 

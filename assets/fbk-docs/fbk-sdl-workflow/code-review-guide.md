@@ -103,9 +103,10 @@ The detection-verification loop operates iteratively across up to 5 rounds:
 0. Complete Intent Extraction before the first detection round. The intent register feeds into step 1's Detector spawn prompt.
 1. The orchestrator spawns the Detector with target code file contents first, then linter output (if available), then intent register, then source of truth + this guide's behavioral comparison instructions + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` + the JSON schema and type/severity definitions last. Instruct the Detector to output sightings as a JSON array.
 2. The Detector produces sightings as JSON.
-3. The orchestrator runs `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline run --preset <preset> --min-severity <threshold>` to validate, domain-filter, and severity-filter the sightings in a single invocation. Default preset is `behavioral-only`, default severity threshold is `minor`.
-4. The orchestrator spawns the Challenger with target code file contents first, then the filtered JSON sightings, then verification instructions + type/severity definitions + the type-severity validity matrix last. The Challenger receives and produces JSON.
-5. The orchestrator validates Challenger output (status, evidence fields, matrix validation on reclassified type-severity).
+3. The orchestrator runs `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline run --preset <preset> --min-severity <threshold> --lens "$HOME"/.claude/fbk-docs/fbk-review-lenses/code-lens.md` to validate, domain-filter, and severity-filter the sightings in a single invocation. Default preset is `behavioral-only`, default severity threshold is `minor`.
+3a. The orchestrator runs `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline normalize` on the kept findings to produce the neutral fields handed to the Challenger, retaining the full kept findings for the later re-join.
+4. The orchestrator spawns the Challenger with target code file contents first, then the normalized findings and the content of any cited source documents, then verification instructions + type/severity definitions + the type-severity validity matrix last. The Challenger receives and produces JSON, writing its verdict array to a temp file.
+5. The orchestrator runs `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate-verdicts` on the verdicts, then `pipeline rejoin --verdicts <verdicts-file>` to merge them onto the kept findings, then re-validates the merged records with `pipeline validate --lens` (required fields, enum values, matrix on reclassified combinations).
 6. The orchestrator filters to `status: verified` or `verified-pending-execution`, assigns sequential finding IDs (F-01, F-02...).
 7. The orchestrator runs `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline to-markdown` to convert verified findings to markdown for the review report. JSON is the working format throughout; markdown conversion happens once for the human-facing report.
 8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern. Apply the fix to every instance.
@@ -118,21 +119,25 @@ Only verified findings surface to the user. Rejected sightings and internal sigh
 1. Append a findings summary to the review report file: finding count, rejection count, false positive rate, and each verified finding's ID, type, severity, and one-line description.
 2. If a retrospective exists, offer: "Would you like to run `/fbk-improve` to analyze this retrospective for workflow improvements?"
 
-## Quality Scan, Final Test-Review, and Gate
+## Quality Scan, Final Test-Review, Doc Reconcile, Cross-Model Review, and Gate
 
-After the detection-verification loop terminates, code review runs three additional passes before closing:
+After the detection-verification loop terminates, code review runs these additional passes before closing:
 
 1. **Quality scan** (`fbk-quality-scan`): A surface-level top-five quality analysis of the change set. Surface-only — not a deep structural audit. Output written to `ai-docs/<feature>/quality-scan.md`.
 
 2. **Final test-review** (`fbk-test-review`, final mode): Reviews the tests covering the changed module for drift — tests that no longer accurately reflect the behavior they claim to test. Produces the final test-review verdict artifact.
 
-3. **Gate** (`code-review-gate`): Evaluates whether the review as a whole meets the promotion threshold. Run as `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>`. The gate reads the feature directory and emits a pass/fail verdict.
+3. **Doc reconcile** (`fbk-doc-reconcile`): Compares the project's durable docs (decisions ledger, contracts, package layout, changelog, spec) against the shipped code and writes advisory drift findings to `ai-docs/<feature>/doc-reconcile.md`. Advisory only — it does not gate.
 
-These three passes run in the order listed, after the bug-finding loop has converged and fixes have been applied. The existing bug-finding methodology sections above remain unchanged.
+4. **Cross-model review**: When the project has opted in (see the skill's opt-in check), a second-opinion pass from a different model over the change set; candidates are triaged by direct code read before joining the review report.
+
+5. **Gate** (`code-review-gate`): Evaluates whether the review as a whole meets the promotion threshold. Run as `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>`. The gate reads the feature directory and emits a pass/fail verdict.
+
+These passes run in the order listed, after the bug-finding loop has converged and fixes have been applied. The existing bug-finding methodology sections above remain unchanged.
 
 ## Source of Truth Handling
 
-**Spec available**: Use the spec's acceptance criteria (ACs) and user-visible (UV) steps as the primary comparison target. These define the intended behavior against which the code is measured.
+**Spec available**: Use the spec's acceptance criteria (ACs) and user-visible (UV) steps as the primary comparison target. These define the intended behavior against which the code is measured. When the spec states it carries a contract inherited from a broader project scope verbatim, do not treat the spec's copy as the source of truth for that contract — locate the original and diff the code against it field by field (signature, every invariant, every constant). A review that stays inside the spec cannot catch a transcription divergence: a dropped field, a renamed field, a widened type, or a changed constant looks correct against the spec's own copy.
 
 **No spec available**: Use both the AI failure mode checklist (`fbk-docs/fbk-sdl-workflow/ai-failure-modes.md`) and the structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` for structural issue detection.
 
@@ -153,3 +158,4 @@ Each code review run produces a retrospective capturing these fields:
 - **Tool usage**: which project-native tools (grep, file navigation, test runners) were available and used vs. grep/glob fallback
 - **Finding quality**: false positive rate (findings the user dismissed), false negative signals (issues the user identified that the Detector missed), breakdown by origin (introduced vs. pre-existing)
 - **Intent register**: claims extracted (count and sources), findings attributed to intent comparison (detection source: intent), intent claims invalidated during verification
+- **Pass outcomes**: results of the quality scan, final test-review, doc reconcile, and (when run) cross-model review passes — what each surfaced, and the gate's pass/fail verdict

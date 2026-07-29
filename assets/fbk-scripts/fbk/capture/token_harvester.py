@@ -208,6 +208,46 @@ def _is_boundary_adjacent(turn_ts, stage_idx, boundaries):
 # ---------------------------------------------------------------------------
 
 
+def transcript_token_totals(transcript_path: str) -> dict:
+    """Sum token usage across all turns in one transcript.
+
+    Args:
+        transcript_path: Path to a transcript JSONL file.
+
+    Returns:
+        dict with keys:
+            available (bool): True if the transcript is readable; False if missing or unreadable.
+            tokens (dict): When available is True, a dict with four keys:
+                    input_tokens, output_tokens, cache_read_input_tokens, cache_creation_input_tokens
+                    (each int, summed across all turns).
+                When available is False, an empty dict.
+
+    The function preserves the project's "available-vs-zero" semantics: an
+    unreadable or missing transcript is marked available=False with empty tokens,
+    never as zero. A readable-but-empty transcript yields available=True with
+    all four token fields summed to 0.
+    """
+    turns = _parse_transcript(transcript_path)
+    if turns is None:
+        # Unreadable or missing — mark unavailable with empty tokens.
+        return {"available": False, "tokens": {}}
+
+    # Readable transcript (possibly empty) — sum all four token fields.
+    totals = {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+    }
+    for turn in turns:
+        totals["input_tokens"] += turn["input_tokens"]
+        totals["output_tokens"] += turn["output_tokens"]
+        totals["cache_read_input_tokens"] += turn["cache_read_input_tokens"]
+        totals["cache_creation_input_tokens"] += turn["cache_creation_input_tokens"]
+
+    return {"available": True, "tokens": totals}
+
+
 def harvest(transcript_paths, transitions):
     """Attribute transcript turns to SDL stages and aggregate across all transcripts.
 

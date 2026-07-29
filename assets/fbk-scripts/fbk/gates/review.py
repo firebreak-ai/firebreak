@@ -1,10 +1,42 @@
 """Review gate validation logic."""
 
 import argparse
+import glob
 import json
 import re
 import sys
+from pathlib import Path
 from typing import List, Optional, Tuple
+
+from fbk.gates.verdict import parse_single_verdict
+
+
+def read_test_review_verdict(feature_dir: Path) -> Optional[str]:
+    """Locate the spec-stage test-review artifact and return its verdict marker.
+
+    Prefer the canonical artifact name, fall back to the newest
+    `test-review-*.md`, then parse its verdict with the shared strict parser.
+
+    Returns the verdict string (e.g. "accepted"), or None when no artifact is
+    present or no verdict line is found. Raises ValueError when the artifact
+    carries more than one verdict line (an ambiguous artifact must not be
+    resolved by silently picking one); the caller turns that into a gate failure.
+
+    Freshness note: this checks presence + verdict only — it does NOT verify the
+    spec was unchanged after the verdict was written. Staleness detection is a
+    known follow-on.
+    """
+    canonical = feature_dir / "test-review-spec.md"
+    if canonical.exists():
+        artifact = canonical
+    else:
+        fallback_matches = sorted(glob.glob(str(feature_dir / "test-review-*.md")))
+        if not fallback_matches:
+            return None
+        artifact = Path(fallback_matches[-1])
+
+    text = artifact.read_text(encoding="utf-8", errors="replace")
+    return parse_single_verdict(text)
 
 
 def section_of(heading_pattern: str, text: str) -> str:
@@ -36,6 +68,7 @@ def validate_review(
     review_text: str,
     perspectives: List[str],
     threat_model_text: Optional[str] = None,
+    test_review_verdict: Optional[str] = None,
 ) -> Tuple[str, List[str]]:
     """Validate review content against review gate requirements.
 
@@ -43,6 +76,9 @@ def validate_review(
         review_text: The review markdown content as a string
         perspectives: List of perspective names that should appear in review
         threat_model_text: Optional threat model document content to validate
+        test_review_verdict: The verdict read from the spec-stage test-review
+            artifact, or None when the artifact is absent. An accepted verdict is
+            required for the gate to pass; missing or non-accepted is blocking.
 
     Returns:
         Tuple of (result_status, failures_list) where result_status is "pass" or "fail"
@@ -103,6 +139,19 @@ def validate_review(
                 if not sec.strip():
                     failures.append(f"Threat model section is empty: {label}")
 
+    # 7. Independent test-review verdict — blocking at the spec gate.
+    # Unlike the code-review gate (where a non-accepted verdict is informational),
+    # the spec gate treats a missing or non-accepted verdict as a hard failure.
+    if test_review_verdict is None:
+        failures.append(
+            "Independent test-review artifact missing: test-review-spec.md not found "
+            "(run the test-review pass after the council is clean)"
+        )
+    elif test_review_verdict.lower() != "accepted":
+        failures.append(
+            f"Independent test-review verdict is '{test_review_verdict}', not 'accepted'"
+        )
+
     result = "pass" if not failures else "fail"
     return result, failures
 
@@ -133,7 +182,18 @@ def main() -> None:
             print(f"review-gate: threat model file not found: {args.threat_model}", file=sys.stderr)
             sys.exit(2)
 
-    result, failures = validate_review(review_text, perspectives, threat_model_text)
+    # Derive the feature directory from the review file's own folder — the
+    # spec-stage test-review artifact lives alongside the review document.
+    feature_dir = Path(args.review).resolve().parent
+    try:
+        test_review_verdict = read_test_review_verdict(feature_dir)
+    except ValueError as e:
+        print(f"FAIL: spec-stage test-review artifact is malformed: {e}", file=sys.stderr)
+        sys.exit(2)
+
+    result, failures = validate_review(
+        review_text, perspectives, threat_model_text, test_review_verdict
+    )
 
     if failures:
         for f in failures:

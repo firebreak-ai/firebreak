@@ -4,7 +4,7 @@ Load condition: routed by a phase skill's mid-pipeline-entry step when the phase
 
 Each phase in the SDL pipeline is independently invocable. A user or skill may call any phase directly without running prior phases in sequence.
 
-When a phase is invoked directly, it checks whether its upstream prerequisites are satisfied before proceeding. The check is performed by `fbk.precheck.check_prerequisites(phase, feature_dir)` (installed at `.claude/fbk-scripts/fbk/precheck.py`).
+When a phase is invoked directly, it checks whether its upstream prerequisites are satisfied before proceeding. The check is performed by running `python3 "$HOME"/.claude/fbk-scripts/fbk.py precheck <phase> <feature_dir>` (implemented at `.claude/fbk-scripts/fbk/precheck.py`). It prints `{"phase": ..., "ready": bool, "missing": [...]}` to stdout. The phase argument must be one of the literal lowercase strings from the table below — the script matches them exactly.
 
 If the probe returns `ready=True`, the phase proceeds normally.
 
@@ -17,10 +17,10 @@ If the probe returns `ready=False`, the phase **does not hard-block**. Instead i
 
 | Phase invoked | Missing artifact | Upstream phase to offer |
 |---|---|---|
-| Design | `prd.md` | Intent |
-| Spec | `design-manifest.md` | Design |
-| Breakdown | `<feature>-spec.md` | Spec |
-| Code Review | `implementation/` | Implement |
+| `design` | `prd.md` | Intent |
+| `spec` | `design-manifest.md` | Design |
+| `breakdown` | `<feature>-spec.md` | Spec |
+| `code-review` | `implementation/` | Implement |
 
 ## Non-blocking contract
 

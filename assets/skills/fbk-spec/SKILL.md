@@ -36,11 +36,13 @@ If the target file already exists, continue iterating on it — do not overwrite
 
 ## Prerequisite check
 
-When invoked directly (not chained from an upstream phase), call:
+When invoked directly (not chained from an upstream phase), run the capability-entry prerequisite probe:
 
 ```
-fbk.precheck.check_prerequisites("spec", <feature_dir>)
+python3 "$HOME"/.claude/fbk-scripts/fbk.py precheck spec <feature_dir>
 ```
+
+The phase argument is the literal lowercase string `spec`. If the command is unavailable in the installed CLI, verify manually that the upstream artifacts exist on disk and treat a missing file the same as a probe-reported miss.
 
 If the design manifest (`design-manifest.md`) is missing, name the missing artifact and offer to run the design phase first — for example: "The design manifest is missing. Would you like to run `/fbk-design` before continuing?" This is non-blocking: if the user chooses to proceed without it, continue.
 
@@ -76,7 +78,7 @@ python3 "$HOME"/.claude/fbk-scripts/fbk.py spec-gate <spec-path>
 
 ## Retrospective
 
-After the gate passes, write the Stage 1 section to `ai-docs/$ARGUMENTS/$ARGUMENTS-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+After the gate passes, write the Spec section to `ai-docs/$ARGUMENTS/$ARGUMENTS-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
 ## Transition
 

@@ -1,12 +1,12 @@
 ## Team Setup
 
-Verify Stage 3 gate passes before proceeding. Read `task.json` in the task directory (`ai-docs/<feature-name>/<feature-name>-tasks/task.json`) to understand wave structure, task count, model assignments, and current task statuses.
+Verify the breakdown gate passes before proceeding. Read `task.json` in the task directory (`ai-docs/<feature-name>/<feature-name>-tasks/task.json`) to understand wave structure, task count, model assignments, and current task statuses.
 
 If any tasks have `status` other than `not_started`, a prior session was interrupted. See "Resuming Interrupted Sessions" below.
 
 Create an agent team. You (main thread) are the team lead — you coordinate and do not execute tasks. Teammates execute tasks.
 
-Spawn teammates equal to the maximum wave width across all waves. Teammates persist across waves — after completing a wave's tasks, they claim the next wave's tasks when you unblock them.
+Spawn teammates equal to the maximum wave width across all waves, using the `fbk-implementer` agent definition (`.claude/agents/fbk-implementer.md`) so every task-executing teammate carries the senior-engineer persona and its quality bars. Teammates persist across waves — after completing a wave's tasks, they claim the next wave's tasks when you unblock them.
 
 ---
 
@@ -18,7 +18,13 @@ For each wave:
 
 **Step 1 — Test tasks**: Create native tasks for the wave's test tasks. Each task description includes the path to its task file. Teammates claim and execute.
 
-**Step 2 — Test compilation check**: When all test tasks complete, verify that the new tests exist and compile. Tests are expected to fail at this point — the implementation does not exist yet. If tests do not compile, treat as a task failure and invoke the escalation protocol.
+**Step 2 — Test red-state check**: When all test tasks complete, verify the new tests exist and are red — failing or held pending — rather than already passing. Red tests prove they run and catch the absence of the behavior.
+
+In a compiled or strongly-typed language, a brand-new module's tests cannot compile until the types and signatures they reference are declared. Because a test task touches only test files, those declarations arrive with the paired implementation task, so the new tests stay red — failing or skipped/pending — until implementation begins. Expect the new tests at this checkpoint to be present and red, not necessarily compiling.
+
+A missing-symbol compile error can hide other defects in the same file: in a language like Go, an unused import or unused local variable is reported only after missing-symbol errors clear, so a test file can carry a real hygiene defect through this checkpoint undetected — surfacing only later, when an unrelated task happens to compile the same package. Before advancing past this checkpoint, declare a scratch stub for each symbol the new tests reference that the paired implementation hasn't written yet (empty functions/types matching the task's own declared signatures, in an isolated git worktree so the stub never touches the real working tree) and compile against it. Any compile error that survives the stub is a real defect in the test file, not an artifact of the missing implementation — fix it before advancing.
+
+If the new tests pass before any implementation exists, treat as a task failure and invoke the escalation protocol.
 
 **Step 3 — Implementation tasks**: Create native tasks for the wave's implementation tasks. Teammates claim and execute.
 
@@ -68,7 +74,9 @@ Each teammate reads its task file as its sole instruction context, plus `fbk-doc
 
 Spawn a fresh agent for each task. Do not reuse workers across tasks — context pollution from a prior task's code, errors, or partial reasoning can cause the agent to make incorrect assumptions about the current task's codebase state. Each task execution starts with a clean agent context containing only the task file and the designated reference files.
 
-Stage 3 guarantees non-overlapping file scopes within the same wave. Concurrent-edit conflicts cannot occur within a wave.
+Breakdown guarantees non-overlapping file scopes within the same wave. Concurrent-edit conflicts cannot occur within a wave.
+
+If you do find two tasks in the same wave whose scopes both name the same file — for example, each removing its own entry from a shared registry — that scope overlap slipped past breakdown, and running them in parallel races the teammates against each other. Do not launch them together. Pull the shared edit out into one prep step you run first (or assign to a single teammate), then let each remaining task touch only its own file. Treat this as a breakdown defect to fix in the task structure, not something to paper over at run time.
 
 ---
 
@@ -136,6 +144,12 @@ The TaskCompleted hook catches test and lint failures per-task. Per-wave verific
 
 When the spec defines schema constants, naming conventions, or shared string values, spot-check modified files for bare string literals that should reference those constants.
 
+### A convention fix needs a use-site sweep
+
+When a fix touches a normalization or convention — lowercasing a value at lookup time, a field path, the name of a shared constant — confirm the change reached every place that depends on it before closing the wave. Grep for all use sites of the thing that changed and check that each one was updated. A wave can pass its own tests and still ship a serious defect when a fix landed at one site but the same pattern lived at three others; the wave's tests only exercise the site they were written for.
+
+This is a coordination check, not a place to start editing directly. When the sweep finds sites that were missed, route each fix back through the task structure so a teammate owns the edit with that file in its declared scope — keeping the per-wave file-scope check meaningful. When the sweep turns up many sites, split them across teammates in disjoint, non-overlapping slices rather than loading one agent with the whole set; a large sweep crammed into a single context risks degraded quality and made-up edits.
+
 ---
 
 ## Wave Checkpoint
@@ -184,13 +198,17 @@ Run after the final wave's checkpoint.
 
 - Spec acceptance criteria are satisfied by the aggregate implementation. Confirm the result meets spec intent, not just that tests pass.
 
+**Validation against the real source of truth:**
+
+Before declaring the work complete, run the most expensive tier of the spec's validation ladder — validation against the genuine source of truth, a real service, real hardware, a real data sample, or a real downstream system — wherever it is feasible. The whole test suite can pass against stand-ins and still miss a defect that only the real thing reveals, because every stand-in shares the assumption baked into the code. When this tier is not feasible — the real source is unavailable in this environment, or running it costs more than the situation warrants — record an explicit deferral saying what was not validated and why, so the gap is visible rather than silently skipped.
+
 ---
 
 ## Retrospective
 
-Write the Stage 4 section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verification, following `fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+Write the Implementation section to `ai-docs/<feature-name>/<feature-name>-retrospective.md` after final verification, following `fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
-**Stage 4 fields:**
+**Implementation fields:**
 
 **Factual data** (no AI judgment):
 
@@ -203,9 +221,9 @@ Write the Stage 4 section to `ai-docs/<feature-name>/<feature-name>-retrospectiv
 
 **Upstream traceability** (factual):
 
-- Stage 2 review iterations before advancing.
+- Spec review iterations before advancing.
 - Blocking findings count and how many led to spec revisions.
-- Stage 3 compilation attempts before gate passed.
+- Breakdown compilation attempts before the gate passed.
 
 **Failure attribution** (AI judgment):
 

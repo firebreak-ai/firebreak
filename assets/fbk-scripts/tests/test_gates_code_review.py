@@ -181,29 +181,31 @@ class TestNonFailingConditions:
             "A 'missing' discrepancy must surface in findings so the operator can see it"
         )
 
-    def test_test_review_drift_finding_does_not_fail_gate(self, tmp_path):
-        """A test-review verdict whose body documents a drift finding does not fail the gate
-        AND surfaces a non-blocking advisory finding naming the needs-revision verdict.
+    def test_test_review_needs_revision_fails_gate(self, tmp_path):
+        """A final test-review verdict of needs-revision blocks the gate.
 
-        Per the advisory-signal spec: drift is a human judgment call (rename legitimate?),
-        not agent-fixable, so it must appear in findings, never in failures.
+        The test lens states the downstream gate passes only on an accepted final
+        test-review verdict; a needs-revision verdict means the tests covering the
+        shipped code are inadequate, which must block promotion rather than pass as
+        an advisory note. (The renamed-but-content-identical locked-test case is a
+        hash-level advisory handled separately by the missing-kind discrepancy path,
+        not by the verdict check.)
         """
         _, feature_dir = make_code_review_dir(tmp_path)
         (feature_dir / "test-review-final.md").write_text(
             "# Test Review\n\n"
             "Verdict: needs-revision\n\n"
-            "## Finding: drift\n\n"
-            "A locked test has drifted (renamed) but remains content-identical. "
-            "Surface for operator triage per AC-11.\n"
+            "## Finding\n\n"
+            "Tests covering the shipped module do not exercise the failure contract.\n"
         )
         result = validate_code_review(str(feature_dir))
-        assert result["result"] == "pass"
-        verdict_findings = [
-            f for f in result.get("findings", []) if "needs-revision" in f.lower()
+        assert result["result"] == "fail"
+        verdict_failures = [
+            f for f in result.get("failures", []) if "not accepted" in f.lower()
         ]
-        assert verdict_findings, (
-            "Gate must surface a non-blocking finding naming the needs-revision verdict; "
-            f"got findings={result.get('findings', [])}"
+        assert verdict_failures, (
+            "Gate must record a blocking failure naming the non-accepted verdict; "
+            f"got failures={result.get('failures', [])}"
         )
 
     def test_accepted_verdict_emits_no_advisory_finding(self, tmp_path):
@@ -224,23 +226,26 @@ class TestNonFailingConditions:
             f"got findings={result.get('findings', [])}"
         )
 
-    def test_artifact_with_no_verdict_line_surfaces_finding(self, tmp_path):
-        """An existing test-review artifact that carries no Verdict: line surfaces a
-        non-blocking finding and still passes (default-deny edge case).
+    def test_artifact_with_no_verdict_line_fails(self, tmp_path):
+        """An existing test-review artifact that carries no Verdict: line blocks the gate.
+
+        The gate passes only on a readable accepted verdict; a present-but-malformed
+        artifact (no parseable Verdict: line) cannot confirm acceptance, so it fails
+        (default-deny) rather than passing with an advisory note.
         """
         _, feature_dir = make_code_review_dir(tmp_path)
         (feature_dir / "test-review-final.md").write_text(
             "# Test Review\n\nNo verdict line present in this document.\n"
         )
         result = validate_code_review(str(feature_dir))
-        assert result["result"] == "pass"
-        verdict_findings = [
-            f for f in result.get("findings", [])
-            if "verdict" in f.lower() and "non-blocking" in f
+        assert result["result"] == "fail"
+        verdict_failures = [
+            f for f in result.get("failures", [])
+            if "verdict not found" in f.lower()
         ]
-        assert verdict_findings, (
-            "Gate must surface a non-blocking finding when no Verdict: line is found; "
-            f"got findings={result.get('findings', [])}"
+        assert verdict_failures, (
+            "Gate must record a blocking failure when no Verdict: line is found; "
+            f"got failures={result.get('failures', [])}"
         )
 
 

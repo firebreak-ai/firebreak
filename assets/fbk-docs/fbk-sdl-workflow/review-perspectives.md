@@ -1,6 +1,6 @@
 ## Entry
 
-Read the spec from `ai-docs/<feature-name>/<feature-name>-spec.md`. Fail fast if the Stage 1 verification gate does not pass — do not proceed to classification without a structurally complete spec.
+Read the spec from `ai-docs/<feature-name>/<feature-name>-spec.md`. Fail fast if the spec gate does not pass — do not proceed to classification without a structurally complete spec.
 
 ## Classification process
 
@@ -32,13 +32,29 @@ Present the classification with rationale and proceed. The user can intervene to
 
 ## Architecture Reviewer Brief — Contract Drift
 
-When the feature has a `design/contracts.md`, the architect additionally checks for contract drift between the design and the spec. Report each of the following as an `informational` finding — the reviewer surfaces; the operator decides:
+When the feature has a `design/contracts.md`, the architect additionally checks for contract drift between the design and the spec. Identify the design page's actual contract-numbering scheme first — designs sometimes number contracts with a different prefix than `IF-D-NN` (for example `IF-A-NN` at the design phase); if the design page does not use `IF-D-NN`, apply the same three checks below against its actual scheme instead of skipping them, and report the non-standard scheme itself as an `informational` finding. (The design gate now blocks non-IF-D headings on new design pages, so this accommodation mainly covers artifacts that predate that check.) Report each of the following as an `informational` finding — the reviewer surfaces; the operator decides:
 
 - A spec-added `IF-S-NN` contract that is absent from design (the spec minted an interface the design never enumerated). Report the specific `IF-S-` identifier and note that design has no corresponding entry.
 - An `IF-D-NN` entry whose identifier is preserved in the spec but whose name or signature has materially changed from the design's original. Report the `IF-D-` identifier, the design value, and the spec value so the operator can confirm the change is intentional.
 - A count or name mismatch between the design page's `IF-D-NN` entries and what the spec carries or excludes. Report the totals on each side and name the entries that appear in one but not the other.
 
-All three conditions are `informational`, not blocking. Record them in the review document under the Architectural soundness concern so they are visible at Stage 3.
+All three conditions are `informational`, not blocking. Record them in the review document under the Architectural soundness concern so they are visible at breakdown.
+
+## Residual ambiguity hunt
+
+A complete spec has driven every requirement down to concrete definitions: every field name, data shape, contract, function or class signature, and the specifics of any observable behavior is pinned down — extracted from the existing code when the feature integrates with it, or decided with the operator when the piece is new.
+
+The reviewing perspectives actively hunt for the opposite: any name, shape, contract, signature, or observable behavior that is still vague, hand-waved, or parked "to be decided later" while the spec claims to be done. The architecture perspective owns the structural side — undefined contracts, signatures, field names, and data shapes. The quality perspective owns the behavioral side — an asserted behavior (a component logs, emits, records, retries, validates) that never says what is recorded or how a test would catch it breaking.
+
+Also hunt for the reverse failure: two acceptance criteria, or an acceptance criterion and a stated design invariant, that are each concrete on their own but assert mutually exclusive behavior for the same operation. A spec can fail this way while every individual item looks fully specified — the gap is between two definitions, not inside either one.
+
+Also hunt for an acceptance criterion that quantifies over an idealized mathematical domain — "for all real values," "strictly greater than for all finite inputs" — that floating-point arithmetic cannot actually satisfy. A spec can pin the formula precisely and still assert a guarantee no floating-point implementation of that formula can meet. Name the specific AC and quantifier, and the tolerance-based restatement that would resolve it.
+
+Treat each such gap as a blocking finding, not a nitpick. Name the specific undefined item and what concrete definition would resolve it. A spec carrying this kind of open vagueness has not passed — this is the floor the reviewers carry, and there is no automated check behind it.
+
+## Independent test-review
+
+After the council reaches a clean state and the review document is stabilized, an independent test-review runs against the stabilized spec. It is distinct from the council: it carries no council memory and no council findings, and it reads the spec on its own. For each requirement it asks one question — does its planned test actually prove the behavior, such that the test would fail if that behavior broke? It also checks that every declared integration seam has end-to-end coverage planned. The pass emits a verdict that the gate verifies, so an unproven testing strategy stops the spec from advancing rather than slipping through to breakdown.
 
 ## Classification signals
 
@@ -100,7 +116,7 @@ Organize findings by SDL concern, not by agent.
 When titling a finding-grouping section with an SDL concern name, use the exact concern name from the table above. Do not paraphrase or shorten it to a form that begins with the word "Testing" — the gate parser reserves `## Test*` headings for the canonical testing-strategy section.
 
 Each finding includes:
-- **Severity**: `blocking` (must resolve before Stage 3), `important` (should address), or `informational` (note for awareness)
+- **Severity**: `blocking` (must resolve before breakdown), `important` (should address), or `informational` (note for awareness)
 - **Category**: which SDL concern from the table above
 - **Description**: actionable and specific — not generic observations
 
@@ -108,7 +124,7 @@ Generic observations ("consider adding more tests") do not constitute findings. 
 
 ## On re-run
 
-When the user revises a spec and re-runs Stage 2, replace the review document entirely. Do not append to or merge with the prior review. The review reflects the current spec state — stale findings create confusion. Previous reviews are recoverable from git history.
+When the user revises a spec and re-runs the spec review, replace the review document entirely. Do not append to or merge with the prior review. The review reflects the current spec state — stale findings create confusion. Previous reviews are recoverable from git history.
 
 ## Verification gate
 
@@ -118,10 +134,12 @@ When the user revises a spec and re-runs Stage 2, replace the review document en
 - Threat model determination recorded: decision + rationale
 - If threat model requested: document exists with required sections (assets, threat actors, trust boundaries, threats)
 - Testing strategy coverage entries for all three categories (new tests, impacted tests, infrastructure) — empty categories have explicit "none" with justification
+- Independent test-review reached an `accepted` verdict — `test-review-spec.md` is present in the feature folder and its verdict is accepted
 
 **Semantic evaluation** (human decides):
 - Blocking findings genuinely resolved — addressed in spec revision or accepted with documented rationale and risk owner
 - Findings are actionable and specific, not generic observations
+- No residual ambiguity remains — every name, shape, contract, signature, and observable-behavior specific is concrete, with any leftover vagueness raised as a blocking finding (see the residual ambiguity hunt above)
 
 ## Transition
 

@@ -159,25 +159,25 @@ else
   not_ok "fbk-design appends to decisions-log.md"
 fi
 
-# --- Test 19: fbk-design invokes check_prerequisites ---
-if [ -s "$DESIGN" ] && grep -q 'check_prerequisites' "$DESIGN"; then
-  ok "fbk-design invokes check_prerequisites"
+# --- Test 19: fbk-design invokes the precheck probe ---
+if [ -s "$DESIGN" ] && grep -q 'fbk.py precheck design' "$DESIGN"; then
+  ok "fbk-design invokes the precheck probe"
 else
-  not_ok "fbk-design invokes check_prerequisites"
+  not_ok "fbk-design invokes the precheck probe"
 fi
 
-# --- Test 20: fbk-spec references check_prerequisites ---
-if [ -s "$SPEC" ] && grep -q 'check_prerequisites' "$SPEC"; then
-  ok "fbk-spec references check_prerequisites (design-missing-at-spec case)"
+# --- Test 20: fbk-spec references the precheck probe ---
+if [ -s "$SPEC" ] && grep -q 'fbk.py precheck spec' "$SPEC"; then
+  ok "fbk-spec references the precheck probe (design-missing-at-spec case)"
 else
-  not_ok "fbk-spec references check_prerequisites (design-missing-at-spec case)"
+  not_ok "fbk-spec references the precheck probe (design-missing-at-spec case)"
 fi
 
-# --- Test 21: fbk-breakdown references check_prerequisites ---
-if [ -s "$BREAKDOWN" ] && grep -q 'check_prerequisites' "$BREAKDOWN"; then
-  ok "fbk-breakdown references check_prerequisites (spec-missing-at-breakdown case)"
+# --- Test 21: fbk-breakdown references the precheck probe ---
+if [ -s "$BREAKDOWN" ] && grep -q 'fbk.py precheck breakdown' "$BREAKDOWN"; then
+  ok "fbk-breakdown references the precheck probe (spec-missing-at-breakdown case)"
 else
-  not_ok "fbk-breakdown references check_prerequisites (spec-missing-at-breakdown case)"
+  not_ok "fbk-breakdown references the precheck probe (spec-missing-at-breakdown case)"
 fi
 
 # --- Summary ---

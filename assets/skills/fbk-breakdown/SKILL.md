@@ -17,17 +17,19 @@ Set `FEATURE=$ARGUMENTS`. Locate inputs:
 
 ## Prerequisite probe (mid-pipeline entry)
 
-When this skill is invoked directly (not chained from `/fbk-spec-review`), call the capability-entry prerequisite probe before proceeding:
+When this skill is invoked directly (not chained from `/fbk-spec-review`), run the capability-entry prerequisite probe before proceeding:
 
 ```
-fbk.precheck.check_prerequisites("breakdown", <feature_dir>)
+python3 "$HOME"/.claude/fbk-scripts/fbk.py precheck breakdown "ai-docs/$FEATURE"
 ```
+
+The phase argument is the literal lowercase string `breakdown`. If the command is unavailable in the installed CLI, verify manually that the input artifacts listed above exist on disk and treat a missing file the same as a probe-reported miss.
 
 If the spec artifact (`ai-docs/$FEATURE/$FEATURE-spec.md`) is missing, name that file explicitly and offer to run the upstream phase: "The spec file is missing — would you like me to run `/fbk-spec` to produce it?" This is non-blocking: never hard-block on a missing spec; always offer rather than halt.
 
 Verify both the spec and review files exist. If either is missing, report which file is absent and stop.
 
-Run the Stage 2 gate:
+Run the review gate:
 ```
 python3 "$HOME"/.claude/fbk-scripts/fbk.py review-gate \
   "ai-docs/$FEATURE/$FEATURE-review.md" \
@@ -69,27 +71,31 @@ The breakdown gate fails on any unresolved `BOUNCE-BACK:` marker (see task-30). 
 
 ## Test task agent
 
-Invoke an Agent Teams teammate with independent context. The teammate receives only the spec file (`ai-docs/$FEATURE/$FEATURE-spec.md`). It does NOT receive the review document, threat model, or any other artifacts.
+Invoke an Agent Teams teammate with independent context, using the `fbk-task-compiler` agent definition (`.claude/agents/fbk-task-compiler.md`) so the compiling teammate carries the tech-lead persona and its quality bars. The teammate receives only the spec file (`ai-docs/$FEATURE/$FEATURE-spec.md`). It does NOT receive the review document, threat model, or any other artifacts.
 
 Load brownfield instructions from `.claude/fbk-docs/fbk-brownfield-breakdown.md` and include them in the teammate's prompt.
 
 Load the test-authoring rules from `.claude/fbk-docs/fbk-design-guidelines/test-authoring.md` and include them in the teammate's prompt. Test tasks must conform to those rules — including the mocks rule (stand-ins only for code we don't own).
 
-The teammate produces test tasks from the spec's testing strategy and acceptance criteria. One task per AC or logical test group. Each test task specifies: files to create, test framework conventions to follow, AC identifiers covered, and a completion gate (tests compile and fail before implementation).
+The teammate produces test tasks from the spec's testing strategy and acceptance criteria. One task per AC or logical test group. Each test task specifies: files to create, test framework conventions to follow, AC identifiers covered, and a completion gate (tests are red — failing, or compile-red on not-yet-declared symbols per the slice shape — before implementation).
 
-Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-test-<behavior>.md`. Task files use the frontmatter schema and body sections defined in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`.
+Where an assertion depends on a configurable numeric value, the test tasks must include at least one non-default-config case with a hand-derived expected value — a test that only exercises template defaults cannot tell an implementation that reads the config apart from one that silently hardcodes the defaults.
+
+Output: the teammate writes each task file directly to disk at `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-test-<behavior>.md`, using its own file-write tool. Do not have the teammate return task content in its response for you to transcribe onto disk — transcribing large task content is a proven source of drift between what the teammate produced and what lands on disk. Task files use the frontmatter schema and body sections defined in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`.
 
 ## Implementation task agent
 
-Invoke a second Agent Teams teammate with independent context, after the test task agent completes. The teammate receives the spec file AND the test task files produced by the test task agent. It receives the test task files as artifacts — not the test task agent's reasoning or conversation.
+Invoke a second Agent Teams teammate with independent context, also using the `fbk-task-compiler` agent definition, after the test task agent completes. The teammate receives the spec file AND the test task files produced by the test task agent. It receives the test task files as artifacts — not the test task agent's reasoning or conversation.
 
 Load brownfield instructions from `.claude/fbk-docs/fbk-brownfield-breakdown.md` and include them in the teammate's prompt.
 
 The teammate produces implementation tasks from the spec's technical approach and acceptance criteria. Each task specifies: files to create/modify (explicit paths — include all callers of any changed symbol, not only those the spec enumerates), AC identifiers satisfied, references to specific test tasks as completion gates, and constraints (file scope, no test modification).
 
+Scan the spec for stated impacts that are not tied to any behavior ID — documentation or CHANGELOG updates are the recurring case — and compile them into a task. The `covers:` list is not a complete inventory of what needs a task.
+
 Each implementation task references specific test task IDs. The completion gate for each implementation task is: the referenced tests pass.
 
-Output: task files written to `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-impl-<behavior>.md`. Task files use the frontmatter schema and body sections defined in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`.
+Output: the teammate writes each task file directly to disk at `ai-docs/$FEATURE/$FEATURE-tasks/` as `task-NN-impl-<behavior>.md`, using its own file-write tool. Do not have the teammate return task content in its response for you to transcribe onto disk. Task files use the frontmatter schema and body sections defined in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`.
 
 Wave N+1 tasks may reference files or behaviors produced by Wave N.
 
@@ -107,7 +113,7 @@ Only an `accepted` verdict from `fbk-test-review` triggers `test-hash-gate` mani
 
 After both agents complete, assemble `ai-docs/$FEATURE/$FEATURE-tasks/task.json` conforming to the task manifest schema in `.claude/fbk-docs/fbk-sdl-workflow/task-compilation.md`.
 
-For each task file produced by the agents, create a task entry with:
+For each task file produced by the agents, read the file directly from disk — not the compiling agent's summary or report — and create a task entry with:
 - `id`: from the task file's frontmatter `id` field (matching `task-NN` format)
 - `title`: one-line description of what the task produces
 - `file`: the task file's filename
@@ -123,15 +129,31 @@ For each task file produced by the agents, create a task entry with:
 
 Set the top-level `spec` field to `"ai-docs/$FEATURE/$FEATURE-spec.md"`.
 
+## Compile-coherence check
+
+Go-language compile legality is invisible to prose review; verify these mechanically before running the task-reviewer gate, using the assembled task manifest:
+
+- **Wave-end symbol closure**: for each wave, confirm every symbol referenced by a test file that exists at that wave's end (functions, types, fields) is implemented by a task within that same wave or an earlier one. A test file whose symbols are not fully implemented by its wave's end leaves the whole package compile-red.
+- **Single declaration per shared symbol**: for any package touched by more than one task file, confirm no top-level identifier (helper function, event-field accessor, wire-script fragment, test double) is declared in more than one task file. Consolidate shared identifiers into one infrastructure task and have every other task reference it.
+- **Import-list and identifier consistency**: confirm each task's pinned import list and any pinned identifier declarations match the code blocks the task actually instructs, and that no instructed code self-qualifies a package member with its own package name (e.g. `store.Foo` inside package `store`).
+
 ## Task review
 
 Run the task reviewer's deterministic layer: `python3 "$HOME"/.claude/fbk-scripts/fbk.py task-reviewer-gate "ai-docs/$FEATURE/$FEATURE-spec.md" "ai-docs/$FEATURE/$FEATURE-tasks"`. If it fails, report each failure. Return to the test task agent step with specific feedback.
 
-Invoke the test reviewer agent (`test-reviewer`) as an Agent Teams teammate with checkpoint 2 context. Pass the spec file and the task files as artifacts. If it fails, add the test reviewer's findings to the feedback. Return to the test task agent step.
+Invoke the `fbk-task-review` preset as an Agent Teams teammate. Pass the spec file (`ai-docs/$FEATURE/$FEATURE-spec.md`) and the task files (`ai-docs/$FEATURE/$FEATURE-tasks/`) as the artifact set. After the preset runs, read `ai-docs/$FEATURE/task-review.md` and check the verdict. If the verdict is `needs-revision`, block and return to the test task agent with the findings from `task-review.md`. If the verdict is `accepted`, treat it as provisional: read a small sample of the task files it marked clean directly against the spec before proceeding — review presets have returned false all-clears that only a direct read caught.
 
-If both pass, proceed to the existing breakdown gate.
+## Coherence review
 
-Run the Stage 3 gate:
+Spawn the `fbk-coherence-review` preset as a separate, fresh subagent (a cleared Agent Teams teammate with independent context — the breakdown agent that compiled the tasks must not also run the coherence review). The subagent's model is selected per the preset. After the coherence review writes `ai-docs/$FEATURE/coherence-review.md`, run the coherence gate:
+
+```
+python3 "$HOME"/.claude/fbk-scripts/fbk.py coherence-gate "ai-docs/$FEATURE"
+```
+
+If the coherence gate does not pass, block and report the findings before proceeding. An accepted coherence verdict lets the breakdown continue to the breakdown gate — but treat a clean coherence result the same way as a clean task-review verdict: spot-read a sample of the cross-task contracts it certified before relying on it.
+
+Run the breakdown gate:
 ```
 python3 "$HOME"/.claude/fbk-scripts/fbk.py breakdown-gate \
   "ai-docs/$FEATURE/$FEATURE-spec.md" \
@@ -139,9 +161,13 @@ python3 "$HOME"/.claude/fbk-scripts/fbk.py breakdown-gate \
 ```
 If the gate fails, report each failure and fix before proceeding.
 
+## Cross-model review
+
+After the breakdown gate passes, run a cross-model review of the task set: `/fbk-cross-model-review $FEATURE`. If the project has not opted in, the skill no-ops — proceed to the retrospective. Otherwise, adjudicate every candidate finding against the spec and the actual task files before acting on it: do not apply an unadjudicated candidate, and do not reject one without reading the task file it names. Apply confirmed findings to the task files, then re-run whichever of the task-reviewer gate, coherence gate, and breakdown gate the fix could affect before proceeding. When a confirmed fix moves, renames, or edits a symbol another task file references (a shared helper, an import, a pinned identifier), sweep every consumer task file's import list and references in the same fix batch — editing only the named task is a proven source of new compile-breaking defects.
+
 ## Retrospective
 
-After the breakdown gate passes, write the Stage 3 section to `ai-docs/$FEATURE/$FEATURE-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
+After the breakdown gate passes and the cross-model review step completes, write the Breakdown section to `ai-docs/$FEATURE/$FEATURE-retrospective.md` following `.claude/fbk-docs/fbk-sdl-workflow/retrospective-guide.md`. Create the file with the feature header if it does not exist. Read the file before writing to preserve existing content from prior stages.
 
 ## Transition
 

@@ -26,6 +26,12 @@ Describe all composition explicitly — which function calls which, what each ca
 
 When the technical approach threads a value from one component to another (a context, a lifecycle signal, a configuration reference), identify the concrete source of that value at the outermost wiring point. State which component creates or obtains the value and passes it inward.
 
+## Shared conventions check
+
+Before finalizing the technical approach, check every shared contract the feature introduces or consumes — a config shape, a constructor signature, a naming scheme, a shared sentinel set, an event registry that other parts of the project also use — against the project's established convention. Find that convention in this order: prefer an authoritative conventions document if one exists; if none exists, infer the convention from the dominant pattern in the existing code; if neither exists, say plainly that you are setting a new convention, so the choice is visible rather than buried. A technical approach can match the feature's own foundational contract perfectly and still reinvent a shared convention that lives in a separate cross-cutting place nobody opened.
+
+If a conventions document and the live code disagree, surface the conflict to the user with a recommendation: name what the document says, note that the code does something different and roughly how widely, recommend which to align to and why, and ask for confirmation. Do not silently pick a side, and do not hand over the raw conflict without a recommendation.
+
 ## Abstraction timing
 
 When the technical approach proposes a shared abstraction (a base class, an interface, a generic helper, a parameterized utility) over fewer than two concrete call sites, justify the abstraction explicitly or defer it until the second call site appears. Name the call sites that would consume the abstraction and state what each call site would lose if the logic were inlined instead.
@@ -37,6 +43,12 @@ Single-use abstractions encode predictions; wrong predictions block each call si
 When the feature modifies existing code, read the existing code before designing. Identify behaviors that are currently embedded in monolithic functions. Design toward the target structure, not the current structure — the target location of a behavior is where it should live after implementation, which may require extraction from where it currently lives.
 
 When proposing extraction from existing monolithic code, describe the extraction boundary: what moves out, what stays, what interface connects them. The implementing agent needs this boundary to be precise enough to execute without re-inlining the logic.
+
+## Establishing ground truth before committing the design
+
+When the technical approach depends on how a dependency or external behavior actually works, establish that truth early — before the design is committed — rather than carrying an unverified assumption forward into implementation, where it surfaces as a late, costly failure.
+
+Find the truth the cheapest way that settles the question, and escalate only when a cheaper check leaves it open: read the dependency's own source directly first; if that does not settle it, run a small experiment script that exercises the real behavior; if the behavior is large or statistical, run a proper evaluation against it. Do the cheap end yourself — reading source or running a quick script needs no permission. When establishing the truth would take non-trivial effort, raise it with the user and agree it is worth the cost before sinking significant effort into it.
 
 ## Level of detail
 

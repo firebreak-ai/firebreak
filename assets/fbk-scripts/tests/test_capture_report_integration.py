@@ -114,12 +114,13 @@ def test_real_producers_drive_nonzero_report_rows(tmp_path):
         json.dump({"spec": _SPEC, "rounds": [{"raised": 5, "survived": 2}]}, f)
 
     # Gate pass artifacts: quality-scan.md (must contain "Severity:") and
-    # test-review-final.md (any content).  An absent test-hashes.json manifest
+    # test-review-final.md (must carry an accepted verdict — the gate blocks on a
+    # non-accepted or unreadable verdict).  An absent test-hashes.json manifest
     # yields only non-blocking "missing" findings, so no hash manifest is needed.
     with open(os.path.join(feature_dir, "quality-scan.md"), "w") as f:
         f.write("Severity: minor\n")
     with open(os.path.join(feature_dir, "test-review-final.md"), "w") as f:
-        f.write("# Test review — final pass\n")
+        f.write("# Test review — final pass\n\nVerdict: accepted\n")
 
     # --- Drive the real task-completed hook through the chokepoint ---
     # No test runner or linter is present, so both checks are skipped and the hook

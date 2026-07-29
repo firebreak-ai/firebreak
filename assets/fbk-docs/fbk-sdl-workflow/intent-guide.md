@@ -10,27 +10,27 @@ Write the PRD and behavior inventory in plain language. Do not sketch technical 
 
 ## Required PRD Sections (10)
 
-Write each section. Do not skip or combine sections.
+Write each section as a bare `##` heading in the PRD file — `## Vision`, `## Problem statement`, and so on, in the order below, with no leading number. The gate's section parser does not recognize numbered headings such as `## 1. Vision`. Do not skip or combine sections.
 
-**1. Vision** — One or two sentences on what this work enables and why it matters.
+**Vision** — One or two sentences on what this work enables and why it matters.
 
-**2. Problem statement** — The specific problem this work solves. Focused paragraph; avoid restating the solution.
+**Problem statement** — The specific problem this work solves. Focused paragraph; avoid restating the solution.
 
-**3. Goals and non-goals** — Explicit scope boundaries. Non-goals prevent scope creep; include at least one.
+**Goals and non-goals** — Explicit scope boundaries. Non-goals prevent scope creep; include at least one.
 
-**4. Use cases** — The concrete user scenarios this work supports. Reference behavior IDs (B-NNN) where applicable so the gate can verify bidirectional consistency with the inventory.
+**Use cases** — The concrete user scenarios this work supports. Reference behavior IDs (B-NNN) where applicable so the gate can verify bidirectional consistency with the inventory.
 
-**5. Functional requirements** — What the system must do. Reference behavior IDs.
+**Functional requirements** — What the system must do. Reference behavior IDs.
 
-**6. Non-functional requirements** — Performance, availability, security, scalability constraints.
+**Non-functional requirements** — Performance, availability, security, scalability constraints.
 
-**7. Edge cases and failure modes** — How the system behaves when things go wrong. Graceful degradation paths and known boundary conditions.
+**Edge cases and failure modes** — How the system behaves when things go wrong. Graceful degradation paths and known boundary conditions.
 
-**8. Dependencies** — External systems, services, libraries, or prior features this work requires.
+**Dependencies** — External systems, services, libraries, or prior features this work requires.
 
-**9. Success metrics** — How you will know the work succeeded. Measurable outcomes, not vague qualities.
+**Success metrics** — How you will know the work succeeded. Measurable outcomes, not vague qualities.
 
-**10. Open questions** — Unresolved decisions that must be answered before design begins. When all questions are resolved, write `None.`
+**Open questions** — Unresolved decisions that must be answered before design begins. When all questions are resolved, write `None.`
 
 ---
 

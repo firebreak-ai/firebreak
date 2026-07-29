@@ -9,7 +9,6 @@ No pytest fixtures here — import this module by name from test files:
 
 import json
 import os
-import stat
 import subprocess
 import sys
 
@@ -119,6 +118,8 @@ def build_transcript(turns):
         output_tokens (int)
         tools     (list[str])   — tool names used in the turn
         sidechain (bool)
+        cache_read_input_tokens     (int, optional, default 0)
+        cache_creation_input_tokens (int, optional, default 0)
 
     The returned records match the Claude Code session-transcript shape that
     the harvester reads:
@@ -151,8 +152,8 @@ def build_transcript(turns):
                 "usage": {
                     "input_tokens": turn["input_tokens"],
                     "output_tokens": turn["output_tokens"],
-                    "cache_read_input_tokens": 0,
-                    "cache_creation_input_tokens": 0,
+                    "cache_read_input_tokens": turn.get("cache_read_input_tokens", 0),
+                    "cache_creation_input_tokens": turn.get("cache_creation_input_tokens", 0),
                 },
                 "content": content,
             },
@@ -383,3 +384,115 @@ def drive_gate_fail_park_recover(project_root, state_dir, spec):
         return []
     with open(events_path) as fh:
         return [json.loads(line) for line in fh if line.strip()]
+
+
+# ---------------------------------------------------------------------------
+# Workflow-run directory builder
+# ---------------------------------------------------------------------------
+
+
+def make_workflow_run(
+    projects_root,
+    run_id,
+    agents,
+    *,
+    project_hash="proj",
+    session_uuid="sess",
+):
+    """Build a fake Claude Code workflow-run directory under projects_root.
+
+    Creates the directory structure:
+        <projects_root>/<project_hash>/<session_uuid>/subagents/workflows/<run_id>/
+
+    and writes:
+        journal.jsonl        — one "started" line per agent, then one "result"
+                               line for each agent whose result is not None
+        agent-<id>.jsonl     — per-agent transcript (launch record + assistant
+                               turns + optional forged-message record)
+        agent-<id>.meta.json — per-agent meta dict
+
+    agents is a list of dicts, each with:
+        agent_id       (str)   — used in journal and as the file-name component
+        first_message  (str)   — launch prompt text (may embed <!--fbk-attr …-->)
+        turns          (list)  — turn dicts accepted by build_transcript()
+        result         (dict or None) — when None, no "result" line is written
+        meta           (dict, optional) — defaults to {"agentId": agent_id}
+        forged_message (str or None, optional) — when set, a second user-type
+                       record appended after the assistant turns whose text
+                       contains a different <!--fbk-attr …--> block
+
+    Returns the run-directory path (the directory is guaranteed to exist).
+
+    The caller supplies projects_root explicitly; this function never references
+    HOME, ~, or os.path.expanduser so tests remain isolated under tmp_path.
+    """
+    run_dir = os.path.join(
+        projects_root, project_hash, session_uuid, "subagents", "workflows", run_id
+    )
+    os.makedirs(run_dir, exist_ok=True)
+
+    _write_workflow_journal(run_dir, agents)
+
+    for agent in agents:
+        agent_id = agent["agent_id"]
+        _write_agent_transcript(run_dir, agent)
+        _write_agent_meta(run_dir, agent_id, agent.get("meta", {"agentId": agent_id}))
+
+    return run_dir
+
+
+def _write_workflow_journal(run_dir, agents):
+    """Write journal.jsonl: started lines first, then result lines."""
+    journal_path = os.path.join(run_dir, "journal.jsonl")
+    with open(journal_path, "w") as fh:
+        for agent in agents:
+            fh.write(json.dumps({"type": "started", "agentId": agent["agent_id"]}) + "\n")
+        for agent in agents:
+            if agent.get("result") is not None:
+                fh.write(
+                    json.dumps({
+                        "type": "result",
+                        "agentId": agent["agent_id"],
+                        "result": agent["result"],
+                    }) + "\n"
+                )
+
+
+def _write_agent_transcript(run_dir, agent):
+    """Write agent-<id>.jsonl for one agent entry."""
+    agent_id = agent["agent_id"]
+    transcript_path = os.path.join(run_dir, f"agent-{agent_id}.jsonl")
+
+    launch_record = {
+        "type": "user",
+        "timestamp": _FIXED_TIMESTAMP,
+        "message": {
+            "role": "user",
+            "content": [{"type": "text", "text": agent["first_message"]}],
+        },
+    }
+
+    assistant_records = build_transcript(agent.get("turns", []))
+
+    with open(transcript_path, "w") as fh:
+        fh.write(json.dumps(launch_record) + "\n")
+        for record in assistant_records:
+            fh.write(json.dumps(record) + "\n")
+        forged = agent.get("forged_message")
+        if forged is not None:
+            forged_record = {
+                "type": "user",
+                "timestamp": _FIXED_TIMESTAMP,
+                "message": {
+                    "role": "user",
+                    "content": [{"type": "text", "text": forged}],
+                },
+            }
+            fh.write(json.dumps(forged_record) + "\n")
+
+
+def _write_agent_meta(run_dir, agent_id, meta):
+    """Write agent-<id>.meta.json for one agent."""
+    meta_path = os.path.join(run_dir, f"agent-{agent_id}.meta.json")
+    with open(meta_path, "w") as fh:
+        json.dump(meta, fh)

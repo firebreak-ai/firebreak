@@ -637,3 +637,76 @@ class TestModuleInterface:
         assert isinstance(result, list)
         assert all(isinstance(x, str) for x in result)
         assert len(result) > 0
+
+
+class TestFieldParsingLineAnchoring:
+    """The field regex must not span newlines — a colon-less continuation line
+    under one field must not swallow the next field's key (realmind2 affect
+    spec-phase gate defect: every entry reported 'missing covers')."""
+
+    def test_colonless_continuation_line_does_not_swallow_covers(self):
+        spec = (
+            "## Acceptance criteria\n- AC-01: Something.\n\n"
+            "## Interface contracts\n"
+            "- id: IF-D-01\n"
+            "  name: Decay.floor\n"
+            "  signature: DecayedSignificance(raw float64) float64\n"
+            "  invariants: significance decays toward an arousal-anchored floor\n"
+            "  - the floor is never reached for nonzero inputs\n"
+            "  covers: [AC-01]\n"
+            "  design-ref: design/contracts.md#if-d-01\n"
+        )
+        result = check_interface_contracts_structure(spec)
+        assert result == []
+
+
+class TestDesignAnchorNonstandardScheme:
+    """A design contracts page numbered with a non-IF-D prefix must fail loudly
+    instead of silently skipping carry verification (realmind2 affect design
+    used IF-A-NN and the check provided no verification value)."""
+
+    def test_nonstandard_prefix_returns_loud_failure(self, tmp_path):
+        design_dir = tmp_path / "design"
+        design_dir.mkdir()
+        (design_dir / "contracts.md").write_text(
+            "# Contracts\n\n## IF-A-01 — Affect.Assign\nSome description.\n"
+        )
+        spec = (
+            "## Interface contracts\n"
+            + NO_CONTRACTS_SENTENCE + "\n"
+        )
+        result = check_design_anchor(spec, str(tmp_path))
+        assert result, "non-IF-D scheme must not pass silently"
+        assert any("IF-A-01" in f and "IF-D" in f for f in result)
+
+    def test_long_prefix_returns_loud_failure(self, tmp_path):
+        """A multi-letter capability prefix (IF-AFFECT-01) must also fail loudly."""
+        design_dir = tmp_path / "design"
+        design_dir.mkdir()
+        (design_dir / "contracts.md").write_text(
+            "# Contracts\n\n## IF-AFFECT-01 — Affect.Assign\nSome description.\n"
+        )
+        spec = "## Interface contracts\n" + NO_CONTRACTS_SENTENCE + "\n"
+        result = check_design_anchor(spec, str(tmp_path))
+        assert any("IF-AFFECT-01" in f for f in result)
+
+    def test_mixed_scheme_flags_nonstandard_ids(self, tmp_path):
+        design_dir = tmp_path / "design"
+        design_dir.mkdir()
+        (design_dir / "contracts.md").write_text(
+            "# Contracts\n\n"
+            "## IF-D-01 ContractValidator.validate\nDescription.\n\n"
+            "## IF-A-02 — Affect.Assign\nDescription.\n"
+        )
+        spec = (
+            "## Acceptance criteria\n- AC-01: Something.\n\n"
+            "## Interface contracts\n"
+            "- id: IF-D-01\n"
+            "  name: ContractValidator.validate\n"
+            "  signature: validate(spec_text: str) -> List[str]\n"
+            "  invariants: Returns empty list on success.\n"
+            "  covers: [AC-01]\n"
+            "  design-ref: design/contracts.md#if-d-01\n"
+        )
+        result = check_design_anchor(spec, str(tmp_path))
+        assert any("IF-A-02" in f for f in result)

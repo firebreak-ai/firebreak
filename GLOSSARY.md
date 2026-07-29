@@ -315,4 +315,104 @@ See [quality scan technique](#quality-scan-technique).
 
 ---
 
+### shape
+
+**Definition**: The kind of work a single unit in a workflow run performed, drawn from a closed five-member vocabulary — distill, implement, review, synthesize, gate. In the observability substrate the shape is resolved from the unit's recorded persona name (`resolve_shape` in `fbk/shapes.py`); a persona that maps to nothing yields null, never an invented shape. Distinct from [slice shape], which is a test-discipline category.
+
+**LLM priors activated**: "Shape" signals a discrete category from a fixed set, not a position on a continuum — intended. Risk: conflation with the other firebreak uses of "shape" (slice shape, work shape, code shape). The vocabulary here is specifically the five *work-capability* shapes of a harvested run unit; surrounding context names "shape" against the unit/record vocabulary, and the closed five-member set is the disambiguator. A null shape means "this persona is not in the vocabulary," not "low quality."
+
+**Usage examples in firebreak**:
+- A run record unit's `shape` field, set by `harvest` from the persona via `resolve_shape`
+- `run-retro` renders each unit's shape; a persona outside the vocabulary renders as an em dash
+
+---
+
+### topology
+
+**Definition**: How a workflow unit was organized, recorded as two facts the harness cannot otherwise expose: *cardinality* (single or fan-out) and *stance* (collaborative or adversarial). Carried in a run record unit's `topology` object, parsed from the launch-prompt attribution descriptor the workflow glue prepends to each agent prompt.
+
+**LLM priors activated**: "Topology" activates network/graph-structure priors. Risk: read as a rich graph of inter-agent connections; here it is narrowly the two deployment-level facts (cardinality, stance) for one unit, not a full dependency graph. The surrounding record schema bounds the meaning.
+
+---
+
+### asset bundle
+
+**Definition**: The identity of the context assets loaded for a workflow unit — in this slice, the persona name, taken from the launch-prompt attribution descriptor the workflow glue emits (`asset_bundle.persona`); null when no descriptor carries it. The instruction-file identity and decision-tree identity are structurally reserved (present but always null) for a future dynamic assembler to stamp. Carried in a run record unit's `asset_bundle` object. Note the asymmetry with [shape]: shape resolves from the descriptor persona *or*, failing that, the recorded `agent_type`, so a unit can have a non-null shape while its `asset_bundle.persona` is null.
+
+**LLM priors activated**: "Bundle" signals a grouped set of things loaded together — intended. Risk: read as always populated; `persona` is only as present as the descriptor that carries it, and `instructions`/`decision_tree` are deliberately reserved null until an assembler can stamp them truthfully. The null fields are forward-compatibility reservations, not missing data.
+
+---
+
+### workflow journal
+
+**Definition**: The Claude Code session-runtime file (`journal.jsonl`) inside a workflow run directory that records each agent's `started` and `result` lines. In the observability substrate it is the authoritative *agent roster* for a run: harvest reads it to learn which agents belong to the run, then filters the event stream to those agent ids. External and undocumented — the substrate locates the run directory by glob-and-match on the run id rather than depending on the project-hash naming scheme.
+
+**LLM priors activated**: "Journal" activates append-only-log priors, which fit. Risk: conflated with the firebreak event stream (`events.jsonl`) — they are different files from different writers. The journal is written by the Claude Code runtime and is the roster; the event stream is the firebreak capture plane joined against that roster.
+
+---
+
+### adversarial review pattern
+
+**Definition**: The one generic review shape every Firebreak review type runs as a preset over: a researcher surfaces candidate problems from a cold read, a challenger independently verifies or rejects each one, confirmed problems survive, and the loop repeats until a round comes back clean or a round cap is reached. The loop, the isolation rules, and the carried review-quality behaviors live in this one pattern; only the per-type lens varies. Replaces the former arrangement where code review, test review, and fresh-eyes each reimplemented their own review machinery.
+
+**LLM priors activated**: "Adversarial" signals an intended stance — the challenger is built to disprove, not to agree — which is the load-bearing property, not a tone. Risk: read as conflict-for-its-own-sake; the adversarial relationship is between roles over a finding, not hostility toward the author. "Pattern" signals a reusable shape, which is correct — it is a template instantiated per review type, not a single running process.
+
+---
+
+### researcher
+
+**Definition**: The role in the adversarial review pattern that reads an artifact cold and surfaces candidate problems as structured findings. It does not fix, does not issue verdicts, and never receives a prior round's output or another role's framing. Always spawned as a cleared agent so its cold read is structural, not a behavioral promise. The type-specific knowledge of what to look for reaches it through the review lens injected at spawn, not through its own persona.
+
+**LLM priors activated**: "Researcher" frames the role as open investigation across any artifact kind (code, tests, a contract, a plan), which is the intended type-neutral reading. Chosen over "detector" (too code-and-defect-flavored to travel across review types) and "finder." Risk: "researcher" could imply web/literature research; in Firebreak it means the surfacing role of a review, paired with [challenger].
+
+---
+
+### challenger
+
+**Definition**: The role in the adversarial review pattern that independently verifies or rejects each candidate finding the researcher produced. It reads the artifact cold first, then receives only de-framed candidate claims and their cited sources — never the researcher's reasoning, confidence, or framing. Its four outcomes are verified, verified-pending-execution, rejected, and rejected-as-nit. It generates no new findings; it rules on what it received. Always spawned as a cleared agent. Carries the generic disciplines: read the cited source before ruling, and trace provenance before confirming dead material.
+
+**LLM priors activated**: "Challenger" signals an intended skeptical stance — demand proof, default to rejection without evidence — which is the point. Risk: read as adversarial toward the researcher personally; the challenge is against the finding's claim, enforced structurally by starving the challenger of the researcher's framing (the isolation invariant).
+
+---
+
+### review lens
+
+**Definition**: A single per-type knowledge document that carries everything a review type needs to know about what to look for and how to classify it — the type's finding types, severities, detection passes, and any type-specific challenger disciplines. The researcher and challenger receive it injected at spawn; swapping the lens is what turns one generic review pattern into a specific review type. Genuinely shared detection passes are not copied into each lens; they live once in a referenced shared-detection document the lenses point to.
+
+**LLM priors activated**: "Lens" signals a way of looking — a perspective laid over the same underlying mechanism — which is exactly intended: the loop is fixed, the lens changes what the eye attends to. Risk: read as a code module or a purely optical metaphor with no operational meaning; here it is a concrete markdown document with a required format, loaded as reference material rather than as an agent persona.
+
+---
+
+### review preset
+
+**Definition**: A thin configured instance of the adversarial review pattern that wires one review type together: it names the lens to load, sets the cardinality (how many researchers, how many challengers), declares the artifact paths it writes, and calls the review loop. It holds no knowledge of what to look for. Existing review skills (code review, test review, fresh-eyes) become presets at their current paths; new review types (coherence, test-plan, task) are added as new presets.
+
+**LLM priors activated**: "Preset" signals a saved configuration over a general mechanism — intended: a preset is a small set of dials over the shared loop, not a new machine. Risk: read as a rigid or trivial setting; a preset can carry preset-specific pre-work and post-work (code review's linting and post-loop passes) while still delegating the loop itself to the shared spine.
+
+---
+
+### composable pipe
+
+**Definition**: The `validate --lens <type>-lens.md | severity-filter --min-severity <threshold>` command shape that the three preset-less review types (test, coherence, task) use for detection, in place of code review's single `run` invocation. The lens-parameterized validator does the type-filtering, so these types need no preset entry and no domain-filter step — the two small pipeline commands chained on the shell pipe do the whole detection-side job. The same two commands recompose elsewhere (the post-challenge re-validation reuses `validate --lens`), which is the point of keeping them separate rather than fusing them into one subcommand.
+
+**LLM priors activated**: "Composable" signals small single-purpose commands joined by a pipe — intended: each command reads stdin and writes stdout so they chain freely, Unix-style. Risk: read as a vague design-pattern buzzword; here it is a concrete two-command shell pipe with a fixed order (validate first, then severity-filter), not an abstract principle.
+
+---
+
+### neutral handoff
+
+**Definition**: The six-field normalized record the challenger receives in place of the researcher's full finding — exactly `mechanism`, `consequence`, `evidence`, `type`, `severity`, and `source_of_truth_ref`, produced by `pipeline normalize`. It strips the researcher's framing (confidence, narration, persuasion) so the challenger rules on the claim and its cited source alone, never on how the researcher pitched it. The handoff is "neutral" because it carries the facts a verdict needs and nothing that would steer the verdict.
+
+**LLM priors activated**: "Neutral" signals deliberately de-framed, value-stripped input — intended: it names the isolation invariant in positive terms (what the challenger does receive) rather than as a prohibition. Risk: read as "unimportant" or "default"; here neutral is an active property the `normalize` step enforces, and it is load-bearing — the adversarial review only stays honest because the framing never crosses the handoff.
+
+---
+
+### cross-model review
+
+**Definition**: A second-opinion review run against a different external model (e.g. Codex / GPT-5.5) that produces candidate findings, not verified findings. Candidate findings feed into the adversarial review loop as researcher output and are subject to the same challenger-verification step as any other finding. Opt-in only — enabling it sends the reviewed content to the external third-party model. Configured via the `cross_model_review` block in `.claude/automation/config.yml`.
+
+**LLM priors activated**: "Cross-model" signals multi-model comparison, which is the intended reading. Risk: read as implying the external model's findings are lower-quality or should be down-weighted — they are treated as ordinary candidate findings, subject to the same verification bar. "Review" activates general review-process priors; the "candidate findings" qualification is load-bearing and distinguishes this from a verified quality verdict.
+
+---
+
 *(Additional entries accrete as specs and context assets introduce vetted terms.)*

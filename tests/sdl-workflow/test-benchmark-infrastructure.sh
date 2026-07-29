@@ -7,7 +7,7 @@ TOTAL=0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-BENCHMARK_DIR="$PROJECT_ROOT/ai-docs/detection-accuracy/martian-benchmark"
+BENCHMARK_DIR="$PROJECT_ROOT/benchmark/code-review"
 
 ok() {
   TOTAL=$((TOTAL + 1))
