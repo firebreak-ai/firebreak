@@ -158,6 +158,67 @@ if [ -n "$TARGET_DIR" ]; then
   fi
 fi
 
+# --- Release version ---
+# The manifest records which Firebreak release an install carries. The version is
+# the newest version heading in CHANGELOG.md — already the file that must be
+# updated when a release or a new development line opens, so there is no second
+# place to bump and nothing extra to remember. The installer cannot read the git
+# tag: the normal path downloads a source tarball with no git metadata, and it
+# fetches a branch rather than a tag, so repo content is the only version evidence
+# available at install time. An install from a development branch therefore records
+# the in-progress version, which is the intent — it keeps in-development assets
+# distinguishable from a shipped release.
+FIREBREAK_VERSION="unknown"
+
+resolve_version() {
+  # Prefer the CHANGELOG beside the asset tree being installed (it describes that
+  # payload); fall back to the one beside this script.
+  local changelog=""
+  local candidate
+  for candidate in \
+    "${SOURCE_DIR:+$(dirname "$SOURCE_DIR")/CHANGELOG.md}" \
+    "$(dirname "$SCRIPT_DIR")/CHANGELOG.md"
+  do
+    if [ -n "$candidate" ] && [ -f "$candidate" ]; then
+      changelog="$candidate"
+      break
+    fi
+  done
+
+  if [ -z "$changelog" ]; then
+    echo "Warning: no CHANGELOG.md found beside the source tree or the installer." >&2
+    echo "  The manifest will record the version as \"unknown\"." >&2
+    return 0
+  fi
+
+  local version
+  # Matching on a version-numbered heading skips a non-numeric heading such as
+  # "[Unreleased]" with no special case for it.
+  version="$(python3 - "$changelog" <<'PYEOF'
+import re, sys
+
+heading = re.compile(r'^##\s*\[(\d+\.\d+\.\d+[^\]]*)\]')
+try:
+    with open(sys.argv[1], encoding='utf-8') as f:
+        for line in f:
+            match = heading.match(line)
+            if match:
+                print(match.group(1))
+                break
+except OSError:
+    pass
+PYEOF
+)"
+
+  if [ -z "$version" ]; then
+    echo "Warning: no version heading found in $changelog." >&2
+    echo "  The manifest will record the version as \"unknown\"." >&2
+    return 0
+  fi
+
+  FIREBREAK_VERSION="$version"
+}
+
 # --- Prerequisite checking ---
 check_uv() {
   if command -v uv >/dev/null 2>&1; then
@@ -645,21 +706,26 @@ print(json.dumps(merged))
 import json, sys
 
 manifest = {
+    # Manifest format version — describes this file's shape, not the product.
     'schema_version': '1.0.0',
-    'installer_version': '0.1.0',
-    'firebreak_version': '0.1.0',
-    'install_mode': sys.argv[1],
-    'installed_at': sys.argv[2],
-    'updated_at': sys.argv[3],
-    'target': sys.argv[4],
-    'files': json.loads(sys.argv[5]),
-    'settings_entries': json.loads(sys.argv[6]),
-    'backups': json.loads(sys.argv[7]),
+    # The installer ships from the same repo at the same version as the assets it
+    # installs; there is no separate installer release, so both carry the release
+    # version rather than a hand-maintained number that drifts.
+    'installer_version': sys.argv[1],
+    'firebreak_version': sys.argv[1],
+    'install_mode': sys.argv[2],
+    'installed_at': sys.argv[3],
+    'updated_at': sys.argv[4],
+    'target': sys.argv[5],
+    'files': json.loads(sys.argv[6]),
+    'settings_entries': json.loads(sys.argv[7]),
+    'backups': json.loads(sys.argv[8]),
 }
 
-with open(sys.argv[8], 'w') as f:
+with open(sys.argv[9], 'w') as f:
     json.dump(manifest, f, indent=2)
 " \
+    "$FIREBREAK_VERSION" \
     "$INSTALL_MODE" \
     "$installed_at" \
     "$now" \
@@ -831,6 +897,7 @@ if [ -f "$TARGET_DIR/.firebreak-manifest.json" ]; then
   collect_previous_files
 fi
 
+resolve_version
 enumerate_assets
 merge_settings
 create_capture_sentinel

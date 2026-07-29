@@ -288,6 +288,85 @@ else
   not_ok "dry-run: no changes made, planned operations reported" "rc=$RC files=$FILES_CREATED"
 fi
 
+# --- Version recording ---
+
+# The version the repo's own CHANGELOG declares — computed here independently of
+# the installer so the test does not confirm the installer against itself.
+EXPECTED_VERSION=$(python3 -c "
+import re, sys
+heading = re.compile(r'^##\s*\[(\d+\.\d+\.\d+[^\]]*)\]')
+for line in open('$PROJECT_ROOT/CHANGELOG.md', encoding='utf-8'):
+    m = heading.match(line)
+    if m:
+        print(m.group(1))
+        break
+")
+
+# Manifest records the release version, not a hardcoded placeholder
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>/dev/null
+RECORDED=$(python3 -c "import json; print(json.load(open('$TARGET/.firebreak-manifest.json')).get('firebreak_version',''))" 2>/dev/null || true)
+RECORDED_INSTALLER=$(python3 -c "import json; print(json.load(open('$TARGET/.firebreak-manifest.json')).get('installer_version',''))" 2>/dev/null || true)
+if [ -n "$EXPECTED_VERSION" ] && [ "$RECORDED" = "$EXPECTED_VERSION" ] && [ "$RECORDED_INSTALLER" = "$EXPECTED_VERSION" ]; then
+  ok "manifest records the release version from the newest CHANGELOG entry"
+else
+  not_ok "manifest records the release version from the newest CHANGELOG entry" "expected=$EXPECTED_VERSION firebreak=$RECORDED installer=$RECORDED_INSTALLER"
+fi
+
+# A non-numeric newest heading is skipped in favour of the first real version
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+cat > "$(dirname "$MOCK_SOURCE")/CHANGELOG.md" << 'EOF'
+# Changelog
+
+## [Unreleased]
+- work in progress
+
+## [9.8.7]
+- a real release
+EOF
+bash "$INSTALL_SCRIPT" --target "$TARGET" --source "$MOCK_SOURCE" 2>/dev/null
+RECORDED=$(python3 -c "import json; print(json.load(open('$TARGET/.firebreak-manifest.json')).get('firebreak_version',''))" 2>/dev/null || true)
+if [ "$RECORDED" = "9.8.7" ]; then
+  ok "an unreleased heading is skipped for the newest numbered version"
+else
+  not_ok "an unreleased heading is skipped for the newest numbered version" "recorded=$RECORDED"
+fi
+
+# No CHANGELOG anywhere: records "unknown", warns, and still installs.
+# The installer is copied so that its own parent has no CHANGELOG to fall back on.
+MOCK_SOURCE=$(setup_mock_source)
+TARGET=$(setup_target)
+ISOLATED=$(mktemp -d)
+TEMP_DIRS+=("$ISOLATED")
+mkdir -p "$ISOLATED/installer"
+cp "$PROJECT_ROOT/installer/install.sh" "$PROJECT_ROOT/installer/merge-settings.py" "$ISOLATED/installer/"
+STDERR_OUT=$(bash "$ISOLATED/installer/install.sh" --target "$TARGET" --source "$MOCK_SOURCE" 2>&1 >/dev/null)
+RC=$?
+RECORDED=$(python3 -c "import json; print(json.load(open('$TARGET/.firebreak-manifest.json')).get('firebreak_version',''))" 2>/dev/null || true)
+if [ $RC -eq 0 ] && [ "$RECORDED" = "unknown" ] \
+  && echo "$STDERR_OUT" | grep -qi "no CHANGELOG.md found" \
+  && [ -f "$TARGET/skills/fbk-spec/prompt.md" ]; then
+  ok "a missing CHANGELOG records an unknown version, warns, and still installs"
+else
+  not_ok "a missing CHANGELOG records an unknown version, warns, and still installs" "rc=$RC recorded=$RECORDED stderr=$STDERR_OUT"
+fi
+
+# The shipped Python package declares the same version the CHANGELOG does
+PYPROJECT_VERSION=$(python3 - "$PROJECT_ROOT/assets/fbk-scripts/pyproject.toml" <<'PYEOF' 2>/dev/null || true
+import re, sys
+text = open(sys.argv[1], encoding='utf-8').read()
+match = re.search(r'^version\s*=\s*["\']([^"\']+)', text, re.M)
+print(match.group(1) if match else '')
+PYEOF
+)
+if [ -n "$EXPECTED_VERSION" ] && [ "$PYPROJECT_VERSION" = "$EXPECTED_VERSION" ]; then
+  ok "the shipped Python package version matches the newest CHANGELOG entry"
+else
+  not_ok "the shipped Python package version matches the newest CHANGELOG entry" "changelog=$EXPECTED_VERSION pyproject=$PYPROJECT_VERSION"
+fi
+
 # Summary
 echo ""
 echo "# $PASS/$TOTAL tests passed"
