@@ -367,6 +367,29 @@ else
   not_ok "the shipped Python package version matches the newest CHANGELOG entry" "changelog=$EXPECTED_VERSION pyproject=$PYPROJECT_VERSION"
 fi
 
+# The lock file records the package version too, and drifted unnoticed through
+# 0.5.2 (package at 0.5.2, lock still at 0.4.0) because the check above did not
+# reach it. Read the version from the fbk-scripts entry specifically — the lock
+# lists dependency packages with versions of their own.
+LOCK_VERSION=$(python3 - "$PROJECT_ROOT/assets/fbk-scripts/uv.lock" <<'PYEOF' 2>/dev/null || true
+import re, sys
+text = open(sys.argv[1], encoding='utf-8').read()
+version = ''
+for block in text.split('[[package]]'):
+    if re.search(r'^name\s*=\s*["\']fbk-scripts["\']', block, re.M):
+        match = re.search(r'^version\s*=\s*["\']([^"\']+)', block, re.M)
+        if match:
+            version = match.group(1)
+        break
+print(version)
+PYEOF
+)
+if [ -n "$EXPECTED_VERSION" ] && [ "$LOCK_VERSION" = "$EXPECTED_VERSION" ]; then
+  ok "the Python lock file version matches the newest CHANGELOG entry"
+else
+  not_ok "the Python lock file version matches the newest CHANGELOG entry" "changelog=$EXPECTED_VERSION lock=$LOCK_VERSION"
+fi
+
 # Summary
 echo ""
 echo "# $PASS/$TOTAL tests passed"
