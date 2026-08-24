@@ -8,7 +8,7 @@ from collections import defaultdict, deque
 from pathlib import Path
 from typing import Dict, List
 
-from fbk.slices import TEST_DISCIPLINES
+from fbk.slices import SHAPES_REQUIRING_IMPL, SHAPES_REQUIRING_TEST, TEST_DISCIPLINES
 
 
 def validate_breakdown(spec_text: str, manifest: dict, task_files: Dict[str, str]) -> dict:
@@ -66,10 +66,18 @@ def validate_breakdown(spec_text: str, manifest: dict, task_files: Dict[str, str
         has_test = any(t["type"] == "test" for t in ac_tasks[ac])
         has_impl = any(t["type"] == "implementation" for t in ac_tasks[ac])
         if has_slice_shape:
-            # Shape-specific invariants replace generic has_test/has_impl checks.
+            # Shape-specific invariants replace generic has_test/has_impl checks, so each
+            # shape must restate the part of the work-unit structure that applies to it —
+            # an unstated requirement is not checked at all.
             # Cross-cutting: no impl task allowed.
             if "cross-cutting" in covering_shapes and has_impl:
                 fails.append(f"Slice shape: cross-cutting AC {ac} must not have an impl task")
+            if not has_test:
+                for shape in sorted(covering_shapes & SHAPES_REQUIRING_TEST):
+                    fails.append(f"Slice shape: {shape} AC {ac} has no test task")
+            if not has_impl and category != "corrective":
+                for shape in sorted(covering_shapes & SHAPES_REQUIRING_IMPL):
+                    fails.append(f"Slice shape: {shape} AC {ac} has no implementation task")
         else:
             # Legacy checks unchanged.
             if not has_test:
