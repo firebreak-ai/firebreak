@@ -669,3 +669,107 @@ class TestBounceBackMarkerDetection:
         assert result["result"] == "pass"
 
 
+
+
+class TestShapedCoverageInvariants:
+    """Shape-aware coverage checks.
+
+    When every task covering an AC carries a slice_shape, the gate replaces its generic
+    has_test/has_impl checks with shape-specific ones. Only the cross-cutting invariant was
+    ever written, so new-contract, contract-evolving, and contract-preserving ACs were
+    checked for neither a test task nor an implementation task. These tests pin the
+    per-shape work-unit structure each slice-shape document declares.
+    """
+
+    @staticmethod
+    def _task(tid, ttype, ac, shape, **extra):
+        task = {
+            "id": tid,
+            "title": f"{ttype} {ac}",
+            "file": f"{tid}.md",
+            "type": ttype,
+            "wave_id": 1 if ttype == "test" else 2,
+            "dependencies": [],
+            "covers": [ac],
+            "model": "Haiku",
+            "status": "not_started",
+            "slice_shape": shape,
+        }
+        task.update(extra)
+        return task
+
+    @staticmethod
+    def _tfiles(*tids):
+        return {f"{t}.md": "## Files to create\n- `f.py`" for t in tids} | MANIFEST_ENTRY
+
+    def test_new_contract_without_impl_task_fails(self):
+        """new-contract produces a test task AND an impl task — a test task alone is incomplete."""
+        spec = make_minimal_spec(["AC-01"])
+        manifest = {"category": "feature", "tasks": [
+            self._task("task-01", "test", "AC-01", "new-contract"),
+        ]}
+        result = validate_breakdown(spec, manifest, self._tfiles("task-01"))
+        assert result["result"] == "fail"
+        assert any(
+            "new-contract" in f and "AC-01" in f and "implementation" in f.lower()
+            for f in result["failures"]
+        ), result["failures"]
+
+    def test_new_contract_without_test_task_fails(self):
+        """new-contract introduces behavior that does not exist yet — it requires a red test."""
+        spec = make_minimal_spec(["AC-01"])
+        manifest = {"category": "feature", "tasks": [
+            self._task("task-01", "implementation", "AC-01", "new-contract"),
+        ]}
+        result = validate_breakdown(spec, manifest, self._tfiles("task-01"))
+        assert result["result"] == "fail"
+        assert any(
+            "new-contract" in f and "AC-01" in f and "test" in f.lower()
+            for f in result["failures"]
+        ), result["failures"]
+
+    def test_new_contract_with_test_and_impl_passes(self):
+        """The complete new-contract pairing passes."""
+        spec = make_minimal_spec(["AC-01"])
+        manifest = {"category": "feature", "tasks": [
+            self._task("task-01", "test", "AC-01", "new-contract"),
+            self._task("task-02", "implementation", "AC-01", "new-contract"),
+        ]}
+        result = validate_breakdown(spec, manifest, self._tfiles("task-01", "task-02"))
+        assert result["result"] == "pass", result.get("failures")
+
+    def test_contract_evolving_without_impl_task_fails(self):
+        """contract-evolving produces new test tasks AND an impl task."""
+        spec = make_minimal_spec(["AC-01"])
+        manifest = {"category": "feature", "tasks": [
+            self._task("task-01", "test", "AC-01", "contract-evolving",
+                       retired_tests=[{"file": "test_old.py", "rationale": "API changed"}]),
+        ]}
+        result = validate_breakdown(spec, manifest, self._tfiles("task-01"))
+        assert result["result"] == "fail"
+        assert any(
+            "contract-evolving" in f and "AC-01" in f and "implementation" in f.lower()
+            for f in result["failures"]
+        ), result["failures"]
+
+    def test_contract_preserving_without_impl_task_fails(self):
+        """contract-preserving produces an impl task only — a test task alone cannot satisfy it."""
+        spec = make_minimal_spec(["AC-01"])
+        manifest = {"category": "feature", "tasks": [
+            self._task("task-01", "test", "AC-01", "contract-preserving"),
+        ]}
+        result = validate_breakdown(spec, manifest, self._tfiles("task-01"))
+        assert result["result"] == "fail"
+        assert any(
+            "contract-preserving" in f and "AC-01" in f and "implementation" in f.lower()
+            for f in result["failures"]
+        ), result["failures"]
+
+    def test_corrective_category_exempt_from_impl_requirement(self):
+        """The corrective-category exemption from the impl requirement survives the shaped path."""
+        spec = make_minimal_spec(["AC-01"])
+        manifest = {"category": "corrective", "tasks": [
+            self._task("task-01", "test", "AC-01", "new-contract"),
+        ]}
+        result = validate_breakdown(spec, manifest, self._tfiles("task-01"))
+        assert result["result"] == "pass", result.get("failures")
