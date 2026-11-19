@@ -1,0 +1,411 @@
+{
+  "results": [
+    {
+      "case": "answered-intent",
+      "evaluation_contract_version": 3,
+      "packet_bytes": 1663,
+      "prompt_bytes": 2368,
+      "usage": {
+        "claude-haiku-4-5-20251001": {
+          "inputTokens": 1591,
+          "outputTokens": 15,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 0,
+          "costUSD": 0.001666,
+          "contextWindow": 200000,
+          "maxOutputTokens": 32000,
+          "thinkingTokens": 0,
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        "claude-opus-5": {
+          "inputTokens": 8,
+          "outputTokens": 799,
+          "cacheReadInputTokens": 21272,
+          "cacheCreationInputTokens": 7399,
+          "webSearchRequests": 0,
+          "costUSD": 0.10464100000000001,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 64000,
+          "thinkingTokens": 177,
+          "canonicalModel": "claude-opus-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "seconds": 12.135,
+      "source_bytes": 206,
+      "source_count": 3,
+      "correct": true,
+      "failures": [],
+      "unnecessary_questions": 0,
+      "unsupported_actions": 0,
+      "output_contract_errors": 0,
+      "unsupported_fields": 0,
+      "answer": {
+        "next_action": "continue",
+        "retry_limit": 3,
+        "questions": [],
+        "sources": [
+          {
+            "path": "human-correction.md",
+            "quote": "Correction: retry at most 3 times; this supersedes the earlier five-retry choice."
+          },
+          {
+            "path": ".fbk/example/prd.md",
+            "quote": "Implement cancellation and retry behavior according to current human decisions."
+          },
+          {
+            "path": "human-decisions.md",
+            "quote": "Initial decision: retry at most five times."
+          }
+        ]
+      },
+      "context": {
+        "status": "complete",
+        "inspected_files": [
+          ".fbk/example/prd.md",
+          "human-correction.md",
+          "human-decisions.md"
+        ],
+        "supporting_files": [
+          ".fbk/example/prd.md",
+          "human-correction.md"
+        ],
+        "missing_context": []
+      },
+      "reported_cost_usd": 0.10630700000000001
+    },
+    {
+      "case": "late-correction",
+      "evaluation_contract_version": 3,
+      "packet_bytes": 1663,
+      "prompt_bytes": 2368,
+      "usage": {
+        "claude-haiku-4-5-20251001": {
+          "inputTokens": 1594,
+          "outputTokens": 15,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 0,
+          "costUSD": 0.001669,
+          "contextWindow": 200000,
+          "maxOutputTokens": 32000,
+          "thinkingTokens": 0,
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        "claude-opus-5": {
+          "inputTokens": 8,
+          "outputTokens": 773,
+          "cacheReadInputTokens": 24835,
+          "cacheCreationInputTokens": 3916,
+          "webSearchRequests": 0,
+          "costUSD": 0.07094249999999999,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 64000,
+          "thinkingTokens": 59,
+          "canonicalModel": "claude-opus-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "seconds": 12.134,
+      "source_bytes": 224,
+      "source_count": 3,
+      "correct": true,
+      "failures": [],
+      "unnecessary_questions": 0,
+      "unsupported_actions": 0,
+      "output_contract_errors": 0,
+      "unsupported_fields": 0,
+      "answer": {
+        "next_action": "correct_artifact",
+        "questions": [],
+        "retry_limit": 2,
+        "sources": [
+          {
+            "path": "human-correction.md",
+            "quote": "Correction: retry at most 2 times; this supersedes the earlier five-retry choice."
+          },
+          {
+            "path": ".fbk/example/prd.md",
+            "quote": "Cancellation retries at most five times. Update this draft to reflect the current human decision."
+          },
+          {
+            "path": "human-decisions.md",
+            "quote": "Initial decision: retry at most five times."
+          }
+        ]
+      },
+      "context": {
+        "status": "complete",
+        "inspected_files": [
+          ".fbk/example/prd.md",
+          "human-correction.md",
+          "human-decisions.md"
+        ],
+        "supporting_files": [
+          "human-correction.md"
+        ],
+        "missing_context": []
+      },
+      "reported_cost_usd": 0.0726115
+    },
+    {
+      "case": "misleading-remedy",
+      "evaluation_contract_version": 3,
+      "packet_bytes": 2004,
+      "prompt_bytes": 2737,
+      "usage": {
+        "claude-haiku-4-5-20251001": {
+          "inputTokens": 1691,
+          "outputTokens": 14,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 0,
+          "costUSD": 0.001761,
+          "contextWindow": 200000,
+          "maxOutputTokens": 32000,
+          "thinkingTokens": 0,
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        "claude-opus-5": {
+          "inputTokens": 4,
+          "outputTokens": 673,
+          "cacheReadInputTokens": 6947,
+          "cacheCreationInputTokens": 7364,
+          "webSearchRequests": 0,
+          "costUSD": 0.0939585,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 64000,
+          "thinkingTokens": 90,
+          "canonicalModel": "claude-opus-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "seconds": 8.978,
+      "source_bytes": 256,
+      "source_count": 3,
+      "correct": true,
+      "failures": [],
+      "unnecessary_questions": 0,
+      "unsupported_actions": 0,
+      "output_contract_errors": 0,
+      "unsupported_fields": 0,
+      "answer": {
+        "next_action": "fix_implementation",
+        "resource_releases": 1,
+        "questions": [],
+        "sources": [
+          {
+            "path": ".fbk/example/spec.md",
+            "quote": "Release the resource exactly once, including cancellation."
+          },
+          {
+            "path": ".fbk/example/spec.md",
+            "quote": "Repeated cancellation must not release it again."
+          },
+          {
+            "path": "src/retry.py",
+            "quote": "def cancel(resource):\n    resource.release()\n    resource.release()"
+          }
+        ]
+      },
+      "context": {
+        "status": "complete",
+        "inspected_files": [
+          ".fbk/example/prd.md",
+          ".fbk/example/spec.md",
+          "src/retry.py"
+        ],
+        "supporting_files": [
+          ".fbk/example/spec.md",
+          ".fbk/example/prd.md"
+        ],
+        "missing_context": []
+      },
+      "reported_cost_usd": 0.0957195
+    },
+    {
+      "case": "existing-dependency",
+      "evaluation_contract_version": 3,
+      "packet_bytes": 1422,
+      "prompt_bytes": 2134,
+      "usage": {
+        "claude-haiku-4-5-20251001": {
+          "inputTokens": 1493,
+          "outputTokens": 15,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 0,
+          "costUSD": 0.001568,
+          "contextWindow": 200000,
+          "maxOutputTokens": 32000,
+          "thinkingTokens": 0,
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        "claude-opus-5": {
+          "inputTokens": 6,
+          "outputTokens": 1026,
+          "cacheReadInputTokens": 13932,
+          "cacheCreationInputTokens": 7567,
+          "webSearchRequests": 0,
+          "costUSD": 0.108316,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 64000,
+          "thinkingTokens": 25,
+          "canonicalModel": "claude-opus-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "seconds": 13.133,
+      "source_bytes": 369,
+      "source_count": 4,
+      "correct": true,
+      "failures": [],
+      "unnecessary_questions": 0,
+      "unsupported_actions": 0,
+      "output_contract_errors": 0,
+      "unsupported_fields": 0,
+      "answer": {
+        "dependency": "src/retry_policy.py",
+        "next_action": "reuse_dependency",
+        "questions": [],
+        "sources": [
+          {
+            "path": ".fbk/example/spec.md",
+            "quote": "Use the repository's existing backoff_ms policy for retry scheduling. Locate its implementation; no new retry policy is needed."
+          },
+          {
+            "path": "src/retry_policy.py",
+            "quote": "def backoff_ms(attempt):"
+          },
+          {
+            "path": "src/client.py",
+            "quote": "from .retry_policy import backoff_ms"
+          },
+          {
+            "path": ".fbk/example/prd.md",
+            "quote": "Implement cancellation and retry behavior according to current human decisions."
+          }
+        ]
+      },
+      "context": {
+        "status": "complete",
+        "inspected_files": [
+          ".fbk/example/prd.md",
+          ".fbk/example/spec.md",
+          "src/retry_policy.py",
+          "src/client.py"
+        ],
+        "supporting_files": [
+          ".fbk/example/prd.md",
+          ".fbk/example/spec.md"
+        ],
+        "missing_context": []
+      },
+      "reported_cost_usd": 0.109884
+    },
+    {
+      "case": "reference-repair",
+      "evaluation_contract_version": 3,
+      "packet_bytes": 1901,
+      "prompt_bytes": 2634,
+      "usage": {
+        "claude-haiku-4-5-20251001": {
+          "inputTokens": 1657,
+          "outputTokens": 14,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 0,
+          "costUSD": 0.001727,
+          "contextWindow": 200000,
+          "maxOutputTokens": 32000,
+          "thinkingTokens": 0,
+          "canonicalModel": "claude-haiku-4-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        },
+        "claude-opus-5": {
+          "inputTokens": 4,
+          "outputTokens": 1107,
+          "cacheReadInputTokens": 7056,
+          "cacheCreationInputTokens": 7645,
+          "webSearchRequests": 0,
+          "costUSD": 0.10767299999999999,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 64000,
+          "thinkingTokens": 77,
+          "canonicalModel": "claude-opus-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "seconds": 12.232,
+      "source_bytes": 380,
+      "source_count": 4,
+      "correct": true,
+      "failures": [],
+      "unnecessary_questions": 0,
+      "unsupported_actions": 0,
+      "output_contract_errors": 0,
+      "unsupported_fields": 0,
+      "answer": {
+        "next_action": "repair_references",
+        "reference_changes": [
+          {
+            "from": "REQ-33",
+            "to": "REQ-3",
+            "apply": true
+          },
+          {
+            "from": "REQ-8",
+            "to": "REQ-9",
+            "apply": false
+          }
+        ],
+        "questions": [],
+        "sources": [
+          {
+            "path": "human-authority.md",
+            "quote": "Correct reference typos when meaning is unchanged. Preserve the settled 30-day retention behavior."
+          },
+          {
+            "path": ".fbk/example/spec.md",
+            "quote": "Cancellation release: see REQ-33.\nAudit retention is 30 days: see REQ-8."
+          },
+          {
+            "path": "requirements.md",
+            "quote": "REQ-3: Release each canceled resource exactly once.\nREQ-8: Retain audit data for 30 days.\nREQ-9: Retain audit data for 90 days."
+          }
+        ]
+      },
+      "context": {
+        "status": "complete",
+        "inspected_files": [
+          ".fbk/example/prd.md",
+          ".fbk/example/spec.md",
+          "human-authority.md",
+          "requirements.md"
+        ],
+        "supporting_files": [
+          "human-authority.md",
+          "requirements.md"
+        ],
+        "missing_context": []
+      },
+      "reported_cost_usd": 0.1094
+    }
+  ],
+  "limitation": "Synthetic observable decisions, not proof of context inspection or long-term cognitive reliability."
+}

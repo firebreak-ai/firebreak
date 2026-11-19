@@ -1,0 +1,5 @@
+Use the fbk-intent skill to start the intent phase for a new unit named UNIT (pass the unit name as its argument).
+
+Operator request: PREAMBLE Its whole text is the request. The project has its Python stack set up (`pyproject.toml`, `requirements-dev.txt`, a ready `.venv`, `conftest.py`); keep it.
+
+The operator wants a design phase for this unit: create the unit with design on. For any question this request does not settle, use your own recommendation and record it. Close intent, then stop.

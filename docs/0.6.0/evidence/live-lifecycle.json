@@ -1,0 +1,392 @@
+{
+  "fixture": "Synchronous cancellation with resource release, exceptions, reentrancy, and independent instances",
+  "unit": "cancellation",
+  "open_phase": null,
+  "owner": null,
+  "phases": {
+    "intent": {
+      "rounds": [
+        {
+          "error": null,
+          "review": {
+            "summary": "Intent-phase review of `.fbk/cancellation/prd.md`, the sole artifact for the Firebreak `cancellation` unit. The repository currently contains only Firebreak scaffolding and `validation.json` \u2014 no Python sources, tests, or README exist yet, which is expected at this phase and is not itself a defect.\n\nNo blockers. The PRD is internally consistent and its acceptance criteria are genuinely observable through the channels it names (callback invocation counts, return values, `cancelled` state, exception propagation). The at-most-once release guarantee, the ordering rule that `cancelled` flips to True before `release` is invoked, and the raise-path clause (\"cancellation remains recorded, so another cancel does not retry release\") reinforce one another: setting state before the call is precisely what makes non-retry-after-failure implementable. Scope exclusions (no async, threads, scheduling, retry, logging, third-party deps) line up with `state.json` `design: false` and with the stdlib-unittest acceptance route, and the `README.md` deliverable gives the excluded thread-safety concern a documented home rather than dropping it silently.\n\nI specifically checked for and did not find: a conflict between the \"exactly once\" framing and the raise path (release was in fact called once, so not retrying is correct); any contradiction between per-instance independence and the described state model; or an unresolved product decision asserted away. The three findings below are refinements that a spec or implementation author would otherwise decide unilaterally; each resolves the same way for any careful implementer under ordinary Python semantics, so none gates the intent phase.",
+            "findings": [
+              {
+                "title": "Return contract on the raising-release path is left implicit",
+                "location": ".fbk/cancellation/prd.md:2",
+                "evidence": "The PRD states \"The first cancel returns True and calls release once\" and separately \"If release raises, propagate that exception.\" Because `cancelled` is set before `release` is invoked, the first cancel on a failing release both records cancellation and raises \u2014 so it never returns True. The two sentences are not in conflict (a Python call cannot both raise and return a value), but the document never says which sentence governs the failure path. A test author working only from this text could plausibly write an assertion expecting a True return alongside the raised exception, and would then have to redesign the test.",
+                "remedy": "Add a clause noting that on the raising path `cancel` produces no return value \u2014 the exception propagates \u2014 while `cancelled` is already True and the subsequent call returns False. This costs one sentence and removes the only place where the return-value criterion and the exception criterion touch.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "Calling convention for the release callable is unstated",
+                "location": ".fbk/cancellation/prd.md:2",
+                "evidence": "The Job is \"initialized with a callable release function\" and acceptance is explicitly \"observable through callback invocations.\" Since invocation is a primary acceptance signal, the arity of that invocation is part of what tests must assert, yet the PRD never says whether `release` is called with no arguments or is passed the job. Every reasonable reading lands on a zero-argument call, so this will not produce divergent implementations, but it does leave an acceptance-relevant detail inferred rather than stated.",
+                "remedy": "State that `release` is invoked with no arguments, so that a recording fake in the tests can assert on call count and argument list without guessing.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "Mutability of the `cancelled` property is not pinned down",
+                "location": ".fbk/cancellation/prd.md:2",
+                "evidence": "The PRD calls `cancelled` a \"property\" that \"starts False and becomes True,\" but does not say whether external assignment is permitted. Since the whole guarantee rests on `cancelled` being the record that prevents a second release, a writable attribute would let a caller reset it and drive a duplicate release \u2014 the exact outcome the unit exists to prevent. This is a latent hole in the contract rather than a demonstrated defect, since nothing yet implements it and the natural reading of \"property\" is read-only.",
+                "remedy": "Say explicitly that `cancelled` is read-only and is mutated solely by `cancel`, so the at-most-once guarantee cannot be defeated from outside the object. This also gives the README's \"limitations\" section a concrete statement to make.",
+                "severity": "suggestion"
+              }
+            ]
+          },
+          "readers": [
+            {
+              "seconds": 78.655,
+              "reported_cost_usd": 0.2844385,
+              "usage": {
+                "claude-haiku-4-5-20251001": {
+                  "inputTokens": 1092,
+                  "outputTokens": 16,
+                  "cacheReadInputTokens": 0,
+                  "cacheCreationInputTokens": 0,
+                  "webSearchRequests": 0,
+                  "costUSD": 0.001172,
+                  "contextWindow": 200000,
+                  "maxOutputTokens": 32000,
+                  "thinkingTokens": 0,
+                  "canonicalModel": "claude-haiku-4-5",
+                  "provider": "firstParty",
+                  "costBasis": "list"
+                },
+                "claude-opus-5": {
+                  "inputTokens": 10,
+                  "outputTokens": 5620,
+                  "cacheReadInputTokens": 145073,
+                  "cacheCreationInputTokens": 7018,
+                  "webSearchRequests": 0,
+                  "costUSD": 0.2832665,
+                  "contextWindow": 1000000,
+                  "maxOutputTokens": 64000,
+                  "thinkingTokens": 2712,
+                  "canonicalModel": "claude-opus-5",
+                  "provider": "firstParty",
+                  "costBasis": "list"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "accepted": true,
+      "verification": []
+    },
+    "design": {
+      "rounds": [],
+      "accepted": false,
+      "verification": []
+    },
+    "spec": {
+      "rounds": [
+        {
+          "error": null,
+          "review": {
+            "summary": "Spec-phase review of `.fbk/cancellation/{prd.md,scope.json,spec.md}` for the Firebreak `cancellation` unit. The repository contains only Firebreak scaffolding and `validation.json`; `jobs.py`, `tests/test_jobs.py`, and `README.md` are not yet written, which is expected at this phase and not a defect.\n\nThe spec is largely faithful to the accepted intent and closes two of the three intent-phase suggestions: it states that `release` takes no arguments, and it disambiguates the raising path by scoping the True return to \"when release returns normally.\" The reentrancy clause is a legitimate elaboration rather than added scope, since it follows directly from the PRD's rule that `cancelled` is set before `release` is invoked; making it explicit stops an implementer from guarding with a post-call flag. Delivery files in `spec.md:3` match `scope.json` exactly, and the instruction to run from the repository root is load-bearing and correct \u2014 `python -m unittest` prepends the CWD to `sys.path`, so `import jobs` resolves even though `discover -s tests` puts `tests/` on the path.\n\nOne blocker. The PRD states as an explicit criterion that after a release raises, \"cancellation remains recorded, so another cancel does not retry release.\" That sentence survives into the spec's contract paragraph but is absent from the acceptance paragraph: the enumerated tests stop at \"assert identity of a propagated exception,\" and the mutation list that \"must fail these tests\" omits any rollback-on-failure variant. A defensive implementation that resets `cancelled` to False in an `except` clause before re-raising passes every test the spec commits to, yet produces a second `release` call on the retry \u2014 precisely the duplicate release the unit exists to prevent.\n\nI checked the remaining mutations and each is genuinely discriminated by the enumerated tests: a no-op cancel fails against the recording callback, a twice-called callback fails against repeated cancel, post-callback state recording fails against the in-callback inspection, swallowed exceptions fail against the identity assertion, and class-level state fails against the independent-instances test. The two suggestions below are refinements that do not gate the phase.",
+            "findings": [
+              {
+                "title": "Acceptance criteria omit the no-retry-after-failed-release test, leaving the PRD's core guarantee unverified",
+                "location": ".fbk/cancellation/spec.md:3",
+                "evidence": "The PRD (`prd.md:2`) states as an explicit criterion: \"If release raises, propagate that exception; cancellation remains recorded, so another cancel does not retry release.\" The spec's contract paragraph repeats it (`spec.md:2`: \"cancelled remains True and later calls return False without a retry\"). But the acceptance paragraph at `spec.md:3` never asks for it. Its test enumeration covers only \"assert identity of a propagated exception\" \u2014 the propagation half \u2014 and its list of variants that \"must fail these tests\" is \"a no-op cancel, a callback called twice, cancellation recorded after callback, swallowed exceptions, or class-level state.\" No listed test observes state or behavior *after* the exception escapes, and no listed mutation is a rollback.\n\nConcrete escape: an implementer writes the defensive form `self._cancelled = True; try: self._release() except BaseException: self._cancelled = False; raise; return True`. Trace it against every enumerated test. Recording callback invoked once \u2014 passes. State inspected inside a normal callback reads True (the reset only runs on the raising path) \u2014 passes. Both return values over repeated calls with a normal callback are True then False \u2014 passes. Exception identity propagates unchanged \u2014 passes. Reentrant cancel from a normally-returning callback sees True and returns False \u2014 passes. Two instances hold separate `_cancelled` \u2014 passes. All five named mutations still fail as required. Yet `job.cancel()` after the raise finds `cancelled is False`, calls `release` a second time, and returns True: the duplicate release of a held resource that `prd.md:2` opens by naming as the reason the unit exists. The check in `scope.json` is green throughout.\n\nThis is a defect in the spec, not merely a missing nice-to-have test: the spec is the artifact that renders intent observable, and it commits to an acceptance set under which a stated PRD criterion can be violated in the shipped deliverable with no failing signal. The author demonstrably reasoned about the raise path \u2014 \"swallowed exceptions\" is in the mutation list \u2014 but covered only the propagation half of the two-part criterion.",
+                "remedy": "Extend the acceptance enumeration at `spec.md:3` to require a test that, after asserting the propagated exception, asserts `job.cancelled is True`, asserts a subsequent `cancel()` returns False, and asserts the recording callback's invocation count is still exactly 1. Add \"a release retried after it raised\" (equivalently, \"cancellation rolled back when release raises\") to the list of variants that must fail these tests, alongside \"swallowed exceptions.\"",
+                "severity": "blocker"
+              },
+              {
+                "title": "Spec never states what README.md must document, though the PRD makes it a scoped deliverable",
+                "location": ".fbk/cancellation/spec.md:3",
+                "evidence": "`prd.md:2` closes with a specific documentation requirement: \"Document the synchronous contract and its limitations in README.md.\" The spec carries README.md forward only as a delivery file \u2014 \"Only jobs.py, tests/test_jobs.py, and README.md are delivery files\" \u2014 and never restates the content obligation. Nothing in `scope.json`'s `checks` can verify prose, so the spec text is the only place this requirement can be pinned. As written, a README containing a single usage line would satisfy the letter of the spec while dropping \"and its limitations,\" which is where the deliberately excluded thread-safety and async concerns were supposed to land. The spec does supply the raw material for both halves (the contract paragraph plus \"There is no thread-safety or async guarantee\"), so a careful implementer will likely get this right \u2014 which is why this is a suggestion rather than a blocker.",
+                "remedy": "Add a clause to `spec.md:3` stating that README.md documents the `Job(release)` / `cancel()` / `cancelled` contract and explicitly records the limitations: no thread-safety, no async support, and at-most-once release scoped to a single instance in a single thread.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "Writability of `cancelled` remains unpinned after the intent-phase review raised it",
+                "location": ".fbk/cancellation/spec.md:2",
+                "evidence": "The intent-phase review recorded in `state.json` flagged that the PRD never says whether `cancelled` may be assigned from outside the object. The spec was the natural place to settle it, and does not: `spec.md:2` says only \"`cancelled` is initially False\" and \"`cancel()` marks this job cancelled,\" with no statement about external assignment. Because the whole at-most-once guarantee rests on `cancelled` being the record that suppresses the second release, a plain writable attribute lets a caller execute `job.cancel(); job.cancelled = False; job.cancel()` and drive a duplicate release. Neither reading of the spec is unreasonable, and the enumerated tests are silent on it, so implementations may diverge on whether `cancelled` is a read-only property backed by a private flag or a bare attribute. Left as a suggestion because the PRD's word \"property\" reads naturally as read-only and no implementation exists yet to demonstrate the defect.",
+                "remedy": "State in `spec.md:2` that `cancelled` is a read-only property mutated solely by `cancel()`, and mention the corresponding limitation in README.md so callers know the flag is not a reset switch.",
+                "severity": "suggestion"
+              }
+            ]
+          },
+          "readers": [
+            {
+              "seconds": 117.049,
+              "reported_cost_usd": 0.463071,
+              "usage": {
+                "claude-haiku-4-5-20251001": {
+                  "inputTokens": 1114,
+                  "outputTokens": 16,
+                  "cacheReadInputTokens": 0,
+                  "cacheCreationInputTokens": 0,
+                  "webSearchRequests": 0,
+                  "costUSD": 0.001194,
+                  "contextWindow": 200000,
+                  "maxOutputTokens": 32000,
+                  "thinkingTokens": 0,
+                  "canonicalModel": "claude-haiku-4-5",
+                  "provider": "firstParty",
+                  "costBasis": "list"
+                },
+                "claude-opus-5": {
+                  "inputTokens": 8,
+                  "outputTokens": 8862,
+                  "cacheReadInputTokens": 116794,
+                  "cacheCreationInputTokens": 18189,
+                  "webSearchRequests": 0,
+                  "costUSD": 0.461877,
+                  "contextWindow": 1000000,
+                  "maxOutputTokens": 64000,
+                  "thinkingTokens": 4893,
+                  "canonicalModel": "claude-opus-5",
+                  "provider": "firstParty",
+                  "costBasis": "list"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "error": null,
+          "review": {
+            "summary": "Spec-phase review of `.fbk/cancellation/{prd.md,scope.json,spec.md}`. The repository contains only Firebreak scaffolding and `validation.json`; `jobs.py`, `tests/test_jobs.py`, and `README.md` do not exist yet, which is expected at this phase and not a defect.\n\nNo blockers. The contract paragraph at `spec.md:2` is faithful to `prd.md:2` on every stated criterion \u2014 zero-argument release callable, `cancelled` initially False, state recorded before release is invoked, first call invokes release exactly once and returns True when release returns normally, every subsequent call returns False without invoking release, a release exception propagates unchanged with no retry, per-instance state, and no thread-safety or async guarantee. The reentrancy clause is a derived consequence of the \"record before invoke\" ordering rather than added scope; stating it explicitly prevents an implementer from guarding with a post-call flag.\n\nThe blocker recorded against the previous spec revision (`state.json`, round 1) is genuinely closed rather than merely restated. That review showed the acceptance paragraph covered only the propagation half of the PRD's two-part raise criterion, so a rollback-on-failure implementation (`self._cancelled = True; try: release() except: self._cancelled = False; raise`) passed every enumerated test while producing a duplicate release. Current `spec.md:3` now requires, after the identity assertion, that `cancelled` remains True, a further cancel returns False, and release was called only once \u2014 and adds \"release retried after an exception\" to the must-fail list. I traced the rollback mutant against the revised enumeration: the post-exception cancel would find `cancelled is False`, return True, and invoke release a second time, so the test now fails it.\n\nI checked each remaining mutation against a named test rather than accepting the list at face value: a no-op cancel fails the recording-callback test, cancellation recorded after the callback fails the in-callback state inspection, swallowed exceptions fail the exception-identity assertion, and class-level state fails the independent-instances test. Delivery files in `spec.md:3` match `scope.json`'s sources, tests, and docs exactly. The instruction to run from the repository root is load-bearing and correct \u2014 `python -m unittest` prepends the CWD to `sys.path`, so `import jobs` resolves even though `discover -s tests` sets the top-level directory to `tests/`, and `tests/` needs no `__init__.py` for discovery to work.\n\nThe three suggestions below are refinements a careful implementer would most likely resolve correctly on their own; none gates the phase.",
+            "findings": [
+              {
+                "title": "Spec never states what README.md must contain, though the PRD makes documentation a scoped deliverable",
+                "location": ".fbk/cancellation/spec.md:3",
+                "evidence": "`prd.md:2` closes with a content obligation, not just a file listing: \"Document the synchronous contract and its limitations in README.md.\" The spec carries README.md forward only as a name in a delivery list \u2014 \"Only jobs.py, tests/test_jobs.py, and README.md are delivery files\" \u2014 and never restates what it must say. Nothing in `scope.json`'s `checks` can verify prose (the sole check is `unittest discover`), so the spec text is the only place the requirement can be pinned for the implement phase. As written, a README containing one usage line satisfies the letter of the spec while dropping \"and its limitations\" \u2014 which is precisely where the deliberately excluded thread-safety and async concerns were meant to land instead of vanishing silently. This is a suggestion rather than a blocker because the PRD remains in force for the implementer and `spec.md:2` already supplies the raw material for both halves: the full contract paragraph plus \"There is no thread-safety or async guarantee.\"",
+                "remedy": "Add a clause to `spec.md:3` stating that README.md documents the `Job(release)` / `cancel()` / `cancelled` contract and explicitly records the limitations: no thread safety, no async support, and at-most-once release scoped to a single instance on a single thread.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "Writability of `cancelled` is still unpinned after the intent-phase review raised it",
+                "location": ".fbk/cancellation/spec.md:2",
+                "evidence": "The intent-phase review recorded in `state.json` flagged that `prd.md:2` never says whether `cancelled` may be assigned from outside the object. The spec was the natural place to settle this and does not: `spec.md:2` says only \"`cancelled` is initially False\" and \"`cancel()` marks this job cancelled,\" with no statement about external assignment. Because the entire at-most-once guarantee rests on `cancelled` being the record that suppresses the second release, a plain writable attribute lets a caller run `job.cancel(); job.cancelled = False; job.cancel()` and drive the duplicate release the unit exists to prevent. The enumerated tests at `spec.md:3` are silent on it, so implementations may diverge between a read-only property backed by a private flag and a bare attribute. Left as a suggestion because the PRD's word \"property\" reads naturally as read-only, external mutation is outside the described caller flow, and no implementation exists yet to demonstrate the defect.",
+                "remedy": "State in `spec.md:2` that `cancelled` is a read-only property mutated solely by `cancel()`, and note the corresponding limitation in README.md so callers know the flag is not a reset switch.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "Success-path enumeration is asymmetric with the exception path on invocation count",
+                "location": ".fbk/cancellation/spec.md:3",
+                "evidence": "The revised acceptance paragraph spells out the invocation-count assertion only on the raising path \u2014 \"and release was called only once\" appears inside the exception clause. On the success path it says only \"use real callbacks recording invocations\" and \"check both return values over repeated calls,\" never explicitly requiring an assertion that the count is exactly 1 after repeated cancels. Consider the mutant that invokes release on every call but still returns True then False: it is caught by the normative sentence \"a callback called twice ... must fail these tests,\" and a recording callback exists precisely so its count can be asserted, so the requirement is pinned \u2014 but it is pinned by the mutation list rather than by the test enumeration, while the strictly analogous exception-path assertion is spelled out in both places. A test author reading the enumeration alone could record invocations and assert only on the first call.",
+                "remedy": "Mirror the exception-path wording on the success path: after \"check both return values over repeated calls,\" add that the test asserts the recorded invocation count is exactly one and that each invocation received no arguments.",
+                "severity": "suggestion"
+              }
+            ]
+          },
+          "readers": [
+            {
+              "seconds": 98.622,
+              "reported_cost_usd": 0.5059305000000001,
+              "usage": {
+                "claude-haiku-4-5-20251001": {
+                  "inputTokens": 1114,
+                  "outputTokens": 16,
+                  "cacheReadInputTokens": 0,
+                  "cacheCreationInputTokens": 0,
+                  "webSearchRequests": 0,
+                  "costUSD": 0.001194,
+                  "contextWindow": 200000,
+                  "maxOutputTokens": 32000,
+                  "thinkingTokens": 0,
+                  "canonicalModel": "claude-haiku-4-5",
+                  "provider": "firstParty",
+                  "costBasis": "list"
+                },
+                "claude-opus-5": {
+                  "inputTokens": 8,
+                  "outputTokens": 8180,
+                  "cacheReadInputTokens": 117573,
+                  "cacheCreationInputTokens": 24141,
+                  "webSearchRequests": 0,
+                  "costUSD": 0.5047365,
+                  "contextWindow": 1000000,
+                  "maxOutputTokens": 64000,
+                  "thinkingTokens": 4404,
+                  "canonicalModel": "claude-opus-5",
+                  "provider": "firstParty",
+                  "costBasis": "list"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "accepted": true,
+      "verification": []
+    },
+    "breakdown": {
+      "rounds": [
+        {
+          "error": "Command failed or exceeded 180s: claude: Command '['claude', '-p', '--model', 'opus', '--output-format', 'json', '--json-schema', '{\"type\": \"object\", \"additionalProperties\": false, \"properties\": {\"summary\": {\"type\": \"string\"}, \"findings\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"additionalProperties\": false, \"properties\": {\"title\": {\"type\": \"string\"}, \"location\": {\"type\": \"string\"}, \"evidence\": {\"type\": \"string\"}, \"remedy\": {\"type\": \"string\"}, \"severity\": {\"enum\": [\"blocker\", \"suggestion\"]}}, \"required\": [\"title\", \"location\", \"evidence\", \"remedy\", \"severity\"]}}}, \"required\": [\"summary\", \"findings\"]}', '--tools', 'Read,Glob,Grep', '--allowedTools', 'Read,Glob,Grep', '--settings', '{\"disableAllHooks\":true}', '--setting-sources', 'project', '--max-turns', '12', '--no-session-persistence']' timed out after 180 seconds",
+          "review": null,
+          "readers": []
+        },
+        {
+          "error": null,
+          "review": {
+            "summary": "Breakdown-phase review of `.fbk/cancellation/tasks.json` against `prd.md`, `spec.md`, and `scope.json`. The repository contains only Firebreak scaffolding and `validation.json`; `jobs.py`, `tests/test_jobs.py`, and `README.md` do not exist yet, which is expected at this phase and not a defect.\n\nNo blockers. The two-task decomposition is a complete and non-overlapping partition of the delivery surface: `scope.json` names sources `jobs.py`, tests `tests/test_jobs.py`, docs `README.md`, and the tasks cover all three with no file listed twice and no file outside scope. The dependency edge runs the correct direction \u2014 `code` depends on `tests`, `tests` depends on nothing \u2014 so the tests are authored and locked before the implementation that must satisfy them, which is what makes \"make all locked tests pass\" a real constraint rather than a circular one. The `tests` description names the three areas where the contract is most easily under-tested (exceptions, reentrancy, independent instances), including the exception path that the spec phase's round-1 blocker was raised about; the `code` description preserves the PRD's content obligation \"document its behavior and limitations,\" so the README requirement survives the spec-to-implementation handoff rather than degrading into a bare filename. Nothing in the breakdown introduces threads, async, retry, logging, or third-party dependencies excluded by `prd.md:3`.\n\nI checked specifically for defects a breakdown can introduce and did not find them: an orphaned scope file with no owning task, a file split across two tasks so neither owner can complete it, a dependency edge that would let implementation land before its tests, and a task that quietly widens scope beyond the accepted spec. I also confirmed the delivery list in `spec.md:3` matches `scope.json` exactly, so the task file assignments inherit an already-consistent surface.\n\nThe three suggestions below are about sharpness rather than correctness. Two are the still-open spec-phase suggestions (README content, `cancelled` writability) observed at the point where they would now be resolved unilaterally by an implementer; the third notes that the file allocation makes the \"failing behavioral check\" in the `tests` description reachable only as an import error. None gates the breakdown phase.",
+            "findings": [
+              {
+                "title": "The `tests` task's red evidence can only be an import error, not a behavioral failure",
+                "location": ".fbk/cancellation/tasks.json:1",
+                "evidence": "The `tests` task description says \"Run a failing behavioral check and lock the tests,\" but the file allocation makes a behavioral failure unreachable at that point. `jobs.py` belongs exclusively to the `code` task, and `depends_on: []` means `tests` runs first, so when `scope.json`'s sole check (`unittest discover -s tests -v`) runs there is no `jobs` module at all. Every test in `tests/test_jobs.py` will error at `import jobs` during collection. That is a failing check, but it fails uniformly for one reason unrelated to the cancellation contract: it would look identical whether the file contains the full mutation-resistant suite the spec enumerates or a single `self.assertTrue(True)` after the import. The red run therefore confirms the module is absent, not that the assertions discriminate between correct and incorrect cancellation behavior. The spec's mutation list at `spec.md:3` (no-op cancel, callback called twice, cancellation recorded after the callback, swallowed exceptions, release retried after an exception, class-level state) can only be exercised against something importable. This is a suggestion rather than a blocker because a red-on-import step is the normal and accepted shape of a tests-first task, the mutation list remains binding through `spec.md:3`, and the `code` task's dependency guarantees the suite is run for real before the unit closes.",
+                "remedy": "Either state in the `tests` task description that the expected red evidence is a collection-time import error, so no one later mistakes it for assertion-level proof, or add a step to the `code` task requiring each mutation named in `spec.md:3` to be checked against the locked suite \u2014 e.g. temporarily invoking release on every call and confirming the invocation-count assertion fails \u2014 so the discrimination the red run could not demonstrate is demonstrated once an implementation exists.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "Unresolved spec-phase suggestions are not assigned to any task, so they land on the implementer ad hoc",
+                "location": ".fbk/cancellation/tasks.json:1",
+                "evidence": "The accepted spec review recorded in `state.json` left two open suggestions that the breakdown was the last structured opportunity to route. First, README content: `prd.md:2` requires documenting \"the synchronous contract and its limitations,\" but `spec.md:3` carries README.md only as a name in a delivery list, and `scope.json`'s single check cannot verify prose. The `code` task description does say \"document its behavior and limitations,\" the stronger of the two available phrasings and why this is not a blocker \u2014 but it does not name which limitations (no thread safety, no async, at-most-once scoped to one instance on one thread), so a README mentioning only one of them satisfies the task as written. Second, `cancelled` writability: neither task mentions it, so the choice between a read-only property backed by a private flag and a plain writable attribute is made silently during `code`. A writable attribute permits `job.cancel(); job.cancelled = False; job.cancel()` to drive the duplicate release the unit exists to prevent, and no locked test will catch it because `spec.md:3` does not enumerate one.",
+                "remedy": "Extend the `code` task description to name the specific limitations README.md must record (no thread safety, no async support, at-most-once release scoped to a single instance on a single thread), and to state that `cancelled` is exposed read-only and mutated solely by `cancel()`. If read-only is meant to be enforced rather than conventional, add an assertion to the `tests` task that assigning to `cancelled` raises `AttributeError` before the suite is locked.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "`tests` task description omits the invocation-count, ordering, and return-value assertions it delegates to the spec",
+                "location": ".fbk/cancellation/tasks.json:1",
+                "evidence": "The `tests` description enumerates exceptions, reentrancy, and independent instances but leaves the three remaining acceptance channels to the phrase \"Prove the cancellation contract.\" Those three are the ones the spec review already flagged as least sharply pinned: that release is invoked exactly once after repeated cancels (called out at `spec.md:3` only inside the exception clause, per the still-open asymmetry suggestion), that `cancelled` is already True when observed from inside the callback (the \"record before invoke\" ordering), and that repeated calls return True then False. Delegating to `spec.md` is legitimate and the spec does bind them via its must-fail list, so this is not a defect \u2014 but the task text names the three areas an author is least likely to forget while omitting the three most likely to be asserted only on the first call.",
+                "remedy": "Add to the `tests` description that the suite asserts the recorded invocation count is exactly one after repeated cancels with each invocation receiving no arguments, that `cancelled` is already True when read from inside the release callback, and that the first call returns True and every subsequent call returns False.",
+                "severity": "suggestion"
+              }
+            ]
+          },
+          "readers": [
+            {
+              "seconds": 106.711,
+              "reported_cost_usd": 0.6318715,
+              "usage": {
+                "claude-haiku-4-5-20251001": {
+                  "inputTokens": 1137,
+                  "outputTokens": 16,
+                  "cacheReadInputTokens": 0,
+                  "cacheCreationInputTokens": 0,
+                  "webSearchRequests": 0,
+                  "costUSD": 0.001217,
+                  "contextWindow": 200000,
+                  "maxOutputTokens": 32000,
+                  "thinkingTokens": 0,
+                  "canonicalModel": "claude-haiku-4-5",
+                  "provider": "firstParty",
+                  "costBasis": "list"
+                },
+                "claude-opus-5": {
+                  "inputTokens": 10,
+                  "outputTokens": 8446,
+                  "cacheReadInputTokens": 56969,
+                  "cacheCreationInputTokens": 39097,
+                  "webSearchRequests": 0,
+                  "costUSD": 0.6306545000000001,
+                  "contextWindow": 1000000,
+                  "maxOutputTokens": 64000,
+                  "thinkingTokens": 2065,
+                  "canonicalModel": "claude-opus-5",
+                  "provider": "firstParty",
+                  "costBasis": "list"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "accepted": true,
+      "verification": []
+    },
+    "implement": {
+      "rounds": [
+        {
+          "error": null,
+          "review": {
+            "summary": "jobs.py implements the accepted synchronous cancellation contract faithfully: cancelled is set before release, release runs exactly once, True is returned only after a normal release return, exceptions propagate unchanged with cancellation still recorded and no retry, and reentrant cancel is handled by the same guard. tests/test_jobs.py uses real callbacks and would fail for each wrong behavior the spec enumerates (no-op cancel, double release, state recorded after the callback, swallowed exception, retry after exception); the recorded red run confirms all four tests failed pre-implementation. README documents the contract and the synchronous/no-thread-safety limitation. No blockers; one suggestion about the strength of the shared-state test.",
+            "findings": [
+              {
+                "title": "Independence test would not catch class-level cancellation state",
+                "location": "tests/test_jobs.py:34-41",
+                "evidence": "The spec names \"class-level state\" as a behavior that must fail the tests. test_instances_do_not_share_state only exercises the shadowing-safe path: with a class attribute `_cancelled = False` and `self._cancelled = True` inside cancel(), the instance assignment shadows the class attribute, so lines 38-41 still pass. It does catch a genuinely shared mutable holder or a `Job._cancelled = True` style assignment, so the gap is partial, not total.",
+                "remedy": "Optionally strengthen by asserting the flag lives on the instance after cancel (e.g. `'_cancelled' in first.__dict__`). Not required for the stated acceptance criteria.",
+                "severity": "suggestion"
+              }
+            ]
+          },
+          "readers": [
+            {
+              "seconds": 38.173,
+              "reported_cost_usd": 0.15841700000000003,
+              "usage": {
+                "claude-haiku-4-5-20251001": {
+                  "inputTokens": 2326,
+                  "outputTokens": 15,
+                  "cacheReadInputTokens": 0,
+                  "cacheCreationInputTokens": 0,
+                  "webSearchRequests": 0,
+                  "costUSD": 0.002401,
+                  "contextWindow": 200000,
+                  "maxOutputTokens": 32000,
+                  "thinkingTokens": 0,
+                  "canonicalModel": "claude-haiku-4-5",
+                  "provider": "firstParty",
+                  "costBasis": "list"
+                },
+                "claude-opus-5": {
+                  "inputTokens": 6,
+                  "outputTokens": 2947,
+                  "cacheReadInputTokens": 25222,
+                  "cacheCreationInputTokens": 6970,
+                  "webSearchRequests": 0,
+                  "costUSD": 0.156016,
+                  "contextWindow": 1000000,
+                  "maxOutputTokens": 64000,
+                  "thinkingTokens": 748,
+                  "canonicalModel": "claude-opus-5",
+                  "provider": "firstParty",
+                  "costBasis": "list"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "accepted": true,
+      "verification": [
+        {
+          "argv": [
+            "assets/fbk-scripts/.venv/bin/python3",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests",
+            "-v"
+          ],
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "test_failure_propagates_without_retry (test_jobs.JobTests.test_failure_propagates_without_retry) ... ok\ntest_instances_do_not_share_state (test_jobs.JobTests.test_instances_do_not_share_state) ... ok\ntest_reentrant_callback_does_not_release_twice (test_jobs.JobTests.test_reentrant_callback_does_not_release_twice) ... ok\ntest_releases_once_and_returns_whether_cancellation_is_new (test_jobs.JobTests.test_releases_once_and_returns_whether_cancellation_is_new) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n",
+          "seconds": 0.024
+        }
+      ]
+    }
+  },
+  "test_discipline": [
+    {
+      "red_check": {
+        "argv": [
+          "assets/fbk-scripts/.venv/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-v"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "test_failure_propagates_without_retry (test_jobs.JobTests.test_failure_propagates_without_retry) ... FAIL\ntest_instances_do_not_share_state (test_jobs.JobTests.test_instances_do_not_share_state) ... FAIL\ntest_reentrant_callback_does_not_release_twice (test_jobs.JobTests.test_reentrant_callback_does_not_release_twice) ... FAIL\ntest_releases_once_and_returns_whether_cancellation_is_new (test_jobs.JobTests.test_releases_once_and_returns_whether_cancellation_is_new) ... FAIL\n\n======================================================================\nFAIL: test_failure_propagates_without_retry (test_jobs.JobTests.test_failure_propagates_without_retry)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/firebreak-live-lifecycle-xnt35o8m/tests/test_jobs.py\", line 21, in test_failure_propagates_without_retry\n    with self.assertRaises(RuntimeError) as raised:\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_instances_do_not_share_state (test_jobs.JobTests.test_instances_do_not_share_state)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/firebreak-live-lifecycle-xnt35o8m/tests/test_jobs.py\", line 38, in test_instances_do_not_share_state\n    self.assertTrue(first.cancel())\nAssertionError: False is not true\n\n======================================================================\nFAIL: test_reentrant_callback_does_not_release_twice (test_jobs.JobTests.test_reentrant_callback_does_not_release_twice)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/firebreak-live-lifecycle-xnt35o8m/tests/test_jobs.py\", line 31, in test_reentrant_callback_does_not_release_twice\n    self.assertTrue(job.cancel())\nAssertionError: False is not true\n\n======================================================================\nFAIL: test_releases_once_and_returns_whether_cancellation_is_new (test_jobs.JobTests.test_releases_once_and_returns_whether_cancellation_is_new)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/firebreak-live-lifecycle-xnt35o8m/tests/test_jobs.py\", line 9, in test_releases_once_and_returns_whether_cancellation_is_new\n    self.assertTrue(job.cancel())\nAssertionError: False is not true\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nFAILED (failures=4)\n",
+        "seconds": 0.025
+      },
+      "preservation_reason": null,
+      "files": {
+        "tests/test_jobs.py": "c5dd125e50d349d49c6f73fd1b1036a6b20b1bec5a781568ca34b589e7fbcc59"
+      }
+    }
+  ]
+}

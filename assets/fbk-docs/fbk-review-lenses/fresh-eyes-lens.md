@@ -57,9 +57,22 @@ The researcher has no prior authoring context. The artifact itself is the primar
 
 When the invoker provides cross-cutting convention files alongside the artifact (a shared interface definition, a naming registry, a conventions document), the researcher compares the artifact against those documents as reference material. Convention files are comparison anchors, not a record of the author's reasoning.
 
-When the artifact's subject is a proposed change to existing code or an existing document — a design amendment, a seam amendment, a new or revised contract — treat the artifact as specifying a future state, and compare it against itself for consistency. A convention file showing the pre-change state is the artifact's starting point; surface a finding only when the artifact's own sections disagree with each other about the proposed change, not when the artifact's proposal differs from the code or document it is changing.
+When the artifact proposes a change to existing code or documentation, assess the
+future state it specifies against its own guarantees and current governing
+requirements. An authorized contract change can supersede the pre-change state;
+ordinary planned implementation differences are not defects. A self-consistent
+proposal can still violate compatibility or another obligation that remains in
+force. Establish the authority for the change from supplied original sources;
+identify missing deciding evidence rather than treating the proposal as its own
+authorization.
 
-When the artifact or a referenced document states that a topic — a design decision, a configuration value, a schema detail — is deferred to a later phase, treat that note as a scoping decision the author already made. Surface a deferral as a finding only when the artifact treats the same topic as already decided elsewhere in a way that contradicts the deferral; a bare deferral note is not itself a missing constraint or open question.
+Treat a deferral as valid later-phase scope when it preserves current obligations
+and leaves the current phase decision supportable. Surface a concrete contradiction,
+or a deferred decision required now to satisfy a governing constraint or make the
+artifact usable for its stated phase. Ordinary later deliverables and private
+implementation choices need not be settled early. Explain why a questioned deferral
+prevents the current decision; an author's deferral note alone neither proves a gap
+nor waives an existing obligation.
 
 When no cross-cutting files are provided, the researcher works from the artifact alone.
 
@@ -81,17 +94,4 @@ Fresh-eyes observations are grouped under three section headings, in this order:
 ## Minor
 ```
 
-Each observation is a **dash-prefixed line** (`- ` prefix) within its category section. No other format is used for observations — prose paragraphs and numbered items are prohibited, including for critical observations. The gate check for the Critical section scans each line and tests whether the stripped line starts with `-`; any dash-prefixed line is treated as an open observation. A prose sentence or a numbered item beginning with a digit genuinely bypasses the check; a dash-prefixed line at any indentation level does not.
-
-The gate check for the Critical section:
-
-- **Gate fails** when `## Critical` contains any dash-prefixed line after dedup.
-- **Gate passes** when `## Critical` is empty or contains only prose notes (for example, "No critical observations.").
-
-This gate is enforced by `fbk.gates.intent` and `fbk.gates.design` via `_critical_section_has_content`. The output contract — three headings, dash-prefixed observations, gate-fail on any dash-prefixed critical line — must be preserved verbatim across any migration of the fresh-eyes preset.
-
-The fresh-eyes report is written to:
-
-```
-ai-docs/<feature>/fresh-eyes-<artifact>.md
-```
+Write each observation as a bullet under its severity heading. If a category has no observations, state that explicitly. Save the report under the project's review directory, default `reviews/fresh-eyes-<artifact-name>.md`. The report is advisory; it does not provide managed phase acceptance.

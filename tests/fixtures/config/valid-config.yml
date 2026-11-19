@@ -1,3 +1,0 @@
-token_budget: 5000
-max_concurrent_agents: 3
-escalation_cap: 5

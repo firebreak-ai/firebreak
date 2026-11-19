@@ -109,6 +109,4 @@ Each sighting entry must carry exactly these fields, in this order:
 
 The severity value must be one of `critical`, `substantive`, or `minor`. The finding-validator's severity vocabulary (`major`, `info`) must not appear in quality-scan output.
 
-The report is written to `ai-docs/<feature>/quality-scan.md`. It lists findings ranked highest-to-lowest. No verdict line is produced. No changes are applied automatically; the operator decides which findings to act on.
-
-The gate check for quality-scan reads the report for `Severity:` lines matching the pattern `^\s*[-*]?\s*\**Severity\**:\s*(critical|substantive|minor)`. The count must be at most 5; zero is permitted when the change set contains no quality opportunities, in which case the researcher writes an explicit "no quality opportunities found" note and the gate treats that as passing.
+The report is written to `reviews/quality-scan.md`. It lists findings ranked highest-to-lowest. No verdict line is produced. No changes are applied automatically; the operator decides which findings to act on.

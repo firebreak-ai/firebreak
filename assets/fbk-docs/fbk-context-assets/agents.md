@@ -87,7 +87,7 @@ Every agent persona grounds the agent in a professional role within an enterpris
 
 ### Correctness vs. maintainability
 
-Persona activation improves maintainability (reduced code smells, cyclomatic and cognitive complexity) while correctness is neutral to slightly reduced. This is the intended tradeoff for Firebreak: the pipeline's deterministic gates (spec gates, test-first development, per-wave verification, mutation testing) engineer correctness. Personas cover the gap those gates cannot reach. The detailed research rationale is documented in `ai-docs/agent-personas/agent-personas-spec.md`.
+Persona text supplies role-specific judgment criteria. Observable behavior and independently checked evidence determine acceptance.
 
 ### Structure of an effective persona
 
@@ -103,7 +103,7 @@ The persona defines what quality the output demonstrates. The spawn prompt defin
 
 ### Reference implementations
 
-The Researcher (`.claude/agents/fbk-review-researcher.md`) and Challenger (`.claude/agents/fbk-review-challenger.md`) are the canonical examples of the activation-focused pattern. The Challenger is especially concise — role activation line, two quality outcomes, no section headings — demonstrating the minimal effective persona.
+The researcher and challenger role documents (`fbk-docs/review/researcher-role.md` and `fbk-docs/review/challenger-role.md`) are the canonical examples of the activation-focused pattern. They are role text that a review skill includes in full in a round contributor's instructions, not agent definitions, and the pattern holds either way. The challenger is especially concise — role activation line, two quality outcomes, no section headings — demonstrating the minimal effective persona.
 
 ### What not to include
 

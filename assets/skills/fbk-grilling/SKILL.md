@@ -14,7 +14,7 @@ This skill resolves ambiguity by asking one question at a time. It works in-cere
 
 ## How it works
 
-Identify all open decisions for the given topic or feature. Sort them from most consequential to least.
+Read applicable sourced human decisions and governing artifacts before identifying open decisions for the given topic or feature. Ask about code conventions only when a consequential choice remains unresolved; human preferences can be settled during intent, design, or spec and carried into the spec’s authoritative constraints. Sort the open decisions from most consequential to least.
 
 A primary target is the requirement still stated in general terms that needs human direction to make concrete — a field, data shape, contract, signature, or observable behavior the work cannot pin down on its own. Raise each one as its own decision: name what is still loose, recommend a concrete definition, and let the operator confirm or redirect. Leave the routine details that have one sensible answer out of the queue; grill only what genuinely needs a human to settle.
 
@@ -34,7 +34,7 @@ Move to the next question only after the answer is confirmed. Soft cap: stop aft
 When invoked with a feature name and phase (for example: `/fbk-grilling my-feature intent`), write a decision log to:
 
 ```
-ai-docs/<feature>/grilling-log-<phase>.md
+reviews/grilling-log-<topic>.md
 ```
 
 The log contains one block per decision, using this exact shape:

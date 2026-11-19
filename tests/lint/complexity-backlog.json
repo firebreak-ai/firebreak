@@ -1,0 +1,161 @@
+{
+ "assets/fbk-scripts/fbk/cross_review.py::_run_cross_review": [
+  39
+ ],
+ "assets/fbk-scripts/fbk/pipeline.py::_render_markdown": [
+  11
+ ],
+ "assets/fbk-scripts/fbk/pipeline.py::cmd_rejoin": [
+  11
+ ],
+ "assets/fbk-scripts/fbk/pipeline.py::cmd_run": [
+  17
+ ],
+ "assets/fbk-scripts/fbk/pipeline.py::load_lens_matrix": [
+  12
+ ],
+ "assets/fbk-scripts/fbk/pipeline.py::validate_sighting": [
+  11
+ ],
+ "assets/fbk-scripts/fbk/workflow/acceptance_drift.py::_inventory": [
+  11
+ ],
+ "assets/fbk-scripts/fbk/workflow/cli.py::execute": [
+  44
+ ],
+ "assets/fbk-scripts/fbk/workflow/cli.py::parser_for": [
+  22
+ ],
+ "assets/fbk-scripts/fbk/workflow/close.py::_close_phase": [
+  39
+ ],
+ "assets/fbk-scripts/fbk/workflow/close.py::_ready": [
+  16
+ ],
+ "assets/fbk-scripts/fbk/workflow/close.py::close_phase": [
+  11
+ ],
+ "assets/fbk-scripts/fbk/workflow/council.py::adjudicate": [
+  17
+ ],
+ "assets/fbk-scripts/fbk/workflow/council.py::assessment_contract": [
+  17
+ ],
+ "assets/fbk-scripts/fbk/workflow/council.py::count": [
+  17
+ ],
+ "assets/fbk-scripts/fbk/workflow/council.py::run": [
+  24
+ ],
+ "assets/fbk-scripts/fbk/workflow/council.py::validate": [
+  14
+ ],
+ "assets/fbk-scripts/fbk/workflow/decisions.py::dispositions": [
+  11
+ ],
+ "assets/fbk-scripts/fbk/workflow/engine.py::approve": [
+  13
+ ],
+ "assets/fbk-scripts/fbk/workflow/engine.py::enter": [
+  13
+ ],
+ "assets/fbk-scripts/fbk/workflow/engine.py::reopen": [
+  12
+ ],
+ "assets/fbk-scripts/fbk/workflow/evidence.py::scope": [
+  18
+ ],
+ "assets/fbk-scripts/fbk/workflow/evidence.py::structural": [
+  15
+ ],
+ "assets/fbk-scripts/fbk/workflow/handoff.py::continuation": [
+  17
+ ],
+ "assets/fbk-scripts/fbk/workflow/handoff.py::start_task": [
+  26
+ ],
+ "assets/fbk-scripts/fbk/workflow/hooks.py::_write_check": [
+  32
+ ],
+ "assets/fbk-scripts/fbk/workflow/hooks.py::handle": [
+  26
+ ],
+ "assets/fbk-scripts/fbk/workflow/investigations.py::run": [
+  16
+ ],
+ "assets/fbk-scripts/fbk/workflow/investigations.py::validate_request": [
+  20
+ ],
+ "assets/fbk-scripts/fbk/workflow/managed_investigations.py::run_reader": [
+  13
+ ],
+ "assets/fbk-scripts/fbk/workflow/remediation_verification.py::_validate": [
+  14
+ ],
+ "assets/fbk-scripts/fbk/workflow/remediation_verification.py::inspect": [
+  12
+ ],
+ "assets/fbk-scripts/fbk/workflow/repair.py::_finish": [
+  12
+ ],
+ "assets/fbk-scripts/fbk/workflow/repair.py::apply": [
+  32
+ ],
+ "assets/fbk-scripts/fbk/workflow/repair.py::recover": [
+  11
+ ],
+ "assets/fbk-scripts/fbk/workflow/retrospective.py::packet": [
+  30
+ ],
+ "assets/fbk-scripts/fbk/workflow/retrospective.py::record_observation": [
+  14
+ ],
+ "assets/fbk-scripts/fbk/workflow/retrospective.py::validate_reference": [
+  26
+ ],
+ "assets/fbk-scripts/fbk/workflow/review.py::_claude_session": [
+  27
+ ],
+ "assets/fbk-scripts/fbk/workflow/review.py::_review_sources": [
+  13
+ ],
+ "assets/fbk-scripts/fbk/workflow/review.py::review": [
+  25
+ ],
+ "assets/fbk-scripts/fbk/workflow/review.py::run_command": [
+  13
+ ],
+ "assets/fbk-scripts/fbk/workflow/review_rounds.py::main": [
+  11
+ ],
+ "assets/fbk-scripts/fbk/workflow/task_graph.py::validate": [
+  14
+ ],
+ "assets/fbk-scripts/fbk/workflow/test_preparation.py::plan": [
+  12
+ ],
+ "assets/fbk-scripts/fbk/workflow/test_preparation.py::restore_locked_tests": [
+  13
+ ],
+ "assets/fbk-scripts/fbk/workflow/traceability.py::_classify": [
+  20
+ ],
+ "assets/fbk-scripts/fbk/workflow/traceability.py::check": [
+  19
+ ],
+ "assets/fbk-scripts/fbk/workflow/traceability.py::landed": [
+  14
+ ],
+ "assets/fbk-scripts/fbk/workflow/traceability.py::parse": [
+  24
+ ],
+ "assets/fbk-scripts/fbk/workflow/traceability.py::task_chain": [
+  25
+ ],
+ "assets/fbk-scripts/testplan.py::_entries": [
+  11
+ ],
+ "assets/fbk-scripts/testplan.py::_entry_problems": [
+  15
+ ]
+}

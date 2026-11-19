@@ -1,24 +1,15 @@
 {
   "hooks": {
-    "TaskCompleted": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py task-completed"
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk/capture/hook_router.py",
-            "timeout": 15
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py workflow-hook",
+            "timeout": 5
           }
-        ]
+        ],
+        "matcher": "Skill|Edit|Write|NotebookEdit|Agent|Workflow"
       }
     ],
     "PostToolUse": [
@@ -26,8 +17,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk/capture/hook_router.py",
-            "timeout": 15
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py workflow-hook",
+            "timeout": 5
           }
         ]
       }
@@ -37,19 +28,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk/capture/hook_router.py",
-            "timeout": 15
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk/capture/hook_router.py",
-            "timeout": 15
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py workflow-hook",
+            "timeout": 5
           }
         ]
       }
@@ -59,8 +39,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk/capture/hook_router.py",
-            "timeout": 15
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py workflow-hook",
+            "timeout": 5
           }
         ]
       }
@@ -70,8 +50,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk/capture/hook_router.py",
-            "timeout": 15
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py workflow-hook",
+            "timeout": 5
           }
         ]
       }
@@ -81,8 +61,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk/capture/hook_router.py",
-            "timeout": 15
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py workflow-hook",
+            "timeout": 5
           }
         ]
       }
@@ -92,8 +72,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk/capture/hook_router.py",
-            "timeout": 15
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py workflow-hook",
+            "timeout": 5
           }
         ]
       }
@@ -103,23 +83,23 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk/capture/hook_router.py",
-            "timeout": 15
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py workflow-hook",
+            "timeout": 5
           }
         ]
       }
     ],
-    "Notification": [
+    "UserPromptExpansion": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk/capture/hook_router.py",
-            "timeout": 15
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py workflow-hook",
+            "timeout": 5
           }
-        ]
+        ],
+        "matcher": "^fbk-(intent|design|spec|breakdown|implement)$"
       }
     ]
-  },
-  "gitignore": [".fbk-capture/"]
+  }
 }

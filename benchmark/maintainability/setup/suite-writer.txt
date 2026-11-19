@@ -1,0 +1,11 @@
+This project holds a working command-line program (`circopt.py` and the `circuit/` package) and no tests. `spec.md` describes, in five parts, everything the program is required to do. The program is believed to meet the spec.
+
+Other people will soon make large changes to this program. Write the test suite they need first: one that passes on the program as it is now and fails if a change breaks something `spec.md` requires.
+
+- Put the tests in `tests/`, run with `.venv/bin/python -m pytest`. Every test must pass on the current program.
+- Cover every part of `spec.md`, normal behavior and error handling alike.
+- Use two styles together. Test what a user sees by running `circopt.py` as a command (output, exit code). Test the pieces inside the `circuit/` package directly where a behavior is clearer or quicker to check there.
+- Check only what `spec.md` fixes. Where it leaves a detail open (for example the wording of a free-text message), leave that detail unchecked, so a correct rewrite of the program still passes.
+- Aim for the smallest suite that proves the required behavior and catches bugs. Each test should fail only when the behavior it names breaks.
+- Leave the program's code unchanged. If the program disagrees with `spec.md` somewhere, write no test for that point and list it in `tests/NOTES.md` instead.
+- Work only inside this project folder.

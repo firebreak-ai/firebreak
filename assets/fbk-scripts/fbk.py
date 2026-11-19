@@ -21,7 +21,12 @@ if sys.version_info < (3, 11):
     sys.exit(2)
 
 from fbk import COMMAND_MAP
-from fbk.capture import chokepoint
+
+if sys.argv[1:] in (["--help"], ["-h"]):
+    print("Firebreak: revision-bound development workflow and standalone reviews.")
+    print("Use fbk.py <command> --help for arguments. New projects start with workflow-init.")
+    print("Available commands:\n  " + "\n  ".join(sorted(COMMAND_MAP)))
+    sys.exit(0)
 
 if len(sys.argv) < 2 or sys.argv[1] not in COMMAND_MAP:
     command = sys.argv[1] if len(sys.argv) > 1 else None
@@ -40,5 +45,5 @@ module_path = COMMAND_MAP[command_name]
 
 module = importlib.import_module(module_path)
 sys.argv = [command_name] + remaining_args
-result = chokepoint.record_dispatch(command_name, remaining_args, module.main, os.getcwd())
+result = module.main()
 sys.exit(result if result is not None else 0)

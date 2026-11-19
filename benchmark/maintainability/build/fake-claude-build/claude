@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""Stand-in for `claude` in dry runs of chain-scb.sh: costs nothing, makes one small real change a checkpoint.
+
+  PATH=<kit>/build/fake-claude-build:$PATH START=... chain-scb.sh <run-dir> plain circuit_eval 6 8
+
+In the current directory (the project) it works out the checkpoint (one above the highest cpN tag), really runs `ls ..`
+and reads the first lines of prompt.md, appends a function to the largest tracked code file at the top level, adds
+tests/test_fake_cpN.py, really runs the suite, and prints a stream-json record in the shape Claude Code emits, ending
+in a result event with a cost and a session id. Arguments are ignored; standard input is read and dropped.
+Env: FAKE_PROBE=<paths, one a line>: each is really read (`ls -d`, then `head -c 200` or `ls`) and the outcome recorded,
+to show what a session can reach; FAKE_SLEEP=<seconds> waits before the result, to give an interrupt something to hit.
+"""
+import json, os, pathlib, re, subprocess, sys, time, uuid
+
+sys.stdin.read()
+cwd, sid, count = os.getcwd(), str(uuid.uuid4()), [0]
+usage = {"input_tokens": 2, "cache_creation_input_tokens": 1500, "cache_read_input_tokens": 20000, "output_tokens": 120}
+
+
+def emit(ev):
+    print(json.dumps({**ev, "session_id": sid, "uuid": str(uuid.uuid4())}), flush=True)
+
+
+def call(name, inp, content, result, is_error=False):
+    count[0] += 1
+    tid = f"toolu_fake{count[0]:04d}"
+    emit({"type": "assistant", "message": {"model": "fake", "id": f"msg_fake{count[0]:04d}", "type": "message", "role": "assistant",
+          "content": [{"type": "tool_use", "id": tid, "name": name, "input": inp, "caller": {"type": "direct"}}],
+          "stop_reason": None, "usage": usage}, "parent_tool_use_id": None})
+    emit({"type": "user", "message": {"role": "user", "content": [{"tool_use_id": tid, "type": "tool_result", "content": content,
+          "is_error": is_error}]}, "parent_tool_use_id": None, "tool_use_result": result})
+
+
+def bash(cmd):
+    """Really run a shell command and record it with what it printed."""
+    p = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    out = (p.stdout + p.stderr).rstrip("\n")
+    call("Bash", {"command": cmd}, out, {"stdout": p.stdout, "stderr": p.stderr, "interrupted": False}, p.returncode != 0)
+    return out
+
+
+tags = [int(t[2:]) for t in subprocess.run(["git", "tag"], capture_output=True, text=True).stdout.split() if re.fullmatch(r"cp\d+", t)]
+cp = max(tags, default=0) + 1
+emit({"type": "system", "subtype": "init", "cwd": cwd, "tools": ["Bash", "Edit", "Read", "Write"], "model": "fake",
+      "permissionMode": "bypassPermissions", "claude_code_version": "fake"})
+bash("ls ..")
+head = "\n".join(pathlib.Path("prompt.md").read_text().splitlines()[:8])
+call("Read", {"file_path": f"{cwd}/prompt.md"}, head, {"type": "text", "file": {"filePath": f"{cwd}/prompt.md", "content": head}})
+for p in os.environ.get("FAKE_PROBE", "").split("\n"):
+    if p.strip():
+        bash(f"ls -d {p.strip()} && if [ -d {p.strip()} ]; then ls {p.strip()} | head -5; else head -c 200 {p.strip()}; fi")
+files = [f for f in subprocess.run(["git", "ls-files", "*.py"], capture_output=True, text=True).stdout.split()
+         if "/" not in f and not f.startswith(("test_", "conftest"))]
+code = max(files, key=lambda f: os.path.getsize(f))
+old = pathlib.Path(code).read_text()
+add = f"\n\ndef fake_cp{cp}(n):\n    if n > {cp}:\n        return n - {cp}\n    return {cp}\n"
+pathlib.Path(code).write_text(old + add)
+n = len(old.splitlines())
+call("Edit", {"replace_all": False, "file_path": f"{cwd}/{code}", "old_string": "", "new_string": add}, f"The file {cwd}/{code} has been updated successfully.",
+     {"filePath": f"{cwd}/{code}", "oldString": "", "newString": add, "originalFile": old, "userModified": False, "replaceAll": False,
+      "structuredPatch": [{"oldStart": n, "oldLines": 0, "newStart": n + 1, "newLines": 6, "lines": ["+" + l for l in add.split("\n")[:-1]]}]})
+mod = code[:-3]
+test = f"import {mod}\n\n\ndef test_fake_cp{cp}():\n    assert {mod}.fake_cp{cp}(0) == {cp}\n    assert {mod}.fake_cp{cp}({cp} + 2) == 2\n"
+pathlib.Path(f"tests/test_fake_cp{cp}.py").write_text(test)
+call("Write", {"file_path": f"{cwd}/tests/test_fake_cp{cp}.py", "content": test}, "File created successfully",
+     {"type": "create", "filePath": f"{cwd}/tests/test_fake_cp{cp}.py", "content": test, "structuredPatch": [], "originalFile": None, "userModified": False})
+bash(".venv/bin/python -m pytest 2>&1 | tail -1")
+time.sleep(float(os.environ.get("FAKE_SLEEP", 0)))
+emit({"type": "assistant", "message": {"model": "fake", "id": "msg_fake_end", "type": "message", "role": "assistant",
+      "content": [{"type": "text", "text": "Done."}], "stop_reason": None, "usage": usage}, "parent_tool_use_id": None})
+emit({"type": "result", "subtype": "success", "is_error": False, "duration_ms": 1000, "duration_api_ms": 900, "num_turns": count[0] + 1,
+      "stop_reason": "end_turn", "result": "Done.", "total_cost_usd": 0.1234, "usage": usage, "permission_denials": [], "terminal_reason": "completed"})

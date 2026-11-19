@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+"""Stand-in for `claude -p` in dry runs of run.sh: costs nothing, edits like the reference.
+
+  PATH=<kit>/change/fake-claude:$PATH FAKE_CHANGE_DIR=<folder holding reference.patch> run.sh <change> <base-repo> <out-dir>
+
+In the current directory (the project) it applies $FAKE_CHANGE_DIR/reference.patch (the change's folder under local/) with `git apply`, adds one test file,
+and prints a stream-json record in the shape Claude Code 2.1 emits: looks (Bash, Read, Grep), the patch replayed as edits
+(first file: one Edit per hunk, last hunk first, the first of them written as a draft and corrected after a failing
+test run, so one edit is a repeat on the same lines; other files: one Bash call each with a recorded bashEditDiff),
+a Write, a real pytest run, and a result event with cost and usage. Arguments are ignored; the prompt is read and dropped.
+While lock.sh's lock is on the change's reference.patch cannot be read: point FAKE_CHANGE_DIR at a copy made before locking.
+"""
+import json, os, pathlib, re, subprocess, sys, uuid
+
+sys.stdin.read()
+cwd, change = os.getcwd(), pathlib.Path(os.environ["FAKE_CHANGE_DIR"])
+sid, count = str(uuid.uuid4()), [0]
+usage = {"input_tokens": 2, "cache_creation_input_tokens": 1500, "cache_read_input_tokens": 20000, "output_tokens": 120,
+         "cache_creation": {"ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1500}, "service_tier": "standard"}
+
+
+def emit(ev):
+    print(json.dumps({**ev, "session_id": sid, "uuid": str(uuid.uuid4())}), flush=True)
+
+
+def call(name, inp, content, result, is_error=False):
+    count[0] += 1
+    tid = f"toolu_fake{count[0]:04d}"
+    emit({"type": "assistant", "message": {"model": "fake", "id": f"msg_fake{count[0]:04d}", "type": "message", "role": "assistant",
+          "content": [{"type": "tool_use", "id": tid, "name": name, "input": inp, "caller": {"type": "direct"}}],
+          "stop_reason": None, "usage": usage}, "parent_tool_use_id": None})
+    emit({"type": "user", "message": {"role": "user", "content": [{"tool_use_id": tid, "type": "tool_result", "content": content,
+          "is_error": is_error}]}, "parent_tool_use_id": None, "tool_use_result": result})
+
+
+def bash(cmd, out, extra=None, is_error=False):
+    call("Bash", {"command": cmd}, out, {"stdout": out, "stderr": "", "interrupted": False, "isImage": False,
+                                         "noOutputExpected": False, **(extra or {})}, is_error)
+
+
+def sh(cmd):
+    return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.rstrip("\n")
+
+
+# Apply the reference patch, exactly or else with 2 lines of matching context (the anchors drop the reference's 6-line
+# header, which the first hunk of some files leans on), then read what it changed back from git as {file: [hunk]},
+# hunks in Claude Code's structuredPatch shape.
+for opts in ([], ["-C2"], None):
+    if opts is None:
+        sys.exit("fake claude: reference.patch did not apply")
+    p = subprocess.run(["git", "apply", *opts, str(change / "reference.patch")], capture_output=True, text=True)
+    sys.stderr.write(f"git apply {' '.join(opts)}: exit {p.returncode}\n{p.stderr}")
+    if p.returncode == 0:
+        break
+files, cur = {}, None
+for line in sh("git diff -U3 --no-renames").splitlines():
+    if line.startswith("+++ "):
+        cur = files.setdefault(line[4:].split("/", 1)[1], [])
+    elif m := re.match(r"@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@", line):
+        cur.append({"oldStart": int(m[1]), "oldLines": int(m[2] or 1), "newStart": int(m[3]), "newLines": int(m[4] or 1), "lines": []})
+    elif cur and line[:1] in (" ", "-", "+") and not line.startswith(("--- ", "diff ")):
+        cur[-1]["lines"].append(line)
+before = {f: sh(f"git show HEAD:{f}") + "\n" for f in files}
+emit({"type": "system", "subtype": "init", "cwd": cwd, "tools": ["Bash", "Edit", "Read", "Grep", "Glob", "Write"], "model": "fake",
+      "permissionMode": "bypassPermissions", "claude_code_version": "fake"})
+first, *rest = files
+bash(f"cd {cwd}; ls; git log --oneline | head -3", sh("ls; git log --oneline | head -3"))
+call("Read", {"file_path": f"{cwd}/{first}"}, before[first][:400], {"type": "text", "file": {"filePath": f"{cwd}/{first}", "content": before[first][:400]}})
+call("Grep", {"pattern": "^def ", "path": f"{cwd}/{rest[0] if rest else first}", "output_mode": "content"}, "def ...", {"mode": "content", "numFiles": 1})
+bash(f"grep -n 'def ' {rest[-1] if rest else first} | head -20; wc -l tests/test_cli.py", sh(f"grep -n 'def ' {rest[-1] if rest else first} | head -20; wc -l tests/test_cli.py"))
+call("Read", {"file_path": f"{cwd}/tests/support.py"}, "...", {"type": "text", "file": {"filePath": f"{cwd}/tests/support.py"}})
+
+
+def edit(f, lines, hunk):
+    """One Edit call applying one hunk to the in-memory file; returns the new lines."""
+    o = hunk["oldStart"] - 1
+    old_s = "\n".join(l[1:] for l in hunk["lines"] if l[0] in " -")
+    new_part = [l[1:] for l in hunk["lines"] if l[0] in " +"]
+    assert lines[o:o + hunk["oldLines"]] == [l[1:] for l in hunk["lines"] if l[0] in " -"], f"hunk does not fit {f}"
+    call("Edit", {"replace_all": False, "file_path": f"{cwd}/{f}", "old_string": old_s, "new_string": "\n".join(new_part)},
+         f"The file {cwd}/{f} has been updated successfully.",
+         {"filePath": f"{cwd}/{f}", "oldString": old_s, "newString": "\n".join(new_part), "originalFile": "\n".join(lines) + "\n",
+          "structuredPatch": [hunk], "userModified": False, "replaceAll": False})
+    return lines[:o] + new_part + lines[o + hunk["oldLines"]:]
+
+
+lines, drafted = before[first].splitlines(), False
+for h in reversed(files[first]):  # last hunk first, so every hunk's old line numbers still hold; alone, it lands where it starts
+    h = {**h, "newStart": h["oldStart"]}
+    plus = [i for i, l in enumerate(h["lines"]) if l[0] == "+"]
+    if drafted or not plus:
+        lines = edit(first, lines, h); continue
+    drafted, i = True, plus[-1]
+    final = h["lines"][i]
+    lines = edit(first, lines, {**h, "lines": h["lines"][:i] + [final + "  # draft"] + h["lines"][i + 1:]})
+    bash(f"cd {cwd}; .venv/bin/python -m pytest -q 2>&1 | tail -3", "FAILED tests/test_cli.py::test_fake - AssertionError\n1 failed, 99 passed in 1.00s")
+    at = h["newStart"] + sum(l[0] in " +" for l in h["lines"][:i])
+    lines = edit(first, lines, {"oldStart": at, "oldLines": 1, "newStart": at, "newLines": 1, "lines": ["-" + final[1:] + "  # draft", final]})
+assert "\n".join(lines) + "\n" == pathlib.Path(first).read_text(), "replayed edits differ from the patched file"
+for f in rest:
+    bash(f"cd {cwd}; .venv/bin/python - <<'PY'\np='{f}'; s=open(p).read(); ...\nPY", "",
+         {"bashEditDiff": {"files": [{"filePath": f"{cwd}/{f}", "hunks": files[f]}], "moreFiles": 0, "changedFiles": [f"{cwd}/{f}"]}})
+test = "def test_fake_change_placeholder():\n    assert True\n"
+pathlib.Path("tests/test_fake_change.py").write_text(test)
+call("Write", {"file_path": f"{cwd}/tests/test_fake_change.py", "content": test}, "File created successfully",
+     {"type": "create", "filePath": f"{cwd}/tests/test_fake_change.py", "content": test, "structuredPatch": [], "originalFile": None, "userModified": False})
+cmd = "TDD_REPORTER_OFF=1 .venv/bin/python -m pytest -q -p no:cacheprovider 2>&1 | tail -1"
+bash(f"cd {cwd}; {cmd}", sh(cmd))
+emit({"type": "assistant", "message": {"model": "fake", "id": "msg_fake_end", "type": "message", "role": "assistant",
+      "content": [{"type": "text", "text": "Done."}], "stop_reason": None, "usage": usage}, "parent_tool_use_id": None})
+emit({"type": "result", "subtype": "success", "is_error": False, "duration_ms": 1000, "duration_api_ms": 900, "num_turns": count[0] + 1,
+      "stop_reason": "end_turn", "result": "Done.", "total_cost_usd": 0.1234,
+      "usage": {"input_tokens": 22, "cache_creation_input_tokens": 20812, "cache_read_input_tokens": 252525, "output_tokens": 3390,
+                "output_tokens_details": {"thinking_tokens": 400}, "service_tier": "standard"},
+      "modelUsage": {"fake": {"inputTokens": 22, "outputTokens": 3390, "cacheReadInputTokens": 252525, "cacheCreationInputTokens": 20812,
+                              "costUSD": 0.1234}}, "permission_denials": [], "terminal_reason": "completed"})

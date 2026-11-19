@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "duration_seconds": 66.25774306198582,
+  "groups": [
+    {
+      "name": "benchmark/regression",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 61,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 20.699
+    },
+    {
+      "name": "python/asset-contract",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 18,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 0.038
+    },
+    {
+      "name": "python/capture",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 104,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 1.5819999999999992
+    },
+    {
+      "name": "python/gates",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 176,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 0.9720000000000005
+    },
+    {
+      "name": "python/harvest",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 32,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 0.098
+    },
+    {
+      "name": "python/installer",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 8,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 0.148
+    },
+    {
+      "name": "python/legacy-core",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 71,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 0.3550000000000001
+    },
+    {
+      "name": "python/pipeline",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 81,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 2.109
+    },
+    {
+      "name": "python/reporting",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 30,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 0.23500000000000001
+    },
+    {
+      "name": "python/review",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 68,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 0.5360000000000001
+    },
+    {
+      "name": "python/workflow",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 206,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 7.739000000000004
+    },
+    {
+      "name": "reporting/infrastructure",
+      "count_unit": "python_cases",
+      "counts": {
+        "passed": 24,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 0.406
+    },
+    {
+      "name": "shell/installer",
+      "count_unit": "assessment_rows",
+      "counts": {
+        "passed": 67,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 14.402398012025515
+    },
+    {
+      "name": "shell/sdl-workflow",
+      "count_unit": "assessment_rows",
+      "counts": {
+        "passed": 286,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "duration_seconds": 15.856833883997751
+    }
+  ],
+  "command": [
+    "python3",
+    "tests/run-tests.py"
+  ],
+  "report_directory": "test-results/run-qfd21j6j",
+  "totals_by_unit": {
+    "python_cases": 879,
+    "assessment_rows": 353
+  }
+}

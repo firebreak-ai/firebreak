@@ -25,6 +25,13 @@ def _fbk_py_path():
     return Path(__file__).parent.parent / "fbk.py"
 
 
+@pytest.fixture(scope="module", autouse=True)
+def required_dispatcher():
+    path = _fbk_py_path()
+    if not path.is_file():
+        pytest.fail(f"Required pipeline dispatcher is missing: {path}")
+
+
 def _run(stdin_text):
     """Run `fbk.py pipeline validate-verdicts` with input on stdin.
 
@@ -32,9 +39,6 @@ def _run(stdin_text):
     exit code. Raises on timeout (hard 15-second limit per invocation).
     """
     fbk_py = _fbk_py_path()
-    if not fbk_py.exists():
-        pytest.skip("fbk.py dispatcher not found")
-
     return subprocess.run(
         [sys.executable, str(fbk_py), "pipeline", "validate-verdicts"],
         input=stdin_text,
@@ -65,7 +69,7 @@ class TestValidateVerdicts:
         result = _run(stdin_text)
 
         assert result.returncode != 0, (
-            f"Expected non-zero exit for invalid status, got exit {result.returncode}"
+            f"Expected non-zero exit for invalid status, command result: {result!r}"
         )
         assert "0" in result.stderr or "index" in result.stderr.lower(), (
             f"Expected stderr to name the record position (0/index), got: {result.stderr!r}"
@@ -92,7 +96,7 @@ class TestValidateVerdicts:
         result = _run(stdin_text)
 
         assert result.returncode != 0, (
-            f"Expected non-zero exit for 'approved' status, got exit {result.returncode}"
+            f"Expected non-zero exit for 'approved' status, command result: {result!r}"
         )
         assert "0" in result.stderr or "record" in result.stderr.lower(), (
             f"Expected stderr to name the record, got: {result.stderr!r}"
@@ -114,7 +118,7 @@ class TestValidateVerdicts:
         result = _run(stdin_text)
 
         assert result.returncode != 0, (
-            f"Expected non-zero exit for empty evidence, got exit {result.returncode}"
+            f"Expected non-zero exit for empty evidence, command result: {result!r}"
         )
         assert "0" in result.stderr or "record" in result.stderr.lower(), (
             f"Expected stderr to name the record, got: {result.stderr!r}"
@@ -136,7 +140,7 @@ class TestValidateVerdicts:
         result = _run(stdin_text)
 
         assert result.returncode != 0, (
-            f"Expected non-zero exit for under-10-char evidence, got exit {result.returncode}"
+            f"Expected non-zero exit for under-10-char evidence, command result: {result!r}"
         )
         assert "0" in result.stderr or "record" in result.stderr.lower(), (
             f"Expected stderr to name the record, got: {result.stderr!r}"
@@ -158,7 +162,7 @@ class TestValidateVerdicts:
         result = _run(stdin_text)
 
         assert result.returncode != 0, (
-            f"Expected non-zero exit for empty evidence, got exit {result.returncode}"
+            f"Expected non-zero exit for empty evidence, command result: {result!r}"
         )
         assert "0" in result.stderr or "record" in result.stderr.lower(), (
             f"Expected stderr to name the record, got: {result.stderr!r}"
@@ -181,7 +185,7 @@ class TestValidateVerdicts:
         result = _run(stdin_text)
 
         assert result.returncode != 0, (
-            f"Expected non-zero exit for under-10-char evidence, got exit {result.returncode}"
+            f"Expected non-zero exit for under-10-char evidence, command result: {result!r}"
         )
         assert "0" in result.stderr or "record" in result.stderr.lower(), (
             f"Expected stderr to name the record, got: {result.stderr!r}"
@@ -202,7 +206,7 @@ class TestValidateVerdicts:
         result = _run(stdin_text)
 
         assert result.returncode != 0, (
-            f"Expected non-zero exit for missing rejection_reason, got exit {result.returncode}"
+            f"Expected non-zero exit for missing rejection_reason, command result: {result!r}"
         )
         assert "0" in result.stderr or "record" in result.stderr.lower(), (
             f"Expected stderr to name the record, got: {result.stderr!r}"
@@ -224,7 +228,7 @@ class TestValidateVerdicts:
         result = _run(stdin_text)
 
         assert result.returncode != 0, (
-            f"Expected non-zero exit for under-10-char rejection_reason, got exit {result.returncode}"
+            f"Expected non-zero exit for under-10-char rejection_reason, command result: {result!r}"
         )
         assert "0" in result.stderr or "record" in result.stderr.lower(), (
             f"Expected stderr to name the record, got: {result.stderr!r}"
@@ -255,7 +259,7 @@ class TestValidateVerdicts:
         result = _run(stdin_text)
 
         assert result.returncode == 0, (
-            f"Expected exit zero for all-valid array, got exit {result.returncode}. "
+            f"Expected exit zero for all-valid array, command result: {result!r}. "
             f"stderr: {result.stderr!r}"
         )
 
@@ -278,7 +282,7 @@ class TestValidateVerdicts:
         result = _run(stdin_text)
 
         assert result.returncode == 0, (
-            f"Expected exit zero for empty array, got exit {result.returncode}. "
+            f"Expected exit zero for empty array, command result: {result!r}. "
             f"stderr: {result.stderr!r}"
         )
 

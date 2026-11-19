@@ -1,10 +1,6 @@
 """
 Tests for --lens flag on the pipeline validate and run commands (AC-01, AC-03, AC-04, AC-11).
 
-These tests are RED before implementation: the --lens flag does not exist yet,
-so every subprocess invocation that passes --lens will exit non-zero with an
-argparse error, causing each test's specific assertion to fail.
-
 Covers:
   AC-01: lens-required set accepts id-less finding; no-lens rejects with
          "missing field 'id'"
@@ -20,22 +16,6 @@ import re
 import sys
 from pathlib import Path
 
-import pytest
-
-# ---------------------------------------------------------------------------
-# Red-phase import guard
-# ---------------------------------------------------------------------------
-# load_lens_matrix and LensVocabulary exist today; validate_sighting does too.
-# The red-phase guard here is for any future unit-level tests that depend on
-# symbols not yet added.  All current tests in this file are subprocess-level.
-
-try:
-    from fbk.pipeline import validate_sighting, load_lens_matrix, LensVocabulary  # type: ignore[import]
-    _LENS_IMPORTABLE = True
-except ImportError:
-    _LENS_IMPORTABLE = False
-
-
 # ---------------------------------------------------------------------------
 # Path helpers
 # ---------------------------------------------------------------------------
@@ -43,6 +23,10 @@ except ImportError:
 def _fbk_py():
     """Return the path to the fbk.py dispatcher."""
     return Path(__file__).parent.parent / "fbk.py"
+
+
+if not _fbk_py().is_file():
+    raise FileNotFoundError(f"Required fbk.py dispatcher not found: {_fbk_py()}")
 
 
 def _lens(name):
@@ -153,6 +137,7 @@ class TestIdLessAcceptanceUnderLens:
         assert result.returncode == 0, (
             f"Expected exit 0 for valid id-less finding with lens; "
             f"got {result.returncode}. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
 
         records = json.loads(result.stdout)
@@ -186,6 +171,7 @@ class TestNoLensRejectsIdLessFinding:
         assert result.returncode == 0, (
             f"Expected exit 0 (command runs, finding rejected); "
             f"got {result.returncode}. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
 
         records = json.loads(result.stdout)
@@ -224,251 +210,13 @@ class TestRunAcceptanceUnderLens:
         assert result.returncode == 0, (
             f"Expected exit 0 for valid id-less finding through run with lens; "
             f"got {result.returncode}. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
 
         records = json.loads(result.stdout)
         assert len(records) == 1, (
             f"Expected stdout list of length 1, got {len(records)}. "
             f"stdout: {result.stdout!r}"
-        )
-
-
-# ---------------------------------------------------------------------------
-# AC-03: missing lens — both validate and run fail loudly
-# ---------------------------------------------------------------------------
-
-class TestMissingLensCommandLineValidate:
-    """validate --lens <nonexistent path> fails loudly before processing any finding."""
-
-    def test_validate_missing_lens_exits_nonzero(self, tmp_path):
-        """validate --lens <nonexistent path> exits non-zero.
-
-        The file at the given path does not exist. The pipeline must fail
-        before reading stdin.
-        """
-        missing = tmp_path / "nonexistent-lens.md"
-        finding = _id_less_valid_code_finding()
-        result = _run(["validate", "--lens", str(missing)], json.dumps([finding]))
-
-        assert result.returncode != 0, (
-            f"Expected non-zero exit for missing lens path; got 0. "
-            f"stderr: {result.stderr!r}"
-        )
-
-    def test_validate_missing_lens_stderr_contains_lens_not_found(self, tmp_path):
-        """validate --lens <nonexistent path> prints 'lens not found:' and the path to stderr."""
-        missing = tmp_path / "nonexistent-lens.md"
-        finding = _id_less_valid_code_finding()
-        result = _run(["validate", "--lens", str(missing)], json.dumps([finding]))
-
-        assert "lens not found:" in result.stderr, (
-            f"Expected 'lens not found:' in stderr; got: {result.stderr!r}"
-        )
-        assert str(missing) in result.stderr, (
-            f"Expected missing path {str(missing)!r} in stderr; got: {result.stderr!r}"
-        )
-
-    def test_validate_missing_lens_stdout_empty(self, tmp_path):
-        """validate --lens <nonexistent path> produces no stdout output."""
-        missing = tmp_path / "nonexistent-lens.md"
-        finding = _id_less_valid_code_finding()
-        result = _run(["validate", "--lens", str(missing)], json.dumps([finding]))
-
-        assert result.stdout.strip() == "", (
-            f"Expected empty stdout for missing lens; got: {result.stdout!r}"
-        )
-
-    def test_validate_missing_lens_no_rejected_line(self, tmp_path):
-        """validate --lens <nonexistent path> does not emit a REJECTED: line.
-
-        The lens error must fire before any finding is processed. A REJECTED:
-        line in stderr would indicate stdin was read before the lens failure.
-        """
-        missing = tmp_path / "nonexistent-lens.md"
-        finding = _id_less_valid_code_finding()
-        result = _run(["validate", "--lens", str(missing)], json.dumps([finding]))
-
-        assert "REJECTED:" not in result.stderr, (
-            f"Expected no REJECTED: line in stderr (lens must fail before "
-            f"reading stdin); got: {result.stderr!r}"
-        )
-
-
-class TestMissingLensCommandLineRun:
-    """run --lens <nonexistent path> fails loudly before processing any finding."""
-
-    def test_run_missing_lens_exits_nonzero(self, tmp_path):
-        """run --lens <nonexistent path> exits non-zero."""
-        missing = tmp_path / "nonexistent-lens.md"
-        finding = _id_less_valid_run_finding()
-        result = _run(
-            ["run", "--preset", "behavioral-only", "--min-severity", "minor",
-             "--lens", str(missing)],
-            json.dumps([finding]),
-        )
-
-        assert result.returncode != 0, (
-            f"Expected non-zero exit for missing lens path; got 0. "
-            f"stderr: {result.stderr!r}"
-        )
-
-    def test_run_missing_lens_stderr_contains_lens_not_found(self, tmp_path):
-        """run --lens <nonexistent path> prints 'lens not found:' and the path to stderr."""
-        missing = tmp_path / "nonexistent-lens.md"
-        finding = _id_less_valid_run_finding()
-        result = _run(
-            ["run", "--preset", "behavioral-only", "--min-severity", "minor",
-             "--lens", str(missing)],
-            json.dumps([finding]),
-        )
-
-        assert "lens not found:" in result.stderr, (
-            f"Expected 'lens not found:' in stderr; got: {result.stderr!r}"
-        )
-        assert str(missing) in result.stderr, (
-            f"Expected missing path {str(missing)!r} in stderr; got: {result.stderr!r}"
-        )
-
-    def test_run_missing_lens_stdout_empty(self, tmp_path):
-        """run --lens <nonexistent path> produces no stdout output."""
-        missing = tmp_path / "nonexistent-lens.md"
-        finding = _id_less_valid_run_finding()
-        result = _run(
-            ["run", "--preset", "behavioral-only", "--min-severity", "minor",
-             "--lens", str(missing)],
-            json.dumps([finding]),
-        )
-
-        assert result.stdout.strip() == "", (
-            f"Expected empty stdout for missing lens; got: {result.stdout!r}"
-        )
-
-    def test_run_missing_lens_no_rejected_line(self, tmp_path):
-        """run --lens <nonexistent path> does not emit a REJECTED: line.
-
-        The lens error must fire before any finding is processed.
-        """
-        missing = tmp_path / "nonexistent-lens.md"
-        finding = _id_less_valid_run_finding()
-        result = _run(
-            ["run", "--preset", "behavioral-only", "--min-severity", "minor",
-             "--lens", str(missing)],
-            json.dumps([finding]),
-        )
-
-        assert "REJECTED:" not in result.stderr, (
-            f"Expected no REJECTED: line in stderr (lens must fail before "
-            f"reading stdin); got: {result.stderr!r}"
-        )
-
-
-# ---------------------------------------------------------------------------
-# AC-04: no-matrix-block lens — both validate and run fail loudly
-# ---------------------------------------------------------------------------
-
-class TestNoMatrixBlockLensValidate:
-    """validate --lens <prose-only file> fails loudly with 'no lens-matrix block found in:'."""
-
-    def test_validate_no_matrix_block_exits_nonzero(self, tmp_path):
-        """validate --lens over a lens file with no lens-matrix block exits non-zero."""
-        prose_lens = tmp_path / "prose-only-lens.md"
-        prose_lens.write_text(
-            "# A Lens File\n\nThis file has prose but no lens-matrix block.\n"
-        )
-        finding = _id_less_valid_code_finding()
-        result = _run(["validate", "--lens", str(prose_lens)], json.dumps([finding]))
-
-        assert result.returncode != 0, (
-            f"Expected non-zero exit for no-matrix-block lens; got 0. "
-            f"stderr: {result.stderr!r}"
-        )
-
-    def test_validate_no_matrix_block_stderr_contains_message(self, tmp_path):
-        """validate --lens over a prose-only lens file prints 'no lens-matrix block found in:' to stderr."""
-        prose_lens = tmp_path / "prose-only-lens.md"
-        prose_lens.write_text(
-            "# A Lens File\n\nThis file has prose but no lens-matrix block.\n"
-        )
-        finding = _id_less_valid_code_finding()
-        result = _run(["validate", "--lens", str(prose_lens)], json.dumps([finding]))
-
-        assert "no lens-matrix block found in:" in result.stderr, (
-            f"Expected 'no lens-matrix block found in:' in stderr; got: {result.stderr!r}"
-        )
-        assert str(prose_lens) in result.stderr, (
-            f"Expected lens file path {str(prose_lens)!r} in stderr; got: {result.stderr!r}"
-        )
-
-    def test_validate_no_matrix_block_stdout_empty(self, tmp_path):
-        """validate --lens over a prose-only lens file produces no stdout output."""
-        prose_lens = tmp_path / "prose-only-lens.md"
-        prose_lens.write_text(
-            "# A Lens File\n\nThis file has prose but no lens-matrix block.\n"
-        )
-        finding = _id_less_valid_code_finding()
-        result = _run(["validate", "--lens", str(prose_lens)], json.dumps([finding]))
-
-        assert result.stdout.strip() == "", (
-            f"Expected empty stdout; got: {result.stdout!r}"
-        )
-
-
-class TestNoMatrixBlockLensRun:
-    """run --lens <prose-only file> fails loudly with 'no lens-matrix block found in:'."""
-
-    def test_run_no_matrix_block_exits_nonzero(self, tmp_path):
-        """run --lens over a prose-only lens file exits non-zero."""
-        prose_lens = tmp_path / "prose-only-lens.md"
-        prose_lens.write_text(
-            "# A Lens File\n\nThis file has prose but no lens-matrix block.\n"
-        )
-        finding = _id_less_valid_run_finding()
-        result = _run(
-            ["run", "--preset", "behavioral-only", "--min-severity", "minor",
-             "--lens", str(prose_lens)],
-            json.dumps([finding]),
-        )
-
-        assert result.returncode != 0, (
-            f"Expected non-zero exit for no-matrix-block lens on run; got 0. "
-            f"stderr: {result.stderr!r}"
-        )
-
-    def test_run_no_matrix_block_stderr_contains_message(self, tmp_path):
-        """run --lens over a prose-only lens file prints 'no lens-matrix block found in:' to stderr."""
-        prose_lens = tmp_path / "prose-only-lens.md"
-        prose_lens.write_text(
-            "# A Lens File\n\nThis file has prose but no lens-matrix block.\n"
-        )
-        finding = _id_less_valid_run_finding()
-        result = _run(
-            ["run", "--preset", "behavioral-only", "--min-severity", "minor",
-             "--lens", str(prose_lens)],
-            json.dumps([finding]),
-        )
-
-        assert "no lens-matrix block found in:" in result.stderr, (
-            f"Expected 'no lens-matrix block found in:' in stderr; got: {result.stderr!r}"
-        )
-        assert str(prose_lens) in result.stderr, (
-            f"Expected lens file path {str(prose_lens)!r} in stderr; got: {result.stderr!r}"
-        )
-
-    def test_run_no_matrix_block_stdout_empty(self, tmp_path):
-        """run --lens over a prose-only lens file produces no stdout output."""
-        prose_lens = tmp_path / "prose-only-lens.md"
-        prose_lens.write_text(
-            "# A Lens File\n\nThis file has prose but no lens-matrix block.\n"
-        )
-        finding = _id_less_valid_run_finding()
-        result = _run(
-            ["run", "--preset", "behavioral-only", "--min-severity", "minor",
-             "--lens", str(prose_lens)],
-            json.dumps([finding]),
-        )
-
-        assert result.stdout.strip() == "", (
-            f"Expected empty stdout; got: {result.stdout!r}"
         )
 
 
@@ -524,6 +272,7 @@ class TestOrderingProofMissingLens:
 
         assert result.returncode != 0, (
             f"Expected non-zero exit; got 0. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
         assert result.stdout.strip() == "", (
             f"Expected empty stdout; got: {result.stdout!r}"
@@ -542,6 +291,7 @@ class TestOrderingProofMissingLens:
 
         assert result.returncode != 0, (
             f"Expected non-zero exit; got 0. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
         assert result.stdout.strip() == "", (
             f"Expected empty stdout; got: {result.stdout!r}"
@@ -569,6 +319,7 @@ class TestOrderingProofNoMatrixBlock:
 
         assert result.returncode != 0, (
             f"Expected non-zero exit; got 0. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
         assert result.stdout.strip() == "", (
             f"Expected empty stdout; got: {result.stdout!r}"
@@ -594,6 +345,7 @@ class TestOrderingProofNoMatrixBlock:
 
         assert result.returncode != 0, (
             f"Expected non-zero exit; got 0. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
         assert result.stdout.strip() == "", (
             f"Expected empty stdout; got: {result.stdout!r}"

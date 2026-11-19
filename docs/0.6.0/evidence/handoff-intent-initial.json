@@ -1,0 +1,229 @@
+{
+  "validation": [
+    {
+      "command": [
+        "workflow-init"
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "workflow-init",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-sicaeg62",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "stdout": "{\n  \"root\": \"/tmp/firebreak-live-lifecycle-sicaeg62\",\n  \"workflow\": \"0.6.0\",\n  \"next\": \"Create a unit with unit-init.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "unit-init",
+        "cancellation",
+        "--design",
+        "off"
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "unit-init",
+        "cancellation",
+        "--design",
+        "off",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-sicaeg62",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "stdout": "{\n  \"unit\": \"cancellation\",\n  \"phase\": \"intent\",\n  \"status\": \"ready\",\n  \"reason\": \"\",\n  \"owner\": null,\n  \"open_phase\": null,\n  \"parent_problem\": \"\",\n  \"close_in_progress\": null,\n  \"next\": \"Enter intent.\",\n  \"review_rounds\": {\n    \"intent\": 0,\n    \"design\": 0,\n    \"spec\": 0,\n    \"breakdown\": 0,\n    \"implement\": 0\n  },\n  \"review_plans\": {\n    \"spec\": null\n  },\n  \"review_guidance\": \"spec: review choice pending; use review-plan before closing\",\n  \"remaining_attempts\": {\n    \"intent\": 3,\n    \"design\": 3,\n    \"spec\": 3,\n    \"breakdown\": 3,\n    \"implement\": 3\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "review-plan",
+        "cancellation",
+        "--phase",
+        "spec",
+        "--mode",
+        "single",
+        "--reason",
+        "The operator invoked the live smoke test with one independent spec reviewer."
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "review-plan",
+        "cancellation",
+        "--phase",
+        "spec",
+        "--mode",
+        "single",
+        "--reason",
+        "The operator invoked the live smoke test with one independent spec reviewer.",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-sicaeg62",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "stdout": "{\n  \"mode\": \"single\",\n  \"members\": [],\n  \"id\": \"90d0e066-bf8d-4b13-90be-45e79ee8954e\",\n  \"reason\": \"The operator invoked the live smoke test with one independent spec reviewer.\",\n  \"source\": \"unit\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "phase-enter",
+        "intent",
+        "cancellation"
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "phase-enter",
+        "intent",
+        "cancellation",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-sicaeg62",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "stdout": "{\n  \"unit\": \"cancellation\",\n  \"phase\": \"intent\",\n  \"status\": \"open\",\n  \"reason\": \"\",\n  \"owner\": \"live-validation\",\n  \"open_phase\": \"intent\",\n  \"parent_problem\": \"\",\n  \"close_in_progress\": null,\n  \"next\": \"Resume intent.\",\n  \"review_rounds\": {\n    \"intent\": 0,\n    \"design\": 0,\n    \"spec\": 0,\n    \"breakdown\": 0,\n    \"implement\": 0\n  },\n  \"review_plans\": {\n    \"spec\": {\n      \"mode\": \"single\",\n      \"members\": [],\n      \"id\": \"90d0e066-bf8d-4b13-90be-45e79ee8954e\",\n      \"reason\": \"The operator invoked the live smoke test with one independent spec reviewer.\",\n      \"source\": \"unit\"\n    }\n  },\n  \"review_guidance\": \"spec: single\",\n  \"remaining_attempts\": {\n    \"intent\": 3,\n    \"design\": 3,\n    \"spec\": 3,\n    \"breakdown\": 3,\n    \"implement\": 3\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "phase-close",
+        "intent",
+        "cancellation"
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "phase-close",
+        "intent",
+        "cancellation",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-sicaeg62",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "{\"error\": \"Review context is incomplete: No implementation, unittest tests, or README.md exist yet in the repository; the intent artifact could only be reviewed for internal consistency and implementability, not for fidelity of downstream code.; No repository convention files (e.g. CLAUDE.md, README.md, pyproject.toml/setup.cfg, linter config) are present, so naming, layout, and test-placement conventions could not be cross-checked against the PRD.\", \"command\": \"phase-close\"}\n"
+    }
+  ],
+  "state": {
+    "schema_version": 1,
+    "unit": "cancellation",
+    "kind": "feature",
+    "parent": null,
+    "parent_evidence": null,
+    "design": false,
+    "owner": "live-validation",
+    "open_phase": "intent",
+    "opened_at": "2026-09-07T17:04:11.776+00:00",
+    "locks": {},
+    "unlocks": [],
+    "grants": [],
+    "events": [
+      {
+        "event": "created",
+        "at": "2026-09-07T17:04:11.608+00:00",
+        "session": null,
+        "unit_kind": "feature"
+      },
+      {
+        "event": "review-selected",
+        "at": "2026-09-07T17:04:11.693+00:00",
+        "session": "live-validation",
+        "phase": "spec",
+        "selection": {
+          "mode": "single",
+          "members": [],
+          "id": "90d0e066-bf8d-4b13-90be-45e79ee8954e",
+          "reason": "The operator invoked the live smoke test with one independent spec reviewer.",
+          "source": "unit"
+        }
+      },
+      {
+        "event": "entered",
+        "at": "2026-09-07T17:04:11.776+00:00",
+        "session": "live-validation",
+        "phase": "intent"
+      },
+      {
+        "event": "close-attempt",
+        "at": "2026-09-07T17:05:00.814+00:00",
+        "session": "live-validation",
+        "phase": "intent",
+        "revision": "fac8e335d41501542cb016ee5646a6525a8a1566777d9c0b2f8f10175ff464bd",
+        "verification": [],
+        "error": "Review context is incomplete: No implementation, unittest tests, or README.md exist yet in the repository; the intent artifact could only be reviewed for internal consistency and implementability, not for fidelity of downstream code.; No repository convention files (e.g. CLAUDE.md, README.md, pyproject.toml/setup.cfg, linter config) are present, so naming, layout, and test-placement conventions could not be cross-checked against the PRD."
+      }
+    ],
+    "workers": {},
+    "phases": {
+      "intent": {
+        "evidence": null,
+        "rounds": [
+          {
+            "revision": "fac8e335d41501542cb016ee5646a6525a8a1566777d9c0b2f8f10175ff464bd",
+            "at": "2026-09-07T17:04:11.864+00:00",
+            "operation": "40a323d1-e2c4-4ba8-b070-243f30994e0a",
+            "result": null,
+            "generation": 0,
+            "error": "Review context is incomplete: No implementation, unittest tests, or README.md exist yet in the repository; the intent artifact could only be reviewed for internal consistency and implementability, not for fidelity of downstream code.; No repository convention files (e.g. CLAUDE.md, README.md, pyproject.toml/setup.cfg, linter config) are present, so naming, layout, and test-placement conventions could not be cross-checked against the PRD."
+          }
+        ],
+        "round_limit": 3,
+        "pending": null,
+        "generation": 0
+      },
+      "design": {
+        "evidence": null,
+        "rounds": [],
+        "round_limit": 3,
+        "pending": null,
+        "generation": 0
+      },
+      "spec": {
+        "evidence": null,
+        "rounds": [],
+        "round_limit": 3,
+        "pending": null,
+        "generation": 0
+      },
+      "breakdown": {
+        "evidence": null,
+        "rounds": [],
+        "round_limit": 3,
+        "pending": null,
+        "generation": 0
+      },
+      "implement": {
+        "evidence": null,
+        "rounds": [],
+        "round_limit": 3,
+        "pending": null,
+        "generation": 0
+      }
+    },
+    "review_plans": {
+      "spec": {
+        "mode": "single",
+        "members": [],
+        "id": "90d0e066-bf8d-4b13-90be-45e79ee8954e",
+        "reason": "The operator invoked the live smoke test with one independent spec reviewer.",
+        "source": "unit"
+      }
+    },
+    "content_hash": "4274bd7e741de9a15d849137d265db7c2ec7eb72b5bcbbfe128a7668c1f51c3c"
+  }
+}

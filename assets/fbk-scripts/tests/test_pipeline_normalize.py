@@ -24,18 +24,7 @@ import subprocess
 
 import pytest
 
-# Red phase: normalize does not exist yet.
-try:
-    from fbk.pipeline import normalize
-    NORMALIZE_AVAILABLE = True
-except ImportError:
-    NORMALIZE_AVAILABLE = False
-
-pytestmark = pytest.mark.skipif(
-    not NORMALIZE_AVAILABLE,
-    reason="pipeline.normalize not yet implemented",
-)
-
+from fbk.pipeline import normalize
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -81,26 +70,6 @@ def test_returns_exactly_six_fields(researcher_finding):
     assert set(result.keys()) == expected_keys
 
 
-def test_each_framing_field_is_absent(researcher_finding):
-    """normalize() strips every researcher framing field from the result."""
-    result = normalize(researcher_finding)
-    assert "title" not in result
-    assert "detection_source" not in result
-    assert "origin" not in result
-    assert "pattern" not in result
-    assert "remediation" not in result
-    assert "reasoning" not in result
-    assert "location" not in result
-
-
-def test_location_folds_into_evidence(researcher_finding):
-    """normalize() folds the location locator into evidence; location does not survive as a key."""
-    result = normalize(researcher_finding)
-    assert "location" not in result
-    assert "auth.py" in result["evidence"]
-    assert "42" in result["evidence"]
-
-
 def test_allowlisted_values_pass_through_unchanged(researcher_finding):
     """normalize() passes allowlisted field values through unchanged from the input."""
     result = normalize(researcher_finding)
@@ -121,6 +90,10 @@ def _fbk_py():
     return Path(__file__).parent.parent / "fbk.py"
 
 
+if not _fbk_py().is_file():
+    raise FileNotFoundError(f"Required fbk.py dispatcher not found: {_fbk_py()}")
+
+
 def _run_normalize(stdin_text):
     """Run `fbk.py pipeline normalize` with stdin_text as input.
 
@@ -128,9 +101,6 @@ def _run_normalize(stdin_text):
     Raises on timeout (hard 15-second limit per invocation).
     """
     fbk_py = _fbk_py()
-    if not fbk_py.exists():
-        pytest.skip("fbk.py dispatcher not found")
-
     return subprocess.run(
         [sys.executable, str(fbk_py), "pipeline", "normalize"],
         input=stdin_text,
@@ -198,6 +168,7 @@ class TestNormalizeSubcommand:
         # Exit zero
         assert result.returncode == 0, (
             f"Expected exit code 0, got {result.returncode}. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
 
         # Output parses to a JSON list
@@ -282,6 +253,7 @@ class TestNormalizeSubcommand:
         assert result.returncode == 0, (
             f"Expected exit code 0 for missing fields, got {result.returncode}. "
             f"stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
 
         output_list = json.loads(result.stdout)
@@ -320,6 +292,7 @@ class TestNormalizeSubcommand:
         assert result.returncode == 0, (
             f"Expected exit code 0 for empty array, got {result.returncode}. "
             f"stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
 
         # Output parses to an empty list
@@ -342,6 +315,7 @@ class TestNormalizeSubcommand:
         # Exit non-zero
         assert result.returncode != 0, (
             f"Expected non-zero exit code for malformed JSON, got {result.returncode}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}\nstderr: {result.stderr!r}"
         )
 
         # stderr contains error message

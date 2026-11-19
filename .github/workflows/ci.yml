@@ -8,7 +8,7 @@ on:
 
 jobs:
   python-tests:
-    name: Python Unit Tests
+    name: Python Behavior and Regression Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -20,38 +20,15 @@ jobs:
           cache-suffix: python-tests
 
       - name: Run pytest
-        working-directory: assets/fbk-scripts
-        run: uv run python -m pytest -q
+        run: python3 tests/run-tests.py --suite python
 
-  sdl-workflow-tests:
-    name: SDL Workflow Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          enable-cache: true
-          cache-suffix: sdl-workflow-tests
-
-      - name: Run SDL workflow tests
-        run: |
-          failed=0
-          for test in tests/sdl-workflow/test-*.sh; do
-            echo "::group::$(basename "$test")"
-            if bash "$test"; then
-              echo "::endgroup::"
-            else
-              echo "::endgroup::"
-              echo "::error::$(basename "$test") failed"
-              failed=$((failed + 1))
-            fi
-          done
-          if [ "$failed" -gt 0 ]; then
-            echo "$failed test file(s) failed"
-            exit 1
-          fi
+          name: python-test-reports
+          path: test-results/
+          include-hidden-files: true
 
   installer-tests:
     name: Installer Tests
@@ -66,19 +43,35 @@ jobs:
           cache-suffix: installer-tests
 
       - name: Run installer tests
-        run: |
-          failed=0
-          for test in tests/installer/test-*.sh; do
-            echo "::group::$(basename "$test")"
-            if bash "$test"; then
-              echo "::endgroup::"
-            else
-              echo "::endgroup::"
-              echo "::error::$(basename "$test") failed"
-              failed=$((failed + 1))
-            fi
-          done
-          if [ "$failed" -gt 0 ]; then
-            echo "$failed test file(s) failed"
-            exit 1
-          fi
+        run: python3 tests/run-tests.py --suite installer
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-test-reports
+          path: test-results/
+          include-hidden-files: true
+
+  lint:
+    name: Lint Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-suffix: lint
+
+      - name: Run the lint check
+        run: python3 tests/run-tests.py --suite lint
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: test-results/
+          include-hidden-files: true

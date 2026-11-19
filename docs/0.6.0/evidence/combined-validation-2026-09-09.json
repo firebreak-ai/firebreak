@@ -1,0 +1,563 @@
+{
+  "date": "2026-09-09",
+  "head": "cfb4f6b4a9027ec4d148b0365fea35cd899795ca",
+  "scope": "Uncommitted source tree; no paid model runs or complete live model lifecycle claimed",
+  "ordinary_python": {
+    "report": "/tmp/fbk-final-settled-python/run-t3qvrh5c/summary.json",
+    "status": "passed",
+    "duration_seconds": 50.18977636896307,
+    "counts": {
+      "passed": 578,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0
+    },
+    "groups": [
+      {
+        "name": "benchmark/regression",
+        "count_unit": "python_cases",
+        "counts": {
+          "passed": 61,
+          "failed": 0,
+          "error": 0,
+          "skipped": 0
+        },
+        "duration_seconds": 25.293000000000006
+      },
+      {
+        "name": "python/dispatcher",
+        "count_unit": "python_cases",
+        "counts": {
+          "passed": 3,
+          "failed": 0,
+          "error": 0,
+          "skipped": 0
+        },
+        "duration_seconds": 0.04
+      },
+      {
+        "name": "python/installer",
+        "count_unit": "python_cases",
+        "counts": {
+          "passed": 13,
+          "failed": 0,
+          "error": 0,
+          "skipped": 0
+        },
+        "duration_seconds": 1.7859999999999998
+      },
+      {
+        "name": "python/other",
+        "count_unit": "python_cases",
+        "counts": {
+          "passed": 5,
+          "failed": 0,
+          "error": 0,
+          "skipped": 0
+        },
+        "duration_seconds": 1.647
+      },
+      {
+        "name": "python/pipeline",
+        "count_unit": "python_cases",
+        "counts": {
+          "passed": 69,
+          "failed": 0,
+          "error": 0,
+          "skipped": 0
+        },
+        "duration_seconds": 1.3370000000000002
+      },
+      {
+        "name": "python/review",
+        "count_unit": "python_cases",
+        "counts": {
+          "passed": 31,
+          "failed": 0,
+          "error": 0,
+          "skipped": 0
+        },
+        "duration_seconds": 0.051000000000000024
+      },
+      {
+        "name": "python/workflow",
+        "count_unit": "python_cases",
+        "counts": {
+          "passed": 372,
+          "failed": 0,
+          "error": 0,
+          "skipped": 0
+        },
+        "duration_seconds": 19.05499999999998
+      },
+      {
+        "name": "reporting/infrastructure",
+        "count_unit": "python_cases",
+        "counts": {
+          "passed": 24,
+          "failed": 0,
+          "error": 0,
+          "skipped": 0
+        },
+        "duration_seconds": 0.3420000000000001
+      }
+    ]
+  },
+  "additional_evaluators": {
+    "cases_passed": 8,
+    "subtests_passed": 24,
+    "failed": 0,
+    "errors": 0,
+    "report": "/tmp/fbk-final-settled-evaluators.xml"
+  },
+  "installed": {
+    "cases_passed": 98,
+    "failed": 0,
+    "errors": 0,
+    "root": "/tmp/fbk-final-settled-installed-1rl19ope",
+    "workflow_hashes_match_source": true,
+    "workflow_sha256": {
+      "fbk-scripts/fbk/workflow/review_contributors.py": "f43970bb9e31cab585d53a74912c7cfb7df3ba1b9ca2823551cf4cc25afa7a44",
+      "fbk-scripts/fbk/workflow/managed_investigations.py": "6aa6edcf4391b26f85d682c86d8925895c8457c164e41f06c64db3d60030910d",
+      "fbk-scripts/fbk/workflow/remediation_verification.py": "c528d2ade4ce7af0b3d5298917be3afbb46481e2b352514037c2a616b750547f",
+      "fbk-scripts/fbk/workflow/review_rounds.py": "6ae2d3ea8323269a41b6d9c902a1d5c1a80fa89c9e9e5114cc4efe9d5a3e53c8",
+      "fbk-scripts/fbk/workflow/investigations.py": "ae943055ec713002d1ac5485a6f6eee22787852fabf43cda6e808b3402c0021e",
+      "fbk-scripts/fbk/workflow/acceptance_drift.py": "fa5a6d56c5ba13c54b8628b99f3285b400598fd3f94be080811b8d982c0abf55",
+      "fbk-scripts/fbk/workflow/task_graph.py": "1a9b99b8cc6bd961093e127fe1a367a4abf9a2b4335f55987631b018105fb10f",
+      "fbk-scripts/fbk/workflow/test_preparation.py": "6bef7332b72c2a60c2ed413a73dd83011f0b7f9dbe4f8d8ba701aae21a35e2f1",
+      "fbk-scripts/fbk/workflow/retrospective.py": "c3792bbcbfaee0acaec3b8905e1d953c1f79b23bc5baeee39d495833ec28d72d",
+      "fbk-scripts/fbk/workflow/improvement.py": "b98a992e103552bdffd36991b4968bc85f24485358767206d476b2764a9c0ead",
+      "fbk-scripts/fbk/workflow/telemetry.py": "11142608cae4058b32928edc0503e6f8fdbd3e658cf386d7157d9c59d8c6e2a8",
+      "fbk-scripts/fbk/workflow/repair.py": "86252b8b313a0187ddb4dffc9dee09852016627886d3c04c9d8095184c5647df",
+      "fbk-scripts/fbk/workflow/handoff.py": "ef35b16c3e854f5373d6534dd875c57bd56dc3497285935e15f0ffe226272439",
+      "fbk-scripts/fbk/workflow/decisions.py": "274aa720ec116cb7e60ff7afdd8df17eaaafbb2f8c6edcd01ede6695bedca16b",
+      "fbk-scripts/fbk/workflow/review_context.py": "c2903a96c6b454efcc4674a7357b2c67632bbf531a3c88d3108605fb949f38b0",
+      "fbk-scripts/fbk/workflow/council.py": "4a2b28271bb4d7b2fffea7af265e82668bbd63279ea3cc5e2f382404daff6be9",
+      "fbk-scripts/fbk/workflow/review_plan.py": "43f30239cddb8712e85ed366397b8317d5c6cc9ddf6e392771ebe267657dc497",
+      "fbk-scripts/fbk/workflow/hooks.py": "7f42ba0764d8f5d240a28b0c6cf8115d45da03fdaa67cd4c54bc584908dd5fdd",
+      "fbk-scripts/fbk/workflow/cli.py": "32dca25a33e5e304d00df0ae70fc0ca4b9a86ed784e769948f6d583e3d5e2f1d",
+      "fbk-scripts/fbk/workflow/close.py": "65be3c1bd188c173ace92d34b9655aed7a2b3d3ba941cae3616167becb90737e",
+      "fbk-scripts/fbk/workflow/review.py": "cf00fdfb4f5a8d4900a47c889f7c812612dc1cc9e7c90f0899510969123f1487",
+      "fbk-scripts/fbk/workflow/engine.py": "030a4bc94477daafdcb13c2f5dc7be06ffe29d7337d84ae1d5bbd3ef320ab4ac",
+      "fbk-scripts/fbk/workflow/evidence.py": "c4790cb08bc19a21342dcc4e007b2e43a21c2e000c1a30ec5bd68c77a0126e9b",
+      "fbk-scripts/fbk/workflow/store.py": "6c9cead4a9f99dbc54b21cfb8a10c58c4ebd5f850e68ad6013c0f83693c30e9a",
+      "fbk-scripts/fbk/workflow/__init__.py": "cde72a1b4333d33059ca3ca97a6cfc64c6f311d8616515c47f84ef2d4ec0744e"
+    },
+    "cli_help": [
+      {
+        "command": "review-round",
+        "exit_code": 0,
+        "expected_action": "run",
+        "help_contains_action": true
+      },
+      {
+        "command": "remediation",
+        "exit_code": 0,
+        "expected_action": "register-late",
+        "help_contains_action": true
+      },
+      {
+        "command": "investigation",
+        "exit_code": 0,
+        "expected_action": "conclude",
+        "help_contains_action": true
+      }
+    ]
+  },
+  "installer": {
+    "report": "/tmp/fbk-final-settled-installer/run-418gs7hl/summary.json",
+    "status": "passed",
+    "duration_seconds": 13.372819105978124,
+    "counts": {
+      "passed": 66,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0
+    },
+    "groups": [
+      {
+        "name": "shell/installer",
+        "count_unit": "assessment_rows",
+        "counts": {
+          "passed": 66,
+          "failed": 0,
+          "error": 0,
+          "skipped": 0
+        },
+        "duration_seconds": 13.37021164392354
+      }
+    ]
+  },
+  "source_asset_sha256": {
+    "assets/agents/fbk-improvement-analyst.md": "a1b047ed49247dd08182bd0176edacb7c080c378c107c82f01a89e88cc1b1c56",
+    "assets/agents/fbk-review-challenger.md": "6e5792cbd40dad343f51a061178e30490ecd43d90eaae6ec08db691206cb15b4",
+    "assets/agents/fbk-review-researcher.md": "df6438588687de8e47346e386642bac105367bcedf986f8aa2c790510bf8a346",
+    "assets/fbk-docs/fbk-context-assets.md": "ca25506aba3ec1b48daef0f7fcc5562ffd2c649a73c4fe162a45914d42f8438f",
+    "assets/fbk-docs/fbk-context-assets/agents.md": "b8013444224247339458dcaf7327ba6782b7e3276e699daeb7fcfb63e8f54780",
+    "assets/fbk-docs/fbk-context-assets/always-on-disciplines.md": "f1b44288aa11a6933ec582fb3ea6b628c4feca8b4519e96f842f1553134a5e3e",
+    "assets/fbk-docs/fbk-context-assets/claude-md.md": "b97a1f8f81a3e3f81376b150065de4279300196b3f21a3f07168faef36d8f147",
+    "assets/fbk-docs/fbk-context-assets/hooks.md": "67b774de01742b401141c4858f2c69dcdccebdca63502f88732b17ac53ebd021",
+    "assets/fbk-docs/fbk-context-assets/referenced-docs.md": "3097acae24842d6f2dfc57f9cb09a43ab55c940d28d879aa78515c89eb86266a",
+    "assets/fbk-docs/fbk-context-assets/rules.md": "c018f2a255aad47256e4b7284cb719f996482b5aef43cff856810fdfbc409957",
+    "assets/fbk-docs/fbk-context-assets/skills.md": "2a6a2df1035615a4d28cfbe310cf71bddbc4532a6468a1f58b1e693b1fa72358",
+    "assets/fbk-docs/fbk-review-lenses/code-lens.md": "2e9b0dc564ed1f1c697873553f83e964c3c05377e0634dc81342b62b2568c2ae",
+    "assets/fbk-docs/fbk-review-lenses/doc-reconcile-lens.md": "13812d7b7f3ad7dd69e45d72a01bb886ee7d1357e5a5916b19cf7eaeca6f498b",
+    "assets/fbk-docs/fbk-review-lenses/fresh-eyes-lens.md": "1ecef348ff903fd1f62ac1450b779a02817c937f6fdbc620401cb2da2195bcac",
+    "assets/fbk-docs/fbk-review-lenses/lens-format.md": "c3a02b00262dc839a334a4ad7cb11c25dbd441c7c36787546974fd696cb81384",
+    "assets/fbk-docs/fbk-review-lenses/quality-lens.md": "31b832ac7d2df06033f814f5905c37024212b2ef2312020b5814b5a2260a7649",
+    "assets/fbk-docs/fbk-review-lenses/review-loop.md": "382a0f7bcf75c0e4a11d592a1b06a5002eda9f01f86aee80c8194a3b2746f139",
+    "assets/fbk-docs/fbk-review-lenses/shared-detection.md": "aff3e1f98bfd0b49dfa5494b64c4599daef22801bae6b2c2eb67ba53531154ec",
+    "assets/fbk-docs/fbk-review-lenses/test-lens.md": "09b11ca93ae46d5e811aaf800c8aa250826563e5b1f040d369402e47ccf87c42",
+    "assets/fbk-docs/review/ai-failure-modes.md": "b971a9a6bd04b1b9ae91f430a1279a61cc91969905a3b900f250af8d3527370d",
+    "assets/fbk-docs/review/code-review-guide.md": "070388e2c049d826fc8bc92e59f5055a565166578bda4fa5494aa893a2d8fd91",
+    "assets/fbk-docs/review/detection-audits.md": "40774aec41ee306d7364bb025cc3f5c1bc45c92a35adecac44378b65b879f925",
+    "assets/fbk-docs/review/quality-detection.md": "c680f43a6e642ac00d9aee5bb9f4ddca8d46b344faf33b7c9c3a031fd147d530",
+    "assets/fbk-docs/review/security-patterns.md": "5108652c4baf343289391d1288d4ca1515e5ea2393ca64e1eeffeb32672fe7ec",
+    "assets/fbk-docs/state-driven-workflow.md": "3ee18a85012ea03d02d76563a8cf46732e8930a45207da9b0634847370bd3cc7",
+    "assets/fbk-docs/workflow/breakdown.md": "2a3ed11a7abfb22aa8d4f66f5a709934f9c9294171e89f9b6926e1ce531d6059",
+    "assets/fbk-docs/workflow/decisions.md": "db265953df6ede7c3cb192d22f906a6a668cd427eada55eae3a5d7a4d38e79b9",
+    "assets/fbk-docs/workflow/design.md": "2e8a66939534ce7f2de6f9e16ed103671371a842a5ee737a2ab65a35dc46a00b",
+    "assets/fbk-docs/workflow/handoffs.md": "4b9da7e15838c5e487f63c3e55f4ef91b9732f3c1998d9a6e874c8b985d55fa7",
+    "assets/fbk-docs/workflow/implementation.md": "6724914c7e613c55e47575a3e55f9a4449af77033b01e0817130da6fd2de4a59",
+    "assets/fbk-docs/workflow/improvement.md": "ed0d106e289d2dc7bf8836e3de124b37ed3a1b6eefdc1bbc5a5e78f3a0dd6111",
+    "assets/fbk-docs/workflow/intent.md": "f04cdb2171be8d0984a94cfc080a2f42b1bab104af327740c91523edaff104ac",
+    "assets/fbk-docs/workflow/investigations.md": "dfe2ce78bcdb6b1732f75bca15a799c02b4a859fcbbdc0785468b125d8cfe664",
+    "assets/fbk-docs/workflow/recovery.md": "6c2df06d02852236b67e68dce65a82caecae3d2ca3b6d66d2a4596c6a315245d",
+    "assets/fbk-docs/workflow/remediation-verification.md": "077f1b2bc9c095bd91753a60e0af543ccc256e596e1bb5441237369c9f4efe8e",
+    "assets/fbk-docs/workflow/repairs.md": "6d7569c1237dd4ef9990ccd8076ec031109d7da72616ae40b2b54e676c7cded1",
+    "assets/fbk-docs/workflow/retrospective.md": "35e0ed4c70a1504fa7e5bdf760e2e5bb886b36d6d2553e3eb5c292397e705522",
+    "assets/fbk-docs/workflow/review-rounds.md": "78c9ebb997094ac2f09ea8c29c59b31823ebfca96dac21901449bcb21ae25cb5",
+    "assets/fbk-docs/workflow/review-selection.md": "0ce1e8d9cf36e106fd8c5c7b6eb755a61726c642663a7c85506b2b2edfac71db",
+    "assets/fbk-docs/workflow/settings.md": "49ed9e577b5772ddafc06037ec85d2abccfe4cbb306440e06b7d682af2f9323f",
+    "assets/fbk-docs/workflow/spec.md": "54bce665c4e9f368eb003e92f524c0856172ff8b4edb6deaf38f9a19e58116d2",
+    "assets/fbk-scripts/fbk.py": "2cf5449bf34cba14fa3d81f9e51e321bb57d421ed854bfaeada994c964132a7c",
+    "assets/fbk-scripts/fbk/__init__.py": "ca2ba0fd5bf4465dcf4e2fe63e38b77a8b8babb2eb2f5aa4d74348aee2491074",
+    "assets/fbk-scripts/fbk/cross_review.py": "a050e662c61683e828194e1b1c47dc6bdaa239a58ef5921877e44571663ed64a",
+    "assets/fbk-scripts/fbk/data/fbk-presets.json": "d498ed1512c90e7fe865df7291665bab7076fb608effd99c3b93c8f08257f0de",
+    "assets/fbk-scripts/fbk/pipeline.py": "74dc391e449db1122441e4223ff8ab897caa2e9d42da4802d8af52b8e3ed0aca",
+    "assets/fbk-scripts/fbk/workflow/__init__.py": "cde72a1b4333d33059ca3ca97a6cfc64c6f311d8616515c47f84ef2d4ec0744e",
+    "assets/fbk-scripts/fbk/workflow/acceptance_drift.py": "fa5a6d56c5ba13c54b8628b99f3285b400598fd3f94be080811b8d982c0abf55",
+    "assets/fbk-scripts/fbk/workflow/cli.py": "32dca25a33e5e304d00df0ae70fc0ca4b9a86ed784e769948f6d583e3d5e2f1d",
+    "assets/fbk-scripts/fbk/workflow/close.py": "65be3c1bd188c173ace92d34b9655aed7a2b3d3ba941cae3616167becb90737e",
+    "assets/fbk-scripts/fbk/workflow/council.py": "4a2b28271bb4d7b2fffea7af265e82668bbd63279ea3cc5e2f382404daff6be9",
+    "assets/fbk-scripts/fbk/workflow/decisions.py": "274aa720ec116cb7e60ff7afdd8df17eaaafbb2f8c6edcd01ede6695bedca16b",
+    "assets/fbk-scripts/fbk/workflow/engine.py": "030a4bc94477daafdcb13c2f5dc7be06ffe29d7337d84ae1d5bbd3ef320ab4ac",
+    "assets/fbk-scripts/fbk/workflow/evidence.py": "c4790cb08bc19a21342dcc4e007b2e43a21c2e000c1a30ec5bd68c77a0126e9b",
+    "assets/fbk-scripts/fbk/workflow/handoff.py": "ef35b16c3e854f5373d6534dd875c57bd56dc3497285935e15f0ffe226272439",
+    "assets/fbk-scripts/fbk/workflow/hooks.py": "7f42ba0764d8f5d240a28b0c6cf8115d45da03fdaa67cd4c54bc584908dd5fdd",
+    "assets/fbk-scripts/fbk/workflow/improvement.py": "b98a992e103552bdffd36991b4968bc85f24485358767206d476b2764a9c0ead",
+    "assets/fbk-scripts/fbk/workflow/investigations.py": "ae943055ec713002d1ac5485a6f6eee22787852fabf43cda6e808b3402c0021e",
+    "assets/fbk-scripts/fbk/workflow/managed_investigations.py": "6aa6edcf4391b26f85d682c86d8925895c8457c164e41f06c64db3d60030910d",
+    "assets/fbk-scripts/fbk/workflow/remediation_verification.py": "c528d2ade4ce7af0b3d5298917be3afbb46481e2b352514037c2a616b750547f",
+    "assets/fbk-scripts/fbk/workflow/repair.py": "86252b8b313a0187ddb4dffc9dee09852016627886d3c04c9d8095184c5647df",
+    "assets/fbk-scripts/fbk/workflow/retrospective.py": "c3792bbcbfaee0acaec3b8905e1d953c1f79b23bc5baeee39d495833ec28d72d",
+    "assets/fbk-scripts/fbk/workflow/review.py": "cf00fdfb4f5a8d4900a47c889f7c812612dc1cc9e7c90f0899510969123f1487",
+    "assets/fbk-scripts/fbk/workflow/review_context.py": "c2903a96c6b454efcc4674a7357b2c67632bbf531a3c88d3108605fb949f38b0",
+    "assets/fbk-scripts/fbk/workflow/review_contributors.py": "f43970bb9e31cab585d53a74912c7cfb7df3ba1b9ca2823551cf4cc25afa7a44",
+    "assets/fbk-scripts/fbk/workflow/review_plan.py": "43f30239cddb8712e85ed366397b8317d5c6cc9ddf6e392771ebe267657dc497",
+    "assets/fbk-scripts/fbk/workflow/review_rounds.py": "6ae2d3ea8323269a41b6d9c902a1d5c1a80fa89c9e9e5114cc4efe9d5a3e53c8",
+    "assets/fbk-scripts/fbk/workflow/store.py": "6c9cead4a9f99dbc54b21cfb8a10c58c4ebd5f850e68ad6013c0f83693c30e9a",
+    "assets/fbk-scripts/fbk/workflow/task_graph.py": "1a9b99b8cc6bd961093e127fe1a367a4abf9a2b4335f55987631b018105fb10f",
+    "assets/fbk-scripts/fbk/workflow/telemetry.py": "11142608cae4058b32928edc0503e6f8fdbd3e658cf386d7157d9c59d8c6e2a8",
+    "assets/fbk-scripts/fbk/workflow/test_preparation.py": "6bef7332b72c2a60c2ed413a73dd83011f0b7f9dbe4f8d8ba701aae21a35e2f1",
+    "assets/fbk-scripts/pyproject.toml": "73bf28eab10ae9a8d9aba1c02bfcfe191c2d18639cfb97de3299a0e505b60d38",
+    "assets/fbk-scripts/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "assets/fbk-scripts/tests/test_cross_review.py": "569efac175d69d22eebbfcbda60e38e24152cd2b2436d97f14b7604a21a0381e",
+    "assets/fbk-scripts/tests/test_dispatcher.py": "774e695f6fdf41f7e2cd601129291a3ef9ce509c31dd3bc8a895fd3123b348cf",
+    "assets/fbk-scripts/tests/test_install_migration.py": "25fd7764e55bf3066e1ec871faf86277f99ed708e83ba1e80ea4b21230ff54fb",
+    "assets/fbk-scripts/tests/test_install_skill_commands.py": "e7bb34a46efe594bf35dd69d2bee697b5952bef92e97098aea6de0121b2734d1",
+    "assets/fbk-scripts/tests/test_pipeline.py": "d6f41cb7efa638b15e94d3e1395a3f6c0f4b488e80e79c416eede4374e139268",
+    "assets/fbk-scripts/tests/test_pipeline_keep_confirmed.py": "d4371f29d84ea9c85f83425f4dee66ac4a7fad285da1b78d0f40f9c91f86c439",
+    "assets/fbk-scripts/tests/test_pipeline_lens.py": "4444d537c7a185d3d6b93ca1f68032584bc53d9e154fc59f8d4a16cb5fad585e",
+    "assets/fbk-scripts/tests/test_pipeline_normalize.py": "11974ffd29ddcbf4d81cb3349a40f35abd974cce8166345f96cc0992598c0790",
+    "assets/fbk-scripts/tests/test_pipeline_rejoin.py": "959e6b4951773469bd9f8771f8949a70c5a2a63d5b7d478fe5e9bddb72cd8c57",
+    "assets/fbk-scripts/tests/test_pipeline_robustness.py": "6dbf1eeac1b5c45cafe2fb84d1f893c427e4cddbc88a4b5e1f32b1d318a5a580",
+    "assets/fbk-scripts/tests/test_pipeline_type_rejection.py": "9e527742d151c8c1a257990c7514447c91b3d4e5ed6638d8e46f12fd1715b081",
+    "assets/fbk-scripts/tests/test_pipeline_validate_verdicts.py": "47d2c24789034451b8147b004d7e07b1e63ab067503d9899d2d07be5b506891e",
+    "assets/fbk-scripts/tests/test_preparation_lineage.py": "4799263e71af380d39ca2ff460e19baecb1f2fee73a49451212832eef8c2a427",
+    "assets/fbk-scripts/tests/test_uninstall_confinement.py": "7496ebcbe30c66095337c25acd12ad1fca276d288edf8c439cb61abd59009ce8",
+    "assets/fbk-scripts/tests/test_workflow_acceptance_drift.py": "5c13f7d50dd5b9242ec29795442322efbcd0b81d8d9681077deb34f4c63b91bc",
+    "assets/fbk-scripts/tests/test_workflow_accepted_review_handoff.py": "e85dbfd9b2fdbc4d92ed46bf56b797a5e01349a2d881cd4f367694636b78d83d",
+    "assets/fbk-scripts/tests/test_workflow_command_interrupt.py": "7e1e041c3505fe6e215de7a1041c2c2c064c4ae7f995edeec36aad20b19f213c",
+    "assets/fbk-scripts/tests/test_workflow_commands.py": "dfdf28eecbd180a5c832a93be2278bd67cf2c42356ccdd64667cb650e1b096d6",
+    "assets/fbk-scripts/tests/test_workflow_council_execution.py": "932fb47fd63ec5f50e9cb9a140ff0d3e33be0ff96631a1c5630876be738121e7",
+    "assets/fbk-scripts/tests/test_workflow_dependency_lineage.py": "d9c57f75c43c0a08ac40fd1fc8d361329acce302ee787d9d14a89c6335ca5153",
+    "assets/fbk-scripts/tests/test_workflow_handoff.py": "0f8e5bdc292b266529123612f71a18faa58314dc41d82d95372ece3dcfdddc10",
+    "assets/fbk-scripts/tests/test_workflow_handoff_integration.py": "7d5548ca4b2d83bca5846c44136a7f5bb91c9af622b42fd64b546282cde3c43d",
+    "assets/fbk-scripts/tests/test_workflow_improvement.py": "3d9854e93066eb582ef2a81eec1582ff184db0ed4437f8c595412c918d341452",
+    "assets/fbk-scripts/tests/test_workflow_investigations.py": "647762592604d756e6bdc89e00b6045637086a4beeff1e4014bafee4e076b29b",
+    "assets/fbk-scripts/tests/test_workflow_late_remediation.py": "9e9d9cdfea50c8a56100bbda7a0e1e8ed37543145bbd9ef6c756fbe6a52f9f75",
+    "assets/fbk-scripts/tests/test_workflow_lifecycle.py": "63530bdaba2d634f082751f632b8a63b90213095e9dd3ae5162948466589fe7a",
+    "assets/fbk-scripts/tests/test_workflow_managed_investigations.py": "f8031749d5d8090efa3e945dba79844f355a971de3572559f28825fe52959143",
+    "assets/fbk-scripts/tests/test_workflow_native_result_shapes.py": "3ff8d718ff21554aed55ff605c7d46c132766ad212299f5084101303d35d89b0",
+    "assets/fbk-scripts/tests/test_workflow_observability_integration.py": "dc6de1c17120fc3914e1cebb3f14a6d72485974f253746a289f82575c401007c",
+    "assets/fbk-scripts/tests/test_workflow_parent_recovery.py": "c5114f48666327504d86279e489e83184df361ece2b86cd6a0563f4d6ea1f06e",
+    "assets/fbk-scripts/tests/test_workflow_phase_handoff.py": "e624eaa4affecee21c4a223e477914f4fd0b7f48f855f2f8f1de38eab888905a",
+    "assets/fbk-scripts/tests/test_workflow_remediation_verification.py": "a44431f16a2b189bb5f8c8553b9a72812ba17279b10a37fed8f2e1483ad7d838",
+    "assets/fbk-scripts/tests/test_workflow_repairs.py": "3842800d4be77331edc0daca75cb232e0111312516c9910ea21ebb2488c5aff9",
+    "assets/fbk-scripts/tests/test_workflow_required_task_completion.py": "e09884bb1331582d0cc21b859f020ed5f28c3fc376ec0e149fd5e4200305c98d",
+    "assets/fbk-scripts/tests/test_workflow_retrospective.py": "4114ccfc579c8ab5131eaf7249ce1e507f9c12a5dfa3fbf67b565ae00c5c82d3",
+    "assets/fbk-scripts/tests/test_workflow_review.py": "4e4c4e7c30ecfb760da7ea54c20d691a83976cf208223120603c490921c58e6e",
+    "assets/fbk-scripts/tests/test_workflow_review_budget.py": "5541f6711ded7f04ee39b1f1d3a3d1248020e6f60b52dc7691712d1b750548a4",
+    "assets/fbk-scripts/tests/test_workflow_review_completion.py": "18660a3cc17451f03f4cfaaaf6d17f30f5c1cf1cb74d723cceaed0d15fc19884",
+    "assets/fbk-scripts/tests/test_workflow_review_contributors.py": "ddc7659d68d9fdacae2caad6658227aab4f627f8ce219d98ae63eac4d8fe0d71",
+    "assets/fbk-scripts/tests/test_workflow_review_escalation.py": "433d4a75a47370c513e498c881f7a9f1a0602ba1462f60298159dcc6918bd145",
+    "assets/fbk-scripts/tests/test_workflow_review_failure_diagnostics.py": "6a2c935df6e0f8d76d742c9a46b18901ad63a32a40906a5951ee5e98b63d99f9",
+    "assets/fbk-scripts/tests/test_workflow_review_handoffs.py": "2eb7c3d5327e8a95ea1a25b3e4500d47cf53d08643cffdd79ad563c3e206a587",
+    "assets/fbk-scripts/tests/test_workflow_review_provenance.py": "3c6d7134579fabd1d70fc07fb4296915aff24f162f0a68f9d6eaa46aa7ba1fb5",
+    "assets/fbk-scripts/tests/test_workflow_review_rounds.py": "7037a51b112ebca0415dc10534209e05f62a820d116e840e55c15b2d7456b121",
+    "assets/fbk-scripts/tests/test_workflow_review_sources.py": "ced4e21942b0cd7075b7689b46df3123cfba998f8aa1ad1e2ec0a97947a8e209",
+    "assets/fbk-scripts/tests/test_workflow_task_checks.py": "98eb8a14a8cfc2445f17377d45614b50c40cb1a51b2bdf4a7b3cff95a1d2990c",
+    "assets/fbk-scripts/tests/test_workflow_telemetry.py": "4d7ab4471e30c547af41ef226f84d9091d918242adb13b4d11e45b0ba037e76e",
+    "assets/fbk-scripts/tests/test_workflow_test_preparation.py": "4b83be0b9fcf5f08b9c99a58a4080228714fe5b4a1c253561e2097ff7ebafc0c",
+    "assets/fbk-scripts/uv.lock": "436c6e6615598164cbe1c5732294e88647a05cff2dbd8a30d4452be82f278afd",
+    "assets/settings.json": "3d93b56b730fab0c1b14499876f0468e155424108f11b24c91563c8f78c5dd0b",
+    "assets/skills/fbk-breakdown/SKILL.md": "7faeb96e23ab50395299e0b504af7d23573722b9257ed9de258510bb2c15f5c0",
+    "assets/skills/fbk-code-review/SKILL.md": "d08cf58329f876479ddfa4ba126ad93447bdf3660bf61fb898ad767d9053fc04",
+    "assets/skills/fbk-context-asset-authoring/SKILL.md": "a4b800f1ed12102e486bb35bec7b6c5958d2593ac7e718d1178f276536f85ab5",
+    "assets/skills/fbk-council/SKILL.md": "4b8564dfefdaefc22731aac3cf6ea1521ff3b746a57bad95050a279d2b279c73",
+    "assets/skills/fbk-council/references/consultation.md": "a0ddbfa8d8dd8c94124fc673f079062056018abc64d4cc07779b39a7f7581be9",
+    "assets/skills/fbk-cross-model-review/SKILL.md": "ad7fcd38ebf71c15bec1b3b11f82cf5f247df6d12da9bd37e6854d3f403dd8d1",
+    "assets/skills/fbk-cross-model-review/references/cross-model-review-guide.md": "7b4d0358427bf70cbd671341b529cd733dbb8b6708274bc59cab2043991401d9",
+    "assets/skills/fbk-design/SKILL.md": "2fe2a4137f67de703bce67827c5be73d6fc447559d8fb25fce54372abdae9a6e",
+    "assets/skills/fbk-doc-reconcile/SKILL.md": "7a37fbc01f427b6c460e78db931a0af3e03d1585908c89ab56a4966af14379b1",
+    "assets/skills/fbk-fresh-eyes/SKILL.md": "443ec9782a92410d4c87a6539e3246c129bb6eecbc937a08faec986f70e2929c",
+    "assets/skills/fbk-grilling/SKILL.md": "380eabdb7a1d40088d530a498b134bfdba501e191b1b2eb08445d75a2a62a324",
+    "assets/skills/fbk-implement/SKILL.md": "024b5d4b92f37996f92a9f31adc41d06a2143124819c4fdfca59c4fa4f79efbf",
+    "assets/skills/fbk-improve/SKILL.md": "b2fdcfa168c1fe71bf2d610a91e9b379327bade83f7cb8021f52778cbbb81562",
+    "assets/skills/fbk-intent/SKILL.md": "83b34577589d7aea0a55f4e797d17b6c7d3af0dca66218738b8a885541c33507",
+    "assets/skills/fbk-quality-scan/SKILL.md": "1d204c34e2f748f95f84815d367ab89cf6c830f5e381b741a8ef33b352070fac",
+    "assets/skills/fbk-spec-review/SKILL.md": "c75a022116ee475dc82eb3ee6b1b1715539799e776c9a5a701aee4ad86ee2a41",
+    "assets/skills/fbk-spec/SKILL.md": "c0e91564c1bc98c2770973a6c8e1c122d2c65c6f908ff11cbe4f95a007e9001d",
+    "assets/skills/fbk-test-review/SKILL.md": "fbec779c66887cd910d42049863fbea68d86530dbc97e17d674e7cda2bba8715",
+    "benchmark/README.md": "70a762f6a7c943677df7c546d5fbb85ac0a2a19b73fe24d491cdcda74e16e5bd",
+    "benchmark/code-review/README.md": "5648973d069342f7ed6510310bec462e24b992929912e2da07338c584eb74ec8",
+    "benchmark/code-review/aggregate_consensus.py": "d206633852b65226da1db2342df9ea9a0263e714bc5bded01f7e56a0e6a134f9",
+    "benchmark/code-review/aggregate_judge.py": "9a293b0babcaa96cc8eb8db46085f60f74073743056b2f25dafe16e211d24d04",
+    "benchmark/code-review/aggregate_tokens.py": "4d75065a7a1a957266d6939fd98a5f16ddbb1d15fdccf65098b739e6467bf473",
+    "benchmark/code-review/benchmark-prompt-diff.md": "9d050da1fbab8c781f4f1dabb2a8a434036540257f15047c8aa15b935885d3b2",
+    "benchmark/code-review/benchmark-prompt-fullrepo.md": "81b57b189b4aa50152a05283bafd8048987eb4692f57e3f1a944272e7ca57658",
+    "benchmark/code-review/clone_repos.py": "50168b413aede2076b3fd40ce5a693f411f735018c56bca2042e57e008aac54a",
+    "benchmark/code-review/extract_candidates.py": "f752b07fc903fe36da9180c3a735ff87a9469c5b578e27e857a4834e8630747d",
+    "benchmark/code-review/fetch_pr_shas.py": "7563a86765b946a777e88c364741361309e38e5cbf9ac4c8490223e2707dbaf1",
+    "benchmark/code-review/inject_results.py": "7ad5cc3f08cd4d14d0a4be597259a430856845e5a217c7e76611ef0baef5944e",
+    "benchmark/code-review/judge_anthropic.py": "f81f0c530ea807c15f6dd770d402ba408daa5be921850c1403201086addc3825",
+    "benchmark/code-review/judge_consensus.py": "44c6db73dcd28600a54febd5390a164ecba812253fd844056f88395d47cbb429",
+    "benchmark/code-review/manifest.json": "6e5e129225c44c69f317a0167d382ccd42b746c1a9b2f2cf5b4a1f1c7e85dba4",
+    "benchmark/code-review/run_reviews.sh": "11042b4a5b8ae6fca614ee208b8143662835831d5247c74bc3afef1e60ab192a",
+    "benchmark/remediation-review/README.md": "0ed052a17dea4c5e9f8900826f6b24438ff05fcb5f98ddf9e0b3e43a083aa13f",
+    "benchmark/remediation-review/evaluate.py": "272cffefdbff5340aefdb88c02f6a079f6920ffd641e1888ed46ee73356bab14",
+    "benchmark/remediation-review/tests/test_evaluation.py": "a4dae1b04a720cb53a9e6318f4acf88a0a7bdaa612e137ab87fbfea39800b7b9",
+    "benchmark/structural-review/README.md": "8abc03f840a682a742c950e8fefae6dce6a47a1ac6da0fb883133cd3074df630",
+    "benchmark/structural-review/evaluate.py": "24fabf7b085653257d4cd867733cd871d7aea5ca148ecb6efed5f115e8ad327e",
+    "benchmark/structural-review/tests/test_scoring.py": "cc811d8dfa00d9b9143554c97b214bebb9e790e1ffbe91950fa1953ff220c449",
+    "benchmark/workflow/handoff-eval.py": "7f2c523aa0fdcc1f66c2991e62a5947fba4a61db78d7878ca1ec3bb5880dd68c",
+    "benchmark/workflow/live-smoke.py": "2377d13fa2c2a4c155a1cb1099ec6c7dafaabaf6ccc06fb6b7936001cabdca78",
+    "benchmark/workflow/mutation-check.py": "2b4fe54ff4c467c90277a83b2af766d8cfa9e5efd04a1563aaa3295a9e03f7f3",
+    "benchmark/workflow/tests/test_handoff_eval.py": "52831ed84be541038bd9c852811877afc7c589c8e24b3fe0eacf246dd9046228",
+    "benchmark/workflow/tests/test_live_smoke.py": "6c651af5f3095a6a94104a5a9e30aa9699225c59c5f3bc1d5555b5344d214a31",
+    "benchmark/workflow/tests/test_mutation_runner.py": "7a15b06d21facbed13da25fda3fa0a34fff12b2c9367492b2789dc4d8d889805",
+    "installer/install.sh": "7c4cb601aebce8600ba4c059ff1bf73b27dab79efe68749e05cd8d97f57815b8",
+    "installer/merge-settings.py": "0ecf4e93ef2a437994e1c3b75b538b4b76b49ad99cdc4fbf3e966dc7d156beb6"
+  },
+  "commands": {
+    "ordinary_python": "python3 tests/run-tests.py --suite python --output-dir /tmp/fbk-final-settled-python",
+    "evaluators": "assets/fbk-scripts/.venv/bin/python -m pytest benchmark/remediation-review/tests benchmark/structural-review/tests -q",
+    "installer": "python3 tests/run-tests.py --suite installer --output-dir /tmp/fbk-final-settled-installer"
+  },
+  "initial_baseline": {
+    "source_passed": 472,
+    "source_failures": [
+      {
+        "class": "tests.test_workflow_acceptance_drift",
+        "name": "test_post_close_changes_are_explained_without_rewriting_acceptance",
+        "message": "fbk.workflow.store.WorkflowError: Complete every reviewed implementation task before closing; unassigned tasks: cancel"
+      },
+      {
+        "class": "tests.test_workflow_acceptance_drift",
+        "name": "test_deleted_and_new_scoped_files_are_distinct_from_unscoped_candidates",
+        "message": "fbk.workflow.store.WorkflowError: Complete every reviewed implementation task before closing; unassigned tasks: cancel"
+      },
+      {
+        "class": "tests.test_workflow_acceptance_drift",
+        "name": "test_historical_acceptance_reports_candidates_without_claiming_they_are_new",
+        "message": "fbk.workflow.store.WorkflowError: Complete every reviewed implementation task before closing; unassigned tasks: cancel"
+      },
+      {
+        "class": "tests.test_workflow_acceptance_drift",
+        "name": "test_discovery_excludes_caches_and_does_not_follow_external_symlinks",
+        "message": "fbk.workflow.store.WorkflowError: Complete every reviewed implementation task before closing; unassigned tasks: cancel"
+      },
+      {
+        "class": "tests.test_workflow_acceptance_drift",
+        "name": "test_bounded_handoff_keeps_drift_warning_and_retrieval_when_paths_do_not_fit",
+        "message": "fbk.workflow.store.WorkflowError: Complete every reviewed implementation task before closing; unassigned tasks: cancel"
+      },
+      {
+        "class": "tests.test_workflow_lifecycle",
+        "name": "test_implementation_requires_real_passing_check_and_unchanged_tests",
+        "message": "AssertionError: Regex pattern did not match.\n  Expected regex: 'Verification failed'\n  Actual message: 'Complete every reviewed implementation task before closing; unassigned tasks: cancel'"
+      },
+      {
+        "class": "tests.test_workflow_telemetry",
+        "name": "test_verification_failure_is_final_without_spending_review",
+        "message": "AssertionError: Regex pattern did not match.\n  Expected regex: 'Verification failed'\n  Actual message: 'Complete every reviewed implementation task before closing; unassigned tasks: cancel'"
+      }
+    ],
+    "benchmark_passed": 53,
+    "benchmark_subtests_passed": 24,
+    "benchmark_errors": [
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_real_cli_and_checks_complete_with_fake_review_host"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[missing-acceptance]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[failed-reader]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[missing-reader]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[blocker]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[failed-round]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[stale-artifact]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[missing-artifact]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[missing-lock]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[changed-test]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[red-import-error]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[green-zero-tests]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[green-failed]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[missing-green]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[status-open]"
+      },
+      {
+        "class": "benchmark.workflow.tests.test_live_smoke",
+        "name": "test_false_success_evidence_is_rejected[report-omits-events]"
+      }
+    ],
+    "status": "Resolved through approved fixture and harness migrations; retained as original red evidence"
+  },
+  "independent_probes": {
+    "provenance": {
+      "path": "/tmp/fbk-provenance-independent-zst8nj_v/.fbk/runtime/probe/final-snapshot-result.json",
+      "result": {
+        "manual_import_blocked": true,
+        "runtime_completed": true,
+        "tampered_response_blocked": true,
+        "charged_seconds": 0.024644166987854987,
+        "controlled_host": true,
+        "paid_model": false,
+        "source_hashes": {
+          "assets/fbk-scripts/fbk/workflow/review_rounds.py": "6ae2d3ea8323269a41b6d9c902a1d5c1a80fa89c9e9e5114cc4efe9d5a3e53c8",
+          "assets/fbk-scripts/fbk/workflow/remediation_verification.py": "c528d2ade4ce7af0b3d5298917be3afbb46481e2b352514037c2a616b750547f",
+          "assets/fbk-scripts/fbk/workflow/review_contributors.py": "f43970bb9e31cab585d53a74912c7cfb7df3ba1b9ca2823551cf4cc25afa7a44"
+        }
+      }
+    },
+    "late_registration": {
+      "path": "/tmp/fbk-late-independent-68kqed83/.fbk/runtime/independent-result.json",
+      "result": {
+        "root": "/tmp/fbk-late-independent-68kqed83",
+        "scope_expansion_blocked": true,
+        "pre_fix_tampering_blocked": true,
+        "fresh_verifier_required": true,
+        "registration_preserved_budget": true,
+        "budget_before": 0.007000000000005002,
+        "budget_after": 1.007000000000005,
+        "controlled_verifier_launch": [
+          {
+            "argv": [
+              "claude",
+              "-p",
+              "--output-format",
+              "json",
+              "--tools",
+              "Read,Glob,Grep,Bash,Write,Edit,WebFetch,WebSearch",
+              "--allowedTools",
+              "Read,Glob,Grep,Bash,Write,Edit,WebFetch,WebSearch",
+              "--permission-mode",
+              "dontAsk",
+              "--strict-mcp-config",
+              "--mcp-config",
+              "{\"mcpServers\":{}}",
+              "--settings",
+              "{\"disableAllHooks\":true}",
+              "--setting-sources",
+              "",
+              "--max-turns",
+              "12",
+              "--no-session-persistence"
+            ],
+            "timeout": 299.993,
+            "purpose": "independent-verification"
+          }
+        ],
+        "complete_after_verifier": true,
+        "correct_source_preserved": true,
+        "approval_events": [],
+        "source_hashes": {
+          "assets/fbk-scripts/fbk/workflow/review_rounds.py": "6ae2d3ea8323269a41b6d9c902a1d5c1a80fa89c9e9e5114cc4efe9d5a3e53c8",
+          "assets/fbk-scripts/fbk/workflow/remediation_verification.py": "c528d2ade4ce7af0b3d5298917be3afbb46481e2b352514037c2a616b750547f",
+          "assets/fbk-scripts/fbk/workflow/review_contributors.py": "f43970bb9e31cab585d53a74912c7cfb7df3ba1b9ca2823551cf4cc25afa7a44"
+        }
+      }
+    },
+    "retry_evidence": {
+      "path": "/tmp/fbk-retry-evidence-recheck-6qpx539m/.fbk/runtime/recheck.json",
+      "result": {
+        "accepted_phase": "spec",
+        "retry_received_evidence": true,
+        "attempt_counts": [
+          1
+        ],
+        "all_resolved": true
+      }
+    },
+    "interrupt_cleanup": {
+      "path": "/tmp/fbk-interrupt-cleanup-recheck-fe6g6ajr/result.json",
+      "result": {
+        "driver_exit": -2,
+        "child_wrote_after_interrupt": false,
+        "record_marked_active": false,
+        "charged_seconds": 0.26487479102797806
+      }
+    }
+  }
+}

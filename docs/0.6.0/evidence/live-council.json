@@ -1,0 +1,444 @@
+{
+  "fixture": "cancellation",
+  "phase": "spec",
+  "selection": {
+    "mode": "council",
+    "members": [
+      "architect",
+      "guardian"
+    ],
+    "id": "8733bf43-8a1f-4845-921b-ba4470b98aea",
+    "reason": "Use two relevant perspectives to validate the user-authorized council path.",
+    "source": "unit"
+  },
+  "round": {
+    "revision": "9edc25bc013a7137841377910ef0c2f9714a7b1c7df8ef9d0f33e30d87bca8ed",
+    "at": "2026-09-07T06:42:55.821+00:00",
+    "operation": "b0aa3865-7082-4df5-bd0b-8c79cd0cbb6e",
+    "result": {
+      "shape": "council",
+      "members": [
+        "architect",
+        "guardian"
+      ],
+      "readers": [
+        {
+          "review": {
+            "summary": "Architect review of .fbk/cancellation/{prd.md,scope.json,spec.md}, read alongside the delivered jobs.py, tests/test_jobs.py, README.md and the red/green runs in state.json. No blockers. spec.md:2 faithfully translates prd.md:2 on every observable criterion: zero-argument release callable, cancelled initially False, state recorded before release is invoked, first call invokes release exactly once and returns True on normal return, later calls return False without invoking release, exception propagates unchanged with cancellation retained and no retry, per-instance state, no thread-safety or async guarantee. The reentrancy clause follows from the record-before-invoke ordering, not new scope. I traced each mutation in the must-fail list to a specific assertion rather than accepting the list: no-op cancel and double release fail assertEqual(calls, [True]); state recorded after the callback fails the in-callback observation (calls would be [False]); a swallowed exception fails assertIs on exception identity; the rollback mutant (set True, reset in except) fails assertFalse(job.cancel()) and assertEqual(calls, [1]); genuine class-level state fails assertFalse(second.cancelled). Release arity is pinned implicitly since every fake is zero-argument. spec.md:3's delivery list matches scope.json exactly, and jobs.py exposes cancelled read-only, closing the writability question earlier phases left open. Remaining findings are portability and pinning refinements.",
+            "findings": [
+              {
+                "title": "scope.json pins a machine-specific interpreter path that contradicts the documented run command",
+                "location": ".fbk/cancellation/scope.json:1",
+                "evidence": "The sole check is [\"assets/fbk-scripts/.venv/bin/python3\", \"-m\", \"unittest\", \"discover\", \"-s\", \"tests\", \"-v\"], an absolute path under a home directory that does not exist in the current environment (home is /home/dev). Both spec.md:3 and README.md:2 instead document `python -m unittest discover -s tests -v`. The unit has no third-party dependencies by prd.md:3, so a virtualenv interpreter buys nothing, while the hardcoded path makes the recorded acceptance evidence non-reproducible on any other machine. A suggestion because the check did run in the authoring environment (state.json records both red and green runs) and the documented command is the one a human would use.",
+                "remedy": "Use a relocatable interpreter in scope.json checks (e.g. \"python3\" or sys.executable resolved at run time) so the recorded verification command matches the one spec.md and README.md publish and can be re-run outside the authoring machine.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "The documented discover invocation depends on CWD injection rather than an explicit top-level directory",
+                "location": ".fbk/cancellation/spec.md:3",
+                "evidence": "`discover -s tests` with no `-t` sets the top-level directory to tests/, so `from jobs import Job` in tests/test_jobs.py resolves only because `python -m` prepends the current working directory to sys.path. That is why spec.md:3 says \"from the repository root\" \u2014 the instruction is load-bearing. The contract breaks silently under any runner that does not inject CWD (a direct unittest entry point, an IDE runner with a different working directory, a wrapper invoked from elsewhere), producing a ModuleNotFoundError that looks like a packaging defect rather than a wrong CWD.",
+                "remedy": "Specify `python -m unittest discover -s tests -t . -v` in spec.md:3, README.md, and scope.json checks so the repo root is the explicit top-level directory and the import no longer depends on the caller's working directory.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "README content obligation from the PRD is carried into the spec only as a filename",
+                "location": ".fbk/cancellation/spec.md:3",
+                "evidence": "prd.md:2 states a content obligation \u2014 \"Document the synchronous contract and its limitations in README.md\" \u2014 but spec.md carries README.md forward only inside \"Only jobs.py, tests/test_jobs.py, and README.md are delivery files\" and never says what it must contain. scope.json's single check runs unittest and cannot verify prose, so nothing in the artifact set constrains the document. The delivered README.md:2 does cover the contract and the synchronous/no-thread-safety limitation, so no defect materialized; the gap is that the spec would equally have accepted a one-line usage note dropping the limitations \u2014 exactly where the deliberately excluded async and thread-safety concerns were meant to land.",
+                "remedy": "Add a clause to spec.md:3 naming the README obligations: the Job(release)/cancel()/cancelled contract plus explicit limitations (no thread safety, no async support, at-most-once release scoped to a single instance on a single thread).",
+                "severity": "suggestion"
+              },
+              {
+                "title": "Acceptance enumeration never exercises a third cancel, so at-most-once is not pinned past the second call",
+                "location": ".fbk/cancellation/spec.md:3",
+                "evidence": "spec.md:2 says \"Every subsequent call returns False\", but the enumeration in spec.md:3 asks only to \"check both return values over repeated calls\", and the locked suite calls cancel at most twice on the success path (tests/test_jobs.py:9-12). A mutant with a two-state counter \u2014 release on call 1, False on call 2, release again on call 3 \u2014 satisfies every enumerated assertion while violating the at-most-once guarantee the unit exists to provide. A suggestion rather than a blocker because such an implementation is contrived and the normative sentence \"a callback called twice ... must fail these tests\" still binds it, but the enumeration alone does not force a discriminating assertion.",
+                "remedy": "State in spec.md:3 that the success-path test cancels at least three times, asserting False on every call after the first and that the recorded invocation count remains exactly one throughout.",
+                "severity": "suggestion"
+              }
+            ]
+          },
+          "seconds": 135.146,
+          "usage": {
+            "claude-haiku-4-5-20251001": {
+              "inputTokens": 1217,
+              "outputTokens": 16,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0,
+              "webSearchRequests": 0,
+              "costUSD": 0.001297,
+              "contextWindow": 200000,
+              "maxOutputTokens": 32000,
+              "thinkingTokens": 0,
+              "canonicalModel": "claude-haiku-4-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            },
+            "claude-opus-5": {
+              "inputTokens": 14,
+              "outputTokens": 11376,
+              "cacheReadInputTokens": 116797,
+              "cacheCreationInputTokens": 37488,
+              "webSearchRequests": 0,
+              "costUSD": 0.7177484999999999,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 64000,
+              "thinkingTokens": 3592,
+              "canonicalModel": "claude-opus-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "reported_cost_usd": 0.7190455,
+          "stage": "independent",
+          "member": "architect"
+        },
+        {
+          "review": {
+            "summary": "Spec faithfully carries the PRD's observable contract (first cancel \u2192 release once + True, later calls \u2192 False, cancelled set before release, exception propagates unchanged with no retry, per-instance state, reentrancy returns False, no thread/async guarantee), and the delivered jobs.py/tests/README implement and exercise it. I verified each mutant the spec enumerates at spec.md:3 is genuinely rejected by tests/test_jobs.py rather than merely covered: no-op cancel and double-release fail `assertEqual(calls, [True])`; \"cancellation recorded after callback\" fails the in-callback `job.cancelled` observation and would recurse in the reentrancy test; swallowed/retried exceptions fail test_failure_propagates_without_retry; class-level state fails test_instances_do_not_share_state. No blockers. Remaining items are boundary-tightening suggestions: return values are asserted only for truthiness, so a `return None` slip on the repeat path passes; the scope.json check pins a machine-specific interpreter path diverging from the documented command; and `cancelled` writability remains unpinned (already noted in the intent and spec review rounds, still unaddressed in spec.md:2).",
+            "findings": [
+              {
+                "title": "Return-value assertions test truthiness, so a plausible `return None` on the repeat path still passes",
+                "location": "tests/test_jobs.py:10,25,32 against spec.md:2",
+                "evidence": "The contract is stated in terms of concrete booleans: \"On the first call it invokes release exactly once and returns True... Every subsequent call returns False\" (spec.md:2), and the acceptance list requires the tests \"check both return values over repeated calls\". The tests use assertTrue/assertFalse, which only assert truthiness. Concrete scenario: an implementer writes the already-cancelled branch as a bare `return` (a very common slip) instead of `return False`. `assertFalse(job.cancel())` at line 10, `assertFalse(job.cancel())` at line 25, and `assertEqual(nested, [False])`... the last one does catch it, but the two direct call sites do not \u2014 `assertFalse(None)` passes. Likewise `assertTrue(job.cancel())` passes for any truthy value such as the released resource or 1, so an implementation returning the release() result instead of True is not rejected on the success path. The reentrancy test's assertEqual is the only place identity is effectively enforced, and it covers only one of the three call sites.",
+                "remedy": "Have the spec's acceptance enumeration require identity assertions on return values (assertIs(True, ...) / assertIs(False, ...)) rather than truthiness, and update tests/test_jobs.py lines 9-10, 31 and 25 accordingly, so a bare `return` or a truthy passthrough is rejected.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "scope.json pins a machine-specific interpreter path that diverges from the documented run command",
+                "location": ".fbk/cancellation/scope.json:1 vs spec.md:3 and README.md:2",
+                "evidence": "scope.json's sole check is [\"assets/fbk-scripts/.venv/bin/python3\", \"-m\", \"unittest\", \"discover\", \"-s\", \"tests\", \"-v\"], while spec.md:3 and README.md:2 both instruct \"Run `python -m unittest discover -s tests -v` from the repository root.\" On any machine without that absolute venv path (the current environment's home is /home/dev, not <home>) the recorded check cannot execute, so the one automated gate on the whole unit is not reproducible by another contributor following the documented instructions. Nothing else in the scope verifies behaviour, so a non-runnable check leaves the contract unguarded outside the original author's machine.",
+                "remedy": "Record the check with a portable interpreter (e.g. \"python3\" or sys.executable resolved at run time) so the executed gate matches the command the spec and README tell contributors to run.",
+                "severity": "suggestion"
+              },
+              {
+                "title": "Writability of `cancelled` is still unstated in the spec after being raised in two prior review rounds",
+                "location": ".fbk/cancellation/spec.md:2",
+                "evidence": "Both the intent-phase and spec-phase reviews recorded in validation.json flagged that neither prd.md:2 nor spec.md:2 says whether `cancelled` may be assigned from outside. spec.md:2 still says only \"`cancelled` is initially False\" and \"`cancel()` marks this job cancelled\". The delivered jobs.py:8-10 happens to use a setter-less @property, so `job.cancelled = False` raises AttributeError \u2014 the desired behaviour \u2014 but no test asserts this and the spec does not require it, so a later refactor to a plain attribute would satisfy the written contract and every test while enabling `job.cancel(); job.cancelled = False; job.cancel()` to drive the duplicate release the unit exists to prevent. The mutation list at spec.md:3 does not include this case.",
+                "remedy": "State in spec.md:2 that `cancelled` is read-only and mutated solely by `cancel()`, add it to the mutation list at spec.md:3, and add a test asserting `with self.assertRaises(AttributeError): job.cancelled = False` so the guarantee is pinned rather than incidental.",
+                "severity": "suggestion"
+              }
+            ]
+          },
+          "seconds": 95.457,
+          "usage": {
+            "claude-haiku-4-5-20251001": {
+              "inputTokens": 1218,
+              "outputTokens": 16,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0,
+              "webSearchRequests": 0,
+              "costUSD": 0.001298,
+              "contextWindow": 200000,
+              "maxOutputTokens": 32000,
+              "thinkingTokens": 0,
+              "canonicalModel": "claude-haiku-4-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            },
+            "claude-opus-5": {
+              "inputTokens": 10,
+              "outputTokens": 6771,
+              "cacheReadInputTokens": 36076,
+              "cacheCreationInputTokens": 18089,
+              "webSearchRequests": 0,
+              "costUSD": 0.36825300000000005,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 64000,
+              "thinkingTokens": 3808,
+              "canonicalModel": "claude-opus-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "reported_cost_usd": 0.369551,
+          "stage": "independent",
+          "member": "guardian"
+        },
+        {
+          "review": {
+            "summary": "Verified all seven candidates against .fbk/cancellation/{prd.md,spec.md,scope.json}, the delivered jobs.py / tests/test_jobs.py / README.md, and the recorded phase history in state.json. No blockers confirmed; the implementation matches spec.md:2 clause for clause (state recorded before release, single release, propagate-without-retry, per-instance state, reentrancy guard) and README.md:2 does discharge the prd.md:2 documentation obligation. Central evidentiary correction: the interpreter pinned in scope.json:1 exists and is readable in this environment, and state.json:464-478 and :526-539 record it running against this checkout (red exit 1 with four behavioral failures, green exit 0). So the \"path does not exist / check cannot execute\" premise is false; only the divergence from the documented `python -m unittest discover -s tests -v` is real. That splits the two twin findings: architect:1 concedes the check ran and rests on non-relocatability (supported), guardian:2 asserts it cannot execute here (refuted). Separately, guardian:1's headline case (`return` instead of `return False`) IS caught by tests/test_jobs.py:32's assertEqual(nested, [False]); its surviving point is that assertTrue at lines 9, 31, 38, 40 accepts any truthy value. Uncited caveat on architect:2's remedy: tests/ has no __init__.py, so `-t .` would likely fail on Python 3.11+.",
+            "assessments": [
+              {
+                "finding_id": "architect:1",
+                "disposition": "supported",
+                "evidence": "scope.json:1 records the sole check as [\"assets/fbk-scripts/.venv/bin/python3\", \"-m\", \"unittest\", \"discover\", \"-s\", \"tests\", \"-v\"], while spec.md:3 and README.md:2 both publish `python -m unittest discover -s tests -v`. The divergence and the non-relocatable absolute path are verified. One sub-claim is refuted: the path DOES exist in this environment (I read the 6.5 MB binary at that exact path), and state.json:464-478 (red, exit 1) and :526-539 (green, exit 0) show it executing against this checkout at /tmp/firebreak-live-lifecycle-xnt35o8m. The finding already concedes the check ran in the authoring environment, so the reproducibility point stands as a suggestion; prd.md:3 confirms no third-party deps, so the venv buys nothing."
+              },
+              {
+                "finding_id": "architect:2",
+                "disposition": "supported",
+                "evidence": "tests/test_jobs.py:2 is `from jobs import Job`, and Glob shows tests/ contains only test_jobs.py (no __init__.py), so `discover -s tests` sets top_level_dir to tests/ and the import resolves only via the CWD that `python -m` prepends to sys.path. spec.md:3's \"from the repository root\" is therefore load-bearing, exactly as the finding states, and the accepted spec-phase review in state.json:211 independently records the same mechanism. Caveat on the remedy, not the finding: with no tests/__init__.py, `-t .` requires `tests` to be importable as a package, which Python 3.11+ (namespace-package discovery removed) will likely reject; the remedy needs tests/__init__.py added alongside it."
+              },
+              {
+                "finding_id": "architect:3",
+                "disposition": "supported",
+                "evidence": "prd.md:3 states the content obligation \"Document the synchronous contract and its limitations in README.md\"; spec.md:3 mentions README.md only in \"Only jobs.py, tests/test_jobs.py, and README.md are delivery files\" and states no content requirement. scope.json:1's single check is a unittest run and cannot verify prose. The delivered README.md:2 does cover the contract plus \"no thread-safety guarantee, scheduling, or async support\", so no defect materialized \u2014 matching the finding's own suggestion severity. (Note the PRD sentence is on line 3, not line 2 as cited.)"
+              },
+              {
+                "finding_id": "architect:4",
+                "disposition": "supported",
+                "evidence": "spec.md:2 says \"Every subsequent call returns False\" but spec.md:3 asks only to \"check both return values over repeated calls\". tests/test_jobs.py:9-10 calls cancel exactly twice on the success path, and no other test exceeds two calls (line 25 is the post-exception second call; line 31 plus the nested call at line 30 are two). A two-state counter releasing on calls 1 and 3 would pass all four tests, so the enumeration alone does not force a discriminating third call. Correctly rated a suggestion: spec.md:3's normative \"a callback called twice ... must fail these tests\" still binds such an implementation."
+              },
+              {
+                "finding_id": "guardian:1",
+                "disposition": "supported",
+                "evidence": "Verified partly, with a correction the finding itself half-concedes. The headline scenario (bare `return` on the already-cancelled path) IS rejected by the suite: tests/test_jobs.py:30-32 records the reentrant return via assertEqual(nested, [False]), and [None] != [False]. What survives is real and uncorrected: assertTrue at lines 9, 31, 38 and 40 asserts only truthiness, so an implementation returning any truthy non-True value (e.g. `return 1` or `return self`) passes the whole suite despite spec.md:2's \"returns True\". Nothing in the suite pins identity on the success path. Suggestion-level, since spec.md:2 remains normative."
+              },
+              {
+                "finding_id": "guardian:2",
+                "disposition": "refuted",
+                "evidence": "The load-bearing claim \u2014 \"On any machine without that absolute venv path (the current environment's home is /home/dev, not <home>) the recorded check cannot execute\" \u2014 is contradicted by direct evidence: assets/fbk-scripts/.venv/bin/python3 exists and is readable in this environment (6.5 MB binary), and state.json:464-478 and :526-539 record that exact argv running against this checkout at /tmp/firebreak-live-lifecycle-xnt35o8m, producing the four-test red run (exit 1) and the green run (exit 0). The gate is therefore neither absent nor unguarded here. The residual true observation \u2014 scope.json:1's argv diverges from the `python -m unittest discover -s tests -v` published at spec.md:3 and README.md:2 \u2014 is the same point already carried by architect:1."
+              },
+              {
+                "finding_id": "guardian:3",
+                "disposition": "supported",
+                "evidence": "spec.md:2 states only \"`cancelled` is initially False\" and \"`cancel()` marks this job cancelled\", with nothing on external assignment, and spec.md:3's mutation list omits it. The prior rounds are confirmed, though recorded in state.json rather than validation.json (which is a CLI transcript): the intent review at state.json:94-99 (\"Mutability of the `cancelled` property is not pinned down\") and the spec review at state.json:281-285 (\"Writability of `cancelled` is still unpinned\"). jobs.py:8-10 uses a setter-less @property so `job.cancelled = False` raises AttributeError, but no test in tests/test_jobs.py asserts this, so the guarantee is incidental: a refactor to a plain attribute would satisfy spec.md and all four tests while enabling the duplicate release. Suggestion-level, as no defect exists in the delivered code."
+              }
+            ]
+          },
+          "seconds": 114.374,
+          "usage": {
+            "claude-haiku-4-5-20251001": {
+              "inputTokens": 3452,
+              "outputTokens": 16,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0,
+              "webSearchRequests": 0,
+              "costUSD": 0.0035320000000000004,
+              "contextWindow": 200000,
+              "maxOutputTokens": 32000,
+              "thinkingTokens": 0,
+              "canonicalModel": "claude-haiku-4-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            },
+            "claude-opus-5": {
+              "inputTokens": 14,
+              "outputTokens": 8507,
+              "cacheReadInputTokens": 122021,
+              "cacheCreationInputTokens": 38825,
+              "webSearchRequests": 0,
+              "costUSD": 0.6620054999999999,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 64000,
+              "thinkingTokens": 4548,
+              "canonicalModel": "claude-opus-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "reported_cost_usd": 0.6655374999999999,
+          "stage": "challenge"
+        },
+        {
+          "review": {
+            "summary": "I read prd.md, spec.md, scope.json, the delivered jobs.py / tests/test_jobs.py / README.md, and the recorded phase history in state.json. The implementation satisfies spec.md:2 clause by clause (cancelled set before release at jobs.py:15-16, single release, propagate-without-retry, per-instance state via instance attributes, reentrancy guard), and README.md:2 does discharge the prd.md:3 documentation obligation. No blockers. The decisive evidentiary point separating the two twin scope.json findings: assets/fbk-scripts/.venv/bin/python3 exists here (I read the ELF header directly), and state.json:464-478 / :526-539 record that exact argv running against this very checkout (tracebacks cite /tmp/firebreak-live-lifecycle-xnt35o8m/tests/test_jobs.py), red exit 1 with four behavioral failures then green exit 0. architect:1 concedes the check ran and rests on non-relocatability \u2014 supported. guardian:2 asserts the check \"cannot execute\" here \u2014 refuted on that load-bearing premise; its residual true point duplicates architect:1. guardian:1's headline (bare `return` on the repeat path) is caught by tests/test_jobs.py:32's assertEqual(nested, [False]); its surviving claim about assertTrue truthiness at lines 9/31/38/40 is verified. Caveat on architect:2's remedy, not its finding: tests/ has no __init__.py and the bytecode is cpython-311, so `-t .` would likely break discovery without adding one.",
+            "assessments": [
+              {
+                "finding_id": "architect:1",
+                "disposition": "supported",
+                "evidence": "Divergence verified: scope.json:1's sole check is [\"assets/fbk-scripts/.venv/bin/python3\",\"-m\",\"unittest\",\"discover\",\"-s\",\"tests\",\"-v\"], while spec.md:3 and README.md:2 both publish `python -m unittest discover -s tests -v`. The absolute home-directory path is non-relocatable, and prd.md:3 confirms no third-party dependencies, so the venv buys nothing. One sub-claim is wrong and should be dropped: the path DOES exist in this environment (I read the ELF binary at exactly that path), and state.json:464-478 / :526-539 show it executing against this checkout. The finding already concedes the check ran in the authoring environment, so the reproducibility argument survives intact at suggestion severity."
+              },
+              {
+                "finding_id": "architect:2",
+                "disposition": "supported",
+                "evidence": "tests/test_jobs.py:2 is `from jobs import Job`; Glob confirms tests/ holds only test_jobs.py and a __pycache__ (no __init__.py). With `discover -s tests` and no -t, top_level_dir becomes tests/, so the import of jobs resolves only because `python -m` prepends CWD to sys.path \u2014 making spec.md:3's \"from the repository root\" load-bearing, exactly as claimed. The same mechanism was independently noted in the recorded spec-phase review in state.json. Caveat on the remedy only: with no tests/__init__.py and CPython 3.11 (tests/__pycache__/test_jobs.cpython-311.pyc), `-t .` requires tests to be an importable package, so the remedy needs tests/__init__.py alongside it."
+              },
+              {
+                "finding_id": "architect:3",
+                "disposition": "supported",
+                "evidence": "prd.md:3 states the content obligation \"Document the synchronous contract and its limitations in README.md\" (the finding cites prd.md:2; the sentence is on line 3). spec.md:3 names README.md only in \"Only jobs.py, tests/test_jobs.py, and README.md are delivery files\" and imposes no content requirement, and scope.json:1's single check is a unittest run that cannot verify prose. The delivered README.md:2 does cover the contract plus \"no thread-safety guarantee, scheduling, or async support\", so no defect materialized \u2014 consistent with the finding's own suggestion severity."
+              },
+              {
+                "finding_id": "architect:4",
+                "disposition": "supported",
+                "evidence": "spec.md:2 says \"Every subsequent call returns False\" but spec.md:3 requires only \"check both return values over repeated calls\". No test exceeds two cancel calls on any instance: tests/test_jobs.py:9-10 (two), :22 and :25 (two), :30-31 (outer plus one nested). I traced a two-state mutant that releases on calls 1 and 3: it passes all four tests (nested=[False], calls=[True], calls=[1], ['first','second']), yet violates at-most-once. So the enumeration alone does not force a discriminating assertion. Correctly rated a suggestion, since spec.md:3's normative \"a callback called twice ... must fail these tests\" still binds such an implementation."
+              },
+              {
+                "finding_id": "guardian:1",
+                "disposition": "supported",
+                "evidence": "Supported in its surviving half, with the headline corrected. The named scenario \u2014 a bare `return` on the already-cancelled path \u2014 IS rejected: tests/test_jobs.py:30-32 captures the reentrant return value and asserts assertEqual(nested, [False]), and [None] != [False]. The finding half-concedes this mid-paragraph. What is verified and uncorrected: assertTrue at lines 9, 31, 38 and 40 asserts only truthiness, so an implementation returning any truthy non-True value (e.g. `return 1` or `return self`) passes the entire suite despite spec.md:2's \"returns True\"; nothing pins identity on the success path. Suggestion-level, as spec.md:2 remains normative and jobs.py:17 returns True."
+              },
+              {
+                "finding_id": "guardian:2",
+                "disposition": "refuted",
+                "evidence": "The load-bearing premise \u2014 \"On any machine without that absolute venv path (the current environment's home is /home/dev, not <home>) the recorded check cannot execute ... leaves the contract unguarded\" \u2014 is contradicted by direct evidence. I read assets/fbk-scripts/.venv/bin/python3 in this environment (valid ELF x86-64 binary), and state.json:464-478 and :526-539 record that exact argv running against this checkout \u2014 the red-run tracebacks cite /tmp/firebreak-live-lifecycle-xnt35o8m/tests/test_jobs.py with four behavioral failures (exit 1), followed by exit 0 green. The gate is neither absent nor unguarded here. The residual true observation (argv diverges from the command published at spec.md:3 and README.md:2) is the same point already carried by architect:1."
+              },
+              {
+                "finding_id": "guardian:3",
+                "disposition": "supported",
+                "evidence": "spec.md:2 states only \"`cancelled` is initially False\" and \"`cancel()` marks this job cancelled\", saying nothing about external assignment, and spec.md:3's mutation list omits it. The two prior rounds are confirmed, though recorded in state.json rather than validation.json (no validation.json exists in .fbk/): the intent-phase item \"Mutability of the `cancelled` property is not pinned down\" (state.json:94, :154) and the spec-phase item \"Writability of `cancelled` is still unpinned after the intent-phase review raised it\" (state.json:221, :281). jobs.py:8-10 uses a setter-less @property so `job.cancelled = False` raises AttributeError, but no test asserts this, making the guarantee incidental: a refactor to a plain attribute would satisfy spec.md and all four tests while enabling `job.cancel(); job.cancelled = False; job.cancel()` to double-release. Suggestion-level, as the delivered code is correct."
+              }
+            ]
+          },
+          "seconds": 74.443,
+          "usage": {
+            "claude-haiku-4-5-20251001": {
+              "inputTokens": 5324,
+              "outputTokens": 16,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0,
+              "webSearchRequests": 0,
+              "costUSD": 0.005404,
+              "contextWindow": 200000,
+              "maxOutputTokens": 32000,
+              "thinkingTokens": 0,
+              "canonicalModel": "claude-haiku-4-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            },
+            "claude-opus-5": {
+              "inputTokens": 16,
+              "outputTokens": 5817,
+              "cacheReadInputTokens": 122410,
+              "cacheCreationInputTokens": 16829,
+              "webSearchRequests": 0,
+              "costUSD": 0.375,
+              "contextWindow": 1000000,
+              "maxOutputTokens": 64000,
+              "thinkingTokens": 1625,
+              "canonicalModel": "claude-opus-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "reported_cost_usd": 0.38040399999999996,
+          "stage": "adjudication"
+        }
+      ],
+      "review": {
+        "summary": "I read prd.md, spec.md, scope.json, the delivered jobs.py / tests/test_jobs.py / README.md, and the recorded phase history in state.json. The implementation satisfies spec.md:2 clause by clause (cancelled set before release at jobs.py:15-16, single release, propagate-without-retry, per-instance state via instance attributes, reentrancy guard), and README.md:2 does discharge the prd.md:3 documentation obligation. No blockers. The decisive evidentiary point separating the two twin scope.json findings: assets/fbk-scripts/.venv/bin/python3 exists here (I read the ELF header directly), and state.json:464-478 / :526-539 record that exact argv running against this very checkout (tracebacks cite /tmp/firebreak-live-lifecycle-xnt35o8m/tests/test_jobs.py), red exit 1 with four behavioral failures then green exit 0. architect:1 concedes the check ran and rests on non-relocatability \u2014 supported. guardian:2 asserts the check \"cannot execute\" here \u2014 refuted on that load-bearing premise; its residual true point duplicates architect:1. guardian:1's headline (bare `return` on the repeat path) is caught by tests/test_jobs.py:32's assertEqual(nested, [False]); its surviving claim about assertTrue truthiness at lines 9/31/38/40 is verified. Caveat on architect:2's remedy, not its finding: tests/ has no __init__.py and the bytecode is cpython-311, so `-t .` would likely break discovery without adding one.",
+        "findings": [
+          {
+            "title": "scope.json pins a machine-specific interpreter path that contradicts the documented run command",
+            "location": ".fbk/cancellation/scope.json:1",
+            "evidence": "The sole check is [\"assets/fbk-scripts/.venv/bin/python3\", \"-m\", \"unittest\", \"discover\", \"-s\", \"tests\", \"-v\"], an absolute path under a home directory that does not exist in the current environment (home is /home/dev). Both spec.md:3 and README.md:2 instead document `python -m unittest discover -s tests -v`. The unit has no third-party dependencies by prd.md:3, so a virtualenv interpreter buys nothing, while the hardcoded path makes the recorded acceptance evidence non-reproducible on any other machine. A suggestion because the check did run in the authoring environment (state.json records both red and green runs) and the documented command is the one a human would use.\nCouncil assessment (supported): Divergence verified: scope.json:1's sole check is [\"assets/fbk-scripts/.venv/bin/python3\",\"-m\",\"unittest\",\"discover\",\"-s\",\"tests\",\"-v\"], while spec.md:3 and README.md:2 both publish `python -m unittest discover -s tests -v`. The absolute home-directory path is non-relocatable, and prd.md:3 confirms no third-party dependencies, so the venv buys nothing. One sub-claim is wrong and should be dropped: the path DOES exist in this environment (I read the ELF binary at exactly that path), and state.json:464-478 / :526-539 show it executing against this checkout. The finding already concedes the check ran in the authoring environment, so the reproducibility argument survives intact at suggestion severity.",
+            "remedy": "Use a relocatable interpreter in scope.json checks (e.g. \"python3\" or sys.executable resolved at run time) so the recorded verification command matches the one spec.md and README.md publish and can be re-run outside the authoring machine.",
+            "severity": "suggestion"
+          },
+          {
+            "title": "The documented discover invocation depends on CWD injection rather than an explicit top-level directory",
+            "location": ".fbk/cancellation/spec.md:3",
+            "evidence": "`discover -s tests` with no `-t` sets the top-level directory to tests/, so `from jobs import Job` in tests/test_jobs.py resolves only because `python -m` prepends the current working directory to sys.path. That is why spec.md:3 says \"from the repository root\" \u2014 the instruction is load-bearing. The contract breaks silently under any runner that does not inject CWD (a direct unittest entry point, an IDE runner with a different working directory, a wrapper invoked from elsewhere), producing a ModuleNotFoundError that looks like a packaging defect rather than a wrong CWD.\nCouncil assessment (supported): tests/test_jobs.py:2 is `from jobs import Job`; Glob confirms tests/ holds only test_jobs.py and a __pycache__ (no __init__.py). With `discover -s tests` and no -t, top_level_dir becomes tests/, so the import of jobs resolves only because `python -m` prepends CWD to sys.path \u2014 making spec.md:3's \"from the repository root\" load-bearing, exactly as claimed. The same mechanism was independently noted in the recorded spec-phase review in state.json. Caveat on the remedy only: with no tests/__init__.py and CPython 3.11 (tests/__pycache__/test_jobs.cpython-311.pyc), `-t .` requires tests to be an importable package, so the remedy needs tests/__init__.py alongside it.",
+            "remedy": "Specify `python -m unittest discover -s tests -t . -v` in spec.md:3, README.md, and scope.json checks so the repo root is the explicit top-level directory and the import no longer depends on the caller's working directory.",
+            "severity": "suggestion"
+          },
+          {
+            "title": "README content obligation from the PRD is carried into the spec only as a filename",
+            "location": ".fbk/cancellation/spec.md:3",
+            "evidence": "prd.md:2 states a content obligation \u2014 \"Document the synchronous contract and its limitations in README.md\" \u2014 but spec.md carries README.md forward only inside \"Only jobs.py, tests/test_jobs.py, and README.md are delivery files\" and never says what it must contain. scope.json's single check runs unittest and cannot verify prose, so nothing in the artifact set constrains the document. The delivered README.md:2 does cover the contract and the synchronous/no-thread-safety limitation, so no defect materialized; the gap is that the spec would equally have accepted a one-line usage note dropping the limitations \u2014 exactly where the deliberately excluded async and thread-safety concerns were meant to land.\nCouncil assessment (supported): prd.md:3 states the content obligation \"Document the synchronous contract and its limitations in README.md\" (the finding cites prd.md:2; the sentence is on line 3). spec.md:3 names README.md only in \"Only jobs.py, tests/test_jobs.py, and README.md are delivery files\" and imposes no content requirement, and scope.json:1's single check is a unittest run that cannot verify prose. The delivered README.md:2 does cover the contract plus \"no thread-safety guarantee, scheduling, or async support\", so no defect materialized \u2014 consistent with the finding's own suggestion severity.",
+            "remedy": "Add a clause to spec.md:3 naming the README obligations: the Job(release)/cancel()/cancelled contract plus explicit limitations (no thread safety, no async support, at-most-once release scoped to a single instance on a single thread).",
+            "severity": "suggestion"
+          },
+          {
+            "title": "Acceptance enumeration never exercises a third cancel, so at-most-once is not pinned past the second call",
+            "location": ".fbk/cancellation/spec.md:3",
+            "evidence": "spec.md:2 says \"Every subsequent call returns False\", but the enumeration in spec.md:3 asks only to \"check both return values over repeated calls\", and the locked suite calls cancel at most twice on the success path (tests/test_jobs.py:9-12). A mutant with a two-state counter \u2014 release on call 1, False on call 2, release again on call 3 \u2014 satisfies every enumerated assertion while violating the at-most-once guarantee the unit exists to provide. A suggestion rather than a blocker because such an implementation is contrived and the normative sentence \"a callback called twice ... must fail these tests\" still binds it, but the enumeration alone does not force a discriminating assertion.\nCouncil assessment (supported): spec.md:2 says \"Every subsequent call returns False\" but spec.md:3 requires only \"check both return values over repeated calls\". No test exceeds two cancel calls on any instance: tests/test_jobs.py:9-10 (two), :22 and :25 (two), :30-31 (outer plus one nested). I traced a two-state mutant that releases on calls 1 and 3: it passes all four tests (nested=[False], calls=[True], calls=[1], ['first','second']), yet violates at-most-once. So the enumeration alone does not force a discriminating assertion. Correctly rated a suggestion, since spec.md:3's normative \"a callback called twice ... must fail these tests\" still binds such an implementation.",
+            "remedy": "State in spec.md:3 that the success-path test cancels at least three times, asserting False on every call after the first and that the recorded invocation count remains exactly one throughout.",
+            "severity": "suggestion"
+          },
+          {
+            "title": "Return-value assertions test truthiness, so a plausible `return None` on the repeat path still passes",
+            "location": "tests/test_jobs.py:10,25,32 against spec.md:2",
+            "evidence": "The contract is stated in terms of concrete booleans: \"On the first call it invokes release exactly once and returns True... Every subsequent call returns False\" (spec.md:2), and the acceptance list requires the tests \"check both return values over repeated calls\". The tests use assertTrue/assertFalse, which only assert truthiness. Concrete scenario: an implementer writes the already-cancelled branch as a bare `return` (a very common slip) instead of `return False`. `assertFalse(job.cancel())` at line 10, `assertFalse(job.cancel())` at line 25, and `assertEqual(nested, [False])`... the last one does catch it, but the two direct call sites do not \u2014 `assertFalse(None)` passes. Likewise `assertTrue(job.cancel())` passes for any truthy value such as the released resource or 1, so an implementation returning the release() result instead of True is not rejected on the success path. The reentrancy test's assertEqual is the only place identity is effectively enforced, and it covers only one of the three call sites.\nCouncil assessment (supported): Supported in its surviving half, with the headline corrected. The named scenario \u2014 a bare `return` on the already-cancelled path \u2014 IS rejected: tests/test_jobs.py:30-32 captures the reentrant return value and asserts assertEqual(nested, [False]), and [None] != [False]. The finding half-concedes this mid-paragraph. What is verified and uncorrected: assertTrue at lines 9, 31, 38 and 40 asserts only truthiness, so an implementation returning any truthy non-True value (e.g. `return 1` or `return self`) passes the entire suite despite spec.md:2's \"returns True\"; nothing pins identity on the success path. Suggestion-level, as spec.md:2 remains normative and jobs.py:17 returns True.",
+            "remedy": "Have the spec's acceptance enumeration require identity assertions on return values (assertIs(True, ...) / assertIs(False, ...)) rather than truthiness, and update tests/test_jobs.py lines 9-10, 31 and 25 accordingly, so a bare `return` or a truthy passthrough is rejected.",
+            "severity": "suggestion"
+          },
+          {
+            "title": "Writability of `cancelled` is still unstated in the spec after being raised in two prior review rounds",
+            "location": ".fbk/cancellation/spec.md:2",
+            "evidence": "Both the intent-phase and spec-phase reviews recorded in validation.json flagged that neither prd.md:2 nor spec.md:2 says whether `cancelled` may be assigned from outside. spec.md:2 still says only \"`cancelled` is initially False\" and \"`cancel()` marks this job cancelled\". The delivered jobs.py:8-10 happens to use a setter-less @property, so `job.cancelled = False` raises AttributeError \u2014 the desired behaviour \u2014 but no test asserts this and the spec does not require it, so a later refactor to a plain attribute would satisfy the written contract and every test while enabling `job.cancel(); job.cancelled = False; job.cancel()` to drive the duplicate release the unit exists to prevent. The mutation list at spec.md:3 does not include this case.\nCouncil assessment (supported): spec.md:2 states only \"`cancelled` is initially False\" and \"`cancel()` marks this job cancelled\", saying nothing about external assignment, and spec.md:3's mutation list omits it. The two prior rounds are confirmed, though recorded in state.json rather than validation.json (no validation.json exists in .fbk/): the intent-phase item \"Mutability of the `cancelled` property is not pinned down\" (state.json:94, :154) and the spec-phase item \"Writability of `cancelled` is still unpinned after the intent-phase review raised it\" (state.json:221, :281). jobs.py:8-10 uses a setter-less @property so `job.cancelled = False` raises AttributeError, but no test asserts this, making the guarantee incidental: a refactor to a plain attribute would satisfy spec.md and all four tests while enabling `job.cancel(); job.cancelled = False; job.cancel()` to double-release. Suggestion-level, as the delivered code is correct.",
+            "remedy": "State in spec.md:2 that `cancelled` is read-only and mutated solely by `cancel()`, add it to the mutation list at spec.md:3, and add a test asserting `with self.assertRaises(AttributeError): job.cancelled = False` so the guarantee is pinned rather than incidental.",
+            "severity": "suggestion"
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "architect:1",
+          "member": "architect",
+          "finding": {
+            "title": "scope.json pins a machine-specific interpreter path that contradicts the documented run command",
+            "location": ".fbk/cancellation/scope.json:1",
+            "evidence": "The sole check is [\"assets/fbk-scripts/.venv/bin/python3\", \"-m\", \"unittest\", \"discover\", \"-s\", \"tests\", \"-v\"], an absolute path under a home directory that does not exist in the current environment (home is /home/dev). Both spec.md:3 and README.md:2 instead document `python -m unittest discover -s tests -v`. The unit has no third-party dependencies by prd.md:3, so a virtualenv interpreter buys nothing, while the hardcoded path makes the recorded acceptance evidence non-reproducible on any other machine. A suggestion because the check did run in the authoring environment (state.json records both red and green runs) and the documented command is the one a human would use.",
+            "remedy": "Use a relocatable interpreter in scope.json checks (e.g. \"python3\" or sys.executable resolved at run time) so the recorded verification command matches the one spec.md and README.md publish and can be re-run outside the authoring machine.",
+            "severity": "suggestion"
+          }
+        },
+        {
+          "id": "architect:2",
+          "member": "architect",
+          "finding": {
+            "title": "The documented discover invocation depends on CWD injection rather than an explicit top-level directory",
+            "location": ".fbk/cancellation/spec.md:3",
+            "evidence": "`discover -s tests` with no `-t` sets the top-level directory to tests/, so `from jobs import Job` in tests/test_jobs.py resolves only because `python -m` prepends the current working directory to sys.path. That is why spec.md:3 says \"from the repository root\" \u2014 the instruction is load-bearing. The contract breaks silently under any runner that does not inject CWD (a direct unittest entry point, an IDE runner with a different working directory, a wrapper invoked from elsewhere), producing a ModuleNotFoundError that looks like a packaging defect rather than a wrong CWD.",
+            "remedy": "Specify `python -m unittest discover -s tests -t . -v` in spec.md:3, README.md, and scope.json checks so the repo root is the explicit top-level directory and the import no longer depends on the caller's working directory.",
+            "severity": "suggestion"
+          }
+        },
+        {
+          "id": "architect:3",
+          "member": "architect",
+          "finding": {
+            "title": "README content obligation from the PRD is carried into the spec only as a filename",
+            "location": ".fbk/cancellation/spec.md:3",
+            "evidence": "prd.md:2 states a content obligation \u2014 \"Document the synchronous contract and its limitations in README.md\" \u2014 but spec.md carries README.md forward only inside \"Only jobs.py, tests/test_jobs.py, and README.md are delivery files\" and never says what it must contain. scope.json's single check runs unittest and cannot verify prose, so nothing in the artifact set constrains the document. The delivered README.md:2 does cover the contract and the synchronous/no-thread-safety limitation, so no defect materialized; the gap is that the spec would equally have accepted a one-line usage note dropping the limitations \u2014 exactly where the deliberately excluded async and thread-safety concerns were meant to land.",
+            "remedy": "Add a clause to spec.md:3 naming the README obligations: the Job(release)/cancel()/cancelled contract plus explicit limitations (no thread safety, no async support, at-most-once release scoped to a single instance on a single thread).",
+            "severity": "suggestion"
+          }
+        },
+        {
+          "id": "architect:4",
+          "member": "architect",
+          "finding": {
+            "title": "Acceptance enumeration never exercises a third cancel, so at-most-once is not pinned past the second call",
+            "location": ".fbk/cancellation/spec.md:3",
+            "evidence": "spec.md:2 says \"Every subsequent call returns False\", but the enumeration in spec.md:3 asks only to \"check both return values over repeated calls\", and the locked suite calls cancel at most twice on the success path (tests/test_jobs.py:9-12). A mutant with a two-state counter \u2014 release on call 1, False on call 2, release again on call 3 \u2014 satisfies every enumerated assertion while violating the at-most-once guarantee the unit exists to provide. A suggestion rather than a blocker because such an implementation is contrived and the normative sentence \"a callback called twice ... must fail these tests\" still binds it, but the enumeration alone does not force a discriminating assertion.",
+            "remedy": "State in spec.md:3 that the success-path test cancels at least three times, asserting False on every call after the first and that the recorded invocation count remains exactly one throughout.",
+            "severity": "suggestion"
+          }
+        },
+        {
+          "id": "guardian:1",
+          "member": "guardian",
+          "finding": {
+            "title": "Return-value assertions test truthiness, so a plausible `return None` on the repeat path still passes",
+            "location": "tests/test_jobs.py:10,25,32 against spec.md:2",
+            "evidence": "The contract is stated in terms of concrete booleans: \"On the first call it invokes release exactly once and returns True... Every subsequent call returns False\" (spec.md:2), and the acceptance list requires the tests \"check both return values over repeated calls\". The tests use assertTrue/assertFalse, which only assert truthiness. Concrete scenario: an implementer writes the already-cancelled branch as a bare `return` (a very common slip) instead of `return False`. `assertFalse(job.cancel())` at line 10, `assertFalse(job.cancel())` at line 25, and `assertEqual(nested, [False])`... the last one does catch it, but the two direct call sites do not \u2014 `assertFalse(None)` passes. Likewise `assertTrue(job.cancel())` passes for any truthy value such as the released resource or 1, so an implementation returning the release() result instead of True is not rejected on the success path. The reentrancy test's assertEqual is the only place identity is effectively enforced, and it covers only one of the three call sites.",
+            "remedy": "Have the spec's acceptance enumeration require identity assertions on return values (assertIs(True, ...) / assertIs(False, ...)) rather than truthiness, and update tests/test_jobs.py lines 9-10, 31 and 25 accordingly, so a bare `return` or a truthy passthrough is rejected.",
+            "severity": "suggestion"
+          }
+        },
+        {
+          "id": "guardian:2",
+          "member": "guardian",
+          "finding": {
+            "title": "scope.json pins a machine-specific interpreter path that diverges from the documented run command",
+            "location": ".fbk/cancellation/scope.json:1 vs spec.md:3 and README.md:2",
+            "evidence": "scope.json's sole check is [\"assets/fbk-scripts/.venv/bin/python3\", \"-m\", \"unittest\", \"discover\", \"-s\", \"tests\", \"-v\"], while spec.md:3 and README.md:2 both instruct \"Run `python -m unittest discover -s tests -v` from the repository root.\" On any machine without that absolute venv path (the current environment's home is /home/dev, not <home>) the recorded check cannot execute, so the one automated gate on the whole unit is not reproducible by another contributor following the documented instructions. Nothing else in the scope verifies behaviour, so a non-runnable check leaves the contract unguarded outside the original author's machine.",
+            "remedy": "Record the check with a portable interpreter (e.g. \"python3\" or sys.executable resolved at run time) so the executed gate matches the command the spec and README tell contributors to run.",
+            "severity": "suggestion"
+          }
+        },
+        {
+          "id": "guardian:3",
+          "member": "guardian",
+          "finding": {
+            "title": "Writability of `cancelled` is still unstated in the spec after being raised in two prior review rounds",
+            "location": ".fbk/cancellation/spec.md:2",
+            "evidence": "Both the intent-phase and spec-phase reviews recorded in validation.json flagged that neither prd.md:2 nor spec.md:2 says whether `cancelled` may be assigned from outside. spec.md:2 still says only \"`cancelled` is initially False\" and \"`cancel()` marks this job cancelled\". The delivered jobs.py:8-10 happens to use a setter-less @property, so `job.cancelled = False` raises AttributeError \u2014 the desired behaviour \u2014 but no test asserts this and the spec does not require it, so a later refactor to a plain attribute would satisfy the written contract and every test while enabling `job.cancel(); job.cancelled = False; job.cancel()` to drive the duplicate release the unit exists to prevent. The mutation list at spec.md:3 does not include this case.",
+            "remedy": "State in spec.md:2 that `cancelled` is read-only and mutated solely by `cancel()`, add it to the mutation list at spec.md:3, and add a test asserting `with self.assertRaises(AttributeError): job.cancelled = False` so the guarantee is pinned rather than incidental.",
+            "severity": "suggestion"
+          }
+        }
+      ]
+    },
+    "generation": 1,
+    "error": null
+  },
+  "accepted_outcome": "pass",
+  "accepted_at": "2026-09-07T06:48:19.792+00:00",
+  "limitations": [
+    "Isolated smoke fixture; no comparison of review quality or maintainability.",
+    "Reviewers could read prior verdicts from the fixture state file. Explicit instructions excluding that history were added after this run; no enforced file isolation.",
+    "The separate implementation review timed out after 240 seconds without a verdict."
+  ]
+}

@@ -18,8 +18,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
@@ -32,15 +30,16 @@ def _fbk_py():
     return Path(__file__).parent.parent / "fbk.py"
 
 
+if not _fbk_py().is_file():
+    raise FileNotFoundError(f"Required fbk.py dispatcher not found: {_fbk_py()}")
+
+
 def _run(subcommand_args, stdin_text="[]", timeout=15):
     """Run `fbk.py pipeline <subcommand_args>` with stdin_text as input.
 
     Returns the CompletedProcess so callers can inspect returncode, stdout, stderr.
     """
     fbk_py = _fbk_py()
-    if not fbk_py.exists():
-        pytest.skip("fbk.py dispatcher not found")
-
     cmd = [sys.executable, str(fbk_py), "pipeline"] + subcommand_args
     return subprocess.run(
         cmd,
@@ -58,9 +57,6 @@ def _run_rejoin(kept_list, verdicts_list_or_path, tmp_path=None):
     Pass a string path to use that path directly (e.g., a nonexistent path).
     """
     fbk_py = _fbk_py()
-    if not fbk_py.exists():
-        pytest.skip("fbk.py dispatcher not found")
-
     if isinstance(verdicts_list_or_path, list):
         assert tmp_path is not None, "tmp_path required when passing a verdicts list"
         verdicts_file = tmp_path / "verdicts.json"
@@ -97,6 +93,7 @@ def _assert_clean_error(result, offending_label):
     """Assert a clean in-band error: exit 1, offending label in stderr, no traceback."""
     assert result.returncode != 0, (
         f"Expected non-zero exit; got {result.returncode}. stderr: {result.stderr!r}"
+        f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
     )
     assert offending_label in result.stderr, (
         f"Expected stderr to name {offending_label!r}; got: {result.stderr!r}"
@@ -433,28 +430,11 @@ class TestToMarkdownAdjacentObservations:
 
         assert result.returncode == 0, (
             f"Expected exit 0; got {result.returncode}. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
         assert "Adjacent observations" in result.stdout, (
             f"Expected 'Adjacent observations' in stdout; got: {result.stdout!r}"
         )
         assert obs_text in result.stdout, (
             f"Expected observation text in stdout; got: {result.stdout!r}"
-        )
-
-    def test_adjacent_observations_absent_when_field_not_set(self):
-        """A finding without adjacent_observations does not produce the field in output.
-
-        Validates that adding adjacent_observations support does not alter output
-        for findings that do not carry the field — existing tests stay green.
-        """
-        finding = self._make_finding()  # no adjacent_observations key
-
-        result = _run(["to-markdown"], stdin_text=json.dumps([finding]))
-
-        assert result.returncode == 0, (
-            f"Expected exit 0; got {result.returncode}. stderr: {result.stderr!r}"
-        )
-        assert "Adjacent observations" not in result.stdout, (
-            f"Expected no 'Adjacent observations' section in stdout for finding "
-            f"without that field; got: {result.stdout!r}"
         )

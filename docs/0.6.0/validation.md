@@ -1,0 +1,33 @@
+# Firebreak 0.6.0 validation
+
+Current deterministic checks run through `python3 tests/run-tests.py`; see [testing](../testing.md). Legacy compatibility suites and their audit bundles have been retired. The live observations below record their original run conditions, not a fresh validation of every subsequent change.
+
+## Live Claude Code evidence
+
+The installed host reports **Claude Code 2.1.263**. Authentication reports `claude.ai`, subscription type `max`. Runs used `claude -p`; no API client or separate provider credentials were introduced. A host rate-limit event explicitly reported subscription use with overage disabled. Any reported dollar figures are model usage estimates, not evidence of an API-credit charge.
+
+A direct `/probe` in an isolated project produced `SessionStart → UserPromptExpansion → Stop`, without a Skill tool call. This confirms why a `PreToolUse(Skill)` hook alone misses direct entry. Automated tests separately assert the exact decision format for both paths. The real `workflow-hook` also blocked `/fbk-spec probe` while intent remained open, before any model turn or API inference. The [captured host result](evidence/direct-entry-denial.json) records that refusal.
+
+A cold skill validation created a unit, authored intent, and completed a real independent intent review. Its feedback led to clearer optional-design guidance, useful top-level help, reviewing status during a pending close, and visible suggestions in successful close output.
+
+A second host fixture loaded the real phase skill and real workflow hooks. Direct `/fbk-intent probe` opened the unit. The explicit CLI confirmation used the same host session, and `suspend` released ownership while retaining intent. The skill now carries a session placeholder and passes it explicitly. One initial 150-second diagnostic timed out; a streamed follow-up completed successfully. The model initially treated the expanded placeholder suspiciously, verified it against the host environment, then proceeded; the final skill wording was simplified. This illustrates that deterministic entry does not remove all model interpretation failures.
+
+A scripted lifecycle fixture drove the dispatcher through a feature with real reviews and a real red-to-green implementation, consuming authenticated plan capacity. The evaluation scripts that ran it are not tracked in the repository. The same fixture now runs in the ordinary suite against a fake review host (`test_workflow_cli_lifecycle.py`), and the live evidence recorded below is historical.
+
+The first live spec review blocked an omitted acceptance example for cancellation after a release exception. The contract stated the behavior, but the test plan did not explicitly check the later call. Adding that example allowed spec acceptance on round two; the budget did not reset. The fixture and evidence record make this repair visible rather than claiming a flawless first pass. A later breakdown review hit the original 180-second timeout and left the phase open with the failed attempt recorded. Based on that observed latency, the default is now 300 seconds with explicit medium review effort; both remain configurable. Native reviewers also start with an empty strict MCP configuration and noninteractive permissions so unrelated account connectors are not part of the review tool surface. The resumed breakdown close and implementation close completed successfully with these settings. All four behavior tests failed against the stub, were locked, then passed against the final code; implementation review took about 38 seconds. [The committed lifecycle evidence](evidence/live-lifecycle.json) includes attempts, findings, the red check, and final verification. Intent used one round, spec two, breakdown two including the timeout, and implementation one. No blocking finding was overridden.
+
+The final reviewer suggested inspecting an instance’s private attribute dictionary to strengthen an independence test. That suggestion was not applied: class-level defaults shadowed by instance assignments can preserve correct observable behavior, and asserting private storage would couple the test to an implementation detail. The existing test does reject actually shared cancellation state. The finding stayed nonblocking, which prevented model advice from becoming unnecessary scope.
+
+## Independent review and fixes
+
+An independent read-only Opus review found actionable defects in the initial runtime. Fixed: glob matching versus file expansion, read-only status delaying a close commit, review reuse after reopening, unrelated failing commands qualifying as red tests, absent session identity inheriting suspended ownership, discovery of dot-prefixed backup units, uncaught doctor timeouts, permissive hook-shape assertions, and missing public CLI coverage. Additional checks caught failed review reuse, active-worker close races, missing parent context, subprocess children surviving timeout, and workflow records entering broad source scopes.
+
+External symlink targets remain rejected rather than silently omitted from evidence; generated caches and dependency directories are consistently excluded. This is an explicit limitation. A bounded follow-up Opus review reached its 300-second timeout without a completed verdict; it is not counted as a clean review. Deterministic regression and live workflow checks provide the post-fix evidence described above.
+
+## Limits and next evaluation
+
+Hooks cannot secure a repository against an agent with arbitrary shell access. Bash, external tools, disabled hooks, and command-hook timeouts can bypass prevention. Explicit close independently revalidates evidence. Approval text is an audit record of the human's authorization, not an authentication mechanism. The storage lock uses POSIX `fcntl`; native Windows is not supported by this new runtime.
+
+Model findings can still be wrong. A second reader is optional and its failure is disclosed; it does not guarantee independence of underlying model errors. Tests and content hashes cannot prove maintainability. Project-specific checks must include the relevant integration and regression boundaries; a command that exits zero can itself be vacuous.
+
+Before making release claims, compare representative real changes using the target model with and without the full workflow. Measure missed requirements, escaped regressions, human corrections, unnecessary code, review latency, and the cost of a subsequent change. Keep contracts and review only where those measurements justify their overhead. No longitudinal improvement or universal superiority of spec-driven development is claimed by this branch.

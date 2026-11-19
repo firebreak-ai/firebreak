@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py task-completed"
+            "command": "python3 \"$HOME\"/.claude/fbk-scripts/fbk.py workflow-hook"
           }
         ]
       }

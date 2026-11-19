@@ -24,10 +24,10 @@ A finding at researcher output has no verdict field. Verdict fields are added by
 The challenger produces exactly one of five outcomes for each candidate finding:
 
 - **Verified**: the challenger independently confirmed the mechanism by reading the artifact and, when applicable, the cited source. The challenger can describe the trigger and consequence in its own words, not the researcher's.
-- **Verified-pending-execution**: the finding is credible from reading but requires test execution to confirm fully. Treated as verified with a caveat marker.
+- **Verified-pending-execution**: independent source reasoning establishes the defect; execution remains to confirm a stated runtime detail. Treated as verified with that caveat. If execution is necessary to establish whether the defect exists, use unresolvable.
 - **Rejected**: the challenger found concrete counter-evidence — the artifact does not behave as described, the trigger is unrealistic, or the behavior aligns with explicitly documented intent.
 - **Rejected-as-nit**: the observation is technically accurate but functionally irrelevant. Counted separately; does not enter the findings list.
-- **Unresolvable**: the finding turns on a cited source the challenger could not locate, so it can neither confirm nor reject. The challenger issues no verified-or-rejected ruling; the finding is surfaced as unadjudicated (the cited source could not be located) and remains open. See "The challenger reads cited sources before ruling" below.
+- **Unresolvable**: a necessary source or observation is unavailable, or inspection leaves a specific fact undecided, so the challenger can neither confirm nor reject. The challenger issues no verified-or-rejected ruling; the finding is surfaced as unadjudicated (state the missing evidence and the check that would decide the claim) and remains open. See "The challenger reads cited sources before ruling" below.
 
 The challenger does not generate new findings. It only rules on candidates it received.
 
@@ -110,7 +110,7 @@ When a candidate finding turns on what a named document contains — a design do
 
 ### Dead-code provenance trace
 
-When a candidate finding identifies material that appears unused — unreachable code, a task with no implementation path, a declared interface with no consumer — the challenger traces its provenance through the artifact's known history before ruling. For code review, the provenance chain includes requirements, design, spec, task history, and git log. For other types, the chain is whatever prior SDL artifacts exist for the feature. If the trace confirms the material is genuinely dead, the finding is verified. If the trace is ambiguous — for example, infrastructure shipped ahead of its first consumer, or a task written against a planned dependency that has not arrived — the finding is surfaced with the ambiguity noted in the evidence field rather than rejected.
+When a candidate finding identifies material that appears unused — unreachable code, a task with no implementation path, a declared interface with no consumer — the challenger traces its provenance through the artifact's known history before ruling. For code review, the provenance chain includes requirements, design, spec, task history, and git log. For other types, the chain is whatever prior SDL artifacts exist for the feature. If the trace confirms the material is genuinely dead, the finding is verified. If the trace is ambiguous — for example, infrastructure shipped ahead of its first consumer, or a task written against a planned dependency that has not arrived — return `unresolvable` with the missing fact when that ambiguity prevents establishing the defect; do not promote uncertainty into a confirmed finding.
 
 ---
 
@@ -134,7 +134,7 @@ These rules apply to every role the loop runs — researcher, challenger, coordi
 
 The loop reviews what it is given. It never applies fixes. Remediation is entirely the caller's responsibility.
 
-When the caller applies fixes after a loop run, the post-fix artifact is new material. It must go through a fresh loop invocation — with a new round count, a new round cap, and no memory of the prior run's candidates. The prior run's confirmed findings are not automatically closed.
+When the caller applies fixes after a loop run, review the changed artifact with a cold reader. Keep the cumulative round count and budget for this phase across fix passes and restarts. The coordinator retains finding dispositions; the cold reader receives the current artifact and source of truth. The prior findings require evidence of resolution. At the cap, report the remaining demonstrated defects and ask for a specific disposition or an explicit budget extension; a fix does not reset the budget.
 
 The fresh invocation may scope the artifact it injects to the fix set applied since the prior round instead of the full artifact. A scoped reentry costs a fraction of a full reentry and has caught the same class of fix-introduced residue; scope the reentry to the fix set by default, and fall back to a full-artifact reentry only when the fix touched enough of the artifact that drift outside the fix set is a realistic concern.
 
@@ -178,3 +178,12 @@ The invariant has three parts:
 3. The candidate findings the challenger receives contain no researcher framing. The loop coordinator's normalization step (step 3 in the loop above) enforces this by stripping reasoning fields and passing only the factual claim fields.
 
 At zero challengers (fresh-eyes), the invariant reduces to part 1 only: the researcher reads cold.
+
+## Executable evidence for every lens
+
+Follow `../workflow/reviewer-execution.md` for bounded tests and disposable probes.
+For standalone reviews, “spawn” in this spine means a fresh runtime contributor via
+`review-round run`; bare agent spawns do not receive the investigation protocol.
+Scan-only and document reviewers use an unbound single-contributor round, preserving
+their lens output and zero-challenger cardinality. Capture the complete role and lens
+instructions before launch. Do not change reviewed sources to obtain evidence.

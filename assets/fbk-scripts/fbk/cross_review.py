@@ -248,6 +248,7 @@ def _run_cross_review(
             text=True,
             errors="replace",  # non-UTF-8 stdout/stderr must not raise during decode
             timeout=600,
+            check=False,
             shell=False,
         )
     except subprocess.TimeoutExpired as exc:

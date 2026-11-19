@@ -114,8 +114,7 @@ def validate_sighting(finding, vocab=None):
     """Validate a finding dict against the given vocabulary.
 
     When vocab is None, falls back to module constants (REQUIRED_FIELDS, VALID_TYPES,
-    VALID_SEVERITIES, VALID_COMBINATIONS) — identical behavior to the previous
-    single-argument form.  When vocab is a LensVocabulary, validates against that
+    VALID_SEVERITIES, VALID_COMBINATIONS). When vocab is a LensVocabulary, validates against that
     lens's types/severities/matrix/required.
 
     Returns None on success, or an error string describing the first rejection reason.
@@ -138,7 +137,7 @@ def validate_sighting(finding, vocab=None):
         if field == "location":
             loc = s.get("location")
             if not isinstance(loc, dict) or not loc.get("file") or "start_line" not in loc:
-                return f"missing or invalid 'location' (need 'file' and 'start_line')"
+                return "missing or invalid 'location' (need 'file' and 'start_line')"
             continue
         val = s.get(field)
         if val is None or (isinstance(val, str) and val.strip() == ""):
@@ -164,17 +163,6 @@ def validate_sighting(finding, vocab=None):
         return f"invalid type-severity combination '{t}+{sev}'"
 
     return None
-
-
-def validate_against_mode(record, vocab, output_mode):
-    """Route record validation based on the lens output mode.
-
-    When output_mode is "scan", returns None (accept; skip finding-validation).
-    When output_mode is "finding", delegates to validate_sighting(record, vocab).
-    """
-    if output_mode == "scan":
-        return None
-    return validate_sighting(record, vocab)
 
 
 def normalize(finding):

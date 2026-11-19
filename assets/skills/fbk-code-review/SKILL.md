@@ -7,142 +7,148 @@ argument-hint: "[target-path or feature-name]"
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash, Agent
 ---
 
-Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral comparison methodology, finding format, sighting format, orchestration protocol, and retrospective fields. Read `.claude/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md` for the AI failure mode checklist used when no specs are available. Read `.claude/fbk-docs/fbk-sdl-workflow/security-patterns.md` for security detection targets applied to all code reviews. Read `.claude/fbk-docs/fbk-sdl-workflow/detection-audits.md` for procedural audit passes the Detector runs before emitting sightings. Read `.claude/fbk-docs/fbk-design-guidelines/quality-detection.md` for structural detection targets applicable to all code reviews.
+Review the requested code against the user's intent and repository contracts. Apply
+fixes only within existing authorization. Standalone completion records findings;
+managed acceptance still requires `phase-close`.
 
-## Mid-Pipeline Entry: Prerequisite Check
+Resolve `firebreak_dir` in each shell invocation: use
+`${CLAUDE_PROJECT_DIR:-$PWD}/.claude` when it contains `fbk-scripts/fbk.py`, otherwise
+`$HOME/.claude`. Run from the project root when `CLAUDE_PROJECT_DIR` is unset;
+shell variables do not persist between tool calls.
 
-Read `.claude/fbk-docs/fbk-sdl-workflow/capability-entry.md` for the prerequisite-probe contract this section implements. When invoked directly (not as part of the post-implementation pipeline), run the capability-entry prerequisite probe before proceeding: `python3 "$HOME"/.claude/fbk-scripts/fbk.py precheck code-review <feature_dir>` (the phase argument is the literal lowercase string `code-review`). If the command is unavailable in the installed CLI, check manually for the implementation artifact. If the implementation artifact is missing (no `implementation/` directory under the feature dir), name what is missing and offer to run the upstream phase (implement) first — non-blocking, never a hard block. Proceed if the user confirms or if the artifact is present.
+Read all `fbk-docs/` references below under that directory. Read
+`fbk-docs/review/code-review-guide.md` for behavioral comparison, finding format,
+remediation quality and retrospective fields. Use these references at the relevant
+step rather than rebuilding their protocols:
 
-## Entry and Path Routing
+| Reference | Use |
+| --- | --- |
+| `fbk-docs/fbk-review-lenses/code-lens.md` and `fbk-docs/fbk-review-lenses/review-loop.md` | Sighting/verdict schema, classifications and detection/challenge rules. |
+| `fbk-docs/workflow/review-rounds.md` | Launch, runtime result artifacts, completion gates and recovery. |
+| `fbk-docs/workflow/investigations.md` | Bounded checks and fresh experimental workers. |
+| `fbk-docs/workflow/remediation-verification.md` | Material-fix declarations, independent behavior/regression verification and late registration. |
 
-Determine the invocation context:
+## Establish intent and the review contract
 
-- **Post-implementation review**: If invoked after `/implement` completion (the user accepted the stage-transition prompt), follow the post-implementation path in `references/post-impl-review.md`.
-- **Standalone review**: For all other invocations, follow the conversational review path in `references/existing-code-review.md`.
+Create `.fbk/runtime/reports/fbk-code-review-<YYYY-MM-DD>-<HHMM>.md` immediately.
+Keep the intent register, findings and retrospective there as the review progresses.
 
-## Source of Truth Handling
+Find feature specs in `.fbk/<unit>/spec.md` or repository documentation, then README,
+CLAUDE.md, CONTRIBUTING.md and architecture docs, then module documentation and
+CI/deployment/API contracts. Use existing specs' acceptance criteria and validation
+steps as the primary comparison target. For standalone and broad reviews, also
+extract documented behavioral claims outside the specs. Without specs, use those
+claims and the AI failure-mode checklist. If neither documentation nor code context
+is available, ask what to review.
 
-Check for existing specs — provided by the user or discovered in `ai-docs/`. If specs exist, use their ACs and UV steps as the primary comparison target. Run Intent Extraction for standalone and broad-scope reviews — documentation outside the spec often contains behavioral claims not covered by ACs. When no specs are available, the intent register and the AI failure mode checklist together form the comparison target. If no documentation and no existing code context is provided, ask the user what to review.
+Write up to 30 specific, verifiable intent claims and a Mermaid module/data-flow
+diagram in the report. Use `graph TD` or `graph LR`, short labels, behavioral edge
+labels and simple subgraphs; avoid advanced renderer features. Show the user the
+report and resolve silent or contradictory requirements before launching reviewers.
+Carry already-settled decisions forward. Supplement remaining documentation gaps
+from code structure, making inferred intent distinguishable from documented intent.
 
-## Agent Team
+Discover available linter and typechecker commands and record their purpose here;
+execution needs a round ID. In the captured Detector assignment, require it to
+request the available typechecker through a bounded investigation before producing
+sightings. After launch, the runtime executes the request and resumes the Detector
+with the evidence. Preserve full outputs and retrieval references for excerpts;
+treat results as review context, not findings already proved. Tag derived sightings
+with detection source `linter`.
 
-Spawn agents as a team with fresh context per invocation. Use two agents:
+Capture all contributor instructions before beginning the round. Workers do not
+inherit this skill. Include the intent register, governing references, checks,
+role assignments and relevant guidance:
 
-- **Detector** (`review-researcher` loaded with `fbk-docs/fbk-review-lenses/code-lens.md`): Reads code, produces sightings with type and severity classification. Tools: Read, Grep, Glob.
-- **Challenger** (`review-challenger` loaded with `fbk-docs/fbk-review-lenses/code-lens.md`): Verifies or rejects sightings using JSON verdict format. Tools: Read, Grep, Glob.
+- **Detector:** Include `fbk-docs/review/researcher-role.md` in full, then the code
+  lens. Inspect target code
+  first, then check output and intent. Apply `review/code-review-guide.md`,
+  `review/ai-failure-modes.md`, `review/security-patterns.md`,
+  `review/detection-audits.md` and `review/quality-detection.md` under `fbk-docs/`.
+  Include affected durable-doc discovery and comparison from the detection audits,
+  including relevant docs omitted from the change set.
+  Supply the sighting schema and type/severity definitions last. Return sightings
+  tagged `spec-ac`, `checklist`, `structural-target`, `audit-pass`, `intent` or `linter`.
+- **Challenger:** Include `fbk-docs/review/challenger-role.md` in full, then the code
+  lens. Read target code
+  cold, then the lens, normalized candidates and the actual cited source documents;
+  supply verification instructions and the type/severity matrix last. Return one
+  JSON verdict per candidate. Verify claims by opening their sources and requesting
+  bounded experiments when execution can decide them; do not guess from recalled
+  behavior. Preserve claims with necessary missing source or execution evidence as
+  `unresolvable`; a claim that needs execution to establish the defect is not verified.
 
-Inject the behavioral comparison methodology from `code-review-guide.md` and the relevant source of truth into each agent's spawn prompt. Agents do not inherit skills.
+Use fresh contributors launched by `review-round run`, with the Detector first
+and the Challenger after completed detection. Use `Read`, `Grep` and
+`Glob` for inspection; request execution through investigations. Experimental
+helpers preserve context but cannot independently verify their own remediator's fix.
 
-## Review Report
+## Run and interpret the round
 
-Create a review report file at the start of every review: `fbk-code-review-<YYYY-MM-DD>-<HHMM>.md` in the project's working directory. Write the intent register, verified findings, and retrospective to this file as the review progresses. The user opens this file to see rendered diagrams and review results.
+Follow `review-rounds.md` for the concrete command sequence. Default to
+`behavioral-only` and minimum severity `minor`, unless the user specifies otherwise.
+Bind the Detector and Challenger roles, lens and filters to the round. Include
+existing authorized edit scope at `begin`; review the immutable snapshot throughout.
 
-## Pre-Spawn Tool Execution
+The bound runtime composes the shared loop's existing pipeline: validate/domain-filter/severity-filter
+sightings, retain full kept records, normalize the six neutral candidate fields,
+validate Challenger verdicts, rejoin onto retained records, and validate merged
+type/severity combinations. Read the artifact paths documented in `review-rounds.md`;
+do not repeat those transformations manually or hand-publish merged results. Surface the warning when more
+than 30% of sightings fail validation. Preserve JSON as the working format and
+convert confirmed findings to Markdown only for the report.
 
-Before spawning Detectors, discover and run project-native linters, typecheckers, and static analysis tools. Search for lint and typecheck configurations (`.eslintrc`, `eslint.config.*`, `tsconfig.json`, `.pylintrc`, `pyproject.toml`, `mypy.ini`, `go.mod`, `golangci-lint` configs, `build.gradle`, `pom.xml`) and run available tools. When the project has a typechecker for the language being reviewed, run it — examples: `tsc --noEmit`, `go build ./...`, `go vet ./...`, `mypy --strict`, `javac -Xlint`. Capture raw text output, truncated to the first 100 findings if output is large. Include the combined linter and typechecker output as supplementary context in each Detector's spawn prompt. Tool output is context, not pre-formed sightings — the Detector reads it to understand what mechanical issues were already caught and focuses on issues these tools miss. Tag any sightings derived from tool output with detection source `linter`.
+To inspect the filter result independently, feed a sightings JSON array on stdin:
 
-## Intent Extraction
+```bash
+firebreak_dir="${CLAUDE_PROJECT_DIR:-$PWD}/.claude"
+if [ ! -f "$firebreak_dir/fbk-scripts/fbk.py" ]; then
+    firebreak_dir="$HOME/.claude"
+fi
+python3 "$firebreak_dir/fbk-scripts/fbk.py" pipeline run --preset <preset> --min-severity <threshold> --lens "$firebreak_dir/fbk-docs/fbk-review-lenses/code-lens.md"
+```
 
-Complete these steps before spawning Detectors.
+Use the complete runtime-produced artifacts. Imported results are supporting
+evidence; they cannot complete a contributor. Do not recreate runtime receipts or
+edit durable findings to make a declaration pass. A quiet worker, truncated message
+or missing peer is incomplete even when another contributor reports zero findings.
 
-### Discover documentation
+Append verified and `verified-pending-execution` findings with sequential F-IDs to
+the report, keeping the latter's execution caveat visible. Report `unresolvable`
+findings separately with the missing source/evidence needed to decide them; exclude
+rejected sightings. Include adjacent observations and counts of candidates and
+confirmed findings per round in the retrospective. Before fixing, require the
+durable completion gate to pass.
 
-Search for intent-bearing documents in priority order:
-1. Feature specs in `ai-docs/` (acceptance criteria and UV steps)
-2. README, CLAUDE.md, CONTRIBUTING.md, architecture docs
-3. Inline module-level documentation (JSDoc, docstrings, module headers)
-4. CI/CD configuration, deployment docs, API documentation
+## Remediate and finish
 
-### Build the intent register
+Register each material fix against its verified finding before editing, following
+`remediation-verification.md`. This records existing authority without a routine
+new approval checkpoint. Follow the canonical guide's **Remediation verification**
+section: inspect relevant siblings, account for fixed/already-safe/out-of-scope
+paths, and preserve accepted scope. When independently verifying a material fix,
+read `fbk-docs/review/remediation-verification.md` for behavioral and regression evidence.
 
-From discovered documentation, produce a structured intent register with two parts:
+After edits, begin a fresh snapshot with `--previous ID`, carrying unresolved
+findings, prior references and consumed budget. Justify review scope from affected
+behavior and related paths; expand to the full artifact when warranted. Run
+`remediation verify` for each material fix. Have a fresh contributor account for
+other changed paths as nonmaterial only with a reason. Use `register-late` for a
+missed declaration within the original recorded authority; preserve the original
+finding and verification obligation rather than reverting correct code for ceremony.
 
-**Intent claims**: A list of up to 30 behavioral claims the project makes about itself. Each claim is one sentence describing what the project or a specific module is supposed to do. Prefer claims that are specific and verifiable.
+Stop after a clean round or at five rounds. Before accepting an empty round, check
+the Detector's inspection evidence for the required detection passes. Missing
+inspection needs recovery within the same budgets, not an unbounded relaunch.
+Exhaustion requires human help with the findings and missing evidence retained;
+it does not imply a clean review. Require post-fix round completion and run the
+full test suite with zero failures before reporting remediation complete.
 
-**Intent diagram**: Generate a Mermaid diagram capturing module relationships, data flow, and key behavioral contracts. Optimize for the VSCode markdown preview renderer:
-- Use `graph TD` or `graph LR` for data flow and module relationships
-- Keep node labels under 30 characters
-- Use subgraphs to group related modules
-- Label edges with the behavioral contract (e.g., "filters by interest", "scores via AI")
-- Avoid `classDef`, `click`, `callback`, and other advanced features that may not render
-
-Write the intent register (claims + diagram) to the review report file.
-
-### User checkpoint
-
-Tell the user the review report file is ready for review. Ask specific questions to close ambiguity — areas where documentation is silent, contradictory, or where multiple interpretations exist. Proceed after the user confirms, corrects, or instructs the agent to continue as-is.
-
-### Supplement from code
-
-Where the intent register has gaps (modules with no documentation coverage), derive intent from code structure: function names, type signatures, module organization, and cross-module call patterns. Update the diagram and claims in the review report file.
-
-## Detection-Verification Loop
-
-Resolve the active preset and severity threshold at the start of the review. Defaults: preset=`behavioral-only`, severity=`minor`. Both are overridable by user instruction.
-
-This loop follows the shared spine defined in `fbk-docs/fbk-review-lenses/review-loop.md`, with `fbk-docs/fbk-review-lenses/code-lens.md` as the loaded lens. The numbered steps below are the code-review preset's concrete wiring for that spine.
-
-Run the iterative detection and verification loop:
-
-1. Spawn Detector with: target code file contents first, then tool output (if available), then intent register (from Intent Extraction), then source of truth + behavioral comparison instructions from `code-review-guide.md` + AI failure mode checklist from `ai-failure-modes.md` + security detection targets from `security-patterns.md` + procedural audit passes from `detection-audits.md` + structural detection targets from `fbk-docs/fbk-design-guidelines/quality-detection.md` + the JSON sighting schema and type/severity definitions last. Instruct the Detector to tag each sighting with its detection source (`spec-ac`, `checklist`, `structural-target`, `audit-pass`, `intent`, or `linter`) and to output sightings as a JSON array.
-2. Collect sightings as JSON.
-3. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline run --preset <preset> --min-severity <threshold> --lens "$HOME"/.claude/fbk-docs/fbk-review-lenses/code-lens.md` to validate, domain-filter, and severity-filter the sightings in a single invocation. The lens's required set omits `id`, so the detection round accepts the researcher's id-less findings. If >30% of sightings are rejected during validation, log a warning about prompt compliance.
-3a. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline normalize` on the kept findings to produce the six neutral fields handed to the challenger. Retain the full kept findings as the orchestrator's record store for the later re-join.
-4. Spawn Challenger with: target code file contents first, then the code lens (`"$HOME"/.claude/fbk-docs/fbk-review-lenses/code-lens.md`), then the normalized findings. Collect the documents named in each kept finding's `source_of_truth_ref` field and inject those documents into the challenger spawn after the normalized findings. Then provide verification instructions + type/severity definitions + the type-severity validity matrix last. The Challenger receives and produces JSON — no format translation between agents. The Challenger writes its verdict array to a temp file.
-4a. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate-verdicts < <verdicts-file>` piping the verdicts temp file on stdin to confirm each verdict carries a valid status and the evidence its status requires. Findings with status `unresolvable` — where the Challenger could not locate the cited source and therefore could not rule — are not filtered in as verified and are not dropped. Surface them in the review report as unadjudicated findings, noting that the cited source could not be located, so the finding remains open.
-4b. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline rejoin --verdicts <verdicts-file>` piping the retained kept findings on stdin to merge the Challenger's verdicts onto the kept findings, producing the merged records.
-5. Re-validate the merged records by piping them through `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline validate --lens "$HOME"/.claude/fbk-docs/fbk-review-lenses/code-lens.md` — this enforces required finding fields, enum values, and the type-severity matrix on any reclassified combinations. The verdict-field check is carried by the separate `validate-verdicts` step above.
-6. Filter to `status: verified` or `verified-pending-execution`. Assign sequential finding IDs (F-01, F-02...).
-7. Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline to-markdown` to convert verified findings to markdown once for the review report. Adjacent observations from the Challenger are rendered at the end of each finding and accumulated into the retrospective.
-7a. After each verification round, append verified findings to the review report file.
-8. When applying fixes for a verified finding, grep the same file and package for all instances of the identified pattern and apply the fix to every instance. The Consistency audit normally surfaces siblings as separate sightings during detection; this fix-time sweep remains as a safety net for sites the audit missed.
-9. Run additional rounds for weakened but unrejected sightings.
-10. Terminate when a round produces no new sightings above `info` severity (or no sightings), or after a maximum of 5 rounds. Before accepting a zero-sighting round as the termination trigger, check the Detector's transcript for evidence it ran the detection passes (audit passes, checklist, security patterns) rather than returning early; relaunch the round if the transcript shows no such evidence.
-11. After the loop terminates, write `.code-review-rounds.json` in the feature directory recording the full detection-round history. The file must include `schema_version` (value `"1.0"`), `spec` (the feature name), and `rounds` — an array with one entry per round, each carrying `round` (1-based integer), `raised` (sighting count before Challenger filtering), `survived` (verified count after filtering), and an optional `severity` scalar — the single highest severity among that round's confirmed findings (`critical`, `major`, `minor`, or `info`). Omit `severity` when the round produced no confirmed findings. The human-facing per-severity breakdown lives only in the review report, never in this file. The code-review gate reads this file at check time to emit the detection-round metrics event.
-
-Only verified findings surface to the user. Rejected sightings are excluded. JSON is the working format throughout the pipeline. Markdown conversion happens once for the human-facing review report.
-
-## Post-Fix Verification
-
-After all fixes from a review session are applied, run the full test suite and confirm zero failures before closing the review.
-
-## Quality scan, final test-review, doc reconcile, and gate
-
-After the detection-verification loop terminates and all fixes are applied, run the following passes in order:
-
-1. **Quality scan**: Invoke `fbk-quality-scan` on the change set. It produces a surface-level top-five quality analysis and writes its output to `ai-docs/<feature>/quality-scan.md`.
-
-2. **Final test-review**: Invoke `fbk-test-review` in its final mode over the tests covering the changed module. It flags drifted tests and writes the final test-review verdict artifact.
-
-3. **Doc reconcile**: Invoke `fbk-doc-reconcile` on the shipped module. It compares the project's durable docs (decisions ledger, contracts, package layout, changelog, spec) against the actual code and writes advisory drift findings to `ai-docs/<feature>/doc-reconcile.md`. Output is advisory only — it does not gate.
-
-4. **Cross-model review**: Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --check-opt-in --project-root <root>`. When the result is `status: success`, invoke `/fbk-cross-model-review` with `review-type: code-review` against the change set and triage the returned candidates by direct code read before adding any to the review report — a candidate the read confirms becomes a finding; nothing is presented as verified from the cross-model pass alone. Skip this step when the check returns `status: skipped`.
-
-5. **Gate**: Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>` to evaluate whether the review meets the threshold for promotion. The gate receives the feature directory path and writes a pass/fail verdict.
-
-Do not run the gate until fbk-quality-scan, fbk-test-review, fbk-doc-reconcile, and (when the opt-in check succeeds) cross-model review have all completed.
-
-## Broad-Scope Reviews
-
-When the user requests a full codebase review rather than specific modules:
-
-1. Survey the project structure and identify reviewable units
-2. Propose a review order to the user
-3. Spawn fresh Detector/Challenger pairs per unit. For broad-scope reviews with multiple independent units, spawn parallel Detector agents as a team — each Detector reviews its assigned unit independently with its own context. Detectors do not share state.
-4. Accumulate verified findings across units, watching for cross-module patterns
-5. After all units complete, perform cross-unit pattern deduplication: identify findings from different units that describe the same underlying pattern, assign a shared pattern name (e.g., "string-error-dispatch", "dead-handler-registration"), and group them in the retrospective. Deduplicated findings retain their individual IDs but share the pattern label.
-6. Checkpoint with the user after each unit
-
-## Stuck-Agent Recovery
-
-When a Detector or Challenger agent becomes unresponsive (no output within the expected time frame), relaunch it once with the same spawn prompt and context. If the relaunched agent is also unresponsive, escalate to the user with a summary of what the agent was assigned and where it stalled. Never perform the stuck agent's work directly — the orchestrator coordinates, it does not substitute for agents.
-
-## Spec Conflict Detection
-
-When multiple specs exist for the reviewed code, compare them for consistency. Surface conflicts between specs, or between specs and code, for user discussion during the conversational review.
-
-## Retrospective
-
-After the review completes, append the retrospective to the review report file, following the fields defined in `code-review-guide.md`.
-
-After the retrospective is written to disk, invoke `/fbk-improve <feature-name>` to analyze the retrospective for pipeline improvement opportunities.
+Recheck affected durable-doc claims against the final authorized behavior, using
+the existing review round. Summarize sources inspected, confirmed findings, unresolved evidence and checks
+actually run. Use `fbk-test-review` for a dedicated test-integrity pass,
+`fbk-quality-scan` for bounded quality review, `fbk-doc-reconcile` for documentation
+and `fbk-cross-model-review` when requested. These do not create managed acceptance.
+If remediation needs a new managed unit, enter `/fbk-intent` carrying settled user
+decisions. For a process issue, preserve original retrospective evidence before
+invoking `/fbk-improve` within the requested scope.

@@ -88,4 +88,4 @@ Doc-reconcile output is a JSON array of records. Each record carries exactly the
 
 **Structural schema for the conformance check**: the output is a JSON array (`[]`) of objects. Each object must have all five keys listed above. `class` must be one of `drift` or `note`. No additional fields are required; extra fields do not fail the conformance check but are not expected.
 
-The artifact is written to `ai-docs/<feature>/doc-reconcile.md`. When the researcher returns no records, the skill writes `no drift found` instead.
+The artifact is written to `reviews/doc-reconcile.md`. When the researcher returns no records, the skill writes `no drift found` instead.

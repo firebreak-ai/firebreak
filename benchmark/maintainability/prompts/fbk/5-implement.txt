@@ -1,0 +1,1 @@
+Go ahead with implement for the UNIT unit, using the fbk-implement skill (pass the unit name as its argument). Use subagents for tasks as the guides say. Finish implement through implementation close, then stop.

@@ -133,8 +133,12 @@ the model can only read files under the project root, so a path outside it is in
 Before composing the prompt or invoking the runner, check whether the project has
 opted in:
 
-```
-python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --check-opt-in --project-root <root>
+```bash
+firebreak_dir="${CLAUDE_PROJECT_DIR:-$PWD}/.claude"
+if [ ! -f "$firebreak_dir/fbk-scripts/fbk.py" ]; then
+    firebreak_dir="$HOME/.claude"
+fi
+python3 "$firebreak_dir/fbk-scripts/fbk.py" cross-review --check-opt-in --project-root <root>
 ```
 
 - **`status: skipped`** (block absent or `enabled` not true): skip the cross-model review
@@ -147,8 +151,12 @@ python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --check-opt-in --project
 
 Once the target is gathered and the prompt written, invoke the runner:
 
-```
-python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --project-root <root> --target-label <text>
+```bash
+firebreak_dir="${CLAUDE_PROJECT_DIR:-$PWD}/.claude"
+if [ ! -f "$firebreak_dir/fbk-scripts/fbk.py" ]; then
+    firebreak_dir="$HOME/.claude"
+fi
+python3 "$firebreak_dir/fbk-scripts/fbk.py" cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --project-root <root> --target-label <text>
 ```
 
 `<slug>` is `fresh-eyes` for a document review or `code-review` for a code change. Branch on

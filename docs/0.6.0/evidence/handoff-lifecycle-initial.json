@@ -1,0 +1,182 @@
+{
+  "commands": [
+    {
+      "command": [
+        "workflow-init"
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "workflow-init",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-f94h5ueo",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "stdout": "{\n  \"root\": \"/tmp/firebreak-live-lifecycle-f94h5ueo\",\n  \"workflow\": \"0.6.0\",\n  \"next\": \"Create a unit with unit-init.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "unit-init",
+        "cancellation",
+        "--design",
+        "off"
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "unit-init",
+        "cancellation",
+        "--design",
+        "off",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-f94h5ueo",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "stdout": "{\n  \"unit\": \"cancellation\",\n  \"phase\": \"intent\",\n  \"status\": \"ready\",\n  \"reason\": \"\",\n  \"owner\": null,\n  \"open_phase\": null,\n  \"parent_problem\": \"\",\n  \"close_in_progress\": null,\n  \"next\": \"Enter intent.\",\n  \"review_rounds\": {\n    \"intent\": 0,\n    \"design\": 0,\n    \"spec\": 0,\n    \"breakdown\": 0,\n    \"implement\": 0\n  },\n  \"review_plans\": {\n    \"spec\": null\n  },\n  \"review_guidance\": \"spec: review choice pending; use review-plan before closing\",\n  \"remaining_attempts\": {\n    \"intent\": 3,\n    \"design\": 3,\n    \"spec\": 3,\n    \"breakdown\": 3,\n    \"implement\": 3\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "review-plan",
+        "cancellation",
+        "--phase",
+        "spec",
+        "--mode",
+        "single",
+        "--reason",
+        "The operator invoked the live smoke test with one independent spec reviewer."
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "review-plan",
+        "cancellation",
+        "--phase",
+        "spec",
+        "--mode",
+        "single",
+        "--reason",
+        "The operator invoked the live smoke test with one independent spec reviewer.",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-f94h5ueo",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "stdout": "{\n  \"mode\": \"single\",\n  \"members\": [],\n  \"id\": \"ac8637be-5d6d-4385-982d-4f071444ed34\",\n  \"reason\": \"The operator invoked the live smoke test with one independent spec reviewer.\",\n  \"source\": \"unit\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "phase-enter",
+        "intent",
+        "cancellation"
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "phase-enter",
+        "intent",
+        "cancellation",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-f94h5ueo",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "stdout": "{\n  \"unit\": \"cancellation\",\n  \"phase\": \"intent\",\n  \"status\": \"open\",\n  \"reason\": \"\",\n  \"owner\": \"live-validation\",\n  \"open_phase\": \"intent\",\n  \"parent_problem\": \"\",\n  \"close_in_progress\": null,\n  \"next\": \"Resume intent.\",\n  \"review_rounds\": {\n    \"intent\": 0,\n    \"design\": 0,\n    \"spec\": 0,\n    \"breakdown\": 0,\n    \"implement\": 0\n  },\n  \"review_plans\": {\n    \"spec\": {\n      \"mode\": \"single\",\n      \"members\": [],\n      \"id\": \"ac8637be-5d6d-4385-982d-4f071444ed34\",\n      \"reason\": \"The operator invoked the live smoke test with one independent spec reviewer.\",\n      \"source\": \"unit\"\n    }\n  },\n  \"review_guidance\": \"spec: single\",\n  \"remaining_attempts\": {\n    \"intent\": 3,\n    \"design\": 3,\n    \"spec\": 3,\n    \"breakdown\": 3,\n    \"implement\": 3\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "phase-close",
+        "intent",
+        "cancellation"
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "phase-close",
+        "intent",
+        "cancellation",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-f94h5ueo",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "stdout": "{\n  \"unit\": \"cancellation\",\n  \"phase\": \"spec\",\n  \"status\": \"ready\",\n  \"reason\": \"\",\n  \"owner\": null,\n  \"open_phase\": null,\n  \"parent_problem\": \"\",\n  \"close_in_progress\": null,\n  \"next\": \"Enter spec.\",\n  \"review_rounds\": {\n    \"intent\": 1,\n    \"design\": 0,\n    \"spec\": 0,\n    \"breakdown\": 0,\n    \"implement\": 0\n  },\n  \"review_plans\": {\n    \"spec\": {\n      \"mode\": \"single\",\n      \"members\": [],\n      \"id\": \"ac8637be-5d6d-4385-982d-4f071444ed34\",\n      \"reason\": \"The operator invoked the live smoke test with one independent spec reviewer.\",\n      \"source\": \"unit\"\n    }\n  },\n  \"review_guidance\": \"spec: single\",\n  \"remaining_attempts\": {\n    \"intent\": 2,\n    \"design\": 3,\n    \"spec\": 3,\n    \"breakdown\": 3,\n    \"implement\": 3\n  },\n  \"accepted_phase\": \"intent\",\n  \"review_shape\": \"single\",\n  \"findings\": [\n    {\n      \"title\": \"No concrete acceptance examples, only named observation channels\",\n      \"location\": \".fbk/cancellation/prd.md:3\",\n      \"evidence\": \"The PRD says \\\"Acceptance is observable through callback invocations, return values, state, and exception propagation, with standard-library unittest tests\\\" but gives no worked sequence. Every behavioral rule is stated in prose in line 2, so examples are derivable, but the specification phase must invent the literal sequences itself, which risks drift from the author's intent (e.g. whether the repeat-cancel case is checked for both return value and unchanged call count).\",\n      \"remedy\": \"Add two or three literal acceptance examples to the PRD, e.g. fresh job: cancelled is False, calls == 0; cancel() -> True, calls == 1, cancelled True; cancel() again -> False, calls still 1; and a raising-release case: first cancel propagates the exception with cancelled True and calls == 1, second cancel -> False with calls still 1.\",\n      \"severity\": \"suggestion\"\n    },\n    {\n      \"title\": \"Invocation signature of the release callable is unstated\",\n      \"location\": \".fbk/cancellation/prd.md:2\",\n      \"evidence\": \"The PRD says the Job is \\\"initialized with a callable release function\\\" and that cancel \\\"calls release once\\\", but never states that release is invoked with no arguments. A spec author could reasonably pass the job itself or a reason argument, which would change the public contract and every caller's callback shape.\",\n      \"severity\": \"suggestion\",\n      \"remedy\": \"State in the PRD (or pin in the specification phase) that release is invoked with no arguments and that its return value is ignored.\"\n    }\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "phase-enter",
+        "spec",
+        "cancellation"
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "phase-enter",
+        "spec",
+        "cancellation",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-f94h5ueo",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "stdout": "{\n  \"unit\": \"cancellation\",\n  \"phase\": \"spec\",\n  \"status\": \"open\",\n  \"reason\": \"\",\n  \"owner\": \"live-validation\",\n  \"open_phase\": \"spec\",\n  \"parent_problem\": \"\",\n  \"close_in_progress\": null,\n  \"next\": \"Resume spec.\",\n  \"review_rounds\": {\n    \"intent\": 1,\n    \"design\": 0,\n    \"spec\": 0,\n    \"breakdown\": 0,\n    \"implement\": 0\n  },\n  \"review_plans\": {\n    \"spec\": {\n      \"mode\": \"single\",\n      \"members\": [],\n      \"id\": \"ac8637be-5d6d-4385-982d-4f071444ed34\",\n      \"reason\": \"The operator invoked the live smoke test with one independent spec reviewer.\",\n      \"source\": \"unit\"\n    }\n  },\n  \"review_guidance\": \"spec: single\",\n  \"remaining_attempts\": {\n    \"intent\": 2,\n    \"design\": 3,\n    \"spec\": 3,\n    \"breakdown\": 3,\n    \"implement\": 3\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "phase-close",
+        "spec",
+        "cancellation"
+      ],
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "<repo>/assets/fbk-scripts/fbk.py",
+        "phase-close",
+        "spec",
+        "cancellation",
+        "--root",
+        "/tmp/firebreak-live-lifecycle-f94h5ueo",
+        "--session",
+        "live-validation"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "{\"error\": \"Claude review failed (requires a host supporting --safe-mode and --restricted; normal Claude authentication is retained): \", \"command\": \"phase-close\"}\n"
+    }
+  ],
+  "summary": {
+    "root": "/tmp/firebreak-live-lifecycle-f94h5ueo",
+    "cwd": "<repo>",
+    "argv": [
+      "<repo>/assets/fbk-scripts/.venv/bin/python3",
+      "<repo>/benchmark/workflow/live-smoke.py",
+      "--run"
+    ],
+    "artifacts": [
+      "/tmp/firebreak-live-lifecycle-f94h5ueo/.fbk/runtime/validation.json"
+    ],
+    "configuration": "Authenticated Claude Code executable on PATH; fbk-scripts Python environment",
+    "measurement": "host/lifecycle integration with script-authored fixture",
+    "status": "error",
+    "diagnostic": "Command phase-close spec cancellation exited 2: {\"error\": \"Claude review failed (requires a host supporting --safe-mode and --restricted; normal Claude authentication is retained): \", \"command\": \"phase-close\"}"
+  }
+}

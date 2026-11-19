@@ -2,15 +2,7 @@
 
 [![CI](https://github.com/firebreak-ai/firebreak/actions/workflows/ci.yml/badge.svg)](https://github.com/firebreak-ai/firebreak/actions/workflows/ci.yml)
 
-**Firebreak is my Claude Code workflow to wrangle the agent into creating more maintainable, readable code** — a growing library of skills and agents that bring real software-lifecycle discipline to AI-generated code.
-
-Pointed at a Go project that passed CI but barely worked, its review found:
-
-- **Tests that tested nothing** — all wired to a deprecated mock that production code never called.
-- **A "thread-safe" wrapper that wasn't** — it shared collections by reference, a race static analysis missed.
-- **A core feature wired to nothing** — one nil parameter left it permanently inert, tests still green.
-
-Firebreak is my personal workflow. I experimented with spec-driven development early on and decided to build my own (both to adapt my personal preferences and to develop my own skills). I use it on my own projects and share it so others can use it or provide feedback. The evidence here is based only on my own personal projects and limited benchmark runs - all claims are unverified and tentative until/unless contributors would like to submit their own results, which I would very much welcome. [Full results, methodology, and caveats →](results.md)
+Firebreak is a Claude Code workflow for developing readable, maintainable code against explicit human intent. Version 0.6.0 keeps requirements, decisions, task handoffs, and independently reviewed acceptance evidence under `.fbk/`.
 
 ## Install
 
@@ -23,58 +15,68 @@ curl -fsSL https://raw.githubusercontent.com/firebreak-ai/firebreak/main/install
 # Into a single project
 curl -fsSL https://raw.githubusercontent.com/firebreak-ai/firebreak/main/installer/install.sh | bash -s -- --target ./my-project/.claude
 
-# Preview without changing anything
-curl -fsSL https://raw.githubusercontent.com/firebreak-ai/firebreak/main/installer/install.sh | bash -s -- --dry-run
+# From a checkout of this repository
+bash installer/install.sh --source ./assets --target /path/to/project/.claude
 ```
 
-Then just ask Claude Code:
+Then initialize the workflow in the project:
 
+```bash
+cd /path/to/project
+uv run --project .claude/fbk-scripts python .claude/fbk-scripts/fbk.py workflow-init
 ```
-"Let's create a new feature..."
-"Let's turn this into a design..."
-"Review the tests in this project..."
-```
 
-## How it works
+Restart Claude Code to load the installed hooks. Repeat installation to upgrade; use `--dry-run` to preview or `--uninstall --target <installation>` to remove an installation. Upgrades remove retired files and unchanged installer-owned settings while preserving operator additions.
 
-Firebreak applies ordinary software-lifecycle discipline — independent review, explicit gates, test-driven development, retrospectives — to AI-generated code. The catch it's built around: the agents doing the reviewing can fail the same way the code does, so nothing is trusted on one agent's word.
+## Develop a change
 
-It's a library of skills, not a single prescriptive process. Many stand on their own, and several compose into a full spec-driven pipeline when a change is big enough to earn it:
+Start with `/fbk-intent <unit-name>`. Work proceeds through intent, optional design, spec, breakdown, and implementation. Small changes can use short documents and a single task. Project units define a parent contract and end after spec.
 
-- **Adversarial review** — standalone or in the pipeline. A researcher agent surfaces candidate issues; a challenger re-reads the code cold and promotes only what it can prove. It targets the bugs static analysis has no signal for — vacuous tests, call-graph races, dead wiring. This works to review code, specifications, plans, designs - it's the same general process with a few different lenses based on what is being reviewed.
-- **A gated pipeline for the hard changes.** Intent → design → spec → review → breakdown → implementation, with a deterministic gate between each stage and context-isolated agents to prevent context rot and pollution. Reviewed tests are hash-locked before implementation, so tests can't be rewritten to "just pass." The "intent" alignment phase is particularly helpful; overall the pipeline works to progressively distill the *right* context, strip away ambiguity, and create clear executable tasks for AI implementation.
-- **Retrospectives that feed back.** When capture is enabled, each run records what worked, what broke, and where I had to step in. This is a combination of deterministic observability metrics from hooks, plus the agents' own analysis. I then let an agent triage the findings: trivial fixes are quick to approve and apply, larger ones run through the full pipeline when I prioritize them.
+The runtime manages ownership, scoped authorization, test locks, task dependencies, and acceptance bound to current source files. Intent, design, spec and breakdown can each use one reviewer or a council; design and spec must record the choice. A council is a short discussion the runtime runs: the builder and one or two other members propose corrections, each takes one turn to contest or replace them, then each supports or contests every proposal, and what a majority supports becomes a finding.
 
-**Where it's heading:** many changes don't require the full pipeline ceremony (especially as models improve), and today you still pick the ceremony level yourself. I'm working toward skills an agent can assemble on the fly — right-sizing the process to the job, so a one-line fix doesn't pay for a six-stage workflow and a risky refactor doesn't get a single-shot prompt. My real inspiration here is the Anthropic Dynamic Workflows feature - I'd like the Firebreak assets to integrate with Dynamic Workflows to automatically adapt to the current task.
+Use the phase skills (`fbk-intent`, `fbk-design`, `fbk-spec`, `fbk-breakdown`, `fbk-implement`) for authoring. `fbk-spec-review` and `fbk-council` route managed review through `phase-close`. Continuation packets restore current work after a session change. `/fbk-improve` investigates recorded process issues and tracks whether adopted changes help.
 
-A focused code review takes around half an hour; a full pipeline run, a few hours. Code review works in any language; the post-task test and lint gate depends on a toolchain Firebreak recognizes, but it tries to use the tools available on the system (without making them actual Firebreak dependencies). [Architecture overview →](docs/architecture-overview.md) · [token usage and cost →](results.md#token-usage-and-cost)
+See the [workflow guide](assets/fbk-docs/state-driven-workflow.md) and [architecture overview](docs/architecture-overview.md). Superseded workflows, agents, and release reports are available in git history; this release ships the `.fbk/` workflow and the standalone tools below.
 
-## Commands
+## Standalone tools
 
-**Start here:** `/fbk-code-review` — adversarial review of any code, from one module to the whole repo.
+`/fbk-code-review <target>` runs independent detection and challenge against code and its governing requirements. Other tools provide focused capabilities:
 
-For complex changes (remediation, new features, etc), a structured pipeline carries them from intent through gated implementation: `/fbk-intent` → `/fbk-design` → `/fbk-spec` → `/fbk-spec-review` → `/fbk-breakdown` → `/fbk-implement`. Then `/fbk-improve` turns each run's retrospective into pipeline fixes for Firebreak itself.
+- `fbk-test-review`: test integrity and meaningful behavioral coverage.
+- `fbk-test-cleanup`: a skill made to clean up excessive or weaker-quality tests. If your test suite has been cluttered by AI slop, give this a try.
+- `fbk-refactor`: refactors one module without changing its behavior, after checking that its tests would catch a mistake.
+- `fbk-fresh-eyes`: an independent read of a document.
+- `fbk-quality-scan`: up to five ranked quality opportunities.
+- `fbk-doc-reconcile`: documentation drift against shipped behavior.
+- `fbk-cross-model-review`: an explicitly enabled second-model opinion.
+- `fbk-council`: council review of a planning phase, or a council you convene to discuss an open question.
+- `fbk-grilling`: clarification of unresolved decisions.
+- `fbk-testplan`: a trial flow in which the test files are the plan. You approve a list of tests, and the code is built one test at a time. It runs beside the managed workflow and is the basis planned for 0.7.0.
 
-Other standalone helpers include context-asset authoring (ask Claude to write or review a CLAUDE.md, skill, hook, or agent, in any project), plus `/fbk-quality-scan`, `/fbk-council`, `/fbk-test-review`, `/fbk-fresh-eyes`, and `/fbk-grilling`.
+Context-asset authoring guidance loads when relevant. Standalone review reports are advisory and do not substitute for managed phase acceptance.
 
-## Security
+## Evidence and limits
 
-- Firebreak adds no telemetry or analytics of its own. (The installer downloads dependencies, and Claude Code reaches the model as usual.)
-- Local run records under `.fbk-capture/` (timings, gate outcomes, token usage) stay on your machine; the default `standard` level redacts free text, and you can set `capture_level=off` in `.fbk-capture/capture.cfg`.
-- Gates parse markdown and JSON — they don't execute it — and the intent, design, and spec gates screen for prompt-injection patterns. After each task, a hook runs your project's test suite and linter when it recognizes the toolchain (npm, cargo, go, pytest, and the like).
-- The pipeline edits your source and tests when you ask it to implement — review its changes like any contributor's.
-- **Known limit:** Claude Code's permissions control which *tools* an agent has, not its *intent*. Firebreak restricts analysis agents to read-only tools to limit the blast radius, but the gap is real. [Details →](docs/evidence/brownfield-validation/analysis.md)
+Hooks support phase entry, covered write checks, worker tracking, and continuation. Shell writes, external tools, disabled hooks, and hook timeouts can bypass prevention; close independently rechecks acceptance evidence. Host permissions and sandboxing supply the security boundary.
 
-## Docs
+Optional local telemetry lives in `.fbk/runtime/`. It omits prompts and tool arguments and never determines policy. Usage reports cover recorded review usage, not total authoring cost. Model claims about source inspection and passing tests are limited evidence, not proof of maintainability.
 
-- [Results, methodology, and raw data](results.md)
-- [Architecture overview](docs/architecture-overview.md)
-- [Context-asset authoring guide](assets/fbk-docs/fbk-context-assets.md)
+Run deterministic checks with `python3 tests/run-tests.py`. See [testing](docs/testing.md) and [workflow validation](docs/0.6.0/validation.md). Live model evaluations are explicit opt-ins.
 
-## Feedback
+## Documentation and feedback
 
-Firebreak is under active development, and I'd genuinely value feedback from others. Most useful: results from real runs, false positives and false negatives, where the gates were effective vs got in the way, comparisons with other agent workflows, etc. [Open an issue →](https://github.com/firebreak-ai/firebreak/issues)
+- [Changelog](CHANGELOG.md)
+- [Current decisions](docs/decisions-log.md)
+- [Glossary](GLOSSARY.md)
+- [Context-asset authoring](assets/fbk-docs/fbk-context-assets.md)
+- [Report an issue](https://github.com/firebreak-ai/firebreak/issues)
 
-## License
+## About the 0.6.0 release
+
+0.6.0 took a long time, most of it spent on trials and evaluations. It started as a major refactor to add the underlying state machine I had originally planned. New phases and some new skills followed.
+
+Then came the evaluations. I was never quite happy with the results. I could get reasonably good, useful code, but it took a lot of time and attention, and the ceremony felt too heavy and too inflexible. So I built a hybrid benchmark from the SlopCodeBench and EXACT approaches. The results were telling: we had gone off the rails. Parts of the flow worked, and other parts were actively detrimental. The problem was more than rigid ceremony. We were also writing code that was harder to maintain.
+
+The same evaluations showed a path forward, and 0.7.0 should come much more quickly.
 
 MIT — see [LICENSE](LICENSE).

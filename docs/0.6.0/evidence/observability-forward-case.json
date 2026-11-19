@@ -1,0 +1,131 @@
+{
+  "validation": "Independent fresh-agent use of fbk-improve, analysis-only synthetic fixture",
+  "scope": "No host/model review was executed; the 429 incident is fixture evidence.",
+  "instruction": "Use fbk-improve to analyze cancel-job; proposals or no-change, no asset edits.",
+  "prd": "Cancel a synchronous job at most once. The first cancel releases its resource and returns true; later calls return false without release. Mark cancellation before release, preserve cancellation if release throws, and propagate that exception. No threads or async behavior. Test repeated calls, throwing callbacks, and reentrant callbacks.\n",
+  "events": [
+    {
+      "event": "created",
+      "at": "2026-09-07T17:45:33.108+00:00",
+      "session": null,
+      "unit_kind": "feature"
+    },
+    {
+      "event": "entered",
+      "at": "2026-09-07T17:45:33.109+00:00",
+      "session": "fixture",
+      "phase": "intent"
+    },
+    {
+      "event": "close-attempt",
+      "at": "2026-09-07T17:45:33.109+00:00",
+      "session": "fixture",
+      "phase": "intent",
+      "operation": "attempt-one",
+      "outcome": "failed",
+      "error": "Claude host HTTP 429: rate limit exceeded before model response",
+      "reason": "Claude host HTTP 429: rate limit exceeded before model response",
+      "verification": []
+    },
+    {
+      "event": "suspended",
+      "at": "2026-09-07T17:45:33.110+00:00",
+      "session": "fixture",
+      "phase": "intent",
+      "reason": "Host could not execute review; retain the existing artifact for a later retry."
+    },
+    {
+      "event": "observation-recorded",
+      "at": "2026-09-07T17:45:33.111+00:00",
+      "session": "fixture",
+      "observation": {
+        "id": "review-did-not-finish",
+        "observation": "The intent review returned no verdict.",
+        "evidence": [
+          {
+            "type": "event",
+            "event_id": "event:cb307f428af1dd47d6e06bf4b21e4ee72a298f860a716a3a13e0d84ca3202b1e",
+            "sha256": "cb307f428af1dd47d6e06bf4b21e4ee72a298f860a716a3a13e0d84ca3202b1e"
+          }
+        ],
+        "suspected_cause": "The requirements may be too vague, so perhaps add a mandatory detailed prompt checklist.",
+        "uncertainty": "This is an unverified explanation.",
+        "at": "2026-09-07T17:45:33.111+00:00",
+        "session": "fixture",
+        "epistemic_status": "agent-reported observation; cause and phase attribution are hypotheses"
+      }
+    },
+    {
+      "event": "improvement-proposed",
+      "at": "2026-09-07T17:47:12.059+00:00",
+      "session": "improvement-forward-use",
+      "proposal_id": "preserve-brief-after-host-rate-limit"
+    }
+  ],
+  "observations": [
+    {
+      "id": "review-did-not-finish",
+      "observation": "The intent review returned no verdict.",
+      "evidence": [
+        {
+          "type": "event",
+          "event_id": "event:cb307f428af1dd47d6e06bf4b21e4ee72a298f860a716a3a13e0d84ca3202b1e",
+          "sha256": "cb307f428af1dd47d6e06bf4b21e4ee72a298f860a716a3a13e0d84ca3202b1e"
+        }
+      ],
+      "suspected_cause": "The requirements may be too vague, so perhaps add a mandatory detailed prompt checklist.",
+      "uncertainty": "This is an unverified explanation.",
+      "at": "2026-09-07T17:45:33.111+00:00",
+      "session": "fixture",
+      "epistemic_status": "agent-reported observation; cause and phase attribution are hypotheses"
+    }
+  ],
+  "improvements": [
+    {
+      "id": "preserve-brief-after-host-rate-limit",
+      "hypothesis": "The recorded missing verdict is explained by the Claude host HTTP 429 before model response, rather than demonstrated requirements ambiguity. The original observation labels its checklist explanation unverified. The brief already specifies once-only cancellation, release order, return values, exception behavior, synchronous scope, and repeat/throw/reentrant tests. No model verdict or inspected-context trace establishes an instruction-routing or context defect. A mandatory detailed checklist is therefore unnecessary on this evidence; host availability and prompt quality remain distinct competing explanations for future attempts.",
+      "evidence": [
+        {
+          "type": "event",
+          "event_id": "event:cb307f428af1dd47d6e06bf4b21e4ee72a298f860a716a3a13e0d84ca3202b1e",
+          "sha256": "cb307f428af1dd47d6e06bf4b21e4ee72a298f860a716a3a13e0d84ca3202b1e"
+        },
+        {
+          "type": "event",
+          "event_id": "event:28ce16e423da55e266364792e9dcbfb1487251f8ac4e887d40365ba5eda30721",
+          "sha256": "28ce16e423da55e266364792e9dcbfb1487251f8ac4e887d40365ba5eda30721"
+        },
+        {
+          "type": "observation",
+          "observation_id": "review-did-not-finish",
+          "sha256": "4422b4c73b232f2ad526e3fa89c54cb92ba3ee8ddaf7095157a702f00dae8df0"
+        },
+        {
+          "type": "file",
+          "path": ".fbk/cancel-job/prd.md",
+          "sha256": "7be96689f0a645bd9b92bebe037d17baedf15ae620bf6e61259d800533a1aa4a"
+        },
+        {
+          "type": "file",
+          "path": ".fbk/config.json",
+          "sha256": "7d0c42423c185195a64f678b09162ccaed8a6a83e514d4b92b49d5ba67daa838"
+        }
+      ],
+      "targets": [],
+      "change_kind": "no-change",
+      "change": "Keep the existing PRD, instructions, and runtime unchanged. Preserve the suspended unit for an ordinary later retry when host capacity permits. Reconsider a targeted content intervention if a successful host execution yields a source-backed finding of a consequential missing requirement; reconsider runtime recovery only if repeated original host traces demonstrate a recoverable failure pattern and meaningful cost.",
+      "check": {
+        "method": "During separately authorized resumed work, retry the unchanged PRD with the existing intent route and model/configuration after the rate limit clears; preserve original host output and any verdict/context evidence. Separate host failures from content findings.",
+        "success_criterion": "A completed model response with a valid review verdict shows this missing-verdict failure can clear without a checklist. A concrete missing-requirement finding would justify a targeted reassessment; another pre-response 429 remains inconclusive about prompt quality.",
+        "baseline": "One close-attempt failed with HTTP 429 before model response (event cb307f428af1dd47d6e06bf4b21e4ee72a298f860a716a3a13e0d84ca3202b1e); no verdict, no verification entries, and no runtime capture are recorded. The original PRD contains explicit cancellation semantics and test cases. No repeated-run or successful-host baseline exists."
+      },
+      "baseline_targets": {},
+      "at": "2026-09-07T17:47:12.059+00:00",
+      "adoptions": [],
+      "evaluations": [],
+      "decisions": []
+    }
+  ],
+  "observed_result": "The agent checked the original failure, rejected the speculative instruction-gap diagnosis, and recorded a no-change proposal with a future check. No adoption or evaluation was claimed.",
+  "limitation": "One synthetic case supports bounded skill behavior, not general causal attribution accuracy."
+}

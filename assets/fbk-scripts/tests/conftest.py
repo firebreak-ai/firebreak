@@ -1,48 +1,10 @@
+"""Spec close launches a trimming session; tests run it as one that cuts nothing unless a
+test installs its own."""
+
 import pytest
-from pathlib import Path
+from fbk.workflow import spec_trim
 
 
-@pytest.fixture
-def project_root():
-    """Return the path to the assets/fbk-scripts directory."""
-    return Path(__file__).parent.parent
-
-
-@pytest.fixture
-def set_log_dir(tmp_path, monkeypatch):
-    """Set LOG_DIR env var to a tmp_path subdirectory via monkeypatch."""
-    log_dir = tmp_path / "logs"
-    log_dir.mkdir()
-    monkeypatch.setenv("LOG_DIR", str(log_dir))
-    return log_dir
-
-
-@pytest.fixture
-def set_state_dir(tmp_path, monkeypatch):
-    """Set STATE_DIR env var to a tmp_path subdirectory via monkeypatch.
-
-    Also chdir into tmp_path so any cwd-relative side effect of a state
-    transition — notably the per-stage retrospective metrics injector, which
-    resolves its ai-docs/ path from os.getcwd() — lands in the temp tree
-    rather than leaking into the repository working copy.
-    """
-    state_dir = tmp_path / "state"
-    state_dir.mkdir()
-    monkeypatch.setenv("STATE_DIR", str(state_dir))
-    monkeypatch.chdir(tmp_path)
-    return state_dir
-
-
-@pytest.fixture
-def valid_sighting():
-    """Return a dict with all required pipeline sighting fields."""
-    return {
-        "id": "sighting-001",
-        "title": "Test sighting",
-        "location": "test/location",
-        "type": "issue",
-        "severity": "medium",
-        "mechanism": "detection mechanism",
-        "consequence": "potential impact",
-        "evidence": "supporting evidence"
-    }
+@pytest.fixture(autouse=True)
+def trim_cuts_nothing(monkeypatch):
+    monkeypatch.setattr(spec_trim, "launch", lambda root, unit, rows, config: [])

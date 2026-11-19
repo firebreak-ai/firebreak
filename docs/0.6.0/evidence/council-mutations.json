@@ -1,0 +1,71 @@
+{
+  "control": "passed",
+  "results": [
+    {
+      "mutation": "stale acceptance ignored",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n________ test_accepted_artifact_edit_invalidates_readiness_after_reload ________\ntests/test_workflow_lifecycle.py:181: in test_accepted_artifact_edit_invalidates_readiness_after_reload\n    assert (status[\"phase\"], status[\"status\"]) == (\"spec\", \"stale\")\nE   AssertionError: assert ('breakdown', 'ready') == ('spec', 'stale')\nE     \nE     At index 0 diff: 'breakdown' != 'spec'\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload\n1 failed in 0.05s\n"
+    },
+    {
+      "mutation": "phase prerequisites skipped",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n_______ test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry ________\ntests/test_workflow_lifecycle.py:130: in test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry\n    with pytest.raises(store.WorkflowError, match=\"intent\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry\n1 failed in 0.04s\n"
+    },
+    {
+      "mutation": "test integrity unchecked",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n_______ test_test_lock_detects_shell_or_external_changes_at_close[edit] ________\ntests/test_workflow_lifecycle.py:217: in test_test_lock_detects_shell_or_external_changes_at_close\n    with pytest.raises(store.WorkflowError):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_test_lock_detects_shell_or_external_changes_at_close[edit]\n1 failed in 0.10s\n"
+    },
+    {
+      "mutation": "approval revision ignored",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______________ test_approval_cannot_authorize_a_changed_revision _______________\ntests/test_workflow_lifecycle.py:263: in test_approval_cannot_authorize_a_changed_revision\n    with pytest.raises(store.WorkflowError, match=\"approval required\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision\n1 failed in 0.05s\n"
+    },
+    {
+      "mutation": "review budget ignored",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n________________ test_review_budget_survives_fixes_and_restart _________________\ntests/test_workflow_lifecycle.py:292: in test_review_budget_survives_fixes_and_restart\n    with pytest.raises(store.WorkflowError, match=\"budget exhausted\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart\n1 failed in 0.06s\n"
+    },
+    {
+      "mutation": "session ownership ignored",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______ test_other_session_requires_takeover_and_suspension_preserves_work ______\ntests/test_workflow_lifecycle.py:375: in test_other_session_requires_takeover_and_suspension_preserves_work\n    with pytest.raises(store.WorkflowError, match=\"belongs\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work\n1 failed in 0.04s\n"
+    },
+    {
+      "mutation": "review selection omitted from revision",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n_ test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget _\ntests/test_workflow_review.py:200: in test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget\n    with pytest.raises(store.WorkflowError, match=\"approval required\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget\n1 failed in 0.08s\n"
+    },
+    {
+      "mutation": "single result accepted for council",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n_______________ test_single_result_cannot_satisfy_council_choice _______________\ntests/test_workflow_review.py:241: in test_single_result_cannot_satisfy_council_choice\n    with pytest.raises(store.WorkflowError, match=\"does not match\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice\n1 failed in 0.08s\n"
+    },
+    {
+      "mutation": "unresolved council blocker dropped",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n____________ test_unresolved_blocker_cannot_become_clean_acceptance ____________\ntests/test_workflow_review.py:391: in test_unresolved_blocker_cannot_become_clean_acceptance\n    with pytest.raises(store.WorkflowError, match=\"blocking defects\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance\n1 failed in 0.07s\n"
+    },
+    {
+      "mutation": "failed council member ignored",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______________ test_council_failure_is_persisted_without_fallback ______________\ntests/test_workflow_review.py:343: in test_council_failure_is_persisted_without_fallback\n    with pytest.raises(store.WorkflowError, match=\"no single-reviewer fallback\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback\n1 failed in 0.08s\n"
+    },
+    {
+      "mutation": "review choice mutable during close",
+      "detected": true,
+      "exit_code": 1,
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n____________________ test_running_close_cannot_change_mode _____________________\ntests/test_workflow_review.py:216: in test_running_close_cannot_change_mode\n    close.close_phase(project, \"feature\", \"spec\", \"s\", reviewer=inspect)[\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nfbk/workflow/close.py:91: in close_phase\n    result = reviewer(root, unit, phase, files, checks)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_workflow_review.py:211: in inspect\n    with pytest.raises(store.WorkflowError, match=\"running close\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_review.py::test_running_close_cannot_change_mode\n1 failed in 0.08s\n"
+    }
+  ]
+}

@@ -16,7 +16,7 @@ output_contract: findings-artifact
 | Type | What it means | Ship decision |
 |---|---|---|
 | `behavioral` | The code produces an incorrect or missing behavior under a realistic input, edge condition, or concurrent execution scenario. Covers spec divergence, AI failure modes, concurrency defects, and logic-inversion errors. | Block |
-| `structural` | The code's internal organization makes it harder to maintain, understand, or extend correctly — without being wrong today. Includes missing naming, awkward decomposition, or patterns that compound future defect risk. | Request changes or merge-and-flag |
+| `structural` | The code's organization creates a demonstrated maintenance risk under a plausible change, even when current behavior passes. Preferences or arbitrary size thresholds alone do not qualify. | Request changes or merge-and-flag |
 | `test-integrity` | A test would not catch the regression it claims to cover — the assertion is too weak, a fixture patches away the behavior, or the test name misrepresents what it checks. | Request changes |
 | `fragile` | The code is currently correct but depends on an implicit assumption that is plausible to violate by a nearby change — not a hypothetical future change, a realistic one. | Request changes or merge-and-flag |
 
@@ -56,7 +56,7 @@ required: [title, location, type, severity, mechanism, consequence, evidence]
 
 Read `shared-detection.md` for the test-integrity audit used by this lens.
 
-Read `.claude/fbk-docs/fbk-sdl-workflow/code-review-guide.md` for the behavioral comparison methodology, finding format, sighting format, and orchestration protocol. Read `.claude/fbk-docs/fbk-sdl-workflow/ai-failure-modes.md` for the AI failure mode checklist used when no specs are available. Read `.claude/fbk-docs/fbk-sdl-workflow/security-patterns.md` for security detection targets applied to all code reviews. Read `.claude/fbk-docs/fbk-sdl-workflow/detection-audits.md` for the concurrency audit, logic-inversion branch enumeration, cross-function API trace, and consistency audit passes the researcher runs before emitting sightings. Read `.claude/fbk-docs/fbk-design-guidelines/quality-detection.md` for structural detection targets applicable to all code reviews.
+Read `.claude/fbk-docs/review/code-review-guide.md` for the behavioral comparison methodology, finding format, sighting format, and orchestration protocol. Read `.claude/fbk-docs/review/ai-failure-modes.md` for the AI failure mode checklist applied alongside specs or intent. Read `.claude/fbk-docs/review/security-patterns.md` for security detection targets applied to all code reviews. Read `.claude/fbk-docs/review/detection-audits.md` for the concurrency audit, logic-inversion branch enumeration, cross-function API trace, and consistency audit passes the researcher runs before emitting sightings. Read `.claude/fbk-docs/review/quality-detection.md` for structural detection targets applicable to all code reviews.
 
 ### Detection passes
 
@@ -77,7 +77,7 @@ Run these passes in order. Tag each sighting with its detection source: `spec-ac
 
 **Test-integrity audit** (`detection_source: audit-pass`): Read `shared-detection.md` for the full test-integrity audit. Apply it to every modified test in scope. Do not re-embed the audit body here — the reference resolves to the current `shared-detection.md` content.
 
-**Structural quality pass** (`detection_source: structural-target`): Apply the targets from `quality-detection.md`. Structural targets produce `structural` findings.
+**Structural quality pass** (`detection_source: structural-target`): Apply the targets and evidence threshold from `quality-detection.md`. Structural targets produce `structural` findings when a concrete maintenance consequence is demonstrated; they can require correction before acceptance despite green tests. Assess accepted design/spec decisions as possible origins and preserve evidence for the retrospective. Do not manufacture an upstream failure when implementation departed from a sound contract.
 
 **Linter supplement** (`detection_source: linter`): When linter or typechecker output is provided, read it to understand what mechanical issues were already caught. Focus on issues these tools miss. Tag sightings derived from tool output as `linter`.
 
@@ -110,7 +110,7 @@ Specific reclassification cases for this lens:
 
 ### Provenance for dead code
 
-When a sighting names material that appears unused — unreachable code, declared interfaces with no consumer, exported symbols with no callers — the challenger traces provenance through: requirements, design documents, spec ACs, task history, and git log for the file. If the trace confirms the material is genuinely dead, the finding is verified. If the trace is ambiguous (infrastructure shipped ahead of its first consumer, a task written against an undelivered dependency), surface the ambiguity in the evidence field rather than rejecting.
+When a sighting names material that appears unused — unreachable code, declared interfaces with no consumer, exported symbols with no callers — the challenger traces provenance through: requirements, design documents, spec ACs, task history, and git log for the file. If the trace confirms the material is genuinely dead, the finding is verified. If the trace is ambiguous (infrastructure shipped ahead of its first consumer, a task written against an undelivered dependency), return `unresolvable` with the missing fact when the ambiguity prevents establishing the defect; do not promote uncertainty into a confirmed finding.
 
 ### Cited-source reading
 
@@ -118,7 +118,7 @@ Code review findings commonly cite: spec ACs, UV steps, design documents, `code-
 
 ### Consistency sightings
 
-For sightings produced by the consistency audit (sibling sites that need the same fix), the challenger verifies that the sibling site exists at the named location and that the cited asymmetry (if any) is undocumented. The challenger does not need to re-enumerate all sibling sites — it confirms the specific one named in the sighting.
+For sightings produced by the consistency audit (sibling sites that need the same fix), the challenger verifies that the sibling site exists at the named location and reads the current implementation, callers, and applicable contract. The challenger traces whether the named sibling shares the affected obligation and broken mechanism, and what its callers observe. Undocumented asymmetry alone does not confirm a partial fix. The challenger need not re-enumerate every sibling; it verifies the named claim.
 
 ---
 
@@ -128,7 +128,7 @@ This lens is loaded by the `fbk-code-review` preset, which produces a findings r
 
 ### Findings report
 
-**Filename**: `fbk-code-review-<YYYY-MM-DD>-<HHMM>.md` in the project's working directory.
+**Filename**: `.fbk/runtime/reports/fbk-code-review-<YYYY-MM-DD>-<HHMM>.md` under the project root; report updates stay outside the reviewed source snapshot.
 
 **Sections**:
 - Intent register (behavioral claims and Mermaid diagram from intent extraction)
@@ -136,39 +136,3 @@ This lens is loaded by the `fbk-code-review` preset, which produces a findings r
 - Retrospective (fields defined in `code-review-guide.md`)
 
 **Finding entry format**: Each entry is produced by `python3 "$HOME"/.claude/fbk-scripts/fbk.py pipeline to-markdown` from the verified finding JSON. The format includes finding ID, title, type, severity, mechanism, consequence, evidence location, detection source, and any Challenger observations.
-
-### Supporting artifact: `.code-review-rounds.json`
-
-**Path**: `.code-review-rounds.json` directly under the feature directory (`ai-docs/<feature>/.code-review-rounds.json`).
-
-**Envelope**:
-```json
-{
-  "schema_version": "1.0",
-  "spec": "<feature-name>",
-  "rounds": [...]
-}
-```
-
-**Per-round entry shape**:
-```json
-{
-  "round": 1,
-  "raised": 5,
-  "survived": 3,
-  "severity": "critical"
-}
-```
-
-- `round`: 1-based integer.
-- `raised`: sighting count before challenger filtering.
-- `survived`: verified count after challenger filtering.
-- `severity` (optional): the single highest severity among the round's confirmed findings. One of `critical`, `major`, `minor`, `info`. Omit when the round produced no confirmed findings.
-
-The human-facing per-severity breakdown lives only in the review report, never in this file.
-
-### Gate check
-
-The code-review gate reads this file at check time via `project_round_entries`, which allowlist-projects each round entry to `{"raised": ..., "survived": ..., "severity": ...}`, dropping `round` and any unrecognized keys. The gate emits the `CODE_REVIEW_ROUNDS` observability event from the projected entries and writes a pass/fail verdict based on quality-scan and test-review artifacts.
-
-Run `python3 "$HOME"/.claude/fbk-scripts/fbk.py code-review-gate ai-docs/<feature>` after the detection-verification loop, quality scan, final test-review, and doc reconcile have all completed.

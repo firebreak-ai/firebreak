@@ -1,27 +1,10 @@
-"""fbk package for validation gates and utilities."""
+"""Firebreak workflow and standalone review commands."""
 
-COMMAND_MAP = {
-    "spec-gate": "fbk.gates.spec",
-    "review-gate": "fbk.gates.review",
-    "breakdown-gate": "fbk.gates.breakdown",
-    "task-reviewer-gate": "fbk.gates.task_reviewer",
-    "test-hash-gate": "fbk.gates.test_hash",
-    "intent-gate": "fbk.gates.intent",
-    "design-gate": "fbk.gates.design",
-    "code-review-gate": "fbk.gates.code_review",
-    "coherence-gate": "fbk.gates.coherence",
-    "task-completed": "fbk.hooks.task_completed",
-    "dispatch-status": "fbk.hooks.dispatch_status",
-    "pipeline": "fbk.pipeline",
-    "audit": "fbk.audit",
-    "config": "fbk.config",
-    "state": "fbk.state",
-    "session-logger": "fbk.council.session_logger",
-    "session-manager": "fbk.council.session_manager",
-    "session-state": "fbk.council.session_state",
-    "ralph": "fbk.council.ralph",
-    "report": "fbk.report",
-    "run-retro": "fbk.run_retro",
-    "cross-review": "fbk.cross_review",
-    "precheck": "fbk.precheck",
-}
+from fbk.workflow import COMMANDS
+
+COMMAND_MAP = {name: "fbk.workflow.cli" for name in COMMANDS}
+COMMAND_MAP.update({"pipeline": "fbk.pipeline", "cross-review": "fbk.cross_review"})
+COMMAND_MAP["review-round"] = "fbk.workflow.review_rounds"
+COMMAND_MAP["investigation"] = "fbk.workflow.investigations"
+
+COMMAND_MAP["remediation"] = "fbk.workflow.remediation_verification"

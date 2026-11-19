@@ -21,141 +21,16 @@ Every term used in firebreak artifacts shapes downstream agent behavior. Mislead
 
 **Usage examples in firebreak**:
 - `/fbk-implement`'s per-wave verification — a wave is a task-batch within a single feature's implementation, indexed by `task.json`'s `wave_id`
-- Remediation flow's foundation-first wave order — a wave is a module group within a cycle, ordered by the module dependency graph (see `ai-docs/remediation-flow/remediation-flow-overview.md` §"Cycle and wave order")
 
 Both uses are valid instances of the same underlying concept. The wave term is reserved for "unit of parallel tasks"; no renaming is needed to distinguish the two contexts because their surrounding text always disambiguates.
 
 ---
 
-### dispatch
-
-**Definition**: The planned automation layer for firebreak. Provisions Firebreak's quality pipeline for scheduled, cron-style work that doesn't originate from a live human session. Deferred until the four code-quality layers ship first so automated runs inherit the quality gates rather than retrofit them.
-
-**LLM priors activated**: Generic computer-science term — event dispatch, message dispatch, system dispatcher. Risk: confusion with low-level dispatcher mechanisms. In firebreak context, dispatch refers specifically to the automation layer that orchestrates pipeline runs against a tier × messiness classification.
-
----
-
-### dispatch complexity tier
-
-**Definition**: One of two orthogonal axes used by dispatch to classify a scheduled job (the other is the messiness axis). Tier classifies the *scope* of a change — how much code area is touched and what shape the work has — which drives decomposition, agent count, and whether design judgment is required before implementation. Six tiers from single-touch through architectural-replace.
-
-**LLM priors activated**: "Tier" activates generic hierarchical/ranked priors. Risk: assumption that tiers are linear quality levels rather than discrete shape categories. The six tiers are discrete shapes; "higher" tiers do not mean "harder" or "more important" in a generic sense — they mean "this specific shape of work."
-
-**Determined by**: context volume, decomposition need, multi-session need, design judgment need.
-
-**Not determined by**: subject-matter labels, greenfield-vs-brownfield, remediation-vs-new-work. These are orthogonal to tier.
-
----
-
-### single-touch
-
-**Definition**: A dispatch complexity tier. A change consisting of one read, one edit, one spot. Provisions one prompt, one agent, no task tracking.
-
-**LLM priors activated**: Risk: "single" may activate "trivial" or "easy" connotations. Single-touch is not necessarily easy — it is simply small in scope. A single-touch change may still require care.
-
----
-
-### single-module
-
-**Definition**: A dispatch complexity tier. A change with multiple edits, all within one module. Provisions one agent with task tracking on.
-
-**LLM priors activated**: Neutral. The term "module" is project-relative — what counts as a module depends on the codebase being worked in.
-
----
-
-### cross-module
-
-**Definition**: A dispatch complexity tier. A change that touches multiple modules but in a known shape — propagating a field through call sites, renaming an API, threading a parameter. The picture is small enough for one agent to hold. Provisions one agent plus task tracking.
-
-**LLM priors activated**: Mostly neutral. The "known shape" qualifier is load-bearing — cross-module is distinguished from decomposed by whether the work shape is already understood, not by sheer count of modules touched.
-
----
-
-### decomposed
-
-**Definition**: A dispatch complexity tier. A change too large for one agent's working set. Requires explicit task breakdown into parallel or sequential sub-units. Provisions an orchestrator plus sub-agents with bounded contexts and hand-off artifacts.
-
-**LLM priors activated**: "Decomposed" activates standard software-engineering decomposition connotations. The term refers to dispatch-level decomposition (a job becomes many sized tasks), not function-level decomposition or code refactoring decomposition. Risk: conflation with those other uses.
-
----
-
-### architectural-extend
-
-**Definition**: A dispatch complexity tier. A change that requires design judgment before implementation and introduces a new pattern that fits the existing system. Provisions a design phase plus decomposed implementation.
-
-**LLM priors activated**: "Architectural" activates expectations of high-stakes structural work; this loading is intended. "Extend" signals additive change rather than replacement; this loading is intended and distinguishes the tier from architectural-replace.
-
----
-
-### architectural-replace
-
-**Definition**: A dispatch complexity tier. A change that requires design judgment AND displaces an existing pattern. Provisions a design phase plus the isolation-firebreak flow, because pattern removal has the same cost shape as remediation.
-
-**LLM priors activated**: "Replace" signals destructive change; this loading is intended because architectural-replace work has remediation-cost shape. Risk: connotation that the replaced pattern was "wrong." Replacement may be driven by changing requirements rather than pattern badness; the term carries no judgment about why replacement is needed.
-
----
-
 ### technique-skill
 
-**Definition**: A capability extracted into its own callable skill because at least two consumers benefit from invoking it with a stable interface. A consumer is either another skill (typically a phase skill) or the human operator invoking the capability out-of-ceremony when a meaningful standalone use case exists. Distinct from a phase skill (which orchestrates a stage of the SDL) and from an agent (which embodies a persona); technique skills are the capability layer between them.
+**Definition**: A capability extracted into its own callable skill because at least two consumers benefit from invoking it with a stable interface. A consumer is either another skill (typically a phase skill) or the human operator invoking the capability out-of-ceremony when a meaningful standalone use case exists. Distinct from a phase skill (which orchestrates a stage of the SDL) and from an agent (which embodies a review or analysis role); technique skills are the capability layer between them.
 
 **LLM priors activated**: Neutral; the term defines a specific asset class in the firebreak taxonomy. The four technique skills today are grilling, fresh-eyes, quality scan, and test review.
-
----
-
-### slice shape
-
-**Definition**: One of four discrete test-discipline categories declared per slice in the spec. Each shape implies a different test-task structure, a different relationship to existing tests, and a different test-review behavior. The four shapes are new-contract, contract-preserving, contract-evolving, and cross-cutting.
-
-**LLM priors activated**: "Shape" signals a discrete category, not a position on a continuum — this loading is intended. Risk: conflation with broader "shape" terms (e.g., test shape, code shape, work shape) that appear elsewhere in firebreak vocabulary. Surrounding context always names "slice shape" specifically.
-
----
-
-### test-discipline
-
-**Definition**: The YAML field in a slice declaration that records the slice's shape (one of new-contract, contract-preserving, contract-evolving, cross-cutting). Read by breakdown to drive the slice's test-task and impl-task structure.
-
-**LLM priors activated**: Names what the field controls (which test discipline applies to this slice), not what taxonomy the value comes from. Reads naturally in YAML context: `test-discipline: contract-preserving`. Prose may refer to the values as "slice shapes" or "test-discipline modes" interchangeably; the field name itself is stable.
-
----
-
-### new-contract
-
-**Definition**: A slice shape. The slice introduces behavior that does not exist in the codebase. The test-task agent writes new tests against the slice's defined contract; the tests must fail against an empty implementation (red). Hash-locking applies to the new tests. The impl-task agent writes code that turns the tests green without modifying them. Classical red → green discipline.
-
-**LLM priors activated**: "New" and "contract" are both neutral. Risk: confusion with greenfield-vs-brownfield framing — new-contract is independent of that axis; a new-contract slice can appear in either greenfield or brownfield work.
-
----
-
-### contract-preserving
-
-**Definition**: A slice shape. The slice changes implementation while preserving an existing contract. Existing tests cover the contract and must continue to pass; no new tests are written for the contract itself. Hash-locking applies to the existing tests. No red phase because the test is already green against the old implementation.
-
-**LLM priors activated**: "Preserving" signals stability of behavior, which is intended. Risk: implies the slice is purely internal — but contract-preserving slices can also be performance optimizations, refactors, or replacements as long as the observable contract is unchanged.
-
----
-
-### contract-evolving
-
-**Definition**: A slice shape. The slice changes both implementation and contract. Some existing tests may need to be retired because they tested behavior the new contract no longer guarantees; new tests are written for behaviors the new contract introduces. The slice declaration must list which existing tests are retired and why.
-
-**LLM priors activated**: "Evolving" signals incremental change rather than wholesale replacement, which is the intended distinction from new-contract (where no prior contract exists) and from contract-preserving (where the contract is unchanged). The explicit retirement list is the load-bearing detail — a contract-evolving slice without a retirement list is malformed.
-
----
-
-### cross-cutting
-
-**Definition**: A slice shape. The slice modifies behavior that spans multiple existing modules or seams. Tests live at the seams — integration tests, contract tests between modules, or end-to-end tests for a flow. Cross-cutting is test-only: it produces seam tests but no paired implementation (the implementation already exists across the other slices).
-
-**LLM priors activated**: Standard software-engineering term for behavior that spans multiple modules. Generally neutral. Risk: assumed to mean "complex" or "hard" — cross-cutting refers only to where the behavior lives (at seams), not to difficulty.
-
----
-
-### hybrid gate pattern
-
-**Definition**: The general shape every phase gate takes in firebreak's SDL: a deterministic mechanical check that validates structure, plus a semantic check anchored on a verifiable artifact produced by a technique skill. The mechanical part is hook-ready (can migrate to deterministic hook enforcement when hooks support it). The semantic part anchors on the technique-skill's structured output so the gate has something concrete to inspect rather than re-running judgment.
-
-**LLM priors activated**: "Hybrid" signals two-mode operation, which is intended (mechanical + semantic). Risk: read as "approximate" or "best-of-both" rather than as a specific architectural pattern. The pattern formalizes the existing two-layer gate concept by specifying how the semantic layer surfaces its verdict.
 
 ---
 
@@ -164,14 +39,6 @@ Both uses are valid instances of the same underlying concept. The wave term is r
 **Definition**: A gate signal that surfaces a problem for human triage without blocking the gate — added to the result's `findings` list, not `failures`. A gate emits one only when the problem needs human judgment (e.g. test drift: a locked test renamed but content-identical). When a problem is instead agent-fixable (missing or unreadable artifact, hash mismatch), the gate blocks via a failure so the agent redoes the work. The rule: block when agent-fixable, advise when it needs a human.
 
 **LLM priors activated**: "Advisory" and "finding" read as generic. Risk: mistaken for a mere lower-severity failure. It is not a severity level — it is a routing decision about *who acts*. The code-review gate derives one from the test-review artifact's `Verdict:` line, making that line a vocabulary contract between the test-reviewer agent and the gate — the same guide↔gate drift the slice-shape sentinel guards.
-
----
-
-### design manifest
-
-**Definition**: A per-feature index file at `ai-docs/<feature-name>/design-manifest.md` listing every design page the design phase produced under `ai-docs/<feature-name>/design/`. The mechanical anchor for the design-phase hybrid gate's bidirectional check (every manifest entry exists as a page in the feature directory; every design page in that directory appears in the manifest). A ceremony product — deleted at squash-merge along with the rest of the feature directory.
-
-**LLM priors activated**: "Manifest" signals a structured listing for verification, which is the intended use. Risk: conflated with other firebreak manifests (task manifest, test-lock manifest); surrounding context disambiguates.
 
 ---
 
@@ -185,53 +52,13 @@ Both uses are valid instances of the same underlying concept. The wave term is r
 
 ### fresh-eyes
 
-See [fresh-eyes technique](#fresh-eyes-technique).
-
----
-
-### fresh-eyes technique
-
-**Definition**: A technique skill. A context-clear comprehension check. A reviewer (typically a subagent in isolated context) reads the artifact cold — without authoring context — and surfaces what doesn't make sense as structured observations classified by severity. The reviewer does not have authority to fix; fixes go back to the authoring agent. Used as the semantic anchor for the intent and design gates (the spec gate uses the related, existing council pattern).
-
-**LLM priors activated**: "Fresh eyes" signals untainted perspective, which is intended. Risk: read as "casual" or "informal" — the technique is structured, has a defined output format, and runs under enforced context isolation. The "no fix authority" rule is load-bearing.
+A technique skill. See [technique-skill](#technique-skill).
 
 ---
 
 ### quality scan
 
-See [quality scan technique](#quality-scan-technique).
-
----
-
-### quality scan technique
-
-**Definition**: A technique skill. A top-five code-quality scan run during code review (the *Pocock pattern*: surface the five highest-priority quality opportunities, ranked, and act on them as a separate decision). Surfaces the five issues in the change set as structured findings, each with severity (critical / substantive / minor). Scan-only — does not auto-fix. The operator decides what to do with each finding. Invoked by code-review; also invocable out-of-ceremony for any diff.
-
-**LLM priors activated**: "Quality" is generic; "scan" signals breadth-first inspection. Together they read as standard tooling. Risk: confused with the broader firebreak quality rubric (a multi-dimensional eval system for self-improvement loops). The quality scan is the focused operator-facing top-five list at code-review time, sharing vocabulary with the rubric but smaller in scope.
-
----
-
-### test review technique
-
-**Definition**: A technique skill. Validates that AI-written tests actually catch the behavior they claim to cover, looking for known AI test failure modes (implementation-embedding, weak assertions, magic-number assertions, internally-contradictory fixtures, mocked dependencies that bypass the behavior under test). Invoked at multiple checkpoints: pre-lock (before hash-locking) by breakdown, and as a final pass by code-review. Formalizes the existing fbk-test-reviewer agent persona as a callable capability.
-
-**LLM priors activated**: Generic software-engineering term. Risk: conflated with general code review or with the existing test-reviewer agent's pre-remediation narrow role. The technique is broader than the original agent and runs at more checkpoints; the existing persona is preserved as one implementation of the technique.
-
----
-
-### test-lock manifest
-
-**Definition**: A feature-directory file (typically `test-lock-manifest.json`) recording, for each accepted test file: relative path, SHA-256 hash at acceptance time, the slice declaration the test belongs to, and the slice's test-discipline. The structural protection against test mutation during implementation. The mechanical anchor for the code-review gate's hash check. A ceremony product — deleted at squash-merge along with the rest of the feature directory.
-
-**LLM priors activated**: "Lock" signals enforcement, which is intended. Risk: implies the lock is global or persistent — it is per-feature and bounded by the feature's lifetime. The manifest itself is ceremony; the locked tests outlive the feature.
-
----
-
-### capability-entry
-
-**Definition**: The model by which scope-appropriateness is handled in the SDL: the six phases are independently invocable capabilities, and the human enters the chain at the point that fits the work, rather than a classifier deciding which phases run. Replaces tier-driven depth. A bugfix may enter at the spec or go lighter; a large change starts at intent.
-
-**LLM priors activated**: "Entry" frames the phases as doors the human chooses, not a conveyor belt. Risk: read as "phases are optional to skip mid-run" — the SDL itself does not silently drop a phase the chain reached; skipping is a human *entry* decision, not an in-flight omission.
+A technique skill. See [technique-skill](#technique-skill).
 
 ---
 
@@ -267,35 +94,11 @@ See [quality scan technique](#quality-scan-technique).
 
 ---
 
-### design contracts page
-
-**Definition**: The per-feature file at `design/contracts.md` produced during the design phase. Enumerates every interface the design introduces or modifies, each identified by an `IF-D-NN` id. The canonical source for `IF-D-NN` entries carried into the spec. A ceremony artifact — lives in the feature directory and is deleted at squash-merge.
-
-**LLM priors activated**: "Contracts page" reads as a structured reference document, which is the intended use. Risk: confused with a project-level contract registry — the design contracts page is feature-scoped and ephemeral, not a persistent project artifact.
-
----
-
-### IF-D-NN / IF-S-NN identifier scheme
-
-**Definition**: The two-namespace identifier scheme for interface contracts. `IF-D-NN` identifies a contract authored on the design contracts page (`design/contracts.md`), where `NN` is the zero-padded two-digit sequence number assigned there. `IF-S-NN` identifies a contract minted by the spec author — either a spec-discovered new contract or a pre-existing blast-radius contract — where `NN` is assigned sequentially within the spec. The prefix distinguishes origin: design-originated versus spec-originated.
-
-**LLM priors activated**: Identifier patterns activate counting/sequencing priors. The `D` / `S` split is the load-bearing detail: `D` = design namespace, `S` = spec namespace. Risk: agents may assume a single flat namespace; the two-prefix distinction must be stated explicitly when consuming or minting ids.
-
----
-
 ### blast radius
 
-**Definition**: The dependent set of a module the feature declares changed — all callers, consumers, and other modules that rely on an interface the changed module exposes. Deriving the blast radius surfaces pre-existing contracts that must be recorded in `## Interface contracts` as `IF-S-NN` entries with `design-ref: pre-existing`, ensuring the spec accounts for breakage risk beyond the directly touched modules.
+**Definition**: What a change reaches beyond what the unit's accepted documents state: the critical path, a new function or module, an interface (inputs, outputs, printed text, exit codes, errors), or a file outside the unit's scope. When sorting review findings, a remedy with blast radius is escalated to the operator rather than fixed by the author.
 
-**LLM priors activated**: "Blast radius" activates destructive-change risk connotations, which are the intended priors — the term signals that a change propagates outward and the author must assess the extent. Risk: read as catastrophist; in context, blast radius is a neutral enumeration step, not a warning that the change is dangerous.
-
----
-
-### design-anchor check
-
-**Definition**: A spec-review verification that each `IF-D-NN` entry in `## Interface contracts` matches its counterpart on the design contracts page — same signature, same invariants, same covers list. Catches contract drift introduced when the spec author edits a carried contract without updating the design page (or vice versa). Performed by the spec reviewer as part of the hybrid gate semantic check.
-
-**LLM priors activated**: "Anchor" signals a tethering relationship — the spec entry is anchored to the design entry and must not drift. Risk: read as a mechanical hash check; the design-anchor check is a semantic comparison of human-readable fields, not a hash equality assertion.
+**LLM priors activated**: "Blast radius" activates destructive-change risk connotations, which are the intended priors: a change propagates outward and its reach must be assessed. Risk: read as catastrophist; a remedy with blast radius is not dangerous, it only needs the operator's answer before the author acts.
 
 ---
 
@@ -315,42 +118,6 @@ See [quality scan technique](#quality-scan-technique).
 
 ---
 
-### shape
-
-**Definition**: The kind of work a single unit in a workflow run performed, drawn from a closed five-member vocabulary — distill, implement, review, synthesize, gate. In the observability substrate the shape is resolved from the unit's recorded persona name (`resolve_shape` in `fbk/shapes.py`); a persona that maps to nothing yields null, never an invented shape. Distinct from [slice shape], which is a test-discipline category.
-
-**LLM priors activated**: "Shape" signals a discrete category from a fixed set, not a position on a continuum — intended. Risk: conflation with the other firebreak uses of "shape" (slice shape, work shape, code shape). The vocabulary here is specifically the five *work-capability* shapes of a harvested run unit; surrounding context names "shape" against the unit/record vocabulary, and the closed five-member set is the disambiguator. A null shape means "this persona is not in the vocabulary," not "low quality."
-
-**Usage examples in firebreak**:
-- A run record unit's `shape` field, set by `harvest` from the persona via `resolve_shape`
-- `run-retro` renders each unit's shape; a persona outside the vocabulary renders as an em dash
-
----
-
-### topology
-
-**Definition**: How a workflow unit was organized, recorded as two facts the harness cannot otherwise expose: *cardinality* (single or fan-out) and *stance* (collaborative or adversarial). Carried in a run record unit's `topology` object, parsed from the launch-prompt attribution descriptor the workflow glue prepends to each agent prompt.
-
-**LLM priors activated**: "Topology" activates network/graph-structure priors. Risk: read as a rich graph of inter-agent connections; here it is narrowly the two deployment-level facts (cardinality, stance) for one unit, not a full dependency graph. The surrounding record schema bounds the meaning.
-
----
-
-### asset bundle
-
-**Definition**: The identity of the context assets loaded for a workflow unit — in this slice, the persona name, taken from the launch-prompt attribution descriptor the workflow glue emits (`asset_bundle.persona`); null when no descriptor carries it. The instruction-file identity and decision-tree identity are structurally reserved (present but always null) for a future dynamic assembler to stamp. Carried in a run record unit's `asset_bundle` object. Note the asymmetry with [shape]: shape resolves from the descriptor persona *or*, failing that, the recorded `agent_type`, so a unit can have a non-null shape while its `asset_bundle.persona` is null.
-
-**LLM priors activated**: "Bundle" signals a grouped set of things loaded together — intended. Risk: read as always populated; `persona` is only as present as the descriptor that carries it, and `instructions`/`decision_tree` are deliberately reserved null until an assembler can stamp them truthfully. The null fields are forward-compatibility reservations, not missing data.
-
----
-
-### workflow journal
-
-**Definition**: The Claude Code session-runtime file (`journal.jsonl`) inside a workflow run directory that records each agent's `started` and `result` lines. In the observability substrate it is the authoritative *agent roster* for a run: harvest reads it to learn which agents belong to the run, then filters the event stream to those agent ids. External and undocumented — the substrate locates the run directory by glob-and-match on the run id rather than depending on the project-hash naming scheme.
-
-**LLM priors activated**: "Journal" activates append-only-log priors, which fit. Risk: conflated with the firebreak event stream (`events.jsonl`) — they are different files from different writers. The journal is written by the Claude Code runtime and is the roster; the event stream is the firebreak capture plane joined against that roster.
-
----
-
 ### adversarial review pattern
 
 **Definition**: The one generic review shape every Firebreak review type runs as a preset over: a researcher surfaces candidate problems from a cold read, a challenger independently verifies or rejects each one, confirmed problems survive, and the loop repeats until a round comes back clean or a round cap is reached. The loop, the isolation rules, and the carried review-quality behaviors live in this one pattern; only the per-type lens varies. Replaces the former arrangement where code review, test review, and fresh-eyes each reimplemented their own review machinery.
@@ -361,7 +128,7 @@ See [quality scan technique](#quality-scan-technique).
 
 ### researcher
 
-**Definition**: The role in the adversarial review pattern that reads an artifact cold and surfaces candidate problems as structured findings. It does not fix, does not issue verdicts, and never receives a prior round's output or another role's framing. Always spawned as a cleared agent so its cold read is structural, not a behavioral promise. The type-specific knowledge of what to look for reaches it through the review lens injected at spawn, not through its own persona.
+**Definition**: The role in the adversarial review pattern that reads an artifact cold and surfaces candidate problems as structured findings. It does not fix, does not issue verdicts, and never receives a prior round's output or another role's framing. Always spawned as a cleared agent so its cold read is structural, not a behavioral promise. The type-specific knowledge of what to look for reaches it through the review lens injected at spawn, not through its own persona. The role text is `fbk-docs/review/researcher-role.md`, included in a round contributor's instructions.
 
 **LLM priors activated**: "Researcher" frames the role as open investigation across any artifact kind (code, tests, a contract, a plan), which is the intended type-neutral reading. Chosen over "detector" (too code-and-defect-flavored to travel across review types) and "finder." Risk: "researcher" could imply web/literature research; in Firebreak it means the surfacing role of a review, paired with [challenger].
 
@@ -369,7 +136,7 @@ See [quality scan technique](#quality-scan-technique).
 
 ### challenger
 
-**Definition**: The role in the adversarial review pattern that independently verifies or rejects each candidate finding the researcher produced. It reads the artifact cold first, then receives only de-framed candidate claims and their cited sources — never the researcher's reasoning, confidence, or framing. Its four outcomes are verified, verified-pending-execution, rejected, and rejected-as-nit. It generates no new findings; it rules on what it received. Always spawned as a cleared agent. Carries the generic disciplines: read the cited source before ruling, and trace provenance before confirming dead material.
+**Definition**: The role in the adversarial review pattern that independently verifies or rejects each candidate finding the researcher produced. It reads the artifact cold first, then receives only de-framed candidate claims and their cited sources — never the researcher's reasoning, confidence, or framing. Its four outcomes are verified, verified-pending-execution, rejected, and rejected-as-nit. It generates no new findings; it rules on what it received. Always spawned as a cleared agent. Carries the generic disciplines: read the cited source before ruling, and trace provenance before confirming dead material. The role text is `fbk-docs/review/challenger-role.md`, included in a round contributor's instructions.
 
 **LLM priors activated**: "Challenger" signals an intended skeptical stance — demand proof, default to rejection without evidence — which is the point. Risk: read as adversarial toward the researcher personally; the challenge is against the finding's claim, enforced structurally by starving the challenger of the researcher's framing (the isolation invariant).
 
@@ -385,7 +152,7 @@ See [quality scan technique](#quality-scan-technique).
 
 ### review preset
 
-**Definition**: A thin configured instance of the adversarial review pattern that wires one review type together: it names the lens to load, sets the cardinality (how many researchers, how many challengers), declares the artifact paths it writes, and calls the review loop. It holds no knowledge of what to look for. Existing review skills (code review, test review, fresh-eyes) become presets at their current paths; new review types (coherence, test-plan, task) are added as new presets.
+**Definition**: A thin configured instance of the adversarial review pattern that wires one review type together: it names the lens to load, sets the cardinality (how many researchers, how many challengers), declares the artifact paths it writes, and calls the review loop. It holds no knowledge of what to look for. Standalone review skills supply these settings for their domain.
 
 **LLM priors activated**: "Preset" signals a saved configuration over a general mechanism — intended: a preset is a small set of dials over the shared loop, not a new machine. Risk: read as a rigid or trivial setting; a preset can carry preset-specific pre-work and post-work (code review's linting and post-loop passes) while still delegating the loop itself to the shared spine.
 
@@ -393,7 +160,7 @@ See [quality scan technique](#quality-scan-technique).
 
 ### composable pipe
 
-**Definition**: The `validate --lens <type>-lens.md | severity-filter --min-severity <threshold>` command shape that the three preset-less review types (test, coherence, task) use for detection, in place of code review's single `run` invocation. The lens-parameterized validator does the type-filtering, so these types need no preset entry and no domain-filter step — the two small pipeline commands chained on the shell pipe do the whole detection-side job. The same two commands recompose elsewhere (the post-challenge re-validation reuses `validate --lens`), which is the point of keeping them separate rather than fusing them into one subcommand.
+**Definition**: The `validate --lens <type>-lens.md | severity-filter --min-severity <threshold>` command shape that test review uses for detection, in place of code review's single `run` invocation. The lens-parameterized validator does the type-filtering, so it needs no preset entry and no domain-filter step — the two small pipeline commands chained on the shell pipe do the whole detection-side job. The same two commands recompose elsewhere (the post-challenge re-validation reuses `validate --lens`), which is the point of keeping them separate rather than fusing them into one subcommand.
 
 **LLM priors activated**: "Composable" signals small single-purpose commands joined by a pipe — intended: each command reads stdin and writes stdout so they chain freely, Unix-style. Risk: read as a vague design-pattern buzzword; here it is a concrete two-command shell pipe with a fixed order (validate first, then severity-filter), not an abstract principle.
 
@@ -416,3 +183,173 @@ See [quality scan technique](#quality-scan-technique).
 ---
 
 *(Additional entries accrete as specs and context assets introduce vetted terms.)*
+
+---
+
+### workflow unit (0.6.0)
+
+**Definition**: A named project or feature under `.fbk/`, with requirements, phase inputs, and one durable state record; a project ends at spec and a feature continues through implementation.
+
+**LLM priors activated**: A bounded piece of work, not necessarily a process or an agent.
+
+### acceptance evidence (0.6.0)
+
+**Definition**: The recorded input revision, verification results, review findings, and any scoped approval supporting a phase close; changed inputs make that acceptance stale.
+
+**LLM priors activated**: Evidence supports an engineering decision, not proof of perfect correctness or maintainability.
+
+### approval grant (0.6.0)
+
+**Definition**: A recorded human authorization bound to a particular crossing, phase, input revision, and any named test scope, consumed by the relevant operation.
+
+**LLM priors activated**: Permission is specific rather than blanket. The agent records genuine existing authorization; the record itself does not authenticate the human.
+
+### review generation (0.6.0)
+
+**Definition**: A phase's interval between opening and explicit reopening, within which attempts share a persisted budget and completed reviews of unchanged inputs can be reused.
+
+**LLM priors activated**: A bookkeeping boundary, not a model generation or an excuse to reset the budget after ordinary fixes.
+
+### review plan (0.6.0)
+
+**Definition**: The saved single-reviewer or council choice for a unit's intent, design, spec or breakdown phase, including selected council perspectives, the applicable preference, and rationale. Design and spec require one; intent and breakdown default to a single reviewer.
+
+**LLM priors activated**: A decision about how an artifact is reviewed, independent of whether the design phase runs; it does not grant approval to implement or override findings.
+
+### council review (0.6.0)
+
+**Definition**: A runtime-mediated discussion among the builder and one or two other selected perspectives: independent opening proposals, one rotating turn each, closing stances, a count that decides which proposals stand, and a final session that writes them as findings.
+
+**LLM priors activated**: Multiple perspectives contribute evidence; consensus and role titles do not establish correctness. Distinguish managed acceptance review from consultation, a council the operator convenes to discuss a question.
+
+### continuation (0.6.0)
+
+**Definition**: A generated current-unit view containing the phase, governing source references, current decisions, pending work, findings and next action. Bounded views identify omitted sections and how to retrieve them.
+
+**LLM priors activated**: Resuming from durable authority and current evidence, rather than treating a summary of earlier conversation as authority.
+
+### sourced decision (0.6.0)
+
+**Definition**: A recorded interpretation of human intent linked to an exact quote in an immutable source file, with the earliest applicable phase and explicit supersession when corrected.
+
+**LLM priors activated**: Attributable evidence of a decision; agent-supplied attribution does not authenticate consent or establish that the interpretation is correct.
+
+### routine repair (0.6.0)
+
+**Definition**: A bounded correction under sourced standing authority. Mechanically verified reference corrections may preserve current acceptance; independently checked prose corrections against settled intent invalidate affected acceptance and retain review attempts.
+
+**LLM priors activated**: A specific authorized correction whose validation depends on its class. Patch size and model confidence do not establish unchanged meaning.
+
+### review source snapshot (0.6.0)
+
+**Definition**: A temporary copy of original review inputs and repository sources, excluding managed workflow history and host runtime state. Native review file tools are confined to this copy; its manifest supports freshness checks.
+
+**LLM priors activated**: A controlled reading surface with a known revision, not proof that a model inspected or understood every source.
+
+### retrospective evidence (0.6.0)
+
+**Definition**: An explicitly requested view of a unit's recorded actions, outcomes, source references and attributed observations, with capture limitations and targeted access to historical detail.
+
+**LLM priors activated**: Investigating original evidence while separating observations, explanations and unknowns; history does not become authoring authority.
+
+### improvement evaluation (0.6.0)
+
+**Definition**: A recorded assessment of a proposed change against its baseline and success criterion, linked to the adopted target revision and check or follow-up evidence. Changed evaluated evidence requires re-evaluation.
+
+**LLM priors activated**: Testing an intervention rather than assuming that applying it helps. Adoption, reported results and established causal effects are different claims.
+
+### constraint registry
+
+**Definition**: The single ordered list, in `fbk-scripts/fbk/workflow/constraints.py`, of every deterministic rule the runtime enforces on a reviewer session's structured response. Each entry names the rule once, the session kinds it applies to, the validator that rejects a breach, and its sentence (a callable when a number comes from configuration or a schema). The registry renders the `rules` block every reviewer prompt carries; two tests hold it to the code, one asserting each entry is stated in the assembled prompt and one asserting each rejection site names an entry. Documented in `fbk-docs/workflow/constraints.md`.
+
+**LLM priors activated**: "Registry" signals a central lookup table, intended. Risk: read as a runtime service or a schema; it is a Python list read at prompt-assembly time, and host-side JSON schema limits are covered by the schema walker, not by registry markers. "Constraint" here means a rule on model output, never a design or requirement constraint.
+
+### decision kind (0.6.0)
+
+**Definition**: The required `kind` on a recorded workflow decision: `governs` when it constrains the work product (behavior, scope, contracts, plan rules), `process` when it records how the work was run (review plans, approvals, dispositions, overrides). Only governing decisions reach reviewers and work agents; process decisions stay in the record and still count toward staleness. Documented in `fbk-docs/workflow/decisions.md`.
+
+**LLM priors activated**: "Governs" signals authority over the deliverable, intended. Risk: "process" read as unimportant; process decisions remain binding on how Firebreak runs, they are only kept out of readers' context.
+
+### decision amendment (0.6.0)
+
+**Definition**: A governing decision whose `amends` names an earlier, accepted phase whose document it changes without reopening that phase. It reaches every later phase's readers, and the amended phase's if reopened, until that phase is accepted again after the amendment was recorded, at which point the document has absorbed it. Superseding an earlier phase's decision makes the new decision an amendment of that phase automatically.
+
+**LLM priors activated**: "Amendment" signals a recorded change to an accepted text that overrides it where they differ, intended. Risk: read as an edit to the earlier document itself; the document is unchanged until its phase is reopened.
+
+### test checkpoint (0.6.0)
+
+**Definition**: The review gate inside the implement phase that judges whether the tests test tasks wrote would catch code that deviates from the design, and on a pass locks exactly the reviewed tests. It runs when every test task has a completed, current run, keeps its own review record and round budget beside the phases without being a phase, and refuses to run again while its acceptance is current. Implementation tasks write code only while a current checkpoint stands behind the locks.
+
+**LLM priors activated**: "Checkpoint" signals a point where work is verified before continuing, intended. Risk: read as a saved state to roll back to; it saves nothing to restore, it is a review that authorizes the next stage.
+
+### preservation checkpoint (0.6.0)
+
+**Definition**: The test checkpoint of a unit whose requirements are all review-only, whose plan therefore has no test task, and which had scoped tests when implement was entered. Every declared check must pass, a scoped test that differs from the writing-tests baseline is refused, and the reviewer judges whether the existing tests protect the code the unit will change; on a pass every scoped test locks. A unit with no test task and no scoped test has no checkpoint at all: Firebreak records the empty test inventory and refuses any scoped test that appears later.
+
+**LLM priors activated**: "Preservation" signals keeping behavior already built, intended. Risk: read as a test task that declares exit 0 for a test preserving behavior; that happens inside the normal checkpoint, while a preservation checkpoint has no test task at all.
+
+### test region
+
+**Definition**: The end of a source file that holds that file's unit tests, declared in `scope.json` `test_regions` by the files it applies to and a start expression. It starts at the first line the expression matches and runs to the end of the file; a file with no such line has an empty region. The region is a scoped test, locked and protected by its own fingerprint, while the code above it stays an ordinary production file that implementation workers keep editing after the test checkpoint. Firebreak finds it by matching text, never by parsing the language, and tests interleaved through a file are not supported.
+
+**LLM priors activated**: "Region" signals a delimited span of a file, intended. Risk: read as any marked block, including ones in the middle of a file; a test region always runs to the end of the file.
+
+### writing-tests baseline (0.6.0)
+
+**Definition**: Saved copies, with fingerprints, file modes and symbolic-link targets, of every scoped test and production file, recorded whenever the unit begins or returns to writing tests: first entry into implement, an unlock approval, a governing decision that makes the checkpoint stale, and re-entry after a breakdown-or-earlier reopen. The test checkpoint compares the current tree against it to tell tests the test tasks changed from untouched ones, refuse production changes no test task declared, and show declared production changes to the reviewer as diffs. Relaunching, cancelling, or rejecting work never re-records it.
+
+**LLM priors activated**: "Baseline" signals a fixed reference point for comparison, intended. Risk: read as git's last commit; it is the tree as it stood when test writing began, including uncommitted changes.
+
+### commitment (0.6.0)
+
+**Definition**: Anything the unit promises, written as one heading in the Commitments section of `prd.md`. The term covers every kind of promise: a commitment can be a user story, a constraint the unit must respect, or a quality target such as speed or reliability. Design choices link it by anchor (requirements do, in a unit without design), and design close (or spec close without design) refuses a commitment nothing links. A promise deliberately left out of scope is removed or moved to an out-of-scope note, not left as a commitment.
+
+**LLM priors activated**: "Commitment" signals a binding promise, intended. Risk: read as any statement in the PRD; only headings in the Commitments section are commitments. Chosen over "story", which would steer authors toward the "As a user, I want" form, leave constraints out, and be confused with a unit of work (Firebreak's units of work are tasks).
+
+### design choice (0.6.0)
+
+**Definition**: A decision a design file makes, written as one heading in that file's Design choices section, linking the commitments it serves by anchor. Design close refuses a design choice with no commitment link, and spec close refuses one no requirement links. A design file without the section makes no design choices.
+
+**LLM priors activated**: "Choice" signals a selection among alternatives, intended. Risk: read as any decision discussed in a design file; only headings in the Design choices section are design choices.
+
+### requirement (0.6.0)
+
+**Definition**: Something the unit must deliver, usually a behavior (see review-only requirement for the exception), written as one heading in the Requirements section of `spec.md`, linking the design choices it comes from (or commitments, in a unit without design) by anchor. Spec close refuses a requirement with no such link.
+
+**LLM priors activated**: "Requirement" carries the broad sense of anything the work must satisfy, including the PRD's needs. Risk: read as a PRD statement or a constraint elsewhere in the spec; in the workflow a requirement is a heading in spec.md's Requirements section.
+
+### review-only requirement (0.6.0)
+
+**Definition**: A requirement that no executable check can meaningfully verify, such as a naming convention or a documentation obligation, marked by the line `Checked by review: <reason>` directly under its heading. Breakdown plans no test for it, the spec review judges whether the marker is honest, and the implementation review gives a met or not met verdict on it; a not met verdict blocks implementation close. Every other requirement is behavioral and needs a test.
+
+**LLM priors activated**: "Review-only" can read as a lighter, optional check. Risk: read as best-effort or as a way to skip a test; the implementation review must assess each one, a review that leaves one out is refused, and a marker on a requirement whose behavior a test could check is a blocker at spec review.
+
+### fix, escalate, refute (0.6.0)
+
+**Definition**: The three ways the authoring agent sorts each review finding before changing anything. Fix: the remedy only corrects what accepted documents already state, and the agent applies it alone. Escalate: the remedy adds scope or has blast radius, or the right remedy is unclear, so the operator answers fix now, defer or decline. Refute: the agent shows with evidence that the failure cannot happen or is required behavior. The sort is separate from severity, which only decides whether the phase can close with the finding open.
+
+**LLM priors activated**: "Fix" reads as the default response to any finding. Risk: an agent treats every valid finding as a fix; the sort exists so that a valid finding whose remedy widens scope goes to the operator. "Refute" can read as arguing a finding away; it needs evidence, and a wrong citation alone does not refute.
+
+### spec trim (0.6.0)
+
+**Definition**: The step at the start of spec close in which a fresh session cuts the draft spec before its review: it merges examples that would catch the same wrong implementation, removes examples and text that catch nothing the rest miss, and never adds. Firebreak lists the cuts at the end of the spec under "Removed on purpose", whose opening says a removed item is not a gap and only a later code review may restore one. It runs once per spec draft; a session that gives no result is retried once, then the spec goes to review untrimmed; a trimmed spec that fails a check goes back to its author.
+
+**LLM priors activated**: "Trim" reads as light tidying of wording. Risk: read as cosmetic; its main effect is fewer examples, and so fewer tests, while every rule keeps at least one example and nothing a human decision names is cut.
+
+### change detector
+
+**Definition**: A test that fails when the code is changed in a way that keeps every agreed rule true, for example an internal function renamed or a message nobody decided reworded. It costs upkeep on every correct change and catches no bug the rules define. Test cleanup confirms one by running the test against a correct rewrite from its scoring kit.
+
+**LLM priors activated**: "Detector" sounds useful, as if the test guards something; the name is intentionally ironic, since what it detects is change, not error. Risk: read as any test that fails after a code change; a test that fails because a rule broke is doing its job.
+
+### test cleanup
+
+**Definition**: The standalone skill `fbk-test-cleanup`, which works on an existing project's tests one operator-chosen target at a time, outside any workflow unit. It settles the rules the code must follow from evidence (a document states it, something outside the target depends on it, or it guards safety or security) and asks the operator only when sources conflict; the tests are trimmed, strengthened where a plausible bug would escape, and merged, all checked against a scoring kit; the result is a test-only commit with a committed report at `.fbk/test-cleanup/<target>.md`, followed by tests-first commits for any production change the operator approves.
+
+**LLM priors activated**: "Cleanup" reads as tidying style or formatting. Risk: read as cosmetic; it removes and rewrites tests and can add them, and every change carries run evidence.
+
+### scoring kit
+
+**Definition**: The set of small code changes test cleanup judges a suite with: wrong versions, each breaking one rule in a way an implementer plausibly might, and correct rewrites, each keeping every rule true while changing what no rule fixes. A separate subagent writes it from the rules and the production code alone, without seeing the tests, before any test changes, and the subagent that edits the tests never sees it, so the kit result measures the tests rather than serving as their target. Each change is applied only in a disposable copy of the project.
+
+**LLM priors activated**: "Scoring" suggests a numeric grade; the kit gives a pass or fail per change, not a score. "Kit" suggests reusable tooling; it is rebuilt when the production code changes.

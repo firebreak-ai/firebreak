@@ -7,14 +7,25 @@ description: >-
 argument-hint: "[document-path or feature-name for a doc review; omit for a code-diff review]"
 ---
 
+Resolve the installed Firebreak directory: use `${CLAUDE_PROJECT_DIR:-$PWD}/.claude`
+if it contains `fbk-scripts/fbk.py`; otherwise use `$HOME/.claude`. When
+`CLAUDE_PROJECT_DIR` is unset, run from the project root. Read all `fbk-docs/`
+references below under that resolved directory. Resolve `firebreak_dir` in each
+shell invocation, as shown in the first command example; shell variables do not
+persist between tool calls.
+
 A cross-model review gets an outside opinion from a different AI model on a document or a code change. The other model reads cold — no authoring history, no prior discussion — and surfaces what it thinks the author missed. Results come back as candidate findings. You decide what to act on.
 
 ## 1. Check the opt-in first
 
 Before doing anything else, run:
 
-```
-python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --check-opt-in --project-root <root>
+```bash
+firebreak_dir="${CLAUDE_PROJECT_DIR:-$PWD}/.claude"
+if [ ! -f "$firebreak_dir/fbk-scripts/fbk.py" ]; then
+    firebreak_dir="$HOME/.claude"
+fi
+python3 "$firebreak_dir/fbk-scripts/fbk.py" cross-review --check-opt-in --project-root <root>
 ```
 
 If the returned JSON has `"status": "skipped"`, this project has not opted in to cross-model review. Stop here and tell the user the project has not enabled cross-model review. Present no findings.
@@ -25,7 +36,7 @@ If the returned JSON has `"status": "success"`, the project is opted in — cont
 
 ## 2. Gather the target
 
-**Document review** — if `$ARGUMENTS` names a document (a PRD, spec, design, or breakdown), that file path is the target. If `$ARGUMENTS` is a feature name without an extension, pick the artifact the user means under `ai-docs/<feature>/` rather than assuming one phase: a PRD/intent review targets `prd.md`, a spec review `<feature>-spec.md`, a design review the `design/` pages, a breakdown review the task files. When it is ambiguous, choose the latest artifact that exists (the most recent phase reached), or ask. Do not default to the spec file — the headline use case is a PRD review before any spec exists.
+**Document review** — if `$ARGUMENTS` names a document (a PRD, spec, design, or breakdown), that file path is the target. If `$ARGUMENTS` is a feature name without an extension, pick the artifact the user means under `.fbk/<unit>/` rather than assuming one phase: a PRD/intent review targets `prd.md`, a spec review `spec.md`, a design review the `design/` pages, a breakdown review the task files. When it is ambiguous, choose the latest artifact that exists (the most recent phase reached), or ask. Do not default to the spec file — the headline use case is a PRD review before any spec exists.
 
 **Scoped follow-up review** — if the operator's request is a follow-up check on a specific fix set or amended section rather than a first review of the artifact, scope the target to that fix set or those sections instead of the whole document. A scoped prompt costs a fraction of a full-document prompt and is the standard way to verify a fix pass.
 
@@ -58,13 +69,17 @@ See `references/cross-model-review-guide.md` for the full prompt template and ou
 
 With the prompt file written, invoke the runner:
 
-```
-python3 "$HOME"/.claude/fbk-scripts/fbk.py cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --project-root <root> --target-label <text>
+```bash
+firebreak_dir="${CLAUDE_PROJECT_DIR:-$PWD}/.claude"
+if [ ! -f "$firebreak_dir/fbk-scripts/fbk.py" ]; then
+    firebreak_dir="$HOME/.claude"
+fi
+python3 "$firebreak_dir/fbk-scripts/fbk.py" cross-review --prompt-file <p> --review-type <slug> --report-dir <dir> --project-root <root> --target-label <text>
 ```
 
 - `<p>` — path to the prompt file from step 4.
 - `<slug>` — `fresh-eyes` for a document review, `code-review` for a code-change review.
-- `<dir>` — directory where the report should land (typically `ai-docs/<feature>/` or the project's review output folder).
+- `<dir>` — directory where the report should land (the project's review output folder, default `reviews/`).
 - `<root>` — project root (same value passed to `--check-opt-in`).
 - `<text>` — a short human-readable label for the thing being reviewed (filename, feature name, or "diff of <branch>").
 
@@ -81,3 +96,13 @@ Branch on the `status` field in the runner's returned JSON.
 **`status: skipped`** — The opt-in check (step 1) should have caught this earlier, but if it surfaces here, tell the user the project has not enabled cross-model review and present nothing.
 
 **`status: failed`** — Relay the cause from the JSON `cause` field verbatim. If the message mentions `codex login`, tell the user they need to run `codex login` in the sandbox before cross-model review can proceed. Present no findings.
+
+## Requested execution
+
+Include the external-adapter method from `fbk-docs/workflow/reviewer-execution.md`
+in the reviewer assignment. The external runner does not implement the native
+investigation loop: it can request a concrete test/probe for the coordinator to run
+in a disposable round copy using `workflow/investigations.md`. Supply actual evidence
+to a fresh continuation and preserve the shared budget; do not broaden its write
+permissions or treat a requested-but-unrun test as evidence. Returned findings
+remain candidates, with unavailable evidence stated explicitly.

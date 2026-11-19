@@ -3,17 +3,12 @@
 The rejoin subcommand overlays challenger verdicts onto kept findings by position.
 Position is the only correlation key — a reversal, off-by-one, or always-verdict[0]
 bug must fail on every record, not just the first.
-
-These tests are RED before implementation: `pipeline rejoin` does not exist yet,
-so argparse exits non-zero on the unknown subcommand.
 """
 
 import json
 import subprocess
 import sys
 from pathlib import Path
-
-import pytest
 
 # Resolve the fbk.py dispatcher the same way other pipeline tests do.
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -28,6 +23,10 @@ def _fbk_py():
     return Path(__file__).parent.parent / "fbk.py"
 
 
+if not _fbk_py().is_file():
+    raise FileNotFoundError(f"Required fbk.py dispatcher not found: {_fbk_py()}")
+
+
 def _run_rejoin(kept_list, verdicts_list, tmp_path):
     """Run `fbk.py pipeline rejoin --verdicts <file>` with kept findings on stdin.
 
@@ -39,9 +38,6 @@ def _run_rejoin(kept_list, verdicts_list, tmp_path):
     verdicts_file.write_text(json.dumps(verdicts_list))
 
     fbk_py = _fbk_py()
-    if not fbk_py.exists():
-        pytest.skip("fbk.py dispatcher not found")
-
     return subprocess.run(
         [sys.executable, str(fbk_py), "pipeline", "rejoin", "--verdicts", str(verdicts_file)],
         input=json.dumps(kept_list),
@@ -153,6 +149,7 @@ class TestRejoinPositionRigor:
 
         assert result.returncode == 0, (
             f"Expected exit 0; got {result.returncode}. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
 
         merged = json.loads(result.stdout)
@@ -240,6 +237,7 @@ class TestRejoinNeutralFieldProtection:
 
         assert result.returncode == 0, (
             f"Expected exit 0; got {result.returncode}. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
 
         merged = json.loads(result.stdout)
@@ -300,6 +298,7 @@ class TestRejoinReclassification:
 
         assert result.returncode == 0, (
             f"Expected exit 0; got {result.returncode}. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
 
         merged = json.loads(result.stdout)
@@ -339,6 +338,7 @@ class TestRejoinReclassification:
 
         assert result.returncode == 0, (
             f"Expected exit 0; got {result.returncode}. stderr: {result.stderr!r}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}"
         )
 
         merged = json.loads(result.stdout)
@@ -379,6 +379,7 @@ class TestRejoinCountGuard:
         assert result.returncode != 0, (
             f"Expected non-zero exit for 3 kept / 4 verdicts mismatch; "
             f"got returncode {result.returncode}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}\nstderr: {result.stderr!r}"
         )
         assert "3" in result.stderr, (
             f"Expected stderr to name kept count '3'; got: {result.stderr!r}"
@@ -402,6 +403,7 @@ class TestRejoinCountGuard:
         assert result.returncode != 0, (
             f"Expected non-zero exit for 3 kept / 2 verdicts mismatch; "
             f"got returncode {result.returncode}"
+            f"\nargv: {result.args!r}\nstdout: {result.stdout!r}\nstderr: {result.stderr!r}"
         )
         assert "3" in result.stderr, (
             f"Expected stderr to name kept count '3'; got: {result.stderr!r}"

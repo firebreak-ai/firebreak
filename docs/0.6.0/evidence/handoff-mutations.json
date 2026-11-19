@@ -1,0 +1,1056 @@
+{
+  "control": {
+    "valid": true,
+    "status": "passed",
+    "diagnostic": "clean control passed",
+    "cwd": "/tmp/firebreak-mutations-rk3kkxr2/control",
+    "argv": [
+      "<repo>/assets/fbk-scripts/.venv/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "--tb=short",
+      "-p",
+      "mutation_reporter",
+      "tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload",
+      "tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry",
+      "tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision",
+      "tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart",
+      "tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work",
+      "tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget",
+      "tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice",
+      "tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance",
+      "tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback",
+      "tests/test_workflow_review.py::test_running_close_cannot_change_mode",
+      "tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance",
+      "tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept",
+      "tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits"
+    ],
+    "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/control && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/control <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback tests/test_workflow_review.py::test_running_close_cannot_change_mode tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits",
+    "artifacts": [
+      "/tmp/firebreak-mutations-rk3kkxr2/control/command.json",
+      "/tmp/firebreak-mutations-rk3kkxr2/control/stdout.log",
+      "/tmp/firebreak-mutations-rk3kkxr2/control/stderr.log",
+      "/tmp/firebreak-mutations-rk3kkxr2/control/mutation-report.json"
+    ],
+    "exit_code": 0,
+    "report": {
+      "collected": [
+        "tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload",
+        "tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry",
+        "tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision",
+        "tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart",
+        "tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work",
+        "tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget",
+        "tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice",
+        "tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance",
+        "tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback",
+        "tests/test_workflow_review.py::test_running_close_cannot_change_mode",
+        "tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance",
+        "tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept",
+        "tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits"
+      ],
+      "collection_errors": [],
+      "reports": [
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_running_close_cannot_change_mode",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_running_close_cannot_change_mode",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_review.py::test_running_close_cannot_change_mode",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits",
+          "when": "setup",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits",
+          "when": "call",
+          "outcome": "passed",
+          "failure": null
+        },
+        {
+          "nodeid": "tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits",
+          "when": "teardown",
+          "outcome": "passed",
+          "failure": null
+        }
+      ],
+      "exit_code": 0
+    },
+    "evidence": ".............                                                            [100%]\n13 passed in 0.23s\n"
+  },
+  "retired": {
+    "test integrity unchecked": "No retained close-time invariant test isolates this guard."
+  },
+  "results": [
+    {
+      "mutation": "stale acceptance ignored",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/0",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/0 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/0 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/0/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/0/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/0/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/0/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_lifecycle.py",
+              "line": 181,
+              "message": "assert ('breakdown', 'ready') == ('spec', 'stale')\n  \n  At index 0 diff: 'breakdown' != 'spec'\n  Use -v to get more diff"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n________ test_accepted_artifact_edit_invalidates_readiness_after_reload ________\ntests/test_workflow_lifecycle.py:181: in test_accepted_artifact_edit_invalidates_readiness_after_reload\n    assert (status[\"phase\"], status[\"status\"]) == (\"spec\", \"stale\")\nE   AssertionError: assert ('breakdown', 'ready') == ('spec', 'stale')\nE     \nE     At index 0 diff: 'breakdown' != 'spec'\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_accepted_artifact_edit_invalidates_readiness_after_reload\n1 failed in 0.06s\n",
+      "detected": true
+    },
+    {
+      "mutation": "phase prerequisites skipped",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/1",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/1 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/1 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/1/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/1/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/1/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/1/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_lifecycle.py",
+              "line": 130,
+              "message": "DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n_______ test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry ________\ntests/test_workflow_lifecycle.py:130: in test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry\n    with pytest.raises(store.WorkflowError, match=\"intent\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_prerequisite_cannot_be_skipped_by_cli_or_either_hook_entry\n1 failed in 0.04s\n",
+      "detected": true
+    },
+    {
+      "mutation": "approval revision ignored",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/2",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/2 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/2 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/2/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/2/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/2/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/2/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_lifecycle.py",
+              "line": 247,
+              "message": "DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______________ test_approval_cannot_authorize_a_changed_revision _______________\ntests/test_workflow_lifecycle.py:247: in test_approval_cannot_authorize_a_changed_revision\n    with pytest.raises(store.WorkflowError, match=\"approval required\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_approval_cannot_authorize_a_changed_revision\n1 failed in 0.05s\n",
+      "detected": true
+    },
+    {
+      "mutation": "review budget ignored",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/3",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/3 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/3 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/3/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/3/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/3/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/3/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_lifecycle.py",
+              "line": 276,
+              "message": "DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n________________ test_review_budget_survives_fixes_and_restart _________________\ntests/test_workflow_lifecycle.py:276: in test_review_budget_survives_fixes_and_restart\n    with pytest.raises(store.WorkflowError, match=\"budget exhausted\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_review_budget_survives_fixes_and_restart\n1 failed in 0.06s\n",
+      "detected": true
+    },
+    {
+      "mutation": "session ownership ignored",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/4",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/4 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/4 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/4/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/4/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/4/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/4/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_lifecycle.py",
+              "line": 359,
+              "message": "DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______ test_other_session_requires_takeover_and_suspension_preserves_work ______\ntests/test_workflow_lifecycle.py:359: in test_other_session_requires_takeover_and_suspension_preserves_work\n    with pytest.raises(store.WorkflowError, match=\"belongs\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_lifecycle.py::test_other_session_requires_takeover_and_suspension_preserves_work\n1 failed in 0.04s\n",
+      "detected": true
+    },
+    {
+      "mutation": "review selection omitted from revision",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/5",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/5 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/5 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/5/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/5/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/5/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/5/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_review.py",
+              "line": 205,
+              "message": "DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n_ test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget _\ntests/test_workflow_review.py:205: in test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget\n    with pytest.raises(store.WorkflowError, match=\"approval required\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_review.py::test_mode_change_invalidates_cached_review_and_grant_without_resetting_budget\n1 failed in 0.09s\n",
+      "detected": true
+    },
+    {
+      "mutation": "single result accepted for council",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/6",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/6 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/6 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/6/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/6/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/6/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/6/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_review.py",
+              "line": 246,
+              "message": "DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n_______________ test_single_result_cannot_satisfy_council_choice _______________\ntests/test_workflow_review.py:246: in test_single_result_cannot_satisfy_council_choice\n    with pytest.raises(store.WorkflowError, match=\"does not match\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_review.py::test_single_result_cannot_satisfy_council_choice\n1 failed in 0.08s\n",
+      "detected": true
+    },
+    {
+      "mutation": "unresolved council blocker dropped",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/7",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/7 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/7 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/7/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/7/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/7/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/7/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_review.py",
+              "line": 399,
+              "message": "DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n____________ test_unresolved_blocker_cannot_become_clean_acceptance ____________\ntests/test_workflow_review.py:399: in test_unresolved_blocker_cannot_become_clean_acceptance\n    with pytest.raises(store.WorkflowError, match=\"blocking defects\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_review.py::test_unresolved_blocker_cannot_become_clean_acceptance\n1 failed in 0.08s\n",
+      "detected": true
+    },
+    {
+      "mutation": "failed council member ignored",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/8",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/8 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/8 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/8/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/8/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/8/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/8/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_review.py",
+              "line": 346,
+              "message": "DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______________ test_council_failure_is_persisted_without_fallback ______________\ntests/test_workflow_review.py:346: in test_council_failure_is_persisted_without_fallback\n    with pytest.raises(store.WorkflowError, match=\"no single-reviewer fallback\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_review.py::test_council_failure_is_persisted_without_fallback\n1 failed in 0.08s\n",
+      "detected": true
+    },
+    {
+      "mutation": "review choice mutable during close",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/9",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_review.py::test_running_close_cannot_change_mode"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/9 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/9 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_review.py::test_running_close_cannot_change_mode",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/9/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/9/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/9/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/9/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_review.py::test_running_close_cannot_change_mode"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_review.py::test_running_close_cannot_change_mode",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_review.py::test_running_close_cannot_change_mode",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_review.py",
+              "line": 216,
+              "message": "DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_review.py::test_running_close_cannot_change_mode",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n____________________ test_running_close_cannot_change_mode _____________________\ntests/test_workflow_review.py:221: in test_running_close_cannot_change_mode\n    close.close_phase(project, \"feature\", \"spec\", \"s\", reviewer=inspect)[\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nfbk/workflow/close.py:101: in close_phase\n    result = reviewer(root, unit, phase, files, checks)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_workflow_review.py:216: in inspect\n    with pytest.raises(store.WorkflowError, match=\"running close\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_review.py::test_running_close_cannot_change_mode\n1 failed in 0.08s\n",
+      "detected": true
+    },
+    {
+      "mutation": "sourced decision omitted from revision",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/10",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/10 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/10 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/10/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/10/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/10/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/10/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_handoff_integration.py",
+              "line": 74,
+              "message": "assert 'ready' == 'stale'\n  \n  - stale\n  + ready"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n_________ test_public_decision_correction_invalidates_prior_acceptance _________\ntests/test_workflow_handoff_integration.py:74: in test_public_decision_correction_invalidates_prior_acceptance\n    assert packet[\"status\"] == \"stale\"\nE   AssertionError: assert 'ready' == 'stale'\nE     \nE     - stale\nE     + ready\n=========================== short test summary info ============================\nFAILED tests/test_workflow_handoff_integration.py::test_public_decision_correction_invalidates_prior_acceptance\n1 failed in 0.06s\n",
+      "detected": true
+    },
+    {
+      "mutation": "review source snapshot ignored",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/11",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/11 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/11 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/11/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/11/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/11/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/11/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_handoff_integration.py",
+              "line": 111,
+              "message": "DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n__________ test_changed_supporting_source_during_review_cannot_accept __________\ntests/test_workflow_handoff_integration.py:111: in test_changed_supporting_source_during_review_cannot_accept\n    with pytest.raises(store.WorkflowError, match=\"Review sources changed\"):\nE   Failed: DID NOT RAISE <class 'fbk.workflow.store.WorkflowError'>\n=========================== short test summary info ============================\nFAILED tests/test_workflow_handoff_integration.py::test_changed_supporting_source_during_review_cannot_accept\n1 failed in 0.05s\n",
+      "detected": true
+    },
+    {
+      "mutation": "governing convention freshness ignored",
+      "status": "passed",
+      "diagnostic": "intended invariant detected",
+      "cwd": "/tmp/firebreak-mutations-rk3kkxr2/12",
+      "argv": [
+        "<repo>/assets/fbk-scripts/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-p",
+        "mutation_reporter",
+        "tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits"
+      ],
+      "rerun": "cd /tmp/firebreak-mutations-rk3kkxr2/12 && env -u PYTEST_ADDOPTS -u PYTEST_PLUGINS PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/firebreak-mutations-rk3kkxr2/12 <repo>/assets/fbk-scripts/.venv/bin/python3 -m pytest -q --tb=short -p mutation_reporter tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits",
+      "artifacts": [
+        "/tmp/firebreak-mutations-rk3kkxr2/12/command.json",
+        "/tmp/firebreak-mutations-rk3kkxr2/12/stdout.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/12/stderr.log",
+        "/tmp/firebreak-mutations-rk3kkxr2/12/mutation-report.json"
+      ],
+      "exit_code": 1,
+      "report": {
+        "collected": [
+          "tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits"
+        ],
+        "collection_errors": [],
+        "reports": [
+          {
+            "nodeid": "tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits",
+            "when": "setup",
+            "outcome": "passed",
+            "failure": null
+          },
+          {
+            "nodeid": "tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits",
+            "when": "call",
+            "outcome": "failed",
+            "failure": {
+              "assertion": true,
+              "path": "tests/test_workflow_handoff_integration.py",
+              "line": 100,
+              "message": "assert 'ready' == 'stale'\n  \n  - stale\n  + ready"
+            }
+          },
+          {
+            "nodeid": "tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits",
+            "when": "teardown",
+            "outcome": "passed",
+            "failure": null
+          }
+        ],
+        "exit_code": 1
+      },
+      "evidence": "F                                                                        [100%]\n=================================== FAILURES ===================================\n__________ test_convention_freshness_preserves_expected_source_edits ___________\ntests/test_workflow_handoff_integration.py:100: in test_convention_freshness_preserves_expected_source_edits\n    assert call(project, \"status\", \"feature\")[0][\"status\"] == \"stale\"\nE   AssertionError: assert 'ready' == 'stale'\nE     \nE     - stale\nE     + ready\n=========================== short test summary info ============================\nFAILED tests/test_workflow_handoff_integration.py::test_convention_freshness_preserves_expected_source_edits\n1 failed in 0.05s\n",
+      "detected": true
+    }
+  ],
+  "status": "passed",
+  "workspace": "/tmp/firebreak-mutations-rk3kkxr2",
+  "workspace_retained": false
+}

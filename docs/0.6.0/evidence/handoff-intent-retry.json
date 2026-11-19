@@ -1,0 +1,489 @@
+{
+  "result": {
+    "unit": "cancellation",
+    "phase": "spec",
+    "status": "ready",
+    "reason": "",
+    "owner": null,
+    "open_phase": null,
+    "parent_problem": "",
+    "close_in_progress": null,
+    "next": "Enter spec.",
+    "review_rounds": {
+      "intent": 2,
+      "design": 0,
+      "spec": 0,
+      "breakdown": 0,
+      "implement": 0
+    },
+    "review_plans": {
+      "spec": {
+        "mode": "single",
+        "members": [],
+        "id": "90d0e066-bf8d-4b13-90be-45e79ee8954e",
+        "reason": "The operator invoked the live smoke test with one independent spec reviewer.",
+        "source": "unit"
+      }
+    },
+    "review_guidance": "spec: single",
+    "remaining_attempts": {
+      "intent": 1,
+      "design": 3,
+      "spec": 3,
+      "breakdown": 3,
+      "implement": 3
+    },
+    "accepted_phase": "intent",
+    "review_shape": "single",
+    "findings": [
+      {
+        "title": "Release callable signature is unspecified",
+        "location": ".fbk/cancellation/prd.md:2",
+        "evidence": "The PRD says the Job is \"initialized with a callable release function\" and that \"the first cancel returns True and calls release once\", but never states whether release is invoked with zero arguments or is passed the job/resource. Acceptance is defined through \"callback invocations\", so tests will have to assert on call arguments without a stated contract.",
+        "remedy": "Have the design/specification phase fix the release signature (most simply: called with no arguments) so callback-invocation assertions have an unambiguous target.",
+        "severity": "suggestion"
+      },
+      {
+        "title": "Concurrency posture excluded from scope but not yet framed as a documented limitation",
+        "location": ".fbk/cancellation/prd.md:3",
+        "evidence": "The PRD excludes \"async work, threads\" from scope and separately requires \"Document the synchronous contract and its limitations in README.md.\" The exclusion means cancel's check-then-set is not safe under concurrent callers, which is the main limitation a reader of the README would need.",
+        "remedy": "In the specification, list \"no thread-safety guarantee; exactly-once holds only for single-threaded callers\" as an explicit README limitation item so the documentation obligation has concrete content.",
+        "severity": "suggestion"
+      }
+    ]
+  },
+  "state": {
+    "schema_version": 1,
+    "unit": "cancellation",
+    "kind": "feature",
+    "parent": null,
+    "parent_evidence": null,
+    "design": false,
+    "owner": null,
+    "open_phase": null,
+    "opened_at": null,
+    "locks": {},
+    "unlocks": [],
+    "grants": [],
+    "events": [
+      {
+        "event": "created",
+        "at": "2026-09-07T17:04:11.608+00:00",
+        "session": null,
+        "unit_kind": "feature"
+      },
+      {
+        "event": "review-selected",
+        "at": "2026-09-07T17:04:11.693+00:00",
+        "session": "live-validation",
+        "phase": "spec",
+        "selection": {
+          "mode": "single",
+          "members": [],
+          "id": "90d0e066-bf8d-4b13-90be-45e79ee8954e",
+          "reason": "The operator invoked the live smoke test with one independent spec reviewer.",
+          "source": "unit"
+        }
+      },
+      {
+        "event": "entered",
+        "at": "2026-09-07T17:04:11.776+00:00",
+        "session": "live-validation",
+        "phase": "intent"
+      },
+      {
+        "event": "close-attempt",
+        "at": "2026-09-07T17:05:00.814+00:00",
+        "session": "live-validation",
+        "phase": "intent",
+        "revision": "fac8e335d41501542cb016ee5646a6525a8a1566777d9c0b2f8f10175ff464bd",
+        "verification": [],
+        "error": "Review context is incomplete: No implementation, unittest tests, or README.md exist yet in the repository; the intent artifact could only be reviewed for internal consistency and implementability, not for fidelity of downstream code.; No repository convention files (e.g. CLAUDE.md, README.md, pyproject.toml/setup.cfg, linter config) are present, so naming, layout, and test-placement conventions could not be cross-checked against the PRD."
+      },
+      {
+        "event": "close-attempt",
+        "at": "2026-09-07T17:09:06.836+00:00",
+        "session": "live-validation",
+        "phase": "intent",
+        "revision": "fac8e335d41501542cb016ee5646a6525a8a1566777d9c0b2f8f10175ff464bd",
+        "verification": [],
+        "error": null
+      },
+      {
+        "event": "closed",
+        "at": "2026-09-07T17:09:06.836+00:00",
+        "session": "live-validation",
+        "phase": "intent",
+        "evidence": {
+          "revision": "fac8e335d41501542cb016ee5646a6525a8a1566777d9c0b2f8f10175ff464bd",
+          "files": {
+            ".fbk/cancellation/prd.md": "bad34d7586319018148abed4fa25d78b26fa208df0781d583229fbf6c7224b1b"
+          },
+          "at": "2026-09-07T17:09:06.836+00:00",
+          "opened_at": "2026-09-07T17:04:11.776+00:00",
+          "verification": [],
+          "review": {
+            "shape": "single",
+            "readers": [
+              {
+                "review": {
+                  "summary": "Reviewed .fbk/cancellation/prd.md as the sole phase target; the repository contains no other files and no convention documents. The intent is internally consistent and feasible: idempotent single-shot cancel returning True then False, release invoked exactly once, `cancelled` set True before release so a raising release is recorded and never retried, and independent per-instance state. Scope boundaries (no async/threads/scheduling/retry/logging/third-party deps), acceptance signals (callback invocations, return values, state, exception propagation via stdlib unittest), and the README documentation obligation are all stated, and the human explicitly attributes the \"no separate design document\" and \"no unresolved product decisions\" calls. No blockers found. Two suggestions: the release callable's expected signature is unspecified, and the excluded concurrency posture should be captured as a stated README limitation.",
+                  "findings": [
+                    {
+                      "title": "Release callable signature is unspecified",
+                      "location": ".fbk/cancellation/prd.md:2",
+                      "evidence": "The PRD says the Job is \"initialized with a callable release function\" and that \"the first cancel returns True and calls release once\", but never states whether release is invoked with zero arguments or is passed the job/resource. Acceptance is defined through \"callback invocations\", so tests will have to assert on call arguments without a stated contract.",
+                      "remedy": "Have the design/specification phase fix the release signature (most simply: called with no arguments) so callback-invocation assertions have an unambiguous target.",
+                      "severity": "suggestion"
+                    },
+                    {
+                      "title": "Concurrency posture excluded from scope but not yet framed as a documented limitation",
+                      "location": ".fbk/cancellation/prd.md:3",
+                      "evidence": "The PRD excludes \"async work, threads\" from scope and separately requires \"Document the synchronous contract and its limitations in README.md.\" The exclusion means cancel's check-then-set is not safe under concurrent callers, which is the main limitation a reader of the README would need.",
+                      "remedy": "In the specification, list \"no thread-safety guarantee; exactly-once holds only for single-threaded callers\" as an explicit README limitation item so the documentation obligation has concrete content.",
+                      "severity": "suggestion"
+                    }
+                  ]
+                },
+                "context": {
+                  "status": "complete",
+                  "inspected_files": [
+                    ".fbk/cancellation/prd.md"
+                  ],
+                  "supporting_files": [],
+                  "missing_context": []
+                },
+                "seconds": 24.811,
+                "usage": {
+                  "claude-haiku-4-5-20251001": {
+                    "inputTokens": 1416,
+                    "outputTokens": 17,
+                    "cacheReadInputTokens": 0,
+                    "cacheCreationInputTokens": 0,
+                    "webSearchRequests": 0,
+                    "costUSD": 0.001501,
+                    "contextWindow": 200000,
+                    "maxOutputTokens": 32000,
+                    "thinkingTokens": 0,
+                    "canonicalModel": "claude-haiku-4-5",
+                    "provider": "firstParty",
+                    "costBasis": "list"
+                  },
+                  "claude-opus-5": {
+                    "inputTokens": 6,
+                    "outputTokens": 1627,
+                    "cacheReadInputTokens": 17133,
+                    "cacheCreationInputTokens": 4010,
+                    "webSearchRequests": 0,
+                    "costUSD": 0.08937149999999999,
+                    "contextWindow": 1000000,
+                    "maxOutputTokens": 64000,
+                    "thinkingTokens": 210,
+                    "canonicalModel": "claude-opus-5",
+                    "provider": "firstParty",
+                    "costBasis": "list"
+                  }
+                },
+                "reported_cost_usd": 0.0908725
+              }
+            ],
+            "review": {
+              "summary": "Reviewed .fbk/cancellation/prd.md as the sole phase target; the repository contains no other files and no convention documents. The intent is internally consistent and feasible: idempotent single-shot cancel returning True then False, release invoked exactly once, `cancelled` set True before release so a raising release is recorded and never retried, and independent per-instance state. Scope boundaries (no async/threads/scheduling/retry/logging/third-party deps), acceptance signals (callback invocations, return values, state, exception propagation via stdlib unittest), and the README documentation obligation are all stated, and the human explicitly attributes the \"no separate design document\" and \"no unresolved product decisions\" calls. No blockers found. Two suggestions: the release callable's expected signature is unspecified, and the excluded concurrency posture should be captured as a stated README limitation.",
+              "findings": [
+                {
+                  "title": "Release callable signature is unspecified",
+                  "location": ".fbk/cancellation/prd.md:2",
+                  "evidence": "The PRD says the Job is \"initialized with a callable release function\" and that \"the first cancel returns True and calls release once\", but never states whether release is invoked with zero arguments or is passed the job/resource. Acceptance is defined through \"callback invocations\", so tests will have to assert on call arguments without a stated contract.",
+                  "remedy": "Have the design/specification phase fix the release signature (most simply: called with no arguments) so callback-invocation assertions have an unambiguous target.",
+                  "severity": "suggestion"
+                },
+                {
+                  "title": "Concurrency posture excluded from scope but not yet framed as a documented limitation",
+                  "location": ".fbk/cancellation/prd.md:3",
+                  "evidence": "The PRD excludes \"async work, threads\" from scope and separately requires \"Document the synchronous contract and its limitations in README.md.\" The exclusion means cancel's check-then-set is not safe under concurrent callers, which is the main limitation a reader of the README would need.",
+                  "remedy": "In the specification, list \"no thread-safety guarantee; exactly-once holds only for single-threaded callers\" as an explicit README limitation item so the documentation obligation has concrete content.",
+                  "severity": "suggestion"
+                }
+              ]
+            },
+            "supporting_files": {},
+            "additional_supporting_files": {},
+            "snapshot_files": {
+              ".fbk/cancellation/prd.md": "bad34d7586319018148abed4fa25d78b26fa208df0781d583229fbf6c7224b1b"
+            },
+            "source_policy": "original-snapshot-v1",
+            "required_files": [
+              ".fbk/cancellation/prd.md"
+            ]
+          },
+          "review_plan": null,
+          "grant_id": null,
+          "outcome": "pass"
+        }
+      }
+    ],
+    "workers": {},
+    "phases": {
+      "intent": {
+        "evidence": {
+          "revision": "fac8e335d41501542cb016ee5646a6525a8a1566777d9c0b2f8f10175ff464bd",
+          "files": {
+            ".fbk/cancellation/prd.md": "bad34d7586319018148abed4fa25d78b26fa208df0781d583229fbf6c7224b1b"
+          },
+          "at": "2026-09-07T17:09:06.836+00:00",
+          "opened_at": "2026-09-07T17:04:11.776+00:00",
+          "verification": [],
+          "review": {
+            "shape": "single",
+            "readers": [
+              {
+                "review": {
+                  "summary": "Reviewed .fbk/cancellation/prd.md as the sole phase target; the repository contains no other files and no convention documents. The intent is internally consistent and feasible: idempotent single-shot cancel returning True then False, release invoked exactly once, `cancelled` set True before release so a raising release is recorded and never retried, and independent per-instance state. Scope boundaries (no async/threads/scheduling/retry/logging/third-party deps), acceptance signals (callback invocations, return values, state, exception propagation via stdlib unittest), and the README documentation obligation are all stated, and the human explicitly attributes the \"no separate design document\" and \"no unresolved product decisions\" calls. No blockers found. Two suggestions: the release callable's expected signature is unspecified, and the excluded concurrency posture should be captured as a stated README limitation.",
+                  "findings": [
+                    {
+                      "title": "Release callable signature is unspecified",
+                      "location": ".fbk/cancellation/prd.md:2",
+                      "evidence": "The PRD says the Job is \"initialized with a callable release function\" and that \"the first cancel returns True and calls release once\", but never states whether release is invoked with zero arguments or is passed the job/resource. Acceptance is defined through \"callback invocations\", so tests will have to assert on call arguments without a stated contract.",
+                      "remedy": "Have the design/specification phase fix the release signature (most simply: called with no arguments) so callback-invocation assertions have an unambiguous target.",
+                      "severity": "suggestion"
+                    },
+                    {
+                      "title": "Concurrency posture excluded from scope but not yet framed as a documented limitation",
+                      "location": ".fbk/cancellation/prd.md:3",
+                      "evidence": "The PRD excludes \"async work, threads\" from scope and separately requires \"Document the synchronous contract and its limitations in README.md.\" The exclusion means cancel's check-then-set is not safe under concurrent callers, which is the main limitation a reader of the README would need.",
+                      "remedy": "In the specification, list \"no thread-safety guarantee; exactly-once holds only for single-threaded callers\" as an explicit README limitation item so the documentation obligation has concrete content.",
+                      "severity": "suggestion"
+                    }
+                  ]
+                },
+                "context": {
+                  "status": "complete",
+                  "inspected_files": [
+                    ".fbk/cancellation/prd.md"
+                  ],
+                  "supporting_files": [],
+                  "missing_context": []
+                },
+                "seconds": 24.811,
+                "usage": {
+                  "claude-haiku-4-5-20251001": {
+                    "inputTokens": 1416,
+                    "outputTokens": 17,
+                    "cacheReadInputTokens": 0,
+                    "cacheCreationInputTokens": 0,
+                    "webSearchRequests": 0,
+                    "costUSD": 0.001501,
+                    "contextWindow": 200000,
+                    "maxOutputTokens": 32000,
+                    "thinkingTokens": 0,
+                    "canonicalModel": "claude-haiku-4-5",
+                    "provider": "firstParty",
+                    "costBasis": "list"
+                  },
+                  "claude-opus-5": {
+                    "inputTokens": 6,
+                    "outputTokens": 1627,
+                    "cacheReadInputTokens": 17133,
+                    "cacheCreationInputTokens": 4010,
+                    "webSearchRequests": 0,
+                    "costUSD": 0.08937149999999999,
+                    "contextWindow": 1000000,
+                    "maxOutputTokens": 64000,
+                    "thinkingTokens": 210,
+                    "canonicalModel": "claude-opus-5",
+                    "provider": "firstParty",
+                    "costBasis": "list"
+                  }
+                },
+                "reported_cost_usd": 0.0908725
+              }
+            ],
+            "review": {
+              "summary": "Reviewed .fbk/cancellation/prd.md as the sole phase target; the repository contains no other files and no convention documents. The intent is internally consistent and feasible: idempotent single-shot cancel returning True then False, release invoked exactly once, `cancelled` set True before release so a raising release is recorded and never retried, and independent per-instance state. Scope boundaries (no async/threads/scheduling/retry/logging/third-party deps), acceptance signals (callback invocations, return values, state, exception propagation via stdlib unittest), and the README documentation obligation are all stated, and the human explicitly attributes the \"no separate design document\" and \"no unresolved product decisions\" calls. No blockers found. Two suggestions: the release callable's expected signature is unspecified, and the excluded concurrency posture should be captured as a stated README limitation.",
+              "findings": [
+                {
+                  "title": "Release callable signature is unspecified",
+                  "location": ".fbk/cancellation/prd.md:2",
+                  "evidence": "The PRD says the Job is \"initialized with a callable release function\" and that \"the first cancel returns True and calls release once\", but never states whether release is invoked with zero arguments or is passed the job/resource. Acceptance is defined through \"callback invocations\", so tests will have to assert on call arguments without a stated contract.",
+                  "remedy": "Have the design/specification phase fix the release signature (most simply: called with no arguments) so callback-invocation assertions have an unambiguous target.",
+                  "severity": "suggestion"
+                },
+                {
+                  "title": "Concurrency posture excluded from scope but not yet framed as a documented limitation",
+                  "location": ".fbk/cancellation/prd.md:3",
+                  "evidence": "The PRD excludes \"async work, threads\" from scope and separately requires \"Document the synchronous contract and its limitations in README.md.\" The exclusion means cancel's check-then-set is not safe under concurrent callers, which is the main limitation a reader of the README would need.",
+                  "remedy": "In the specification, list \"no thread-safety guarantee; exactly-once holds only for single-threaded callers\" as an explicit README limitation item so the documentation obligation has concrete content.",
+                  "severity": "suggestion"
+                }
+              ]
+            },
+            "supporting_files": {},
+            "additional_supporting_files": {},
+            "snapshot_files": {
+              ".fbk/cancellation/prd.md": "bad34d7586319018148abed4fa25d78b26fa208df0781d583229fbf6c7224b1b"
+            },
+            "source_policy": "original-snapshot-v1",
+            "required_files": [
+              ".fbk/cancellation/prd.md"
+            ]
+          },
+          "review_plan": null,
+          "grant_id": null,
+          "outcome": "pass"
+        },
+        "rounds": [
+          {
+            "revision": "fac8e335d41501542cb016ee5646a6525a8a1566777d9c0b2f8f10175ff464bd",
+            "at": "2026-09-07T17:04:11.864+00:00",
+            "operation": "40a323d1-e2c4-4ba8-b070-243f30994e0a",
+            "result": null,
+            "generation": 0,
+            "error": "Review context is incomplete: No implementation, unittest tests, or README.md exist yet in the repository; the intent artifact could only be reviewed for internal consistency and implementability, not for fidelity of downstream code.; No repository convention files (e.g. CLAUDE.md, README.md, pyproject.toml/setup.cfg, linter config) are present, so naming, layout, and test-placement conventions could not be cross-checked against the PRD."
+          },
+          {
+            "revision": "fac8e335d41501542cb016ee5646a6525a8a1566777d9c0b2f8f10175ff464bd",
+            "at": "2026-09-07T17:08:42.023+00:00",
+            "operation": "ad8ca76e-ea83-4ab4-b8dc-aa0c38b79b86",
+            "result": {
+              "shape": "single",
+              "readers": [
+                {
+                  "review": {
+                    "summary": "Reviewed .fbk/cancellation/prd.md as the sole phase target; the repository contains no other files and no convention documents. The intent is internally consistent and feasible: idempotent single-shot cancel returning True then False, release invoked exactly once, `cancelled` set True before release so a raising release is recorded and never retried, and independent per-instance state. Scope boundaries (no async/threads/scheduling/retry/logging/third-party deps), acceptance signals (callback invocations, return values, state, exception propagation via stdlib unittest), and the README documentation obligation are all stated, and the human explicitly attributes the \"no separate design document\" and \"no unresolved product decisions\" calls. No blockers found. Two suggestions: the release callable's expected signature is unspecified, and the excluded concurrency posture should be captured as a stated README limitation.",
+                    "findings": [
+                      {
+                        "title": "Release callable signature is unspecified",
+                        "location": ".fbk/cancellation/prd.md:2",
+                        "evidence": "The PRD says the Job is \"initialized with a callable release function\" and that \"the first cancel returns True and calls release once\", but never states whether release is invoked with zero arguments or is passed the job/resource. Acceptance is defined through \"callback invocations\", so tests will have to assert on call arguments without a stated contract.",
+                        "remedy": "Have the design/specification phase fix the release signature (most simply: called with no arguments) so callback-invocation assertions have an unambiguous target.",
+                        "severity": "suggestion"
+                      },
+                      {
+                        "title": "Concurrency posture excluded from scope but not yet framed as a documented limitation",
+                        "location": ".fbk/cancellation/prd.md:3",
+                        "evidence": "The PRD excludes \"async work, threads\" from scope and separately requires \"Document the synchronous contract and its limitations in README.md.\" The exclusion means cancel's check-then-set is not safe under concurrent callers, which is the main limitation a reader of the README would need.",
+                        "remedy": "In the specification, list \"no thread-safety guarantee; exactly-once holds only for single-threaded callers\" as an explicit README limitation item so the documentation obligation has concrete content.",
+                        "severity": "suggestion"
+                      }
+                    ]
+                  },
+                  "context": {
+                    "status": "complete",
+                    "inspected_files": [
+                      ".fbk/cancellation/prd.md"
+                    ],
+                    "supporting_files": [],
+                    "missing_context": []
+                  },
+                  "seconds": 24.811,
+                  "usage": {
+                    "claude-haiku-4-5-20251001": {
+                      "inputTokens": 1416,
+                      "outputTokens": 17,
+                      "cacheReadInputTokens": 0,
+                      "cacheCreationInputTokens": 0,
+                      "webSearchRequests": 0,
+                      "costUSD": 0.001501,
+                      "contextWindow": 200000,
+                      "maxOutputTokens": 32000,
+                      "thinkingTokens": 0,
+                      "canonicalModel": "claude-haiku-4-5",
+                      "provider": "firstParty",
+                      "costBasis": "list"
+                    },
+                    "claude-opus-5": {
+                      "inputTokens": 6,
+                      "outputTokens": 1627,
+                      "cacheReadInputTokens": 17133,
+                      "cacheCreationInputTokens": 4010,
+                      "webSearchRequests": 0,
+                      "costUSD": 0.08937149999999999,
+                      "contextWindow": 1000000,
+                      "maxOutputTokens": 64000,
+                      "thinkingTokens": 210,
+                      "canonicalModel": "claude-opus-5",
+                      "provider": "firstParty",
+                      "costBasis": "list"
+                    }
+                  },
+                  "reported_cost_usd": 0.0908725
+                }
+              ],
+              "review": {
+                "summary": "Reviewed .fbk/cancellation/prd.md as the sole phase target; the repository contains no other files and no convention documents. The intent is internally consistent and feasible: idempotent single-shot cancel returning True then False, release invoked exactly once, `cancelled` set True before release so a raising release is recorded and never retried, and independent per-instance state. Scope boundaries (no async/threads/scheduling/retry/logging/third-party deps), acceptance signals (callback invocations, return values, state, exception propagation via stdlib unittest), and the README documentation obligation are all stated, and the human explicitly attributes the \"no separate design document\" and \"no unresolved product decisions\" calls. No blockers found. Two suggestions: the release callable's expected signature is unspecified, and the excluded concurrency posture should be captured as a stated README limitation.",
+                "findings": [
+                  {
+                    "title": "Release callable signature is unspecified",
+                    "location": ".fbk/cancellation/prd.md:2",
+                    "evidence": "The PRD says the Job is \"initialized with a callable release function\" and that \"the first cancel returns True and calls release once\", but never states whether release is invoked with zero arguments or is passed the job/resource. Acceptance is defined through \"callback invocations\", so tests will have to assert on call arguments without a stated contract.",
+                    "remedy": "Have the design/specification phase fix the release signature (most simply: called with no arguments) so callback-invocation assertions have an unambiguous target.",
+                    "severity": "suggestion"
+                  },
+                  {
+                    "title": "Concurrency posture excluded from scope but not yet framed as a documented limitation",
+                    "location": ".fbk/cancellation/prd.md:3",
+                    "evidence": "The PRD excludes \"async work, threads\" from scope and separately requires \"Document the synchronous contract and its limitations in README.md.\" The exclusion means cancel's check-then-set is not safe under concurrent callers, which is the main limitation a reader of the README would need.",
+                    "remedy": "In the specification, list \"no thread-safety guarantee; exactly-once holds only for single-threaded callers\" as an explicit README limitation item so the documentation obligation has concrete content.",
+                    "severity": "suggestion"
+                  }
+                ]
+              },
+              "supporting_files": {},
+              "additional_supporting_files": {},
+              "snapshot_files": {
+                ".fbk/cancellation/prd.md": "bad34d7586319018148abed4fa25d78b26fa208df0781d583229fbf6c7224b1b"
+              },
+              "source_policy": "original-snapshot-v1",
+              "required_files": [
+                ".fbk/cancellation/prd.md"
+              ]
+            },
+            "generation": 0,
+            "error": null
+          }
+        ],
+        "round_limit": 3,
+        "pending": null,
+        "generation": 0
+      },
+      "design": {
+        "evidence": null,
+        "rounds": [],
+        "round_limit": 3,
+        "pending": null,
+        "generation": 0
+      },
+      "spec": {
+        "evidence": null,
+        "rounds": [],
+        "round_limit": 3,
+        "pending": null,
+        "generation": 0
+      },
+      "breakdown": {
+        "evidence": null,
+        "rounds": [],
+        "round_limit": 3,
+        "pending": null,
+        "generation": 0
+      },
+      "implement": {
+        "evidence": null,
+        "rounds": [],
+        "round_limit": 3,
+        "pending": null,
+        "generation": 0
+      }
+    },
+    "review_plans": {
+      "spec": {
+        "mode": "single",
+        "members": [],
+        "id": "90d0e066-bf8d-4b13-90be-45e79ee8954e",
+        "reason": "The operator invoked the live smoke test with one independent spec reviewer.",
+        "source": "unit"
+      }
+    },
+    "content_hash": "f84e2cba7ea7b771bc6759b58ce966fabdd77dab4131ddcd96c2104e3431ce71"
+  }
+}

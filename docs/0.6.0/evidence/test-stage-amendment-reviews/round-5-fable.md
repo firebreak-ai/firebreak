@@ -1,0 +1,37 @@
+CLEAN: no blockers or contradictions
+
+# Round 5 (confirmation) review of `docs/0.6.0/test-stage-amendment-plan.md` (Fable, 2026-10-22)
+
+All paths are under ``. Workflow modules are in `assets/fbk-scripts/fbk/workflow/`. Plan line numbers refer to the plan as read today. I did not read the round-5 Astra output.
+
+## The three round-4 items
+
+### 1. Baseline re-recorded on relaunch — RESOLVED
+
+Decision 3 (plan:40) now fixes the baseline to "exactly three events: the first entry into implement, an unlock approval, and the return to writing tests after a reopen", and states in the same bullet that "Task relaunches, cancellations, and checkpoint rejections do not re-record it, so a relaunched or cancelled task cannot hide an earlier change." The trigger that caused the round-4 contradiction ("each time the unit enters writing tests") is gone, so decision 1's "relaunched for rework, which returns the unit to writing tests" (plan:22) no longer implies a new baseline. The done-means Baseline line (plan:127) proves each of the three non-recording events: plain relaunch, cancel-then-relaunch, and relaunch after a rejected checkpoint, with the unchanged red test "still counted as changed". That is the right proof, because relaunch and cancel today replace the task record and its before-fingerprints (`handoff.py:713`, `handoff.py:733`) and cancel leaves the tree as it is (`handoff.py:1038-1061`), so a test keyed to the task run would be lost without a unit-level baseline.
+
+### 2. Running implementation tasks' changes during an unlock refused at the checkpoint — RESOLVED
+
+Decision 3 (plan:40) adds the exemption: refusal "except changes within the owned files of an implementation task that was running when the baseline was recorded and has since completed with verified changes." That sits with decision 5's "A running implementation task's worker keeps writing within its ownership while an unlock is outstanding" (plan:54) and decision 11's "correct code is never undone to recreate red" (plan:91); all three can now hold. Step 4 (plan:112) names the build work ("the baseline is re-recorded at the unlock with running implementation tasks' owned-file changes exempted") and the done-means Unlock rework line (plan:131) proves the case ("an implementation task running at the approval finishes its owned-file changes and the re-run checkpoint accepts them"). The exemption keys on completion with verified changes, which the existing task-finish ownership check already produces (`handoff.py:790-794` compares the returned changed-files set with the fingerprinted owned files). Two edge cases remain as fitting notes below (still-running at checkpoint time; cancelled rather than completed).
+
+### 3. No mechanism for the unlock rework task's scoped commands — RESOLVED
+
+Decision 11 (plan:93) now says where the commands live and how they are applied: "The unlock request the operator approves carries the rework commands: each an argument array scoped to some of the named tests, with its expected outcome (zero when all its tests are expected to pass, non-zero otherwise). The rework task's run uses those commands and expectations in place of the ones declared in `tasks.json`, which stays unchanged, so breakdown's acceptance is untouched." That answers the round-4 objection directly: `tasks.json` is accepted breakdown evidence refused by the write hook (`hooks.py:138-141`), so the approval grant, not the plan, is the right carrier. Step 4 (plan:112) names the change and the done-means Unlock rework line (plan:131) proves it with two named tests of opposite expectation "without changing `tasks.json`". The shape fits the code: the grant already carries a `tests` list (`engine.py:161-176`), task start already copies the task's expectations into the run record (`handoff.py:720`), and task finish compares against that copy (`handoff.py:905-912`), so the substitution is a run-record change, not a new comparison path.
+
+## Blockers or contradictions introduced by the edits
+
+None. I checked each edited sentence against decisions 1, 5, 7, 10 and 11, the build order, and the done-means lines:
+
+- The exemption does not loosen writing-code enforcement: it applies only at the checkpoint comparison, and only to tasks already running when the baseline was taken, which rules out the two other baseline events (no implementation task runs at first implement entry, and breakdown re-entry supersedes earlier runs per decision 10, plan:87).
+- The three baseline events agree with decision 11's reopen rule (plan:90): reopening implement keeps locks and acceptance, so the unit does not return to writing tests and no baseline is taken; reopening breakdown or earlier does return it, and a baseline is taken.
+- The per-command expectation rule (plan:93) matches decision 4's "nonzero" meaning (plan:45): a command whose tests are all expected to pass must exit zero, any other non-zero.
+- The two new done-means proofs (plan:127, plan:131) do not conflict with the Stage derivation line (plan:126): a relaunch returns the unit to writing tests without re-recording the baseline, and both lines say so.
+
+## Fitting notes (non-blocking)
+
+- plan:40 "has since completed with verified changes": the checkpoint can run while that implementation task is still running (decision 1's ready-for-checkpoint condition, plan:22, counts only test tasks). Step 3/4 should have the checkpoint refuse to start, before spending a round, while an implementation task that was running at the baseline is still running, naming it; otherwise its partial edits are refused as undeclared and the refusal costs a round (plan:93 "spending a round from its own budget").
+- plan:40: an implementation task running at the baseline that is cancelled rather than completed leaves its partial edits in the tree (`handoff.py:1038-1061` does not revert) and falls outside the exemption. Key the exemption on the task, not the run, so a cancel-then-relaunch-then-complete of the same task is still exempt; the baseline record should store the running task ids (and their owned files) at record time, since the run record is replaced on relaunch (`handoff.py:713`).
+- plan:93 "The rework task's run": the plan does not say which test task's run receives the approval's commands when the named tests span several test tasks' files. The simplest rule for step 4: any test task started while the unlock is outstanding uses the approval's commands and expectations; or the approval names the task id. Either fits inside step 4's tests-first work.
+- plan:40 "the return to writing tests after a reopen": say whether the baseline is taken at the reopen command or at the next implement entry. Decision 11 (plan:90) returns the unit to writing tests at the reopen itself, but no test task can run until implement is re-entered, so implement entry is the cleaner event and makes the first- and re-entry cases one code path.
+- plan:40 "Declared changes are shown to the reviewer as diffs against the baseline copy": say whether exempted implementation changes are also shown (they are production diffs the reviewer would otherwise not see), or named as exempt in the checkpoint evidence.
+- `engine.py:339-344` and `engine.py:357-371` (lock-on-pass clears `unlocks`, verify refuses when the lock set differs): step 4's substitution must leave `record["unlocks"]` cleared only by the checkpoint's lock-on-pass, so the stage derivation (plan:21) keeps writing tests until the re-lock; today `lock_tests` is the only clearer and it is removed with `lock-tests` (plan:94).

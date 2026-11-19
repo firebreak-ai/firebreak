@@ -352,7 +352,7 @@ enumerate_assets() {
          -o -name .ruff_cache -o -name '*.egg-info' -o -name tests \
          -o -name .claude -o -name .git \
        \) -prune \) \
-    -o \( -type f ! -name '*.pyc' ! -name '.DS_Store' -print \))
+    -o \( -type f ! -name '*.pyc' ! -name '.DS_Store' ! -name '*.deprecated-*' -print \))
 }
 
 # --- File installation ---
@@ -525,9 +525,8 @@ merge_settings() {
   local merge_source="$firebreak_settings"
   if [ "$INSTALL_MODE" = "project" ]; then
     merge_source="$(mktemp)"
-    # Rewrite "$HOME"/.claude/ → "$CLAUDE_PROJECT_DIR"/.claude/ for project installs,
-    # but skip hook_router.py lines — the router always resolves to the global fbk-scripts tree.
-    sed '/hook_router\.py/!s|\\"\$HOME\\"/\.claude/|\\"\$CLAUDE_PROJECT_DIR\\"/\.claude/|g' "$firebreak_settings" > "$merge_source"
+    # Resolve every hook to this project installation.
+    sed 's|\\"\$HOME\\"/\.claude/|\\"\$CLAUDE_PROJECT_DIR\\"/\.claude/|g' "$firebreak_settings" > "$merge_source"
   fi
 
   # Run merge script — stdout gets merged JSON, stderr gets errors
@@ -563,71 +562,13 @@ merge_settings() {
     exit 1
   fi
   # The rename must not fail silently: the script does not run set -e, and a
-  # quiet mv failure would leave capture disarmed while the install reports
+  # quiet mv failure would leave hooks misconfigured while the install reports
   # success — the pre-merge backup stays intact, so failing loudly is safe.
   if ! mv -f "$SETTINGS_TMP_FILE" "$TARGET_DIR/settings.json"; then
     echo "Error: failed to rename merged settings.json into place." >&2
     exit 1
   fi
   SETTINGS_TMP_FILE=""
-}
-
-# --- Capture sentinel ---
-# Marks the target as Firebreak-managed so the per-project capture gate arms
-# with no manual step. The filename is the shared token the gate keys on:
-# gate_check.FBK_MARKER_SENTINEL = ".fbk-managed"
-# (assets/fbk-scripts/fbk/capture/gate_check.py). $TARGET_DIR is the .claude
-# directory, so this lands at .claude/automation/.fbk-managed in the project.
-create_capture_sentinel() {
-  if [ "$DRY_RUN" = "1" ]; then
-    echo "Would create capture sentinel at $TARGET_DIR/automation/.fbk-managed"
-    return
-  fi
-  mkdir -p "$TARGET_DIR/automation"
-  : > "$TARGET_DIR/automation/.fbk-managed"
-}
-
-# --- Gitignore ---
-write_gitignore() {
-  # Read gitignore entries from the merged settings JSON and append any missing
-  # lines to the target directory's .gitignore file.
-  if [ -z "$SETTINGS_JSON_FILE" ] || [ ! -f "$SETTINGS_JSON_FILE" ]; then
-    return
-  fi
-
-  if [ "$DRY_RUN" = "1" ]; then
-    echo "Would write gitignore entries from merged settings to $TARGET_DIR/.gitignore"
-    return
-  fi
-
-  local gitignore_path="$TARGET_DIR/.gitignore"
-
-  python3 - "$SETTINGS_JSON_FILE" "$gitignore_path" <<'EOF'
-import json, sys
-from pathlib import Path
-
-settings_path = sys.argv[1]
-gitignore_path = Path(sys.argv[2])
-
-with open(settings_path) as f:
-    settings = json.load(f)
-
-entries = settings.get("gitignore", [])
-if not entries:
-    sys.exit(0)
-
-existing_lines = set()
-if gitignore_path.exists():
-    existing_lines = {line.rstrip("\n") for line in gitignore_path.read_text().splitlines()}
-
-to_add = [e for e in entries if e not in existing_lines]
-if not to_add:
-    sys.exit(0)
-
-with open(gitignore_path, "a") as f:
-    for entry in to_add:
-        f.write(entry + "\n")
-EOF
 }
 
 # --- Manifest writing ---
@@ -660,7 +601,7 @@ files = sys.argv[1:]
 print(json.dumps(files))
 " "${MANIFEST_FILES[@]+"${MANIFEST_FILES[@]}"}")"
 
-  # Build settings_entries from manifest record, preserving existing manifest entries on upgrade
+  # Record ownership of settings installed by this release.
   local settings_entries_json='{"hooks_added":{},"env_added":{}}'
   local new_record='{"hooks_added":{},"env_added":{}}'
   if [ -n "$MANIFEST_RECORD_FILE" ] && [ -f "$MANIFEST_RECORD_FILE" ] && [ -s "$MANIFEST_RECORD_FILE" ]; then
@@ -670,31 +611,7 @@ d = json.load(sys.stdin)
 print(json.dumps({'hooks_added': d.get('hooks_added', {}), 'env_added': d.get('env_added', {})}))
 " < "$MANIFEST_RECORD_FILE" 2>/dev/null || echo '{"hooks_added":{},"env_added":{}}')"
   fi
-  # On upgrade, merge with existing manifest's settings_entries so we don't lose prior records
-  if [ -f "$manifest_path" ]; then
-    settings_entries_json="$(python3 -c "
-import json, sys
-existing = json.load(open(sys.argv[1])).get('settings_entries', {'hooks_added':{}, 'env_added':{}})
-new = json.loads(sys.argv[2])
-# Accumulate: preserve all existing entries, add any new ones
-merged = {'hooks_added': dict(existing.get('hooks_added', {})), 'env_added': dict(existing.get('env_added', {}))}
-for event, groups in new.get('hooks_added', {}).items():
-    if event in merged['hooks_added']:
-        # Accumulate: add new groups not already recorded
-        existing_canonical = {json.dumps(g, sort_keys=True) for g in merged['hooks_added'][event]}
-        for g in groups:
-            if json.dumps(g, sort_keys=True) not in existing_canonical:
-                merged['hooks_added'][event].append(g)
-    elif groups:
-        merged['hooks_added'][event] = groups
-for key, val in new.get('env_added', {}).items():
-    if key not in merged['env_added']:
-        merged['env_added'][key] = val
-print(json.dumps(merged))
-" "$manifest_path" "$new_record" 2>/dev/null || echo "$new_record")"
-  else
-    settings_entries_json="$new_record"
-  fi
+  settings_entries_json="$new_record"
 
   # Build backups entry
   local backups_json='{}'
@@ -748,6 +665,41 @@ uninstall() {
   if [ ! -f "$manifest_path" ]; then
     echo "Error: No firebreak installation found at $TARGET_DIR." >&2
     exit 1
+  fi
+
+  # Validate the complete removal scope before deleting anything. This includes
+  # generated files and settings, which are not necessarily manifest entries.
+  if ! python3 -c "
+import json, sys
+from pathlib import Path
+
+target = Path(sys.argv[1]).resolve()
+
+def confined(rel):
+    if not isinstance(rel, str) or not rel or any(c in rel for c in ('\\n', '\\r', '\\0')):
+        raise ValueError('invalid manifest path')
+    path = Path(rel)
+    if path.is_absolute() or '..' in path.parts:
+        raise ValueError('unsafe manifest path: ' + rel)
+    resolved = (target / path).resolve()
+    if resolved == target or target not in resolved.parents:
+        raise ValueError('path resolves outside the install target: ' + rel)
+
+try:
+    for rel in ('.firebreak-manifest.json', 'settings.json', 'fbk-scripts', 'fbk-scripts/.venv'):
+        confined(rel)
+    with open(target / '.firebreak-manifest.json') as stream:
+        manifest = json.load(stream)
+    files = manifest.get('files', [])
+    if not isinstance(files, list):
+        raise ValueError('manifest files must be a list')
+    for rel in files:
+        confined(rel)
+except (OSError, ValueError, TypeError, AttributeError, RuntimeError) as exc:
+    sys.stderr.write('Error: refusing unsafe uninstall: ' + str(exc) + '\\n')
+    sys.exit(1)
+" "$TARGET_DIR"; then
+    return 1
   fi
 
   # Remove installed files
@@ -869,7 +821,7 @@ if [ "$MODE" = "uninstall" ]; then
     prompt_target
   fi
   uninstall
-  exit 0
+  exit $?
 fi
 
 # Install / upgrade mode
@@ -900,8 +852,6 @@ fi
 resolve_version
 enumerate_assets
 merge_settings
-create_capture_sentinel
-write_gitignore
 
 # Pre-populate MANIFEST_FILES from enumerated assets so write_manifest can record them
 MANIFEST_FILES=()

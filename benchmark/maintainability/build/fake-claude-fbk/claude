@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Stand-in for `claude` in dry runs of fbk-drive.sh: fake-claude-build's session (one small real change), then the
+# phase the prompt names is marked accepted in .fbk/<unit>/state.json, as Firebreak does when a phase closes.
+#   PATH=<kit>/build/fake-claude-fbk:$PATH fbk-drive.sh turn ...
+# FAKE_STOP=<phase>: the first turn of that phase leaves it open (a stop for the operator); its answer turn closes it.
+# A phase's first prompt names its skill ("fbk-<phase> skill") and the unit ("the <unit> unit" / "named <unit>"); an
+# answer turn names neither, so it closes the first phase still open of the one unit that has a state file.
+prompt=$(cat); here=$(dirname "$0")
+"$here/../fake-claude-build/claude" < /dev/null; rc=$?
+python3 - "$prompt" "${FAKE_STOP:-}" <<'PY'
+import glob, json, os, re, sys
+prompt, stop = sys.argv[1], sys.argv[2]
+phases = ["intent", "design", "spec", "breakdown", "implement"]
+m = re.search(r"fbk-(\w+) skill", prompt); u = re.search(r"(?:named|the) (\S+-cp\d+)", prompt)
+if m and u:
+    phase, f = m[1], f".fbk/{u[1]}/state.json"
+    if phase == stop:
+        os.makedirs(os.path.dirname(f), exist_ok=True); open(f, "a").close(); sys.exit()
+else:
+    f = max(glob.glob(".fbk/*/state.json"), key=os.path.getmtime)
+    phase = None
+os.makedirs(os.path.dirname(f), exist_ok=True)
+try: s = json.load(open(f))
+except Exception: s = {"phases": {}}
+phase = phase or next(p for p in phases if not s["phases"].get(p, {}).get("evidence"))
+s["phases"][phase] = {"evidence": ["fake"]}
+json.dump(s, open(f, "w"))
+PY
+exit $rc

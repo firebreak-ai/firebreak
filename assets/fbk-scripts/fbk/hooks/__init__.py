@@ -1,1 +1,0 @@
-"""FBK hooks module."""

@@ -10,6 +10,7 @@ space-invaders/
 
 # temp
 tmp/
+test-results/
 archive/
 
 # OS artifacts
@@ -26,11 +27,12 @@ assets/fbk-scripts/*.egg-info/
 # Project wiki
 .firebreak-wiki
 
-# Threat models — document attack surface; never commit (see fbk-sdl-workflow/threat-modeling.md)
-*threat-model*
-
-# SDL working artifacts — specs, designs, reviews, retrospectives, and per-task
-# breakdowns. These are working scratch for a feature run, not a shipped product;
-# they're still written to the working tree so the pipeline and gates work
-# unchanged, but the repo no longer carries them. Local copies stay on disk.
+# Local working notes and generated benchmark outputs
 ai-docs/
+benchmark/code-review/results/
+
+# Local-only evaluation harnesses and run exhaust; earlier releases in git history.
+# Tracked: the maintainability benchmark kit, without its data and runs.
+benchmark/*
+!benchmark/maintainability/
+benchmark/maintainability/local/
